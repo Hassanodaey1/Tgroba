@@ -1,4 +1,4 @@
-        /* ═══════════ CHECK ANSWER ═══════════ */
+/* ═══════════ CHECK ANSWER ═══════════ */
         function checkAnswer(btn) {
             if (G.answered || G.ended) return;
             G.answered = true;
@@ -226,4 +226,3 @@
             saveSt();
             return true;
         }
-
