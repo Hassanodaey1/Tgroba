@@ -9,8 +9,14 @@
                 G.correct++;
                 G.streak++;
                 if (G.streak > G.bestStreak) G.bestStreak = G.streak;
-                G.score += 10 + G.streak * 2;
-                G.coinsEarned += 0.4;
+                // في وضع المنافسة: نقطة واحدة لكل سؤال صحيح
+                if (G.mode === 'competition') {
+                    G.score += 1;
+                    G.coinsEarned += 0.1;
+                } else {
+                    G.score += 10 + G.streak * 2;
+                    G.coinsEarned += 0.4;
+                }
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 playSound('correct');
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
@@ -138,7 +144,14 @@
                 st.coins += earnedCoins;
                 st.totalGames++;
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
-                if (G.score > st.bestScore) st.bestScore = G.score;
+                if (G.mode === 'competition') {
+                    // نقاط المنافسة تُحفظ بشكل منفصل
+                    if (G.score > (st.bestCompScore || 0)) {
+                        st.bestCompScore = G.score;
+                    }
+                } else if (G.score > st.bestScore) {
+                    st.bestScore = G.score;
+                }
                 const xpGained = G.score * 2 + G.correct * 5;
                 st.xp += xpGained;
                 while (st.xp >= st.xpToNext) { st.xp -= st.xpToNext;
@@ -161,7 +174,8 @@
                 const ttl = pct >= 90 ? 'ممتاز!' : pct >= 70 ? 'رائع!' : pct >= 50 ? 'جيد!' : 'حاول مجدداً!';
                 document.getElementById('resultsEmoji').textContent = emj;
                 document.getElementById('resultsTitle').textContent = ttl;
-                document.getElementById('resultsSub').textContent =
+                document.getElementById('resultsSub').textContent = G.mode === 'competition' ?
+                    `وصلت للسؤال ${G.currentQ} • ${G.correct} صح • ${G.wrong} خطأ` :
                     `${G.correct} صحيح من ${G.correct+G.wrong} سؤال • ${acc}% دقة`;
                 document.getElementById('resScore').textContent = G.score;
                 document.getElementById('resCorrect').textContent = G.correct;
