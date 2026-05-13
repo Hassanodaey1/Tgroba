@@ -2430,6 +2430,14 @@
             width: 25%;
             text-align: left;
         }
+        .lb-row-me {
+            background: rgba(240, 185, 11, 0.08);
+            border-right: 3px solid var(--gold);
+        }
+        .lb-row-me span {
+            color: var(--gold);
+            font-weight: 800;
+        }
         @media(max-height:680px) {
             .question-text {
                 font-size: 2.1em;
@@ -2576,157 +2584,3 @@
                 font-size: 1.3em;
             }
         }
-
-        /* ══════════════════════════════════════
-           إعدادات اللعبة + تسجيل الدخول + الصورة
-           ══════════════════════════════════════ */
-
-        /* زر الإعدادات في header اللعبة */
-        .game-settings-btn {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 10px;
-            font-size: 1.1em;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-        .game-settings-btn:active { background: rgba(255,255,255,0.18); }
-
-        /* Google sign-in button */
-        .google-signin-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            padding: 13px 18px;
-            background: #fff;
-            color: #3c4043;
-            border: 1.5px solid #dadce0;
-            border-radius: 14px;
-            font-size: 0.9em;
-            font-weight: 700;
-            cursor: pointer;
-            justify-content: center;
-            transition: box-shadow 0.15s;
-            font-family: 'Tajawal', sans-serif;
-        }
-        .google-signin-btn:active { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        html.light-mode .google-signin-btn { background: #f8f9fa; }
-
-        .google-user-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--surface3);
-            border-radius: 14px;
-            padding: 10px 14px;
-        }
-
-        /* رفع الصورة الشخصية */
-        .avatar-upload-area {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: var(--surface3);
-            border: 2px dashed var(--border2);
-            border-radius: 16px;
-            padding: 14px 16px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        .avatar-upload-area:active { border-color: var(--accent); }
-        .avatar-upload-preview {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            overflow: hidden;
-            background: var(--surface2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .avatar-upload-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* اختيار الإطار */
-        .frame-picker {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .frame-option {
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4em;
-            position: relative;
-            border: 3px solid transparent;
-            transition: transform 0.15s, border-color 0.15s;
-        }
-        .frame-option.selected { border-color: var(--accent); transform: scale(1.1); }
-        .frame-option .frame-preview {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            border: 3px solid;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1em;
-            overflow: hidden;
-        }
-
-        /* إطار حول الصورة في كل مكان */
-        .profile-avatar-img.has-photo,
-        .avatar-inner.has-photo {
-            border-radius: 50%;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .profile-avatar-img.has-photo img,
-        .avatar-inner.has-photo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        /* badge تعديل الصورة */
-        .avatar-edit-badge {
-            position: absolute;
-            bottom: 2px;
-            left: 2px;
-            background: var(--accent);
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.65em;
-            border: 2px solid var(--bg);
-        }
-        .profile-avatar-big { position: relative; }
-
-        /* إطارات الـ header أيضاً */
-        .avatar-wrap.frame-gold .avatar-ring { border-color: #f0b90b !important; box-shadow: 0 0 10px rgba(240,185,11,0.5); }
-        .avatar-wrap.frame-blue .avatar-ring { border-color: #06b6d4 !important; box-shadow: 0 0 10px rgba(6,182,212,0.5); }
-        .avatar-wrap.frame-green .avatar-ring { border-color: #10b981 !important; box-shadow: 0 0 10px rgba(16,185,129,0.5); }
-        .avatar-wrap.frame-red .avatar-ring { border-color: #ef4444 !important; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
-        .avatar-wrap.frame-purple .avatar-ring { border-color: #a855f7 !important; box-shadow: 0 0 10px rgba(168,85,247,0.5); }
-        .avatar-wrap.frame-rainbow .avatar-ring { border-image: linear-gradient(135deg,#f0b90b,#ef4444,#a855f7,#06b6d4) 1 !important; }
