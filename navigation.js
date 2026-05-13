@@ -1,5 +1,5 @@
-        /* ═══════════ NAVIGATION ═══════════ */
-        const TABS = ['home', 'play', 'achieve', 'profile', 'leaderboard'];
+/* ═══════════ NAVIGATION ═══════════ */
+        const TABS = ['home', 'play', 'achieve', 'profile', 'leaderboard', 'settings'];
 
         function goTab(tab) {
             TABS.forEach(t => {
@@ -19,6 +19,13 @@
                 // تحديث أفضل نتيجة في واجهة الترحيب
                 const el = document.getElementById('challengeBestDisplay');
                 if (el) el.textContent = st.challengeBestScore || 0;
+                // تحديث أفضل نتيجة في الملف الشخصي
+                const pb = document.getElementById('profileChallengeBest');
+                if (pb) pb.textContent = st.challengeBestScore || 0;
+            }
+            if (tab === 'profile') {
+                const pb = document.getElementById('profileChallengeBest');
+                if (pb) pb.textContent = st.challengeBestScore || 0;
             }
         }
 
@@ -235,4 +242,3 @@
                 geometry: 'geometry', advanced: 'algebra', laws: 'mathlaws' };
             return map[op] || 'addition';
         }
-
