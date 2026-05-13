@@ -1,36 +1,34 @@
-        let database = null;
-        let firebaseReady = false;
+        var database = null;
+        var firebaseReady = false;
+        var _fbInitTries = 0;
 
         function initFirebase() {
+            _fbInitTries++;
             try {
-                const firebaseConfig = {
-                   apiKey: "AIzaSyA90LjnECxC9GcHNQ8eRjPotLAFZPXWBOU",
-                   authDomain: "hassan-odaey.firebaseapp.com",
-                   databaseURL: "https://ho-math-gamr-default-rtdb.asia-southeast1.firebasedatabase.app",
-                   projectId: "hassan-odaey",
-                   storageBucket: "hassan-odaey.firebasestorage.app",
-                   messagingSenderId: "287990416545",
-                   appId: "1:287990416545:web:a2eb2df88aa42f7b4fdce0",
-                   measurementId: "G-75TXZC2YX6"
+                if (typeof firebase === 'undefined') {
+                    if (_fbInitTries < 10) setTimeout(initFirebase, 300);
+                    else console.warn('Firebase SDK لم يُحمَّل بعد 10 محاولات');
+                    return;
+                }
+                var firebaseConfig = {
+                    apiKey: "AIzaSyA90LjnECxC9GcHNQ8eRjPotLAFZPXWBOU",
+                    authDomain: "hassan-odaey.firebaseapp.com",
+                    databaseURL: "https://ho-math-gamr-default-rtdb.asia-southeast1.firebasedatabase.app",
+                    projectId: "hassan-odaey",
+                    storageBucket: "hassan-odaey.firebasestorage.app",
+                    messagingSenderId: "287990416545",
+                    appId: "1:287990416545:web:a2eb2df88aa42f7b4fdce0"
                 };
-                if (!firebase.apps.length) {
+                if (!firebase.apps || firebase.apps.length === 0) {
                     firebase.initializeApp(firebaseConfig);
                 }
                 database = firebase.database();
                 firebaseReady = true;
             } catch (e) {
-                console.warn('Firebase غير مهيأ، سيتم تعطيل لوحة المتصدرين:', e.message);
+                console.warn('Firebase init error:', e.message);
                 database = null;
                 firebaseReady = false;
             }
         }
 
-        // تهيئة Firebase - مع انتظار SDK إن لزم
-        if (typeof firebase !== 'undefined') {
-            initFirebase();
-        } else {
-            window.addEventListener('load', () => {
-                if (typeof firebase !== 'undefined') initFirebase();
-            });
-        }
-
+        initFirebase();
