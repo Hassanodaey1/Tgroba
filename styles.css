@@ -2723,6 +2723,70 @@
         }
         .profile-avatar-big { position: relative; }
 
+/* أنماط إضافية للأزرار في splash screen */
+.splash-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 28px;
+    z-index: 2;
+    position: relative;
+    width: 100%;
+    max-width: 260px;
+}
+
+.splash-btn {
+    font-family: 'Tajawal', sans-serif;
+    padding: 12px 20px;
+    border-radius: 40px;
+    font-size: 0.9em;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+    flex: 1;
+    text-align: center;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    color: var(--text);
+    border: 1px solid var(--border2);
+}
+
+.splash-btn.guest {
+    background: var(--surface2);
+    color: var(--gold);
+}
+
+.splash-btn.google {
+    background: #4285F4;
+    color: white;
+    border: none;
+}
+
+.splash-btn:active {
+    transform: scale(0.95);
+}
+
+/* زر الإعدادات الرئيسي في الهيدر */
+#settingsMainBtn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    font-size: 1.1em;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+#settingsMainBtn:active { background: rgba(255,255,255,0.18); }
+
+/* إخفاء app wrapper مبدئياً حتى يتم اختيار طريقة الدخول */
+.app-wrapper {
+    display: none;
+}
         /* إطارات الـ header أيضاً */
         .avatar-wrap.frame-gold .avatar-ring { border-color: #f0b90b !important; box-shadow: 0 0 10px rgba(240,185,11,0.5); }
         .avatar-wrap.frame-blue .avatar-ring { border-color: #06b6d4 !important; box-shadow: 0 0 10px rgba(6,182,212,0.5); }
