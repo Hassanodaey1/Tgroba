@@ -428,6 +428,55 @@
         .icon-pill:active {
             transform: scale(0.88);
         }
+        .counter-pill {
+            width: auto;
+            padding: 0 12px;
+            font-size: 1.3em;
+            background: linear-gradient(135deg, rgba(240,185,11,0.18), rgba(124,58,237,0.12));
+            border-color: rgba(240,185,11,0.4);
+            font-weight: 900;
+            gap: 4px;
+        }
+        .counter-pill:active { transform: scale(0.92); }
+
+        /* Volume sliders */
+        .volume-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px 12px;
+            background: var(--surface2);
+            border-top: none;
+        }
+        .vol-icon { font-size: 1em; flex-shrink: 0; }
+        .vol-val { font-size: 0.72em; color: var(--text2); min-width: 36px; text-align: left; }
+        .vol-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 5px;
+            border-radius: 4px;
+            background: var(--surface3);
+            outline: none;
+            cursor: pointer;
+        }
+        .vol-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--gold);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(240,185,11,0.4);
+        }
+        .vol-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--gold);
+            cursor: pointer;
+            border: none;
+        }
         .pages {
             flex: 1;
             overflow: hidden;
