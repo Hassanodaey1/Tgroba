@@ -381,43 +381,75 @@
             } catch (e) { console.warn('خطأ في syncWithLeaderboard:', e.message); }
         }
 
-        function loadLeaderboard() {
+        /* مستمع مباشر للوحة المتصدرين */
+        let leaderboardListener = null;
+
+        function renderLeaderboardData(snapshot) {
             const container = document.getElementById('leaderboardList');
             if (!container) return;
+            try {
+                const players = [];
+                snapshot.forEach(function(child) {
+                    players.push(Object.assign({ id: child.key }, child.val()));
+                });
+                players.sort(function(a, b) { return (b.bestScore || 0) - (a.bestScore || 0); });
+                var top10 = players.slice(0, 10);
+                if (top10.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">🏁 لا توجد نتائج بعد<br><small>العب جولة لتظهر في اللوحة!</small></div>';
+                    return;
+                }
+                var myKey = getLeaderboardKey();
+                var medals = ['🥇', '🥈', '🥉'];
+                var html = '';
+                top10.forEach(function(p, idx) {
+                    var isMe = p.id === myKey || p.id === st.serialNumber;
+                    var medal = idx < 3 ? medals[idx] : (idx + 1);
+                    var rowStyle = isMe ? 'background:rgba(124,58,237,0.13);border:1.5px solid var(--accent,#7c3aed);border-radius:10px;' : '';
+                    var meTag = isMe ? ' <small style="color:var(--accent,#7c3aed);font-size:0.8em;">(أنت)</small>' : '';
+                    html += '<div class="lb-row" style="' + rowStyle + '">' +
+                        '<span style="font-size:1.15em;font-weight:700;">' + medal + '</span>' +
+                        '<span>' + (p.avatar || '🧑') + ' ' + (p.name || '—') + meTag + '</span>' +
+                        '<span>Lv.' + (p.level || 1) + '</span>' +
+                        '<span style="color:var(--gold,#f0b90b);font-weight:800;">' + (p.bestScore || 0) + '</span>' +
+                        '</div>';
+                });
+                container.innerHTML = html;
+            } catch(e) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ خطأ في عرض البيانات</div>';
+            }
+        }
+
+        function loadLeaderboard() {
+            var container = document.getElementById('leaderboardList');
+            if (!container) return;
             if (!database) {
-                container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">⚠️ قاعدة البيانات غير متصلة<br><small>قم بتكوين Firebase لتفعيل المنافسة</small></div>';
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">⚠️ قاعدة البيانات غير متصلة<br><small>تأكد من الاتصال بالإنترنت</small></div>';
                 return;
             }
             container.innerHTML = '<div style="text-align:center;padding:20px;">⏳ جاري التحميل...</div>';
+            // إلغاء المستمع القديم إن وُجد
+            if (leaderboardListener) {
+                try { database.ref('leaderboard').off('value', leaderboardListener); } catch(e) {}
+                leaderboardListener = null;
+            }
             try {
-                database.ref('leaderboard').orderByChild('bestScore').limitToLast(10).once('value', (snapshot) => {
-                    const players = [];
-                    snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                    players.sort((a, b) => (b.bestScore || 0) - (a.bestScore || 0));
-                    if (players.length === 0) {
-                        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">🏁 لا توجد نتائج بعد<br><small>العب جولة لتظهر في اللوحة!</small></div>';
-                        return;
-                    }
-                    const myKey = getLeaderboardKey();
-                    const medals = ['🥇', '🥈', '🥉'];
-                    let html = '';
-                    players.forEach((p, idx) => {
-                        const isMe = p.id === myKey || p.id === st.serialNumber;
-                        const medal = medals[idx] !== undefined ? medals[idx] : (idx + 1);
-                        const rowStyle = isMe ? 'background:var(--accent,#7c3aed)22;border:1px solid var(--accent,#7c3aed);border-radius:8px;' : '';
-                        html += `<div class="lb-row" style="${rowStyle}">` +
-                            `<span style="font-size:1.1em;">${medal}</span>` +
-                            `<span>${p.avatar || '🧑'} ${p.name}${isMe ? ' <small style="color:var(--accent);">(أنت)</small>' : ''}</span>` +
-                            `<span>Lv.${p.level || 1}</span>` +
-                            `<span style="color:var(--gold,#f0b90b);font-weight:700;">${p.bestScore || 0}</span>` +
-                            '</div>';
+                // .on('value') = تحديث فوري عند أي تغيير
+                leaderboardListener = database.ref('leaderboard')
+                    .orderByChild('bestScore')
+                    .limitToLast(50)
+                    .on('value', renderLeaderboardData, function(err) {
+                        if (container) container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ فشل التحميل: ' + (err.message || 'تحقق من الإنترنت') + '</div>';
+                        leaderboardListener = null;
                     });
-                    container.innerHTML = html;
-                }).catch((e) => {
-                    container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ فشل التحميل، اضغط تحديث مرة أخرى</div>';
-                });
             } catch (e) {
                 container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ قاعدة البيانات غير متاحة</div>';
+            }
+        }
+
+        function stopLeaderboardListener() {
+            if (leaderboardListener && database) {
+                try { database.ref('leaderboard').off('value', leaderboardListener); } catch(e) {}
+                leaderboardListener = null;
             }
         }
 
