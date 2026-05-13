@@ -1,4 +1,4 @@
-        let database = null;
+let database = null;
         try {
             const firebaseConfig = {
                apiKey: "AIzaSyA90LjnECxC9GcHNQ8eRjPotLAFZPXWBOU",
@@ -18,4 +18,3 @@
             console.warn('Firebase غير مهيأ، سيتم تعطيل لوحة المتصدرين:', e.message);
             database = null;
         }
-
