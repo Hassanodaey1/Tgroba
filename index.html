@@ -23,10 +23,10 @@
     <title>HO Math - تحديات الرياضيات</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js">
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js">
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-storage-compat.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -64,7 +64,10 @@
         <div class="game-header">
             <button class="game-back-btn" onclick="confirmQuit()" aria-label="رجوع">‹</button>
             <div class="game-title" id="gameModeTitle">🧮 كلاسيك</div>
-            <div class="game-score-pill">💰 <span id="gameCoins">0</span></div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div class="game-score-pill">💰 <span id="gameCoins">0</span></div>
+                <button class="game-settings-btn" onclick="openSettingsSheet()" aria-label="الإعدادات">⚙️</button>
+            </div>
         </div>
         <div class="timer-bar-wrap">
             <div class="timer-bar-fill" id="timerBar" style="width:100%"></div>
@@ -494,10 +497,13 @@
 
                 <!-- PROFILE PAGE -->
                 <div class="page" id="page-profile">
+
+                    <!-- الصورة الشخصية والمعلومات الأساسية -->
                     <div class="profile-hero">
-                        <div class="profile-avatar-big">
+                        <div class="profile-avatar-big" onclick="openAvatarOptions()">
                             <div class="profile-avatar-ring"></div>
                             <div class="profile-avatar-img" id="profileAvatarImg">🧑</div>
+                            <div class="avatar-edit-badge">✏️</div>
                         </div>
                         <div class="profile-details">
                             <div class="profile-name-big" id="profileName">اللاعب</div>
@@ -508,6 +514,8 @@
                             <div class="profile-xp-label" id="profileXpLabel">0 / 1000 XP</div>
                         </div>
                     </div>
+
+                    <!-- إحصائيات سريعة -->
                     <div class="stats-grid3">
                         <div class="stat-card">
                             <div class="stat-card-num" id="statCorrect">0</div>
@@ -522,11 +530,38 @@
                             <div class="stat-card-label">💰 عملة</div>
                         </div>
                     </div>
+
+                    <!-- تسجيل الدخول بجوجل -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">🔐 الحساب</div>
+                        <div id="googleSignInArea">
+                            <div id="googleSignedOut">
+                                <p style="font-size:0.78em;color:var(--text2);margin-bottom:10px;">سجّل دخولك بحساب Google لحفظ بياناتك تلقائياً على جميع أجهزتك</p>
+                                <button class="google-signin-btn" onclick="signInWithGoogle()">
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google">
+                                    تسجيل الدخول بـ Google
+                                </button>
+                            </div>
+                            <div id="googleSignedIn" style="display:none;">
+                                <div class="google-user-row">
+                                    <img id="googleUserPhoto" src="" width="36" height="36" style="border-radius:50%;object-fit:cover;" alt="">
+                                    <div>
+                                        <div style="font-weight:700;font-size:0.85em;" id="googleUserName">—</div>
+                                        <div style="font-size:0.7em;color:var(--text2);" id="googleUserEmail">—</div>
+                                    </div>
+                                    <button class="serial-btn" style="margin-right:auto;" onclick="signOutGoogle()">خروج</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تعديل الملف الشخصي -->
                     <div class="profile-section">
                         <div class="profile-section-title">✏️ تعديل الملف الشخصي</div>
                         <div class="profile-form">
                             <div class="form-field">
-                                <div class="form-label">الاسم (إنجليزي فقط)</div><input class="form-input" type="text" id="inputName" placeholder="English Name (A-Z, 0-9)" maxlength="30">
+                                <div class="form-label">الاسم (إنجليزي فقط)</div>
+                                <input class="form-input" type="text" id="inputName" placeholder="English Name (A-Z, 0-9)" maxlength="30">
                             </div>
                             <div class="form-field">
                                 <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
@@ -543,23 +578,41 @@
                                     <div class="gender-btn" id="gBtnF" onclick="selectGender('f')">👧 أنثى</div>
                                 </div>
                             </div>
-                            <div class="form-field">
-                                <div class="form-label">الرمز التعبيري الحالي</div>
-                                <div style="display:flex;align-items:center;gap:10px;background:var(--surface3);border-radius:13px;padding:10px 13px;">
-                                    <div id="currentAvatarDisplay" style="font-size:2em;">🧑</div>
-                                    <div style="font-size:0.72em;color:var(--text2);">الرمز الحالي — اشترِ رموزاً جديدة أدناه</div>
-                                </div>
-                            </div>
                             <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
                         </div>
                     </div>
+
+                    <!-- الصورة الشخصية والإطارات -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">🖼️ الصورة الشخصية والإطار</div>
+                        <!-- رفع صورة شخصية -->
+                        <div class="avatar-upload-area" onclick="document.getElementById('avatarFileInput').click()">
+                            <div id="avatarUploadPreview" class="avatar-upload-preview">
+                                <span style="font-size:2em;">📷</span>
+                            </div>
+                            <div>
+                                <div style="font-weight:700;font-size:0.85em;">رفع صورة شخصية</div>
+                                <div style="font-size:0.7em;color:var(--text2);">JPG أو PNG • بدلاً من الرمز التعبيري</div>
+                            </div>
+                        </div>
+                        <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+                        <!-- اختيار الإطار -->
+                        <div style="margin-top:14px;">
+                            <div style="font-size:0.78em;color:var(--text2);margin-bottom:8px;">اختر إطاراً لصورتك:</div>
+                            <div class="frame-picker" id="framePicker"></div>
+                        </div>
+                    </div>
+
+                    <!-- متجر الرموز التعبيرية -->
                     <div class="profile-section">
                         <div class="profile-section-title">🛍️ متجر الرموز التعبيرية</div>
                         <div style="font-size:0.68em;color:var(--text2);margin-bottom:8px;">اضغط على الرمز لشرائه أو تفعيله — رصيدك: <span id="shopCoinsDisplay" style="color:var(--gold);font-weight:800;">0</span> 💰</div>
                         <div class="emoji-shop-grid" id="emojiShopGrid"></div>
                     </div>
+
+                    <!-- المظهر -->
                     <div class="profile-section">
-                        <div class="profile-section-title">🎨 الثيمات و المظهر</div>
+                        <div class="profile-section-title">🎨 الثيمات والمظهر</div>
                         <div class="themes-row">
                             <div class="dark-light-toggle" onclick="toggleDarkMode()">
                                 <span id="darkLightIcon">🌙</span>
@@ -573,18 +626,8 @@
                             <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
                         </div>
                     </div>
-                    <div class="profile-section">
-                        <div class="profile-section-title">🔑 الرقم التسلسلي</div>
-                        <div class="serial-area" id="serialNumberDisplay">غير محدد (احفظ الملف الشخصي أولاً)</div>
-                        <div class="serial-actions">
-                            <button class="serial-btn" onclick="copySerialNumber()">📋 نسخ الرقم التسلسلي</button>
-                            <button class="serial-btn" onclick="showRestoreAccount()">🔄 استعادة حساب</button>
-                        </div>
-                        <div id="restorePanel" class="restore-area" style="display:none;">
-                            <input type="text" id="restoreSerialInput" class="restore-input" placeholder="أدخل الرقم التسلسلي">
-                            <button class="save-btn" style="margin-top:4px;" onclick="restoreAccount()">استعادة</button>
-                        </div>
-                    </div>
+
+                    <!-- الإعدادات -->
                     <div class="profile-section">
                         <div class="profile-section-title">⚙️ الإعدادات</div>
                         <div class="settings-list">
@@ -598,6 +641,21 @@
                             <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد</button>
                         </div>
                     </div>
+
+                    <!-- الرقم التسلسلي -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">🔑 الرقم التسلسلي</div>
+                        <div class="serial-area" id="serialNumberDisplay">غير محدد (احفظ الملف الشخصي أولاً)</div>
+                        <div class="serial-actions">
+                            <button class="serial-btn" onclick="copySerialNumber()">📋 نسخ الرقم التسلسلي</button>
+                            <button class="serial-btn" onclick="showRestoreAccount()">🔄 استعادة حساب</button>
+                        </div>
+                        <div id="restorePanel" class="restore-area" style="display:none;">
+                            <input type="text" id="restoreSerialInput" class="restore-input" placeholder="أدخل الرقم التسلسلي">
+                            <button class="save-btn" style="margin-top:4px;" onclick="restoreAccount()">استعادة</button>
+                        </div>
+                    </div>
+
                     <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
                 </div>
 
@@ -612,18 +670,6 @@
                             <div class="coins-badge" style="cursor:pointer;" onclick="loadLeaderboard()">🔄 تحديث</div>
                         </div>
                     </div>
-
-                    <!-- زر ابدأ التحدي -->
-                    <div style="padding: 0 4px 16px;">
-                        <button class="competition-start-btn" onclick="startCompetitionGame()">
-                            <span style="font-size:1.4em;">⚔️</span>
-                            <div>
-                                <div style="font-weight:800;font-size:1em;">ابدأ التحدي</div>
-                                <div style="font-size:0.72em;opacity:0.85;">عمليات مختلطة • صعوبة تتزايد • نقطة لكل سؤال</div>
-                            </div>
-                        </button>
-                    </div>
-
                     <div class="leaderboard-table" id="leaderboardContainer">
                         <div class="lb-row lb-header">
                             <span>المرتبة</span>
@@ -664,6 +710,33 @@
                     <div class="nav-item-label">ملفي</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+
+    <!-- SETTINGS SHEET -->
+    <div class="sheet-overlay" id="settingsSheet" onclick="sheetBg(event,'settingsSheet')">
+        <div class="sheet-panel">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">⚙️ الإعدادات</div>
+            <div class="settings-list" style="margin-top:8px;">
+                <div class="settings-row" onclick="toggleSound();updateSettingsSheet()">
+                    <span class="settings-row-icon">🔊</span>
+                    <span class="settings-row-label">الأصوات</span>
+                    <span class="settings-row-val" id="sheetSoundStatus">مفعّل</span>
+                </div>
+                <div class="settings-row" onclick="toggleBgMusic();updateSettingsSheet()">
+                    <span class="settings-row-icon">🎵</span>
+                    <span class="settings-row-label">موسيقى الخلفية</span>
+                    <span class="settings-row-val" id="sheetBgStatus">مفعّلة</span>
+                </div>
+                <div class="settings-row" onclick="closeSheet('settingsSheet');confirmQuit()">
+                    <span class="settings-row-icon">🏠</span>
+                    <span class="settings-row-label">العودة للرئيسية</span>
+                    <span class="settings-row-val">›</span>
+                </div>
+            </div>
+            <button class="sheet-cancel" onclick="closeSheet('settingsSheet')">متابعة اللعب</button>
         </div>
     </div>
 
