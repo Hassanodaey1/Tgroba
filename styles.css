@@ -2686,7 +2686,43 @@
             align-items: center;
             justify-content: center;
             font-size: 1.1em;
-         }
+            overflow: hidden;
+        }
+
+        /* إطار حول الصورة في كل مكان */
+        .profile-avatar-img.has-photo,
+        .avatar-inner.has-photo {
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .profile-avatar-img.has-photo img,
+        .avatar-inner.has-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* badge تعديل الصورة */
+        .avatar-edit-badge {
+            position: absolute;
+            bottom: 2px;
+            left: 2px;
+            background: var(--accent);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65em;
+            border: 2px solid var(--bg);
+        }
+        .profile-avatar-big { position: relative; }
+
         /* إطارات الـ header أيضاً */
         .avatar-wrap.frame-gold .avatar-ring { border-color: #f0b90b !important; box-shadow: 0 0 10px rgba(240,185,11,0.5); }
         .avatar-wrap.frame-blue .avatar-ring { border-color: #06b6d4 !important; box-shadow: 0 0 10px rgba(6,182,212,0.5); }
