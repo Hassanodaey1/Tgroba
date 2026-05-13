@@ -481,7 +481,7 @@
             const ss = document.getElementById('splashScreen');
             if (ss) { ss.classList.add('hidden');
                 setTimeout(() => { if (ss) ss.style.display = 'none'; }, 500); }
-        }, 2800);
+        }, 500);
         document.addEventListener('touchstart', function() { gACtx(); if (aCtx && aCtx.state === 'suspended') aCtx
             .resume(); }, { once: true });
         if ('serviceWorker' in navigator) {
