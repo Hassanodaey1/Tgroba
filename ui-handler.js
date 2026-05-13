@@ -353,103 +353,51 @@
         });
 
         /* ═══════════ LEADERBOARD ═══════════ */
-        function getLeaderboardKey() {
-            if (st.serialNumber) return st.serialNumber;
-            const safeName = (st.name || 'Player').replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, '').slice(0, 12);
-            let guestKey = localStorage.getItem('ho_math_guest_key');
-            if (!guestKey) {
-                guestKey = 'guest_' + safeName + '_' + Math.floor(Math.random() * 99999);
-                localStorage.setItem('ho_math_guest_key', guestKey);
-            }
-            return guestKey;
-        }
-
         function syncWithLeaderboard() {
-            if (!database) return;
-            if (!st.name || st.name === 'Player' || st.bestScore <= 0) return;
+            if (!database || !st.serialNumber) return;
             try {
-                const key = getLeaderboardKey();
-                const playerRef = database.ref('leaderboard/' + key);
+                const playerRef = database.ref('leaderboard/' + st.serialNumber);
                 playerRef.set({
                     name: st.name,
-                    avatar: st.avatar || '🧑',
+                    avatar: st.avatar,
                     level: st.level,
                     bestScore: st.bestScore,
                     totalXp: st.xp,
                     lastUpdated: Date.now()
-                }).catch((e) => { console.warn('فشل رفع النتيجة:', e.message); });
-            } catch (e) { console.warn('خطأ في syncWithLeaderboard:', e.message); }
-        }
-
-        /* مستمع مباشر للوحة المتصدرين */
-        let leaderboardListener = null;
-
-        function renderLeaderboardData(snapshot) {
-            const container = document.getElementById('leaderboardList');
-            if (!container) return;
-            try {
-                const players = [];
-                snapshot.forEach(function(child) {
-                    players.push(Object.assign({ id: child.key }, child.val()));
-                });
-                players.sort(function(a, b) { return (b.bestScore || 0) - (a.bestScore || 0); });
-                var top10 = players.slice(0, 10);
-                if (top10.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">🏁 لا توجد نتائج بعد<br><small>العب جولة لتظهر في اللوحة!</small></div>';
-                    return;
-                }
-                var myKey = getLeaderboardKey();
-                var medals = ['🥇', '🥈', '🥉'];
-                var html = '';
-                top10.forEach(function(p, idx) {
-                    var isMe = p.id === myKey || p.id === st.serialNumber;
-                    var medal = idx < 3 ? medals[idx] : (idx + 1);
-                    var rowStyle = isMe ? 'background:rgba(124,58,237,0.13);border:1.5px solid var(--accent,#7c3aed);border-radius:10px;' : '';
-                    var meTag = isMe ? ' <small style="color:var(--accent,#7c3aed);font-size:0.8em;">(أنت)</small>' : '';
-                    html += '<div class="lb-row" style="' + rowStyle + '">' +
-                        '<span style="font-size:1.15em;font-weight:700;">' + medal + '</span>' +
-                        '<span>' + (p.avatar || '🧑') + ' ' + (p.name || '—') + meTag + '</span>' +
-                        '<span>Lv.' + (p.level || 1) + '</span>' +
-                        '<span style="color:var(--gold,#f0b90b);font-weight:800;">' + (p.bestScore || 0) + '</span>' +
-                        '</div>';
-                });
-                container.innerHTML = html;
-            } catch(e) {
-                container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ خطأ في عرض البيانات</div>';
-            }
+                }).catch(() => {});
+            } catch (e) {}
         }
 
         function loadLeaderboard() {
-            var container = document.getElementById('leaderboardList');
+            const container = document.getElementById('leaderboardList');
             if (!container) return;
             if (!database) {
-                container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">⚠️ قاعدة البيانات غير متصلة<br><small>تأكد من الاتصال بالإنترنت</small></div>';
+                container.innerHTML =
+                    '<div style="text-align:center;color:var(--text2);">⚠️ قاعدة البيانات غير متصلة<br>قم بتكوين Firebase لتفعيل المنافسة </div>';
                 return;
             }
-            container.innerHTML = '<div style="text-align:center;padding:20px;">⏳ جاري التحميل...</div>';
-            // إلغاء المستمع القديم إن وُجد
-            if (leaderboardListener) {
-                try { database.ref('leaderboard').off('value', leaderboardListener); } catch(e) {}
-                leaderboardListener = null;
-            }
+            container.innerHTML = '<div style="text-align:center;">⏳ جاري التحميل...</div>';
             try {
-                // .on('value') = تحديث فوري عند أي تغيير
-                leaderboardListener = database.ref('leaderboard')
-                    .orderByChild('bestScore')
-                    .limitToLast(50)
-                    .on('value', renderLeaderboardData, function(err) {
-                        if (container) container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ فشل التحميل: ' + (err.message || 'تحقق من الإنترنت') + '</div>';
-                        leaderboardListener = null;
+                database.ref('leaderboard').orderByChild('bestScore').limitToLast(10).once('value', (snapshot) => {
+                    const players = [];
+                    snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+                    players.sort((a, b) => (b.bestScore || 0) - (a.bestScore || 0));
+                    if (players.length === 0) {
+                        container.innerHTML =
+                            '<div style="text-align:center;">لا توجد نتائج بعد</div>';
+                        return;
+                    }
+                    let html = '';
+                    players.forEach((p, idx) => {
+                        const isMe = p.id === st.serialNumber;
+                        html +=
+                            `<div class="lb-row${isMe?' lb-row-me':''}"><span>${idx+1}</span><span>${p.avatar||'🧑'} ${p.name}</span><span>${p.level}</span><span>${p.bestScore}</span></div>`;
                     });
+                    container.innerHTML = html;
+                }).catch(() => { container.innerHTML =
+                        '<div style="text-align:center;">⚠️ فشل التحميل</div>'; });
             } catch (e) {
-                container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ قاعدة البيانات غير متاحة</div>';
-            }
-        }
-
-        function stopLeaderboardListener() {
-            if (leaderboardListener && database) {
-                try { database.ref('leaderboard').off('value', leaderboardListener); } catch(e) {}
-                leaderboardListener = null;
+                container.innerHTML = '<div style="text-align:center;">⚠️ قاعدة البيانات غير متاحة</div>';
             }
         }
 
@@ -460,9 +408,6 @@
         applyDarkMode();
         updateUI();
         loadProfileForm();
-        initAvatarAndFrame();
-        initAuthState();
-        renderFramePicker();
         (function() {
             const chips = document.querySelectorAll('.diff-chip');
             chips.forEach(c => c.classList.remove('active'));
@@ -489,183 +434,4 @@
                 navigator.serviceWorker.register('./service-worker.js').catch(err => console.log(
                     'SW registration failed:', err));
             });
-        }
-
-        /* ══════════════════════════════════════
-           إعدادات اللعبة
-           ══════════════════════════════════════ */
-        function openSettingsSheet() {
-            updateSettingsSheet();
-            openSheet('settingsSheet');
-        }
-        function updateSettingsSheet() {
-            var ss = document.getElementById('sheetSoundStatus');
-            var bs = document.getElementById('sheetBgStatus');
-            if (ss) ss.textContent = st.soundOn ? 'مفعّل' : 'معطّل';
-            if (bs) bs.textContent = st.bgOn ? 'مفعّلة' : 'معطّلة';
-        }
-
-        /* ══════════════════════════════════════
-           تسجيل الدخول بـ Google
-           ══════════════════════════════════════ */
-        function signInWithGoogle() {
-            if (typeof firebase === 'undefined' || !firebase.auth) {
-                showFeedback('⚠️ خدمة المصادقة غير متوفرة');
-                return;
-            }
-            var provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider).then(function(result) {
-                var user = result.user;
-                updateGoogleUserUI(user);
-                // حفظ بيانات الحساب
-                st.googleUid = user.uid;
-                st.googleEmail = user.email;
-                if (!st.name || st.name === 'Player') {
-                    st.name = user.displayName ? user.displayName.replace(/[^a-zA-Z0-9 ]/g, '').trim().slice(0, 30) : st.name;
-                }
-                if (user.photoURL && !st.customPhotoURL) {
-                    st.customPhotoURL = user.photoURL;
-                    applyAvatarPhoto(user.photoURL);
-                }
-                saveSt();
-                showFeedback('✅ تم تسجيل الدخول بنجاح');
-            }).catch(function(err) {
-                console.warn('Google sign-in error:', err.message);
-                showFeedback('❌ فشل تسجيل الدخول');
-            });
-        }
-
-        function signOutGoogle() {
-            if (typeof firebase === 'undefined' || !firebase.auth) return;
-            firebase.auth().signOut().then(function() {
-                document.getElementById('googleSignedIn').style.display = 'none';
-                document.getElementById('googleSignedOut').style.display = 'block';
-                showFeedback('👋 تم تسجيل الخروج');
-            });
-        }
-
-        function updateGoogleUserUI(user) {
-            var signedIn = document.getElementById('googleSignedIn');
-            var signedOut = document.getElementById('googleSignedOut');
-            if (!signedIn || !signedOut) return;
-            if (user) {
-                signedIn.style.display = 'block';
-                signedOut.style.display = 'none';
-                var photo = document.getElementById('googleUserPhoto');
-                var name = document.getElementById('googleUserName');
-                var email = document.getElementById('googleUserEmail');
-                if (photo) photo.src = user.photoURL || '';
-                if (name) name.textContent = user.displayName || '—';
-                if (email) email.textContent = user.email || '—';
-            } else {
-                signedIn.style.display = 'none';
-                signedOut.style.display = 'block';
-            }
-        }
-
-        // تهيئة حالة تسجيل الدخول عند فتح الصفحة
-        function initAuthState() {
-            if (typeof firebase === 'undefined' || !firebase.auth) return;
-            firebase.auth().onAuthStateChanged(function(user) {
-                updateGoogleUserUI(user);
-                if (user && user.photoURL && !st.customPhotoURL) {
-                    st.customPhotoURL = user.photoURL;
-                    applyAvatarPhoto(user.photoURL);
-                }
-            });
-        }
-
-        /* ══════════════════════════════════════
-           الصورة الشخصية والإطارات
-           ══════════════════════════════════════ */
-        var FRAMES = [
-            { id: 'none',    label: 'بلا إطار', color: 'transparent', css: '' },
-            { id: 'gold',    label: 'ذهبي',     color: '#f0b90b',     css: 'frame-gold' },
-            { id: 'blue',    label: 'أزرق',     color: '#06b6d4',     css: 'frame-blue' },
-            { id: 'green',   label: 'أخضر',     color: '#10b981',     css: 'frame-green' },
-            { id: 'red',     label: 'أحمر',     color: '#ef4444',     css: 'frame-red' },
-            { id: 'purple',  label: 'بنفسجي',   color: '#a855f7',     css: 'frame-purple' },
-            { id: 'rainbow', label: 'ملوّن',    color: 'linear-gradient(135deg,#f0b90b,#ef4444,#a855f7,#06b6d4)', css: 'frame-rainbow' },
-        ];
-
-        function renderFramePicker() {
-            var picker = document.getElementById('framePicker');
-            if (!picker) return;
-            var current = st.avatarFrame || 'none';
-            picker.innerHTML = FRAMES.map(function(f) {
-                var sel = f.id === current ? ' selected' : '';
-                var borderStyle = f.id === 'rainbow'
-                    ? 'border: 3px solid; border-image: linear-gradient(135deg,#f0b90b,#ef4444,#a855f7,#06b6d4) 1;'
-                    : (f.id === 'none' ? 'border: 2px dashed var(--border2);' : 'border: 3px solid ' + f.color + ';');
-                return '<div class="frame-option' + sel + '" onclick="selectFrame(\'' + f.id + '\')" title="' + f.label + '">' +
-                    '<div class="frame-preview" style="' + borderStyle + '">' +
-                    (st.customPhotoURL ? '<img src="' + st.customPhotoURL + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">' : (st.avatar || '🧑')) +
-                    '</div></div>';
-            }).join('');
-        }
-
-        function selectFrame(frameId) {
-            st.avatarFrame = frameId;
-            saveSt();
-            applyAvatarFrame(frameId);
-            renderFramePicker();
-        }
-
-        function applyAvatarFrame(frameId) {
-            var wrap = document.querySelector('.avatar-wrap');
-            if (!wrap) return;
-            FRAMES.forEach(function(f) { if (f.css) wrap.classList.remove(f.css); });
-            var frame = FRAMES.find(function(f) { return f.id === frameId; });
-            if (frame && frame.css) wrap.classList.add(frame.css);
-        }
-
-        function handleAvatarUpload(event) {
-            var file = event.target.files[0];
-            if (!file) return;
-            if (!file.type.startsWith('image/')) { showFeedback('❌ يرجى اختيار صورة'); return; }
-            if (file.size > 2 * 1024 * 1024) { showFeedback('❌ الصورة أكبر من 2MB'); return; }
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var dataUrl = e.target.result;
-                st.customPhotoURL = dataUrl;
-                saveSt();
-                applyAvatarPhoto(dataUrl);
-                showFeedback('✅ تم رفع الصورة');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function applyAvatarPhoto(url) {
-            // header avatar
-            var headerAvatar = document.getElementById('headerAvatar');
-            if (headerAvatar) {
-                headerAvatar.classList.add('has-photo');
-                headerAvatar.innerHTML = '<img src="' + url + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-            }
-            // profile avatar
-            var profileAvatar = document.getElementById('profileAvatarImg');
-            if (profileAvatar) {
-                profileAvatar.classList.add('has-photo');
-                profileAvatar.innerHTML = '<img src="' + url + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-            }
-            // upload preview
-            var preview = document.getElementById('avatarUploadPreview');
-            if (preview) {
-                preview.innerHTML = '<img src="' + url + '" alt="avatar">';
-            }
-        }
-
-        function openAvatarOptions() {
-            // إذا كانت هناك صورة مرفوعة، تفتح خيار التغيير، وإلا ترفع جديدة
-            document.getElementById('avatarFileInput').click();
-        }
-
-        // تطبيق الصورة والإطار عند تحميل الصفحة
-        function initAvatarAndFrame() {
-            if (st.customPhotoURL) {
-                applyAvatarPhoto(st.customPhotoURL);
-            }
-            if (st.avatarFrame) {
-                applyAvatarFrame(st.avatarFrame);
-            }
         }
