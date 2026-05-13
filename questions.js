@@ -1,4 +1,4 @@
-/* ═══════════ QUESTION GENERATOR ═══════════ */
+        /* ═══════════ QUESTION GENERATOR ═══════════ */
         function genQ(op, diff, customTable = null) {
             if (op === 'table' && customTable) {
                 const f = rnd(1, 12);
@@ -127,10 +127,9 @@
                         'equation_simple', 'sequence'
                     ];
                     ch = pool[rnd(0, pool.length - 1)]; } else { const pool = ['add', 'sub', 'mul', 'div',
-                        'percent', 'fraction_add', 'power', 'sqrt', 'word_genius', 'equation_quad', 'sequence',
+                        'percent', 'fraction_mul', 'power', 'sqrt', 'word_genius', 'equation_quad', 'sequence',
                         'algebra', 'log_simple'
                     ];
-                    // removed 'fraction_mul' which didn't exist
                     ch = pool[rnd(0, pool.length - 1)]; }
             }
             let a, b, ans, text, hint, explanation = '';
@@ -191,13 +190,7 @@
                 ans = n1 + n2;
                 text = `${n1}/${d} + ${n2}/${d}`;
                 hint = 'اجمع الكسور ذات المقام المشترك';
-                explanation = `الناتج = ${ans}/${d}`; } else if (ch === 'fraction_add') { let c = rnd(2, 8);
-                let a2 = rnd(1, c - 1);
-                let b2 = rnd(1, c - 1);
-                ans = a2 + b2;
-                text = `${a2}/${c} + ${b2}/${c}`;
-                hint = 'اجمع الكسور (المقامات متساوية)';
-                explanation = `${a2}/${c} + ${b2}/${c} = ${ans}/${c}`; } else if (ch === 'word_add') { let x = rnd(10, 50);
+                explanation = `الناتج = ${ans}/${d}`; } else if (ch === 'word_add') { let x = rnd(10, 50);
                 let y = rnd(5, 30);
                 ans = x + y;
                 text = `لدى أحمد ${x} تفاحة واشترى ${y} تفاحة أخرى. كم تفاحة لديه الآن؟`;
@@ -241,10 +234,8 @@
         }
 
         function generateAgeAdaptiveQuestion(op, diff, age) {
-            // Fix: if age is 0 (not set), assume adult (age 20) instead of kid
-            const effectiveAge = (age === 0) ? 20 : age;
-            if (effectiveAge <= 6) return generateKidQuestion(op);
-            else if (effectiveAge <= 12) return generateJuniorQuestion(op, diff);
+            if (age <= 6) return generateKidQuestion(op);
+            else if (age <= 12) return generateJuniorQuestion(op, diff);
             else return genQ(op, diff);
         }
 
@@ -356,7 +347,7 @@
                     G.timeLeft = 60; }
                 document.getElementById('bigTimer').textContent = G.timeLeft;
                 document.getElementById('timerBar').style.width = '100%';
-                if (G.timer) clearInterval(G.timer); // Fix: clear old timer
+                if (G.timer) clearInterval(G.timer);
                 G.timer = setInterval(() => {
                     if (G.ended) { clearInterval(G.timer);
                         G.timer = null; return; }
@@ -424,13 +415,7 @@
                 G.timeLeft = 30;
                 lives = 3; } else if (mode === 'daily') { G.totalQ = 5;
                 hasTimer = false;
-                lives = 0; } else if (mode === 'competition') {
-                G.totalQ = 9999;
-                hasTimer = true;
-                G.maxTime = 60;
-                G.timeLeft = 60;
-                lives = 3;
-            }
+                lives = 0; }
             G.livesLeft = lives;
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false };
@@ -503,7 +488,14 @@
                 saveSt();
                 updateUI();
                 updateGameCoinsDisplay();
-                // مهم: المساعدات لا تؤثر على الوقت في وضع المنافسة أو أي وضع
+                if (G.hasTimer && G.maxTime > 0) {
+                    G.timeLeft = Math.max(0, G.timeLeft - 4);
+                    const pct = (G.timeLeft / G.maxTime) * 100;
+                    document.getElementById('timerBar').style.width = pct + '%';
+                    const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
+                    if (G.timeLeft <= 0) { clearGameTimer();
+                        endGame(); return; }
+                }
                 showFeedback('⏭️ تخطّي!');
                 setTimeout(() => loadQuestion(), 300);
             } else if (type === 'remove') {
@@ -579,7 +571,7 @@
                     }
                 }
                 const qKey = q.text + '|' + q.answer;
-                const isEndlessMode = G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy' || G.mode === 'competition';
+                const isEndlessMode = G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy';
                 if (!G.askedQuestions.includes(qKey) || G.isTraining || isEndlessMode) break;
                 attempts++;
                 if (attempts > maxAttempts) break;
@@ -658,3 +650,4 @@
                 }
             }
         }
+
