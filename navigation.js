@@ -15,6 +15,7 @@
                 renderHistory(); }
             if (tab === 'leaderboard') loadLeaderboard();
             else if (typeof stopLeaderboardListener === 'function') stopLeaderboardListener();
+            else if (typeof stopLeaderboardListener === 'function') stopLeaderboardListener();
         }
 
         function getDifficultyByLevel() {
