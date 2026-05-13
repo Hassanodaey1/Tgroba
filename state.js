@@ -48,7 +48,10 @@
                 achievementRewardClaimed: false,
                 serialNumber: '',
                 darkMode: true,
-                challengeBestScore: 0
+                challengeBestScore: 0,
+                vibrationOn: true,
+                soundVolume: 80,
+                bgVolume: 60
             };
         }
 
@@ -68,6 +71,9 @@
             if (typeof s.age !== 'number') s.age = 0;
             if (s.darkMode === undefined) s.darkMode = true;
             if (typeof s.challengeBestScore !== 'number') s.challengeBestScore = 0;
+            if (s.vibrationOn === undefined) s.vibrationOn = true;
+            if (typeof s.soundVolume !== 'number') s.soundVolume = 80;
+            if (typeof s.bgVolume !== 'number') s.bgVolume = 60;
             return s;
         }
 
