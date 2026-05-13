@@ -366,7 +366,9 @@
 
         function syncWithLeaderboard() {
             if (!database) return;
-            if (!st.name || st.name === 'Player' || st.bestScore <= 0) return;
+            // اللائحة تعتمد فقط على نقاط وضع المنافسة
+            if (!st.name || st.name === 'Player') return;
+            if (!st.bestCompScore || st.bestCompScore <= 0) return;
             try {
                 const key = getLeaderboardKey();
                 const playerRef = database.ref('leaderboard/' + key);
@@ -374,8 +376,7 @@
                     name: st.name,
                     avatar: st.avatar || '🧑',
                     level: st.level,
-                    bestScore: st.bestCompScore || st.bestScore,
-                    bestNormalScore: st.bestScore,
+                    bestScore: st.bestCompScore,
                     totalXp: st.xp,
                     lastUpdated: Date.now()
                 }).catch((e) => { console.warn('فشل رفع النتيجة:', e.message); });
