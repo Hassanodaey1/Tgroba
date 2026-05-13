@@ -1,4 +1,4 @@
-        /* ═══════════ EMOJI SHOP ═══════════ */
+/* ═══════════ EMOJI SHOP ═══════════ */
         const EMOJI_CATALOG = [
             { emoji: '👦', price: 0, label: 'ولد افتراضي', gender: 'm' },
             { emoji: '👧', price: 0, label: 'بنت افتراضية', gender: 'f' },
@@ -147,9 +147,24 @@
                 st.age = calculateAgeFromBirthDate(newBirthDate);
             }
             updateOwnedEmojisForGender();
+            // إذا لم يكن هناك رقم تسلسلي من قبل، نقوم بإنشائه ونقل بيانات الضيف إلى الرقم التسلسلي
             if (!st.serialNumber && st.birthDate && st.name && st.name !== 'Player') {
+                const oldKey = getLeaderboardKey(); // مفتاح الضيف الحالي
                 st.serialNumber = generateSerialNumber(st.birthDate, st.name);
                 saveSerialBackup(st.serialNumber, st);
+                // نقل بيانات المتصدرين من مفتاح الضيف إلى المفتاح التسلسلي
+                if (database && oldKey !== st.serialNumber) {
+                    try {
+                        const guestRef = database.ref('leaderboard/' + oldKey);
+                        guestRef.once('value', (snap) => {
+                            const guestData = snap.val();
+                            if (guestData) {
+                                database.ref('leaderboard/' + st.serialNumber).set(guestData);
+                                guestRef.remove(); // اختياري: حذف مفتاح الضيف
+                            }
+                        });
+                    } catch(e) { console.warn('خطأ في نقل البيانات:', e); }
+                }
                 showFeedback('🔑 تم إنشاء رقم تسلسلي لحسابك!');
             }
             saveSt();
@@ -366,15 +381,16 @@
 
         function syncWithLeaderboard() {
             if (!database) return;
-            if (!st.name || st.name === 'Player' || st.bestScore <= 0) return;
+            if (!st.name || st.name === 'Player' || (st.bestScore <= 0 && (st.bestCompScore || 0) <= 0)) return;
             try {
                 const key = getLeaderboardKey();
+                const bestOverall = Math.max(st.bestScore, st.bestCompScore || 0);
                 const playerRef = database.ref('leaderboard/' + key);
                 playerRef.set({
                     name: st.name,
-                    avatar: st.avatar || '🧑',
+                    avatar: st.customPhotoURL || st.avatar || '🧑', // show photo if exists
                     level: st.level,
-                    bestScore: st.bestScore,
+                    bestScore: bestOverall,
                     totalXp: st.xp,
                     lastUpdated: Date.now()
                 }).catch((e) => { console.warn('فشل رفع النتيجة:', e.message); });
@@ -592,6 +608,7 @@
             var picker = document.getElementById('framePicker');
             if (!picker) return;
             var current = st.avatarFrame || 'none';
+            var avatarDisplay = st.customPhotoURL ? '<img src="' + st.customPhotoURL + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : (st.avatar || '🧑');
             picker.innerHTML = FRAMES.map(function(f) {
                 var sel = f.id === current ? ' selected' : '';
                 var borderStyle = f.id === 'rainbow'
@@ -599,7 +616,7 @@
                     : (f.id === 'none' ? 'border: 2px dashed var(--border2);' : 'border: 3px solid ' + f.color + ';');
                 return '<div class="frame-option' + sel + '" onclick="selectFrame(\'' + f.id + '\')" title="' + f.label + '">' +
                     '<div class="frame-preview" style="' + borderStyle + '">' +
-                    (st.customPhotoURL ? '<img src="' + st.customPhotoURL + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">' : (st.avatar || '🧑')) +
+                    avatarDisplay +
                     '</div></div>';
             }).join('');
         }
@@ -653,6 +670,8 @@
             if (preview) {
                 preview.innerHTML = '<img src="' + url + '" alt="avatar">';
             }
+            // re-render frame picker to show image
+            renderFramePicker();
         }
 
         function openAvatarOptions() {
