@@ -26,7 +26,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-storage-compat.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -39,11 +38,15 @@
     <div class="particles" id="particles"></div>
     <div class="feedback-toast" id="feedbackToast"></div>
 
-    <!-- SPLASH SCREEN -->
+    <!-- SPLASH SCREEN مع أزرار الدخول -->
     <div class="splash-screen" id="splashScreen">
         <div class="splash-bg-symbols" id="splashSymbols"></div>
         <div class="splash-logo">H O</div>
         <div class="splash-subtitle">تحديات في الرياضيات</div>
+        <div class="splash-buttons">
+            <button class="splash-btn guest" id="guestBtn">👤 دخول كضيف</button>
+            <button class="splash-btn google" id="googleSignInBtn">🔐 تسجيل الدخول بـ Google</button>
+        </div>
         <div class="splash-dots"><span class="splash-dot"></span><span class="splash-dot"></span><span class="splash-dot"></span></div>
     </div>
 
@@ -207,7 +210,7 @@
     </div>
 
     <!-- MAIN APP WRAPPER -->
-    <div class="app-wrapper">
+    <div class="app-wrapper" style="display:none;" id="appWrapper">
         <div class="shell">
             <div class="top-header">
                 <div class="th-left">
@@ -230,6 +233,7 @@
                 <div class="th-right">
                     <div class="icon-pill" id="soundBtn" onclick="toggleSound()">🔊</div>
                     <div class="icon-pill" id="bgBtn" onclick="toggleBgMusic()">🎵</div>
+                    <div class="icon-pill" id="settingsMainBtn" onclick="openSettingsSheet()">⚙️</div>
                 </div>
             </div>
 
@@ -495,10 +499,8 @@
                     </div>
                 </div>
 
-                <!-- PROFILE PAGE -->
+                <!-- PROFILE PAGE (بدون الرقم التسلسلي) -->
                 <div class="page" id="page-profile">
-
-                    <!-- الصورة الشخصية والمعلومات الأساسية -->
                     <div class="profile-hero">
                         <div class="profile-avatar-big" onclick="openAvatarOptions()">
                             <div class="profile-avatar-ring"></div>
@@ -515,7 +517,6 @@
                         </div>
                     </div>
 
-                    <!-- إحصائيات سريعة -->
                     <div class="stats-grid3">
                         <div class="stat-card">
                             <div class="stat-card-num" id="statCorrect">0</div>
@@ -585,7 +586,6 @@
                     <!-- الصورة الشخصية والإطارات -->
                     <div class="profile-section">
                         <div class="profile-section-title">🖼️ الصورة الشخصية والإطار</div>
-                        <!-- رفع صورة شخصية -->
                         <div class="avatar-upload-area" onclick="document.getElementById('avatarFileInput').click()">
                             <div id="avatarUploadPreview" class="avatar-upload-preview">
                                 <span style="font-size:2em;">📷</span>
@@ -596,7 +596,6 @@
                             </div>
                         </div>
                         <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
-                        <!-- اختيار الإطار -->
                         <div style="margin-top:14px;">
                             <div style="font-size:0.78em;color:var(--text2);margin-bottom:8px;">اختر إطاراً لصورتك:</div>
                             <div class="frame-picker" id="framePicker"></div>
@@ -639,20 +638,6 @@
                         <div style="margin-top:10px;">
                             <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات</button>
                             <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد</button>
-                        </div>
-                    </div>
-
-                    <!-- الرقم التسلسلي -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🔑 الرقم التسلسلي</div>
-                        <div class="serial-area" id="serialNumberDisplay">غير محدد (احفظ الملف الشخصي أولاً)</div>
-                        <div class="serial-actions">
-                            <button class="serial-btn" onclick="copySerialNumber()">📋 نسخ الرقم التسلسلي</button>
-                            <button class="serial-btn" onclick="showRestoreAccount()">🔄 استعادة حساب</button>
-                        </div>
-                        <div id="restorePanel" class="restore-area" style="display:none;">
-                            <input type="text" id="restoreSerialInput" class="restore-input" placeholder="أدخل الرقم التسلسلي">
-                            <button class="save-btn" style="margin-top:4px;" onclick="restoreAccount()">استعادة</button>
                         </div>
                     </div>
 
@@ -712,7 +697,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- SETTINGS SHEET -->
     <div class="sheet-overlay" id="settingsSheet" onclick="sheetBg(event,'settingsSheet')">
