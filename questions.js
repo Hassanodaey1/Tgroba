@@ -366,6 +366,10 @@
             });
         }
 
+        function startCompetitionGame() {
+            startGameWith('competition', 'mix', null, false);
+        }
+
         function startGameWith(mode, op, customTable = null, forceTimer = false) {
             closeSheet('modeSheet');
             closeSheet('opSheet');
@@ -416,7 +420,7 @@
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false };
             const titles = { classic: '🧮 كلاسيك', speed: '⚡ سرعة 60ث', survival: '🔥 التحمّل', frenzy: '💥 اندفاع',
-                daily: '🌟 تحدي اليوم' };
+                daily: '🌟 تحدي اليوم', competition: '⚔️ التحدي التنافسي' };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
             document.getElementById('streakNum').textContent = 0;
@@ -527,8 +531,7 @@
         /* ═══════════ LOAD QUESTION ═══════════ */
         function loadQuestion() {
             if (G.ended) return;
-            if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !==
-                'frenzy') { endGame(); return; }
+            if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.mode !== 'competition') { endGame(); return; }
             G.currentQ++;
             G.answered = false;
             G.helpersUsed.remove = false;
@@ -552,7 +555,15 @@
                     } else {
                         if (G.op === 'advanced') q = genQ('advanced', st.difficulty);
                         else if (G.op === 'laws') q = genQ('laws', st.difficulty);
-                        else {
+                        else if (G.mode === 'competition') {
+                            // صعوبة تتزايد تدريجياً حسب عدد الأسئلة المجاب عنها
+                            var cDiff;
+                            if (G.currentQ <= 5) cDiff = 'easy';
+                            else if (G.currentQ <= 15) cDiff = 'medium';
+                            else if (G.currentQ <= 30) cDiff = 'hard';
+                            else cDiff = 'genius';
+                            q = genQ('mix', cDiff);
+                        } else {
                             let useDiff = st.difficulty;
                             if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
                             q = genQ(G.op, useDiff);
@@ -565,7 +576,7 @@
                 attempts++;
                 if (attempts > maxAttempts) break;
             } while (true);
-            const isEndlessMode = G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy';
+            const isEndlessMode = G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy' || G.mode === 'competition';
             if (!G.isTraining && !isEndlessMode) {
                 G.askedQuestions.push(q.text + '|' + q.answer);
             }
@@ -583,12 +594,13 @@
                     G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
                     G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
                     G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
+                    G.mode === 'competition' ? `⚔️ سؤال ${G.currentQ} • نقاط: ${G.score}` :
                     `السؤال ${G.currentQ} من ${G.totalQ}`;
             }
             document.getElementById('questionText').textContent = `${q.text} = ?`;
             document.getElementById('questionHint').textContent = q.hint || 'ما هو الجواب؟';
             document.getElementById('statQ').textContent = (G.isTraining || G.mode === 'speed' || G.mode ===
-                'survival' || G.mode === 'frenzy') ? G.correct : `${G.currentQ}/${G.totalQ}`;
+                'survival' || G.mode === 'frenzy' || G.mode === 'competition') ? G.correct : `${G.currentQ}/${G.totalQ}`;
             renderVisualAid(q);
             const grid = document.getElementById('answersGrid');
             grid.innerHTML = '';
