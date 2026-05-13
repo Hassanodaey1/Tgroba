@@ -366,10 +366,6 @@
             });
         }
 
-        function startCompetitionGame() {
-            startGameWith('competition', 'mix', null, false);
-        }
-
         function startGameWith(mode, op, customTable = null, forceTimer = false) {
             closeSheet('modeSheet');
             closeSheet('opSheet');
@@ -420,7 +416,7 @@
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false };
             const titles = { classic: '🧮 كلاسيك', speed: '⚡ سرعة 60ث', survival: '🔥 التحمّل', frenzy: '💥 اندفاع',
-                daily: '🌟 تحدي اليوم', competition: '⚔️ التحدي التنافسي' };
+                daily: '🌟 تحدي اليوم' };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
             document.getElementById('streakNum').textContent = 0;
@@ -531,7 +527,8 @@
         /* ═══════════ LOAD QUESTION ═══════════ */
         function loadQuestion() {
             if (G.ended) return;
-            if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.mode !== 'competition') { endGame(); return; }
+            if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !==
+                'frenzy') { endGame(); return; }
             G.currentQ++;
             G.answered = false;
             G.helpersUsed.remove = false;
@@ -555,15 +552,7 @@
                     } else {
                         if (G.op === 'advanced') q = genQ('advanced', st.difficulty);
                         else if (G.op === 'laws') q = genQ('laws', st.difficulty);
-                        else if (G.mode === 'competition') {
-                            // صعوبة تتزايد تدريجياً حسب عدد الأسئلة المجاب عنها
-                            var cDiff;
-                            if (G.currentQ <= 5) cDiff = 'easy';
-                            else if (G.currentQ <= 15) cDiff = 'medium';
-                            else if (G.currentQ <= 30) cDiff = 'hard';
-                            else cDiff = 'genius';
-                            q = genQ('mix', cDiff);
-                        } else {
+                        else {
                             let useDiff = st.difficulty;
                             if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
                             q = genQ(G.op, useDiff);
@@ -571,14 +560,17 @@
                     }
                 }
                 const qKey = q.text + '|' + q.answer;
-                const isEndlessMode = G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy';
-                if (!G.askedQuestions.includes(qKey) || G.isTraining || isEndlessMode) break;
+                if (!G.askedQuestions.includes(qKey) || G.isTraining) break;
                 attempts++;
                 if (attempts > maxAttempts) break;
             } while (true);
-            const isEndlessMode = G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy' || G.mode === 'competition';
-            if (!G.isTraining && !isEndlessMode) {
-                G.askedQuestions.push(q.text + '|' + q.answer);
+            if (!G.isTraining) {
+                const qKey = q.text + '|' + q.answer;
+                if (!G.askedQuestions.includes(qKey)) {
+                    G.askedQuestions.push(qKey);
+                    // الاحتفاظ بآخر 150 سؤال لتجنب تراكم الذاكرة في الأوضاع اللانهائية
+                    if (G.askedQuestions.length > 150) G.askedQuestions.shift();
+                }
             }
             G.correctAnswer = q.answer;
             G.currentExplanation = q.explanation || '';
@@ -594,13 +586,12 @@
                     G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
                     G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
                     G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
-                    G.mode === 'competition' ? `⚔️ سؤال ${G.currentQ} • نقاط: ${G.score}` :
                     `السؤال ${G.currentQ} من ${G.totalQ}`;
             }
             document.getElementById('questionText').textContent = `${q.text} = ?`;
             document.getElementById('questionHint').textContent = q.hint || 'ما هو الجواب؟';
             document.getElementById('statQ').textContent = (G.isTraining || G.mode === 'speed' || G.mode ===
-                'survival' || G.mode === 'frenzy' || G.mode === 'competition') ? G.correct : `${G.currentQ}/${G.totalQ}`;
+                'survival' || G.mode === 'frenzy') ? G.correct : `${G.currentQ}/${G.totalQ}`;
             renderVisualAid(q);
             const grid = document.getElementById('answersGrid');
             grid.innerHTML = '';
@@ -611,6 +602,294 @@
                 btn.setAttribute('data-val', c);
                 btn.onclick = () => checkAnswer(btn);
                 grid.appendChild(btn); });
+        }
+
+        /* ═══════════ CHALLENGE GAME (نداء التحدي) ═══════════ */
+        /* مولّد أسئلة التحدي مع صعوبة تتزايد تدريجياً */
+        function genChallengeQ(questionIndex) {
+            // حساب مستوى الصعوبة بناءً على رقم السؤال (تدريجياً)
+            let level;
+            if (questionIndex < 5) level = 0;          // سهل جداً
+            else if (questionIndex < 12) level = 1;     // سهل
+            else if (questionIndex < 22) level = 2;     // متوسط
+            else if (questionIndex < 35) level = 3;     // متوسط+
+            else if (questionIndex < 50) level = 4;     // صعب
+            else if (questionIndex < 70) level = 5;     // صعب+
+            else level = 6;                              // عبقري
+
+            const ops = ['add', 'sub', 'mul', 'div'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+
+            let a, b, ans, text, hint, explanation;
+
+            if (level === 0) {
+                // 1–9
+                if (op === 'add') { a = rnd(1,9); b = rnd(1,9); ans = a+b; text=`${a} + ${b}`; hint='ما مجموع العددين؟'; explanation=`${a}+${b}=${ans}`; }
+                else if (op === 'sub') { a = rnd(2,9); b = rnd(1,a); ans=a-b; text=`${a} − ${b}`; hint='ما الفرق؟'; explanation=`${a}-${b}=${ans}`; }
+                else if (op === 'mul') { a = rnd(1,5); b = rnd(1,5); ans=a*b; text=`${a} × ${b}`; hint='ما حاصل الضرب؟'; explanation=`${a}×${b}=${ans}`; }
+                else { b = rnd(1,5); ans = rnd(1,5); a=b*ans; text=`${a} ÷ ${b}`; hint='ما حاصل القسمة؟'; explanation=`${a}÷${b}=${ans}`; }
+            } else if (level === 1) {
+                // 1–20
+                if (op === 'add') { a=rnd(5,20); b=rnd(5,20); ans=a+b; text=`${a} + ${b}`; hint='ما مجموع العددين؟'; explanation=`${a}+${b}=${ans}`; }
+                else if (op === 'sub') { a=rnd(10,20); b=rnd(1,a); ans=a-b; text=`${a} − ${b}`; hint='ما الفرق؟'; explanation=`${a}-${b}=${ans}`; }
+                else if (op === 'mul') { a=rnd(2,9); b=rnd(2,9); ans=a*b; text=`${a} × ${b}`; hint='ما حاصل الضرب؟'; explanation=`${a}×${b}=${ans}`; }
+                else { b=rnd(2,9); ans=rnd(1,9); a=b*ans; text=`${a} ÷ ${b}`; hint='ما حاصل القسمة؟'; explanation=`${a}÷${b}=${ans}`; }
+            } else if (level === 2) {
+                // 10–50
+                if (op === 'add') { a=rnd(10,50); b=rnd(10,50); ans=a+b; text=`${a} + ${b}`; hint='ما مجموع العددين؟'; explanation=`${a}+${b}=${ans}`; }
+                else if (op === 'sub') { a=rnd(20,50); b=rnd(10,a); ans=a-b; text=`${a} − ${b}`; hint='ما الفرق؟'; explanation=`${a}-${b}=${ans}`; }
+                else if (op === 'mul') { a=rnd(3,12); b=rnd(3,12); ans=a*b; text=`${a} × ${b}`; hint='ما حاصل الضرب؟'; explanation=`${a}×${b}=${ans}`; }
+                else { b=rnd(2,12); ans=rnd(2,12); a=b*ans; text=`${a} ÷ ${b}`; hint='ما حاصل القسمة؟'; explanation=`${a}÷${b}=${ans}`; }
+            } else if (level === 3) {
+                // 20–100
+                if (op === 'add') { a=rnd(20,100); b=rnd(20,100); ans=a+b; text=`${a} + ${b}`; hint='ما مجموع العددين؟'; explanation=`${a}+${b}=${ans}`; }
+                else if (op === 'sub') { a=rnd(50,150); b=rnd(10,a); ans=a-b; text=`${a} − ${b}`; hint='ما الفرق؟'; explanation=`${a}-${b}=${ans}`; }
+                else if (op === 'mul') { a=rnd(5,15); b=rnd(5,15); ans=a*b; text=`${a} × ${b}`; hint='ما حاصل الضرب؟'; explanation=`${a}×${b}=${ans}`; }
+                else { b=rnd(3,15); ans=rnd(3,15); a=b*ans; text=`${a} ÷ ${b}`; hint='ما حاصل القسمة؟'; explanation=`${a}÷${b}=${ans}`; }
+            } else if (level === 4) {
+                // 50–500
+                if (op === 'add') { a=rnd(50,500); b=rnd(50,500); ans=a+b; text=`${a} + ${b}`; hint='ما مجموع العددين؟'; explanation=`${a}+${b}=${ans}`; }
+                else if (op === 'sub') { a=rnd(100,500); b=rnd(50,a); ans=a-b; text=`${a} − ${b}`; hint='ما الفرق؟'; explanation=`${a}-${b}=${ans}`; }
+                else if (op === 'mul') { a=rnd(8,20); b=rnd(8,20); ans=a*b; text=`${a} × ${b}`; hint='ما حاصل الضرب؟'; explanation=`${a}×${b}=${ans}`; }
+                else { b=rnd(5,20); ans=rnd(5,20); a=b*ans; text=`${a} ÷ ${b}`; hint='ما حاصل القسمة؟'; explanation=`${a}÷${b}=${ans}`; }
+            } else if (level === 5) {
+                // 100–1000
+                if (op === 'add') { a=rnd(100,999); b=rnd(100,999); ans=a+b; text=`${a} + ${b}`; hint='ما مجموع العددين؟'; explanation=`${a}+${b}=${ans}`; }
+                else if (op === 'sub') { a=rnd(200,999); b=rnd(100,a); ans=a-b; text=`${a} − ${b}`; hint='ما الفرق؟'; explanation=`${a}-${b}=${ans}`; }
+                else if (op === 'mul') { a=rnd(10,30); b=rnd(10,25); ans=a*b; text=`${a} × ${b}`; hint='ما حاصل الضرب؟'; explanation=`${a}×${b}=${ans}`; }
+                else { b=rnd(6,25); ans=rnd(6,25); a=b*ans; text=`${a} ÷ ${b}`; hint='ما حاصل القسمة؟'; explanation=`${a}÷${b}=${ans}`; }
+            } else {
+                // عبقري: أعداد كبيرة
+                if (op === 'add') { a=rnd(500,9999); b=rnd(500,9999); ans=a+b; text=`${a} + ${b}`; hint='ما مجموع العددين؟'; explanation=`${a}+${b}=${ans}`; }
+                else if (op === 'sub') { a=rnd(1000,9999); b=rnd(500,a); ans=a-b; text=`${a} − ${b}`; hint='ما الفرق؟'; explanation=`${a}-${b}=${ans}`; }
+                else if (op === 'mul') { a=rnd(15,50); b=rnd(15,40); ans=a*b; text=`${a} × ${b}`; hint='ما حاصل الضرب؟'; explanation=`${a}×${b}=${ans}`; }
+                else { b=rnd(10,40); ans=rnd(10,40); a=b*ans; text=`${a} ÷ ${b}`; hint='ما حاصل القسمة؟'; explanation=`${a}÷${b}=${ans}`; }
+            }
+
+            // توليد الخيارات الخاطئة
+            const wr = new Set();
+            const spread = Math.max(3, Math.floor(Math.abs(ans) * 0.25) + 2);
+            let safety = 0;
+            while (wr.size < 3 && safety < 300) {
+                safety++;
+                const off = rnd(-spread, spread);
+                const w = ans + off;
+                if (w !== ans && w >= 0 && Number.isInteger(w)) wr.add(w);
+            }
+            let extra = 1;
+            while (wr.size < 3) { wr.add(ans + extra * 3); extra++; }
+
+            return {
+                text, hint, answer: ans,
+                choices: shuffle([ans, ...wr]),
+                explanation,
+                catKey: 'addition',
+                level
+            };
+        }
+
+        /* ═══════════ CHALLENGE GAME STATE ═══════════ */
+        let CG = {
+            active: false,
+            score: 0,
+            questionIndex: 0,
+            answered: false,
+            ended: false,
+            correctAnswer: 0,
+            currentExplanation: '',
+            askedQuestions: []
+        };
+
+        function startChallengeGame() {
+            CG = {
+                active: true,
+                score: 0,
+                questionIndex: 0,
+                answered: false,
+                ended: false,
+                correctAnswer: 0,
+                currentExplanation: '',
+                askedQuestions: []
+            };
+            // إخفاء واجهة الترحيب وإظهار واجهة اللعبة
+            document.getElementById('challengeWelcome').style.display = 'none';
+            document.getElementById('challengeGameArea').style.display = 'flex';
+            document.getElementById('challengeScoreDisplay').textContent = '0';
+            loadChallengeQuestion();
+        }
+
+        function endChallengeGame() {
+            if (CG.ended) return;
+            CG.ended = true;
+            CG.active = false;
+            // حفظ النتيجة في الـ state
+            if (CG.score > (st.challengeBestScore || 0)) {
+                st.challengeBestScore = CG.score;
+                saveSt();
+            }
+            // مزامنة مع لائحة المتصدرين
+            syncChallengeScore(CG.score);
+            // إظهار نتيجة التحدي
+            document.getElementById('challengeGameArea').style.display = 'none';
+            document.getElementById('challengeResultArea').style.display = 'flex';
+            document.getElementById('challengeFinalScore').textContent = CG.score;
+            document.getElementById('challengeBestScore').textContent = st.challengeBestScore || CG.score;
+            const msg = CG.score >= 50 ? '🏆 أداء مذهل!' : CG.score >= 30 ? '⭐ رائع!' : CG.score >= 15 ? '😊 جيد جداً!' : '💪 حاول مجدداً!';
+            document.getElementById('challengeResultMsg').textContent = msg;
+            if (CG.score >= 15) doConfetti();
+        }
+
+        function loadChallengeQuestion() {
+            if (CG.ended) return;
+            CG.answered = false;
+            document.getElementById('challengeExplanation').innerHTML = '';
+            document.getElementById('challengeExplanation').style.display = 'none';
+
+            let q;
+            let attempts = 0;
+            do {
+                q = genChallengeQ(CG.questionIndex);
+                const qKey = q.text + '|' + q.answer;
+                if (!CG.askedQuestions.includes(qKey)) {
+                    CG.askedQuestions.push(qKey);
+                    // الاحتفاظ بآخر 100 سؤال فقط لتجنب تراكم الذاكرة
+                    if (CG.askedQuestions.length > 100) CG.askedQuestions.shift();
+                    break;
+                }
+                attempts++;
+                if (attempts > 60) break;
+            } while (true);
+
+            CG.correctAnswer = q.answer;
+            CG.currentExplanation = q.explanation || '';
+
+            // تحديث رقم السؤال والصعوبة
+            document.getElementById('challengeQNum').textContent = `السؤال ${CG.questionIndex + 1}`;
+            const levelLabels = ['سهل جداً','سهل','متوسط','متوسط+','صعب','صعب+','عبقري'];
+            document.getElementById('challengeDiffLabel').textContent = levelLabels[q.level] || 'عبقري';
+
+            // عرض السؤال
+            const qt = document.getElementById('challengeQuestionText');
+            qt.style.animation = 'none';
+            void qt.offsetWidth;
+            qt.style.animation = '';
+            qt.textContent = `${q.text} = ?`;
+            document.getElementById('challengeHint').textContent = q.hint || 'ما هو الجواب؟';
+
+            // عرض الأزرار
+            const grid = document.getElementById('challengeAnswersGrid');
+            grid.innerHTML = '';
+            (q.choices || []).forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.textContent = c;
+                btn.setAttribute('data-val', c);
+                btn.onclick = () => checkChallengeAnswer(btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkChallengeAnswer(btn) {
+            if (CG.answered || CG.ended) return;
+            CG.answered = true;
+            const val = parseInt(btn.getAttribute('data-val'));
+            document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => b.disabled = true);
+
+            if (val === CG.correctAnswer) {
+                btn.classList.add('correct');
+                CG.score++;
+                CG.questionIndex++;
+                document.getElementById('challengeScoreDisplay').textContent = CG.score;
+                showFeedback('✅');
+                playSound('correct');
+                if (CG.score % 10 === 0 && CG.score > 0) { doConfetti(); showComboEffect(CG.score); }
+                showFloatXP(1);
+            } else {
+                btn.classList.add('wrong');
+                document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => {
+                    if (parseInt(b.getAttribute('data-val')) === CG.correctAnswer) b.classList.add('correct');
+                });
+                showFeedback('❌');
+                playSound('wrong');
+                // إظهار الشرح
+                const expArea = document.getElementById('challengeExplanation');
+                expArea.innerHTML = `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${CG.correctAnswer}</strong><br>الشرح: ${CG.currentExplanation}</div>`;
+                expArea.style.display = 'block';
+            }
+
+            setTimeout(() => {
+                if (CG.ended) return;
+                loadChallengeQuestion();
+            }, val === CG.correctAnswer ? 350 : 700);
+        }
+
+        function quitChallengeGame() {
+            showConfirm('إنهاء التحدي', 'هل تريد إنهاء اللعبة؟ ستُحفظ نتيجتك الحالية.', 'نعم', 'استمرار', ok => {
+                if (ok) endChallengeGame();
+            });
+        }
+
+        function restartChallengeGame() {
+            document.getElementById('challengeResultArea').style.display = 'none';
+            document.getElementById('challengeWelcome').style.display = 'flex';
+        }
+
+        /* ═══════════ مزامنة نتيجة التحدي مع Firebase ═══════════ */
+        function syncChallengeScore(score) {
+            if (!database || !st.serialNumber) return;
+            try {
+                const ref = database.ref('challenge_leaderboard/' + st.serialNumber);
+                ref.once('value', snap => {
+                    const existing = snap.val();
+                    if (!existing || score > (existing.challengeScore || 0)) {
+                        ref.set({
+                            name: st.name,
+                            avatar: st.avatar || '🧑',
+                            level: st.level,
+                            challengeScore: score,
+                            lastUpdated: Date.now()
+                        }).catch(() => {});
+                    }
+                }).catch(() => {});
+            } catch (e) {}
+        }
+
+        /* ═══════════ تحميل لائحة المتصدرين للتحدي ═══════════ */
+        function loadChallengeLeaderboard() {
+            const container = document.getElementById('challengeLeaderboardList');
+            if (!container) return;
+            if (!database) {
+                container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:16px;">⚠️ قاعدة البيانات غير متصلة</div>';
+                return;
+            }
+            container.innerHTML = '<div style="text-align:center;padding:16px;">⏳ جاري التحميل...</div>';
+            try {
+                database.ref('challenge_leaderboard').orderByChild('challengeScore').limitToLast(10).once('value', (snapshot) => {
+                    const players = [];
+                    snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+                    players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
+                    if (players.length === 0) {
+                        container.innerHTML = '<div style="text-align:center;padding:16px;">لا توجد نتائج بعد — كن الأول!</div>';
+                        return;
+                    }
+                    const medals = ['🥇','🥈','🥉'];
+                    let html = '';
+                    players.forEach((p, idx) => {
+                        const isMe = p.id === st.serialNumber;
+                        html += `<div class="lb-row${isMe?' lb-row-me':''}">`
+                            + `<span>${medals[idx] || (idx+1)}</span>`
+                            + `<span>${p.avatar||'🧑'} ${p.name}</span>`
+                            + `<span>${p.level||1}</span>`
+                            + `<span style="color:var(--gold);font-weight:900;">${p.challengeScore||0}</span>`
+                            + `</div>`;
+                    });
+                    container.innerHTML = html;
+                }).catch(() => {
+                    container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ فشل التحميل</div>';
+                });
+            } catch (e) {
+                container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ قاعدة البيانات غير متاحة</div>';
+            }
         }
 
         function renderVisualAid(q) {
