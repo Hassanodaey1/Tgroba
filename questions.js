@@ -1,4 +1,4 @@
-        /* ═══════════ QUESTION GENERATOR ═══════════ */
+/* ═══════════ QUESTION GENERATOR ═══════════ */
         function genQ(op, diff, customTable = null) {
             if (op === 'table' && customTable) {
                 const f = rnd(1, 12);
@@ -709,19 +709,108 @@
                 ended: false,
                 correctAnswer: 0,
                 currentExplanation: '',
-                askedQuestions: []
+                askedQuestions: [],
+                timeLeft: 60,
+                maxTime: 60,
+                timer: null,
+                helpersUsed: { skip: false, remove: false, time: false }
             };
             // إخفاء واجهة الترحيب وإظهار واجهة اللعبة
             document.getElementById('challengeWelcome').style.display = 'none';
             document.getElementById('challengeGameArea').style.display = 'flex';
             document.getElementById('challengeScoreDisplay').textContent = '0';
+            // تهيئة المؤقت
+            updateChallengeTimerUI();
+            startChallengeTimer();
+            // تهيئة المساعدات
+            resetChallengeHelpers();
             loadChallengeQuestion();
+        }
+
+        function startChallengeTimer() {
+            if (CG.timer) clearInterval(CG.timer);
+            CG.timer = setInterval(() => {
+                if (CG.ended) { clearInterval(CG.timer); return; }
+                CG.timeLeft--;
+                updateChallengeTimerUI();
+                if (CG.timeLeft <= 10) {
+                    playSound('tick');
+                    document.getElementById('challengeTimerDisplay').style.color = 'var(--red)';
+                    document.getElementById('challengeTimerBar').style.background = 'linear-gradient(90deg,var(--red),#ff6b6b)';
+                } else {
+                    document.getElementById('challengeTimerDisplay').style.color = 'var(--accent2)';
+                    document.getElementById('challengeTimerBar').style.background = 'linear-gradient(90deg,var(--accent2),var(--accent))';
+                }
+                if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); }
+            }, 1000);
+        }
+
+        function updateChallengeTimerUI() {
+            const el = document.getElementById('challengeTimerDisplay');
+            const bar = document.getElementById('challengeTimerBar');
+            if (el) el.textContent = CG.timeLeft;
+            if (bar) bar.style.width = Math.max(0, (CG.timeLeft / CG.maxTime) * 100) + '%';
+        }
+
+        function resetChallengeHelpers() {
+            CG.helpersUsed = { skip: false, remove: false, time: false };
+            ['challengeHelperSkip','challengeHelperRemove','challengeHelperTime'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.classList.remove('used'); el.style.opacity = '1'; }
+            });
+        }
+
+        function useChallengeHelper(type) {
+            if (CG.ended || CG.answered) return;
+            if (type === 'skip') {
+                if (CG.helpersUsed.skip) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
+                if (st.coins < 3) { showFeedback('💸 لا يكفي!'); return; }
+                st.coins -= 3;
+                CG.helpersUsed.skip = true;
+                const el = document.getElementById('challengeHelperSkip');
+                if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
+                showFeedback('⏭️ تم التخطي');
+                playSound('click');
+                CG.answered = true;
+                setTimeout(() => { if (!CG.ended) loadChallengeQuestion(); }, 300);
+            } else if (type === 'remove') {
+                if (CG.helpersUsed.remove) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
+                if (st.coins < 4) { showFeedback('💸 لا يكفي!'); return; }
+                st.coins -= 4;
+                CG.helpersUsed.remove = true;
+                const el = document.getElementById('challengeHelperRemove');
+                if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
+                // حذف إجابة خاطئة عشوائية
+                const btns = [...document.querySelectorAll('#challengeAnswersGrid .answer-btn:not(:disabled)')];
+                const wrong = btns.filter(b => parseInt(b.getAttribute('data-val')) !== CG.correctAnswer);
+                if (wrong.length > 0) {
+                    const r = wrong[Math.floor(Math.random() * wrong.length)];
+                    r.style.opacity = '0.15';
+                    r.disabled = true;
+                }
+                showFeedback('🗑️ تم حذف إجابة');
+                playSound('click');
+            } else if (type === 'time') {
+                if (CG.helpersUsed.time) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
+                if (st.coins < 5) { showFeedback('💸 لا يكفي!'); return; }
+                st.coins -= 5;
+                CG.helpersUsed.time = true;
+                const el = document.getElementById('challengeHelperTime');
+                if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
+                CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 10);
+                updateChallengeTimerUI();
+                showFeedback('⏰ +10 ثانية!');
+                playSound('correct');
+            }
+            saveSt();
+            updateGameCoinsDisplay();
         }
 
         function endChallengeGame() {
             if (CG.ended) return;
             CG.ended = true;
             CG.active = false;
+            if (CG.timer) clearInterval(CG.timer);
             // حفظ النتيجة في الـ state
             if (CG.score > (st.challengeBestScore || 0)) {
                 st.challengeBestScore = CG.score;
@@ -800,7 +889,10 @@
                 CG.score++;
                 CG.questionIndex++;
                 document.getElementById('challengeScoreDisplay').textContent = CG.score;
-                showFeedback('✅');
+                // +1 ثانية عند الإجابة الصحيحة
+                CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 1);
+                updateChallengeTimerUI();
+                showFeedback('✅ +1⏱️');
                 playSound('correct');
                 if (CG.score % 10 === 0 && CG.score > 0) { doConfetti(); showComboEffect(CG.score); }
                 showFloatXP(1);
@@ -809,13 +901,20 @@
                 document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => {
                     if (parseInt(b.getAttribute('data-val')) === CG.correctAnswer) b.classList.add('correct');
                 });
-                showFeedback('❌');
+                // -2 ثانية عند الإجابة الخاطئة
+                CG.timeLeft = Math.max(0, CG.timeLeft - 2);
+                updateChallengeTimerUI();
+                showFeedback('❌ -2⏱️');
                 playSound('wrong');
                 // إظهار الشرح
                 const expArea = document.getElementById('challengeExplanation');
                 expArea.innerHTML = `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${CG.correctAnswer}</strong><br>الشرح: ${CG.currentExplanation}</div>`;
                 expArea.style.display = 'block';
+                if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); return; }
             }
+            // إعادة ضبط المساعدات للسؤال التالي
+            CG.helpersUsed = { skip: false, remove: false, time: false };
+            resetChallengeHelpers();
 
             setTimeout(() => {
                 if (CG.ended) return;
@@ -830,15 +929,17 @@
         }
 
         function restartChallengeGame() {
+            if (CG.timer) clearInterval(CG.timer);
             document.getElementById('challengeResultArea').style.display = 'none';
             document.getElementById('challengeWelcome').style.display = 'flex';
         }
 
         /* ═══════════ مزامنة نتيجة التحدي مع Firebase ═══════════ */
         function syncChallengeScore(score) {
-            if (!database || !st.serialNumber) return;
+            if (!database) return;
             try {
-                const ref = database.ref('challenge_leaderboard/' + st.serialNumber);
+                const playerKey = (st.name + '_' + (st.playerUID || '')).replace(/[^a-zA-Z0-9_]/g, '_');
+                const ref = database.ref('challenge_leaderboard/' + playerKey);
                 ref.once('value', snap => {
                     const existing = snap.val();
                     if (!existing || score > (existing.challengeScore || 0)) {
@@ -929,4 +1030,3 @@
                 }
             }
         }
-
