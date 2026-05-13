@@ -1,4 +1,4 @@
-        /* ═══════════ GAME STATE ═══════════ */
+/* ═══════════ GAME STATE ═══════════ */
         let G = { mode: 'classic', op: 'mix', score: 0, correct: 0, wrong: 0, streak: 0, bestStreak: 0, currentQ: 0,
             totalQ: 10, correctAnswer: 0, answered: false, timer: null, timeLeft: 0, maxTime: 0, coinsEarned: 0,
             livesLeft: 3, helpersUsed: { skip: false, remove: false }, ended: false, isTraining: false,
@@ -121,4 +121,3 @@
             if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
             saveSt();
         }
-
