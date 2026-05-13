@@ -17,7 +17,7 @@
                     projectId: "hassan-odaey",
                     storageBucket: "hassan-odaey.firebasestorage.app",
                     messagingSenderId: "287990416545",
-                    appId: "1287990416545:web:a2eb2df88aa42f7b4fdce0"
+                    appId: "1:287990416545:web:a2eb2df88aa42f7b4fdce0"
                 };
                 if (!firebase.apps || firebase.apps.length === 0) {
                     firebase.initializeApp(firebaseConfig);
