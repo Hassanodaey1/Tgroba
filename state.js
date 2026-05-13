@@ -1,4 +1,4 @@
-        /* ═══════════ GLOBAL STATE ═══════════ */
+/* ═══════════ GLOBAL STATE ═══════════ */
         const SK = 'ho_math_v7';
 
         function todayStr() {
@@ -22,6 +22,7 @@
                 bestStreak: 0,
                 totalGames: 0,
                 bestScore: 0,
+                bestCompScore: 0,   // new: best score in competition mode
                 difficulty: 'easy',
                 lastMode: 'classic',
                 lastOp: 'mix',
@@ -66,6 +67,7 @@
             if (!s.birthDate) s.birthDate = '2000-01-01';
             if (typeof s.age !== 'number') s.age = 0;
             if (s.darkMode === undefined) s.darkMode = true;
+            if (typeof s.bestCompScore !== 'number') s.bestCompScore = 0;
             return s;
         }
 
@@ -163,4 +165,3 @@
                     }
                 });
         }
-
