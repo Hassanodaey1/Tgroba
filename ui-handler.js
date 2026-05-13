@@ -1,3 +1,19 @@
+function openGameSettings() {
+            document.getElementById('gsoundStatus').textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
+            document.getElementById('gbgMusicStatus').textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
+            // Sync volume sliders
+            const gSV = document.getElementById('gSoundVolSlider'); if(gSV) gSV.value = st.soundVolume;
+            const gSVV = document.getElementById('gSoundVolVal'); if(gSVV) gSVV.textContent = st.soundVolume + '%';
+            const gBV = document.getElementById('gBgVolSlider'); if(gBV) gBV.value = st.bgVolume;
+            const gBVV = document.getElementById('gBgVolVal'); if(gBVV) gBVV.textContent = st.bgVolume + '%';
+            openSheet('gameSettingsSheet');
+        }
+
+        function toggleBgMusicInGame() {
+            toggleBgMusic();
+            document.getElementById('gbgMusicStatus').textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
+        }
+
         /* ═══════════ EMOJI SHOP ═══════════ */
         const EMOJI_CATALOG = [
             { emoji: '👦', price: 0, label: 'ولد افتراضي', gender: 'm' },
@@ -31,13 +47,13 @@
             if (!grid) return;
             if (!st.ownedEmojis || st.ownedEmojis.length === 0) st.ownedEmojis = [
             getDefaultAvatarForGender(st.gender)];
-            grid.innerHTML = EMOJI_CATALOG.map(item => {
-                const owned = st.ownedEmojis.includes(item.emoji);
+            // Show only owned emojis for selection
+            const ownedItems = EMOJI_CATALOG.filter(item => st.ownedEmojis.includes(item.emoji));
+            grid.innerHTML = ownedItems.map(item => {
                 const selected = st.avatar === item.emoji;
-                if (item.price === 0 && item.gender && item.gender !== st.gender) return '';
-                return `<div class="emoji-shop-item ${owned?'owned':''} ${selected?'selected':''} ${!owned&&!selected?'locked-shop':''}" onclick="buyOrSelectEmoji('${item.emoji}',${item.price})">
+                return `<div class="emoji-shop-item owned ${selected?'selected':''}" onclick="buyOrSelectEmoji('${item.emoji}',0)" title="${item.label}">
                     <div class="emoji-shop-item-icon">${item.emoji}</div>
-                    ${owned?(selected?`<div class="emoji-shop-item-owned">✅ مفعّل</div>`:`<div class="emoji-shop-item-owned">مملوك</div>`):`<div class="emoji-shop-item-price">${item.price>0?item.price+'💰':'مجاني'}</div><div class="emoji-shop-lock">🔒</div>`}
+                    ${selected ? `<div class="emoji-shop-item-owned">✅ مفعّل</div>` : `<div class="emoji-shop-item-owned">اضغط</div>`}
                 </div>`;
             }).join('');
             const cd = document.getElementById('shopCoinsDisplay'); if (cd) cd.textContent = st.coins;
@@ -102,20 +118,45 @@
         }
 
         function loadProfileForm() {
-            document.getElementById('inputName').value = st.name;
+            const inputName = document.getElementById('inputName');
+            if (inputName) inputName.value = st.name;
             if (st.birthDate) {
                 let parts = st.birthDate.split('-');
                 if (parts.length === 3) {
-                    document.getElementById('birthYear').value = parseInt(parts[0]);
-                    document.getElementById('birthMonth').value = parseInt(parts[1]);
-                    document.getElementById('birthDay').value = parseInt(parts[2]);
+                    const bd = document.getElementById('birthDay'), bm = document.getElementById('birthMonth'), by = document.getElementById('birthYear');
+                    if(by) by.value = parseInt(parts[0]);
+                    if(bm) bm.value = parseInt(parts[1]);
+                    if(bd) bd.value = parseInt(parts[2]);
                 }
             }
             selectGender(st.gender, false);
             updateOwnedEmojisForGender();
             renderEmojiShop();
+            renderProfileDailyTasks();
             updateBadgeIcon();
-            updateSerialNumberDisplay();
+        }
+
+        function renderProfileDailyTasks() {
+            const container = document.getElementById('profileDailyTasksDone');
+            if (!container) return;
+            if (!st.dailyTasks || st.dailyTasks.length === 0) {
+                container.innerHTML = '<div style="font-size:0.75em;color:var(--text2);text-align:center;padding:12px;">لا توجد مهام بعد</div>';
+                return;
+            }
+            const done = st.dailyTasks.filter(t => t.done);
+            if (done.length === 0) {
+                container.innerHTML = '<div style="font-size:0.75em;color:var(--text2);text-align:center;padding:12px;">لا توجد مهام منجزة بعد اليوم</div>';
+                return;
+            }
+            container.innerHTML = done.map(t => `
+                <div style="display:flex;align-items:center;gap:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:13px;padding:10px 14px;">
+                    <div style="font-size:1.3em;">${t.icon||'✅'}</div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.78em;font-weight:700;color:var(--text);">${t.label}</div>
+                        <div style="font-size:0.65em;color:var(--green);">✅ منجزة • +${t.coins}💰</div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function selectGender(g, snd = true) {
@@ -147,16 +188,10 @@
                 st.age = calculateAgeFromBirthDate(newBirthDate);
             }
             updateOwnedEmojisForGender();
-            if (!st.serialNumber && st.birthDate && st.name && st.name !== 'Player') {
-                st.serialNumber = generateSerialNumber(st.birthDate, st.name);
-                saveSerialBackup(st.serialNumber, st);
-                showFeedback('🔑 تم إنشاء رقم تسلسلي لحسابك!');
-            }
             saveSt();
             updateUI();
             playSound('levelup');
             renderEmojiShop();
-            updateSerialNumberDisplay();
             const btn = document.getElementById('saveBtn');
             const orig = btn.textContent;
             btn.textContent = '✅ تم الحفظ!';
@@ -248,8 +283,6 @@
             document.getElementById('headerXpBar').style.width = xpPct + '%';
             document.getElementById('headerXp').textContent = `⚡ ${st.xp} XP`;
             document.getElementById('headerAvatar').textContent = av;
-            document.getElementById('soundBtn').textContent = st.soundOn ? '🔊' : '🔇';
-            document.getElementById('bgBtn').textContent = st.bgOn ? '🎵' : '🔕';
             document.getElementById('profileName').textContent = st.name;
             document.getElementById('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
             document.getElementById('profileXpFill').style.width = xpPct + '%';
@@ -261,14 +294,26 @@
             document.getElementById('statCoinsP').textContent = st.coins;
             document.getElementById('soundStatus').textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
             document.getElementById('bgMusicStatus').textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
+            const vibEl = document.getElementById('vibrationStatus');
+            if (vibEl) vibEl.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+            // Profile competition stats
+            const pTG = document.getElementById('profileTotalGames'); if(pTG) pTG.textContent = st.totalGames;
+            const pBS = document.getElementById('profileBestScore'); if(pBS) pBS.textContent = st.bestScore;
+            const pAcc = document.getElementById('profileAccuracy');
+            if(pAcc) {
+                const tot = st.correctTotal + st.wrongTotal;
+                pAcc.textContent = tot > 0 ? Math.round((st.correctTotal/tot)*100)+'%' : '0%';
+            }
+            const pCB = document.getElementById('profileChallengeBest'); if(pCB) pCB.textContent = st.challengeBestScore || 0;
             updateHomeStats();
             renderHistory();
             renderTasks();
             renderAchievements();
+            renderProfileDailyTasks();
             updateUnlocks();
             updateBadgeIcon();
             updateWeaknessArea();
-            updateSerialNumberDisplay();
+            initVolumeSliders();
         }
 
         function updateHomeStats() {
@@ -354,9 +399,11 @@
 
         /* ═══════════ LEADERBOARD ═══════════ */
         function syncWithLeaderboard() {
-            if (!database || !st.serialNumber) return;
+            if (!database) return;
             try {
-                const playerRef = database.ref('leaderboard/' + st.serialNumber);
+                const playerKey = (st.name + '_' + (st.playerUID || (st.playerUID = Date.now().toString(36)))).replace(/[^a-zA-Z0-9_]/g, '_');
+                saveSt();
+                const playerRef = database.ref('leaderboard/' + playerKey);
                 playerRef.set({
                     name: st.name,
                     avatar: st.avatar,
@@ -408,6 +455,10 @@
         applyDarkMode();
         updateUI();
         loadProfileForm();
+        initVolumeSliders();
+        // Init vibration status
+        const _vibEl = document.getElementById('vibrationStatus');
+        if (_vibEl) _vibEl.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
         (function() {
             const chips = document.querySelectorAll('.diff-chip');
             chips.forEach(c => c.classList.remove('active'));
