@@ -47,7 +47,8 @@
                 achievementsUnlocked: [],
                 achievementRewardClaimed: false,
                 serialNumber: '',
-                darkMode: true
+                darkMode: true,
+                challengeBestScore: 0
             };
         }
 
@@ -66,6 +67,7 @@
             if (!s.birthDate) s.birthDate = '2000-01-01';
             if (typeof s.age !== 'number') s.age = 0;
             if (s.darkMode === undefined) s.darkMode = true;
+            if (typeof s.challengeBestScore !== 'number') s.challengeBestScore = 0;
             return s;
         }
 
