@@ -1,4 +1,4 @@
-        /* ═══════════ CHECK ANSWER ═══════════ */
+/* ═══════════ CHECK ANSWER ═══════════ */
         function checkAnswer(btn) {
             if (G.answered || G.ended) return;
             G.answered = true;
@@ -9,27 +9,36 @@
                 G.correct++;
                 G.streak++;
                 if (G.streak > G.bestStreak) G.bestStreak = G.streak;
-                // في وضع المنافسة: نقطة واحدة لكل سؤال صحيح
+                // وضع المنافسة: نقطة واحدة لكل سؤال صحيح + تعديل الوقت
                 if (G.mode === 'competition') {
                     G.score += 1;
                     G.coinsEarned += 0.1;
+                    // إجابة صحيحة تزيد ثانية
+                    if (G.hasTimer && G.maxTime > 0) {
+                        G.timeLeft = Math.min(G.maxTime, G.timeLeft + 1);
+                        const pct = (G.timeLeft / G.maxTime) * 100;
+                        document.getElementById('timerBar').style.width = pct + '%';
+                        const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
+                        if (G.timeLeft <= 10) { document.getElementById('timerBar').classList.add('danger');
+                            bt.classList.add('danger'); } else { document.getElementById('timerBar').classList.remove('danger');
+                            bt.classList.remove('danger'); }
+                    }
                 } else {
                     G.score += 10 + G.streak * 2;
                     G.coinsEarned += 0.4;
+                    const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining && G.mode !== 'competition';
+                    if (timerActive) {
+                        G.timeLeft = Math.min(G.maxTime, G.timeLeft + 1);
+                        const pct = (G.timeLeft / G.maxTime) * 100;
+                        document.getElementById('timerBar').style.width = pct + '%';
+                        const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
+                        if (G.timeLeft <= 10) { document.getElementById('timerBar').classList.add('danger');
+                            bt.classList.add('danger'); } else { document.getElementById('timerBar').classList.remove('danger');
+                            bt.classList.remove('danger'); }
+                    }
                 }
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 playSound('correct');
-                const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
-                if (timerActive) {
-                    G.timeLeft = Math.min(G.maxTime, G.timeLeft + 1);
-                    const pct = (G.timeLeft / G.maxTime) * 100;
-                    document.getElementById('timerBar').style.width = pct + '%';
-                    const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
-                    if (G.timeLeft <= 10) { document.getElementById('timerBar').classList.add('danger');
-                        bt.classList.add('danger'); } else { document.getElementById('timerBar').classList.remove(
-                            'danger');
-                        bt.classList.remove('danger'); }
-                }
                 if (G.currentCatKey && st.stats[G.currentCatKey]) {
                     const s = st.stats[G.currentCatKey];
                     s.att++;
@@ -49,6 +58,8 @@
                         G.correctAnswer) b.classList.add('correct'); });
                 G.wrong++;
                 G.streak = 0;
+                // إخفاء أيقونة التتابع عند الخطأ
+                document.getElementById('streakFire').style.display = 'none';
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive) {
                     G.timeLeft = Math.max(0, G.timeLeft - 1);
@@ -94,7 +105,7 @@
             const delay = 350;
             setTimeout(() => {
                 if (G.ended) return;
-                if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G
+                if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.mode !== 'competition' && G
                     .currentQ >= G.totalQ) endGame();
                 else loadQuestion();
             }, delay);
@@ -149,6 +160,10 @@
                     if (G.score > (st.bestCompScore || 0)) {
                         st.bestCompScore = G.score;
                     }
+                    // أيضاً نحدّث bestScore ليظهر في لوحة المتصدرين (اختياري)
+                    if (G.score > st.bestScore) {
+                        st.bestScore = G.score;
+                    }
                 } else if (G.score > st.bestScore) {
                     st.bestScore = G.score;
                 }
@@ -160,7 +175,7 @@
                     playSound('levelup'); }
                 if (['classic', 'speed', 'survival', 'frenzy'].includes(G.mode)) { st.catCounter.correct += G.correct;
                     st.catCounter.total += G.correct + G.wrong; }
-                if (['speed', 'survival', 'frenzy', 'daily'].includes(G.mode)) st.catChallenges.games++;
+                if (['speed', 'survival', 'frenzy', 'daily', 'competition'].includes(G.mode)) st.catChallenges.games++;
                 updTask('game'); if (G.mode === 'daily') updTask('daily');
                 const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
                 st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
@@ -240,4 +255,3 @@
             saveSt();
             return true;
         }
-
