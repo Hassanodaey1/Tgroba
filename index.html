@@ -64,7 +64,10 @@
         <div class="game-header">
             <button class="game-back-btn" onclick="confirmQuit()" aria-label="رجوع">‹</button>
             <div class="game-title" id="gameModeTitle">🧮 كلاسيك</div>
-            <div class="game-score-pill">💰 <span id="gameCoins">0</span></div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <button class="game-settings-btn" onclick="openGameSettings()" aria-label="إعدادات">⚙️</button>
+                <div class="game-score-pill">💰 <span id="gameCoins">0</span></div>
+            </div>
         </div>
         <div class="timer-bar-wrap">
             <div class="timer-bar-fill" id="timerBar" style="width:100%"></div>
@@ -200,6 +203,19 @@
             <div class="sheet-title">🎓 اختر العملية للتدريب</div>
             <div class="mode-grid" id="trainingOpGrid"></div>
             <button class="sheet-cancel" onclick="closeSheet('trainingOpSheet')">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- GAME SETTINGS SHEET -->
+    <div class="sheet-overlay" id="gameSettingsSheet" onclick="sheetBg(event,'gameSettingsSheet')">
+        <div class="sheet-panel">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">⚙️ إعدادات سريعة</div>
+            <div class="settings-list" style="margin-bottom:14px;">
+                <div class="settings-row" onclick="toggleSound()"><span class="settings-row-icon">🔊</span><span class="settings-row-label">الأصوات</span><span class="settings-row-val" id="gsoundStatus">مفعّل</span></div>
+                <div class="settings-row" onclick="toggleBgMusicInGame()"><span class="settings-row-icon">🎵</span><span class="settings-row-label">موسيقى الخلفية</span><span class="settings-row-val" id="gbgMusicStatus">مفعّلة</span></div>
+            </div>
+            <button class="sheet-cancel" onclick="closeSheet('gameSettingsSheet')">إغلاق</button>
         </div>
     </div>
 
@@ -494,7 +510,7 @@
 
                 <!-- PROFILE PAGE -->
                 <div class="page" id="page-profile">
-                    <div class="profile-hero">
+                    <div class="profile-hero" style="position:relative;">
                         <div class="profile-avatar-big">
                             <div class="profile-avatar-ring"></div>
                             <div class="profile-avatar-img" id="profileAvatarImg">🧑</div>
@@ -507,6 +523,7 @@
                             </div>
                             <div class="profile-xp-label" id="profileXpLabel">0 / 1000 XP</div>
                         </div>
+                        <button onclick="goTab('settings')" style="position:absolute;top:0;left:0;background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:8px 10px;font-size:1em;cursor:pointer;color:var(--text2);" title="الإعدادات">⚙️</button>
                     </div>
                     <div class="stats-grid3">
                         <div class="stat-card">
@@ -573,29 +590,49 @@
                             <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
                         </div>
                     </div>
+                    <!-- ساحة المنافسة في الملف الشخصي -->
                     <div class="profile-section">
-                        <div class="profile-section-title">🔑 الرقم التسلسلي</div>
-                        <div class="serial-area" id="serialNumberDisplay">غير محدد (احفظ الملف الشخصي أولاً)</div>
-                        <div class="serial-actions">
-                            <button class="serial-btn" onclick="copySerialNumber()">📋 نسخ الرقم التسلسلي</button>
-                            <button class="serial-btn" onclick="showRestoreAccount()">🔄 استعادة حساب</button>
-                        </div>
-                        <div id="restorePanel" class="restore-area" style="display:none;">
-                            <input type="text" id="restoreSerialInput" class="restore-input" placeholder="أدخل الرقم التسلسلي">
-                            <button class="save-btn" style="margin-top:4px;" onclick="restoreAccount()">استعادة</button>
+                        <div class="profile-section-title">🏆 ساحة المنافسة</div>
+                        <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.12));border:1.5px solid rgba(240,185,11,0.25);border-radius:18px;padding:16px;text-align:center;margin-bottom:10px;">
+                            <div style="font-size:1.8em;margin-bottom:6px;">⚔️</div>
+                            <div style="font-size:0.9em;font-weight:900;color:var(--text);margin-bottom:4px;">نداء التحدي</div>
+                            <div style="font-size:0.7em;color:var(--text2);margin-bottom:10px;">أفضل نتيجتك: <span style="color:var(--gold);font-weight:900;" id="profileChallengeBest">0</span> نقطة</div>
+                            <button onclick="goTab('leaderboard')" style="width:100%;padding:12px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.88em;font-weight:900;border:none;cursor:pointer;">🏆 انتقل للمنافسة</button>
                         </div>
                     </div>
-                    <div class="profile-section">
-                        <div class="profile-section-title">⚙️ الإعدادات</div>
+                    <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
+                </div>
+
+                <!-- SETTINGS PAGE -->
+                <div class="page" id="page-settings">
+                    <div class="hero-card">
+                        <div class="hero-row">
+                            <div>
+                                <div class="hero-greeting">⚙️ الإعدادات</div>
+                                <div class="hero-title">تخصيص <span>التجربة</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-section" style="margin-top:12px;">
+                        <div class="profile-section-title">🔊 الصوت والموسيقى</div>
                         <div class="settings-list">
                             <div class="settings-row" onclick="toggleSound()"><span class="settings-row-icon">🔊</span><span class="settings-row-label">الأصوات</span><span class="settings-row-val" id="soundStatus">مفعّل</span></div>
                             <div class="settings-row" onclick="toggleBgMusic()"><span class="settings-row-icon">🎵</span><span class="settings-row-label">موسيقى الخلفية</span><span class="settings-row-val" id="bgMusicStatus">مفعّلة</span></div>
+                        </div>
+                    </div>
+                    <div class="profile-section">
+                        <div class="profile-section-title">📖 المحتوى</div>
+                        <div class="settings-list">
                             <div class="settings-row" onclick="openLaws()"><span class="settings-row-icon">📜</span><span class="settings-row-label">تصفح القوانين الرياضية</span><span class="settings-row-val">📖 ›</span></div>
                             <div class="settings-row" onclick="goTab('achieve')"><span class="settings-row-icon">📋</span><span class="settings-row-label">المهام اليومية والإنجازات</span><span class="settings-row-val" id="profileTaskStatus">0 / 6 ›</span></div>
                         </div>
-                        <div style="margin-top:10px;">
-                            <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات</button>
-                            <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد</button>
+                    </div>
+                    <div class="profile-section">
+                        <div class="profile-section-title">⚠️ منطقة الخطر</div>
+                        <div style="font-size:0.72em;color:var(--text2);margin-bottom:10px;">هذه الإجراءات لا يمكن التراجع عنها</div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات فقط</button>
+                            <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد (حذف كل شيء)</button>
                         </div>
                     </div>
                     <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
@@ -620,7 +657,7 @@
                             <div style="font-size:1.1em;font-weight:900;color:var(--text);margin-bottom:6px;">لعبة نداء التحدي</div>
                             <div style="font-size:0.75em;color:var(--text2);line-height:1.6;margin-bottom:14px;">
                                 أجب على أسئلة الجمع والطرح والضرب والقسمة<br>
-                                عدد الأسئلة غير محدود • نقطة لكل إجابة صحيحة<br>
+                                60 ثانية • +1 ثانية لكل إجابة صحيحة • -2 ثانية عند الخطأ<br>
                                 الصعوبة تزداد تدريجياً كلما تقدمت
                             </div>
                             <div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">
@@ -662,6 +699,16 @@
                                 <div style="font-size:0.55em;color:var(--text3);">نقاط</div>
                             </div>
                         </div>
+                        <!-- شريط المؤقت -->
+                        <div style="background:var(--surface2);border-radius:14px;padding:10px 14px;border:1px solid var(--border2);">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                <span style="font-size:0.65em;color:var(--text3);">⏱️ الوقت المتبقي</span>
+                                <span style="font-size:1.1em;font-weight:900;color:var(--accent2);" id="challengeTimerDisplay">60</span>
+                            </div>
+                            <div style="background:var(--surface3);border-radius:8px;height:8px;overflow:hidden;">
+                                <div id="challengeTimerBar" style="height:100%;width:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:8px;transition:width 0.3s;"></div>
+                            </div>
+                        </div>
                         <!-- بطاقة السؤال -->
                         <div class="question-card" style="width:100%;max-width:100%;">
                             <div class="question-text" id="challengeQuestionText">...</div>
@@ -671,6 +718,24 @@
                         <div class="answers-grid" id="challengeAnswersGrid" style="max-width:100%;"></div>
                         <!-- منطقة الشرح -->
                         <div id="challengeExplanation" style="display:none;width:100%;"></div>
+                        <!-- المساعدات -->
+                        <div class="helpers-bar" id="challengeHelpersBar">
+                            <div class="helper-btn" id="challengeHelperSkip" onclick="useChallengeHelper('skip')">
+                                <div class="helper-btn-icon">⏭️</div>
+                                <div class="helper-btn-label">تخطّي</div>
+                                <div class="helper-btn-cost">3💰</div>
+                            </div>
+                            <div class="helper-btn" id="challengeHelperRemove" onclick="useChallengeHelper('remove')">
+                                <div class="helper-btn-icon">🗑️</div>
+                                <div class="helper-btn-label">حذف إجابة</div>
+                                <div class="helper-btn-cost">4💰</div>
+                            </div>
+                            <div class="helper-btn" id="challengeHelperTime" onclick="useChallengeHelper('time')">
+                                <div class="helper-btn-icon">⏰</div>
+                                <div class="helper-btn-label">+10 ثانية</div>
+                                <div class="helper-btn-cost">5💰</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- نتيجة التحدي (تظهر بعد الانتهاء) -->
@@ -708,9 +773,10 @@
                     <div class="nav-item-icon">🎮</div>
                     <div class="nav-item-label">ألعاب</div>
                 </div>
-                <div class="nav-center" onclick="goTab('leaderboard')">
-                    <div class="nav-center-btn">🏆</div>
-                    <div class="nav-center-label">المنافسة</div>
+                <div class="nav-item" id="nav-leaderboard" onclick="goTab('leaderboard')">
+                    <div class="nav-active-dot"></div>
+                    <div class="nav-item-icon">🏆</div>
+                    <div class="nav-item-label">المنافسة</div>
                 </div>
                 <div class="nav-item" id="nav-achieve" onclick="goTab('achieve')">
                     <div class="nav-active-dot"></div>
