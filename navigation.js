@@ -231,3 +231,4 @@
                 geometry: 'geometry', advanced: 'algebra', laws: 'mathlaws' };
             return map[op] || 'addition';
         }
+
