@@ -1,4 +1,4 @@
-        /* ═══════════ GLOBAL STATE ═══════════ */
+/* ═══════════ GLOBAL STATE ═══════════ */
         const SK = 'ho_math_v7';
 
         function todayStr() {
@@ -165,4 +165,3 @@
                     }
                 });
         }
-
