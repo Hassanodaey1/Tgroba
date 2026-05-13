@@ -23,10 +23,10 @@
     <title>HO Math - تحديات الرياضيات</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js">
+    </script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -64,10 +64,7 @@
         <div class="game-header">
             <button class="game-back-btn" onclick="confirmQuit()" aria-label="رجوع">‹</button>
             <div class="game-title" id="gameModeTitle">🧮 كلاسيك</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <div class="game-score-pill">💰 <span id="gameCoins">0</span></div>
-                <button class="game-settings-btn" onclick="openSettingsSheet()" aria-label="الإعدادات">⚙️</button>
-            </div>
+            <div class="game-score-pill">💰 <span id="gameCoins">0</span></div>
         </div>
         <div class="timer-bar-wrap">
             <div class="timer-bar-fill" id="timerBar" style="width:100%"></div>
@@ -497,13 +494,10 @@
 
                 <!-- PROFILE PAGE -->
                 <div class="page" id="page-profile">
-
-                    <!-- الصورة الشخصية والمعلومات الأساسية -->
                     <div class="profile-hero">
-                        <div class="profile-avatar-big" onclick="openAvatarOptions()">
+                        <div class="profile-avatar-big">
                             <div class="profile-avatar-ring"></div>
                             <div class="profile-avatar-img" id="profileAvatarImg">🧑</div>
-                            <div class="avatar-edit-badge">✏️</div>
                         </div>
                         <div class="profile-details">
                             <div class="profile-name-big" id="profileName">اللاعب</div>
@@ -514,8 +508,6 @@
                             <div class="profile-xp-label" id="profileXpLabel">0 / 1000 XP</div>
                         </div>
                     </div>
-
-                    <!-- إحصائيات سريعة -->
                     <div class="stats-grid3">
                         <div class="stat-card">
                             <div class="stat-card-num" id="statCorrect">0</div>
@@ -530,38 +522,11 @@
                             <div class="stat-card-label">💰 عملة</div>
                         </div>
                     </div>
-
-                    <!-- تسجيل الدخول بجوجل -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🔐 الحساب</div>
-                        <div id="googleSignInArea">
-                            <div id="googleSignedOut">
-                                <p style="font-size:0.78em;color:var(--text2);margin-bottom:10px;">سجّل دخولك بحساب Google لحفظ بياناتك تلقائياً على جميع أجهزتك</p>
-                                <button class="google-signin-btn" onclick="signInWithGoogle()">
-                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google">
-                                    تسجيل الدخول بـ Google
-                                </button>
-                            </div>
-                            <div id="googleSignedIn" style="display:none;">
-                                <div class="google-user-row">
-                                    <img id="googleUserPhoto" src="" width="36" height="36" style="border-radius:50%;object-fit:cover;" alt="">
-                                    <div>
-                                        <div style="font-weight:700;font-size:0.85em;" id="googleUserName">—</div>
-                                        <div style="font-size:0.7em;color:var(--text2);" id="googleUserEmail">—</div>
-                                    </div>
-                                    <button class="serial-btn" style="margin-right:auto;" onclick="signOutGoogle()">خروج</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- تعديل الملف الشخصي -->
                     <div class="profile-section">
                         <div class="profile-section-title">✏️ تعديل الملف الشخصي</div>
                         <div class="profile-form">
                             <div class="form-field">
-                                <div class="form-label">الاسم (إنجليزي فقط)</div>
-                                <input class="form-input" type="text" id="inputName" placeholder="English Name (A-Z, 0-9)" maxlength="30">
+                                <div class="form-label">الاسم (إنجليزي فقط)</div><input class="form-input" type="text" id="inputName" placeholder="English Name (A-Z, 0-9)" maxlength="30">
                             </div>
                             <div class="form-field">
                                 <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
@@ -578,41 +543,23 @@
                                     <div class="gender-btn" id="gBtnF" onclick="selectGender('f')">👧 أنثى</div>
                                 </div>
                             </div>
+                            <div class="form-field">
+                                <div class="form-label">الرمز التعبيري الحالي</div>
+                                <div style="display:flex;align-items:center;gap:10px;background:var(--surface3);border-radius:13px;padding:10px 13px;">
+                                    <div id="currentAvatarDisplay" style="font-size:2em;">🧑</div>
+                                    <div style="font-size:0.72em;color:var(--text2);">الرمز الحالي — اشترِ رموزاً جديدة أدناه</div>
+                                </div>
+                            </div>
                             <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
                         </div>
                     </div>
-
-                    <!-- الصورة الشخصية والإطارات -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🖼️ الصورة الشخصية والإطار</div>
-                        <!-- رفع صورة شخصية -->
-                        <div class="avatar-upload-area" onclick="document.getElementById('avatarFileInput').click()">
-                            <div id="avatarUploadPreview" class="avatar-upload-preview">
-                                <span style="font-size:2em;">📷</span>
-                            </div>
-                            <div>
-                                <div style="font-weight:700;font-size:0.85em;">رفع صورة شخصية</div>
-                                <div style="font-size:0.7em;color:var(--text2);">JPG أو PNG • بدلاً من الرمز التعبيري</div>
-                            </div>
-                        </div>
-                        <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
-                        <!-- اختيار الإطار -->
-                        <div style="margin-top:14px;">
-                            <div style="font-size:0.78em;color:var(--text2);margin-bottom:8px;">اختر إطاراً لصورتك:</div>
-                            <div class="frame-picker" id="framePicker"></div>
-                        </div>
-                    </div>
-
-                    <!-- متجر الرموز التعبيرية -->
                     <div class="profile-section">
                         <div class="profile-section-title">🛍️ متجر الرموز التعبيرية</div>
                         <div style="font-size:0.68em;color:var(--text2);margin-bottom:8px;">اضغط على الرمز لشرائه أو تفعيله — رصيدك: <span id="shopCoinsDisplay" style="color:var(--gold);font-weight:800;">0</span> 💰</div>
                         <div class="emoji-shop-grid" id="emojiShopGrid"></div>
                     </div>
-
-                    <!-- المظهر -->
                     <div class="profile-section">
-                        <div class="profile-section-title">🎨 الثيمات والمظهر</div>
+                        <div class="profile-section-title">🎨 الثيمات و المظهر</div>
                         <div class="themes-row">
                             <div class="dark-light-toggle" onclick="toggleDarkMode()">
                                 <span id="darkLightIcon">🌙</span>
@@ -626,8 +573,18 @@
                             <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
                         </div>
                     </div>
-
-                    <!-- الإعدادات -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">🔑 الرقم التسلسلي</div>
+                        <div class="serial-area" id="serialNumberDisplay">غير محدد (احفظ الملف الشخصي أولاً)</div>
+                        <div class="serial-actions">
+                            <button class="serial-btn" onclick="copySerialNumber()">📋 نسخ الرقم التسلسلي</button>
+                            <button class="serial-btn" onclick="showRestoreAccount()">🔄 استعادة حساب</button>
+                        </div>
+                        <div id="restorePanel" class="restore-area" style="display:none;">
+                            <input type="text" id="restoreSerialInput" class="restore-input" placeholder="أدخل الرقم التسلسلي">
+                            <button class="save-btn" style="margin-top:4px;" onclick="restoreAccount()">استعادة</button>
+                        </div>
+                    </div>
                     <div class="profile-section">
                         <div class="profile-section-title">⚙️ الإعدادات</div>
                         <div class="settings-list">
@@ -641,21 +598,6 @@
                             <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد</button>
                         </div>
                     </div>
-
-                    <!-- الرقم التسلسلي -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🔑 الرقم التسلسلي</div>
-                        <div class="serial-area" id="serialNumberDisplay">غير محدد (احفظ الملف الشخصي أولاً)</div>
-                        <div class="serial-actions">
-                            <button class="serial-btn" onclick="copySerialNumber()">📋 نسخ الرقم التسلسلي</button>
-                            <button class="serial-btn" onclick="showRestoreAccount()">🔄 استعادة حساب</button>
-                        </div>
-                        <div id="restorePanel" class="restore-area" style="display:none;">
-                            <input type="text" id="restoreSerialInput" class="restore-input" placeholder="أدخل الرقم التسلسلي">
-                            <button class="save-btn" style="margin-top:4px;" onclick="restoreAccount()">استعادة</button>
-                        </div>
-                    </div>
-
                     <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
                 </div>
 
@@ -664,22 +606,93 @@
                     <div class="hero-card">
                         <div class="hero-row">
                             <div>
-                                <div class="hero-greeting">🏆 تنافس مع الأفضل</div>
-                                <div class="hero-title">قائمة <span>المتصدرين</span></div>
+                                <div class="hero-greeting">🏆 ساحة المنافسة</div>
+                                <div class="hero-title">نداء <span>التحدي</span></div>
                             </div>
-                            <div class="coins-badge" style="cursor:pointer;" onclick="loadLeaderboard()">🔄 تحديث</div>
+                            <div class="coins-badge" style="cursor:pointer;" onclick="loadLeaderboard();loadChallengeLeaderboard();">🔄 تحديث</div>
                         </div>
                     </div>
-                    <div class="leaderboard-table" id="leaderboardContainer">
-                        <div class="lb-row lb-header">
-                            <span>المرتبة</span>
-                            <span>اللاعب</span>
-                            <span>المستوى</span>
-                            <span>أفضل نقاط</span>
+
+                    <!-- واجهة الترحيب بلعبة التحدي -->
+                    <div id="challengeWelcome" style="display:flex;flex-direction:column;gap:12px;">
+                        <div style="background:linear-gradient(135deg,rgba(240,185,11,0.15),rgba(124,58,237,0.15));border:1.5px solid rgba(240,185,11,0.35);border-radius:22px;padding:20px;text-align:center;">
+                            <div style="font-size:2.5em;margin-bottom:8px;">⚔️</div>
+                            <div style="font-size:1.1em;font-weight:900;color:var(--text);margin-bottom:6px;">لعبة نداء التحدي</div>
+                            <div style="font-size:0.75em;color:var(--text2);line-height:1.6;margin-bottom:14px;">
+                                أجب على أسئلة الجمع والطرح والضرب والقسمة<br>
+                                عدد الأسئلة غير محدود • نقطة لكل إجابة صحيحة<br>
+                                الصعوبة تزداد تدريجياً كلما تقدمت
+                            </div>
+                            <div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">
+                                <div style="background:var(--surface3);border-radius:14px;padding:10px 16px;text-align:center;">
+                                    <div style="font-size:1.4em;font-weight:900;color:var(--gold);" id="challengeBestDisplay">0</div>
+                                    <div style="font-size:0.6em;color:var(--text2);">أفضل نتيجة</div>
+                                </div>
+                            </div>
+                            <button onclick="startChallengeGame()" style="width:100%;padding:16px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:1.05em;font-weight:900;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(240,185,11,0.4);transition:0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+                                ⚔️ لنبدأ التحدي
+                            </button>
                         </div>
-                        <div id="leaderboardList" style="padding:16px; text-align:center;">جاري التحميل...</div>
+
+                        <!-- لائحة المتصدرين للتحدي -->
+                        <div class="section-label" style="margin-top:4px;">🏆 لائحة المتصدرين — نداء التحدي</div>
+                        <div class="leaderboard-table" style="overflow-y:auto;max-height:320px;">
+                            <div class="lb-row lb-header">
+                                <span>المرتبة</span>
+                                <span>اللاعب</span>
+                                <span>المستوى</span>
+                                <span>النقاط</span>
+                            </div>
+                            <div id="challengeLeaderboardList" style="padding:16px;text-align:center;">جاري التحميل...</div>
+                        </div>
+                        <p style="font-size:0.65em;color:var(--text2);text-align:center;">✨ الترتيب بناءً على أعلى نتيجة في نداء التحدي ✨</p>
                     </div>
-                    <p style="font-size:0.65em; color:var(--text2); margin-top:12px; text-align:center;">✨ يتم تحديث الترتيب تلقائياً بعد كل جولة ✨</p>
+
+                    <!-- منطقة اللعب (تظهر عند بدء التحدي) -->
+                    <div id="challengeGameArea" style="display:none;flex-direction:column;gap:10px;width:100%;">
+                        <!-- رأس اللعبة -->
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:12px 16px;">
+                            <button onclick="quitChallengeGame()" style="background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;font-family:'Tajawal',sans-serif;font-size:0.75em;font-weight:700;color:var(--text2);cursor:pointer;">⬅ خروج</button>
+                            <div style="text-align:center;">
+                                <div style="font-size:0.65em;color:var(--text3);" id="challengeQNum">السؤال 1</div>
+                                <div style="font-size:0.72em;color:var(--accent2);font-weight:700;" id="challengeDiffLabel">سهل جداً</div>
+                            </div>
+                            <div style="background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.3);border-radius:13px;padding:6px 12px;text-align:center;">
+                                <div style="font-size:1.3em;font-weight:900;color:var(--gold);line-height:1;" id="challengeScoreDisplay">0</div>
+                                <div style="font-size:0.55em;color:var(--text3);">نقاط</div>
+                            </div>
+                        </div>
+                        <!-- بطاقة السؤال -->
+                        <div class="question-card" style="width:100%;max-width:100%;">
+                            <div class="question-text" id="challengeQuestionText">...</div>
+                            <div class="question-hint" id="challengeHint">ما هو الجواب؟</div>
+                        </div>
+                        <!-- شبكة الأجوبة -->
+                        <div class="answers-grid" id="challengeAnswersGrid" style="max-width:100%;"></div>
+                        <!-- منطقة الشرح -->
+                        <div id="challengeExplanation" style="display:none;width:100%;"></div>
+                    </div>
+
+                    <!-- نتيجة التحدي (تظهر بعد الانتهاء) -->
+                    <div id="challengeResultArea" style="display:none;flex-direction:column;gap:12px;align-items:center;width:100%;">
+                        <div style="background:linear-gradient(135deg,var(--surface2),var(--surface3));border:2px solid var(--border2);border-radius:26px;padding:26px 20px;text-align:center;width:100%;">
+                            <div style="font-size:3em;margin-bottom:8px;">🏆</div>
+                            <div style="font-size:1em;font-weight:900;color:var(--text);margin-bottom:4px;" id="challengeResultMsg">رائع!</div>
+                            <div style="font-size:0.75em;color:var(--text2);margin-bottom:16px;">نتيجة جلستك في نداء التحدي</div>
+                            <div style="display:flex;gap:10px;margin-bottom:16px;">
+                                <div style="flex:1;background:var(--surface3);border-radius:13px;padding:14px;">
+                                    <div style="font-size:1.8em;font-weight:900;color:var(--gold);" id="challengeFinalScore">0</div>
+                                    <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">نقاطك</div>
+                                </div>
+                                <div style="flex:1;background:var(--surface3);border-radius:13px;padding:14px;">
+                                    <div style="font-size:1.8em;font-weight:900;color:var(--accent2);" id="challengeBestScore">0</div>
+                                    <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">أفضل نتيجة</div>
+                                </div>
+                            </div>
+                            <button onclick="startChallengeGame()" style="width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.92em;font-weight:900;border:none;cursor:pointer;margin-bottom:8px;">🔄 حاول مجدداً</button>
+                            <button onclick="restartChallengeGame()" style="width:100%;padding:14px;border-radius:14px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.88em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">🏠 العودة للمنافسة</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -710,33 +723,6 @@
                     <div class="nav-item-label">ملفي</div>
                 </div>
             </div>
-        </div>
-    </div>
-
-
-    <!-- SETTINGS SHEET -->
-    <div class="sheet-overlay" id="settingsSheet" onclick="sheetBg(event,'settingsSheet')">
-        <div class="sheet-panel">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">⚙️ الإعدادات</div>
-            <div class="settings-list" style="margin-top:8px;">
-                <div class="settings-row" onclick="toggleSound();updateSettingsSheet()">
-                    <span class="settings-row-icon">🔊</span>
-                    <span class="settings-row-label">الأصوات</span>
-                    <span class="settings-row-val" id="sheetSoundStatus">مفعّل</span>
-                </div>
-                <div class="settings-row" onclick="toggleBgMusic();updateSettingsSheet()">
-                    <span class="settings-row-icon">🎵</span>
-                    <span class="settings-row-label">موسيقى الخلفية</span>
-                    <span class="settings-row-val" id="sheetBgStatus">مفعّلة</span>
-                </div>
-                <div class="settings-row" onclick="closeSheet('settingsSheet');confirmQuit()">
-                    <span class="settings-row-icon">🏠</span>
-                    <span class="settings-row-label">العودة للرئيسية</span>
-                    <span class="settings-row-val">›</span>
-                </div>
-            </div>
-            <button class="sheet-cancel" onclick="closeSheet('settingsSheet')">متابعة اللعب</button>
         </div>
     </div>
 
