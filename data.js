@@ -1,4 +1,4 @@
-        /* ═══════════ ACHIEVEMENTS ═══════════ */
+/* ═══════════ ACHIEVEMENTS ═══════════ */
         const ACHIEVEMENTS_DEF = [
             { id: 'first_correct', icon: '🎯', name: 'أول إجابة صحيحة', desc: 'أجب على سؤال واحد صحيح', check: () => st
                     .correctTotal >= 1, reward: 2 },
@@ -350,4 +350,3 @@
         }
 
         function closeLaws() { document.getElementById('lawsOverlay').classList.remove('active'); }
-
