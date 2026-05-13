@@ -13,9 +13,13 @@
             if (tab === 'profile') loadProfileForm();
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
-            if (tab === 'leaderboard') loadLeaderboard();
-            else if (typeof stopLeaderboardListener === 'function') stopLeaderboardListener();
-            else if (typeof stopLeaderboardListener === 'function') stopLeaderboardListener();
+            if (tab === 'leaderboard') {
+                loadLeaderboard();
+                loadChallengeLeaderboard();
+                // تحديث أفضل نتيجة في واجهة الترحيب
+                const el = document.getElementById('challengeBestDisplay');
+                if (el) el.textContent = st.challengeBestScore || 0;
+            }
         }
 
         function getDifficultyByLevel() {
