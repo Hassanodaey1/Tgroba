@@ -374,7 +374,8 @@
                     name: st.name,
                     avatar: st.avatar || '🧑',
                     level: st.level,
-                    bestScore: st.bestScore,
+                    bestScore: st.bestCompScore || st.bestScore,
+                    bestNormalScore: st.bestScore,
                     totalXp: st.xp,
                     lastUpdated: Date.now()
                 }).catch((e) => { console.warn('فشل رفع النتيجة:', e.message); });
