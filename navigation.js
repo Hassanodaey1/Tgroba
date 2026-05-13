@@ -1,4 +1,4 @@
-        /* ═══════════ NAVIGATION ═══════════ */
+/* ═══════════ NAVIGATION ═══════════ */
         const TABS = ['home', 'play', 'achieve', 'profile', 'leaderboard'];
 
         function goTab(tab) {
@@ -14,8 +14,7 @@
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
             if (tab === 'leaderboard') loadLeaderboard();
-            else if (typeof stopLeaderboardListener === 'function') stopLeaderboardListener();
-            else if (typeof stopLeaderboardListener === 'function') stopLeaderboardListener();
+            else if (typeof stopLeaderboardListener === 'function') stopLeaderboardListener(); // removed duplicate
         }
 
         function getDifficultyByLevel() {
@@ -231,4 +230,3 @@
                 geometry: 'geometry', advanced: 'algebra', laws: 'mathlaws' };
             return map[op] || 'addition';
         }
-
