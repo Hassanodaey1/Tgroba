@@ -605,6 +605,11 @@
         }
 
         /* ═══════════ CHALLENGE GAME (نداء التحدي) ═══════════ */
+        /* حالة لعبة التحدي */
+        let CG = { active: false, ended: true, score: 0, questionIndex: 0, answered: false,
+            correctAnswer: 0, currentExplanation: '', askedQuestions: [], timeLeft: 60,
+            maxTime: 60, timer: null, helpersUsed: { skip: false, remove: false, time: false } };
+
         /* مولّد أسئلة التحدي مع صعوبة تتزايد تدريجياً */
         function genChallengeQ(questionIndex) {
             // حساب مستوى الصعوبة بناءً على رقم السؤال (تدريجياً)
@@ -688,17 +693,6 @@
             };
         }
 
-        /* ═══════════ CHALLENGE GAME STATE ═══════════ */
-        let CG = {
-            active: false,
-            score: 0,
-            questionIndex: 0,
-            answered: false,
-            ended: false,
-            correctAnswer: 0,
-            currentExplanation: '',
-            askedQuestions: []
-        };
 
         function startChallengeGame() {
             CG = {
@@ -810,22 +804,23 @@
             if (CG.ended) return;
             CG.ended = true;
             CG.active = false;
-            if (CG.timer) clearInterval(CG.timer);
-            // حفظ النتيجة في الـ state
+            if (CG.timer) { clearInterval(CG.timer); CG.timer = null; }
             if (CG.score > (st.challengeBestScore || 0)) {
                 st.challengeBestScore = CG.score;
                 saveSt();
             }
-            // مزامنة مع لائحة المتصدرين
             syncChallengeScore(CG.score);
-            // إظهار نتيجة التحدي
             document.getElementById('challengeGameArea').style.display = 'none';
-            document.getElementById('challengeResultArea').style.display = 'flex';
+            const ra = document.getElementById('challengeResultArea');
+            ra.style.display = 'flex';
             document.getElementById('challengeFinalScore').textContent = CG.score;
             document.getElementById('challengeBestScore').textContent = st.challengeBestScore || CG.score;
             const msg = CG.score >= 50 ? '🏆 أداء مذهل!' : CG.score >= 30 ? '⭐ رائع!' : CG.score >= 15 ? '😊 جيد جداً!' : '💪 حاول مجدداً!';
             document.getElementById('challengeResultMsg').textContent = msg;
+            const bd = document.getElementById('challengeBestDisplay'); if (bd) bd.textContent = st.challengeBestScore || 0;
+            const pb = document.getElementById('profileChallengeBest'); if (pb) pb.textContent = st.challengeBestScore || 0;
             if (CG.score >= 15) doConfetti();
+            setTimeout(() => { if (typeof loadChallengeLeaderboard === 'function') loadChallengeLeaderboard(); }, 1200);
         }
 
         function loadChallengeQuestion() {
@@ -929,9 +924,11 @@
         }
 
         function restartChallengeGame() {
-            if (CG.timer) clearInterval(CG.timer);
+            if (CG.timer) { clearInterval(CG.timer); CG.timer = null; }
             document.getElementById('challengeResultArea').style.display = 'none';
-            document.getElementById('challengeWelcome').style.display = 'flex';
+            document.getElementById('challengeGameArea').style.display = 'none';
+            const cw = document.getElementById('challengeWelcome');
+            if (cw) { cw.style.display = 'flex'; }
         }
 
         /* ═══════════ مزامنة نتيجة التحدي مع Firebase ═══════════ */
