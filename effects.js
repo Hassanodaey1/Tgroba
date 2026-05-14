@@ -49,8 +49,6 @@
         /* ═══════════ AUDIO ═══════════ */
         let aCtx = null;
         let bgInt = null;
-        let _soundVol = 0.12;
-        let _bgVol = 0.025;
 
         function gACtx() { if (!aCtx) try { aCtx = new(window.AudioContext || window.webkitAudioContext)(); } catch (
             e) {} return aCtx; }
@@ -59,35 +57,34 @@
             if (!st.soundOn) return;
             const ctx = gACtx();
             if (!ctx) return;
+            const vol = (st.soundVolume !== undefined ? st.soundVolume : 80) / 100;
             const o = ctx.createOscillator(),
                 g = ctx.createGain();
             o.connect(g);
             g.connect(ctx.destination);
             o.type = t;
             o.frequency.value = f;
-            const vol = (st.soundVolume / 100) * v;
-            g.gain.value = vol;
+            g.gain.value = v * vol;
             const ts = ctx.currentTime + delay;
             o.start(ts);
-            g.gain.exponentialRampToValueAtTime(0.0001, ts + d);
+            g.gain.exponentialRampToValueAtTime(0.001, ts + d);
             o.stop(ts + d + 0.01);
         }
 
-        function vibrate(pattern) {
-            if (!st.vibrationOn) return;
-            if (navigator.vibrate) navigator.vibrate(pattern);
-        }
-
         function playSound(type) {
+            if (typeof doVibrate === 'function') {
+                if (type === 'correct') doVibrate(25);
+                else if (type === 'wrong') doVibrate([40, 30, 40]);
+                else if (type === 'click') doVibrate(15);
+                else if (type === 'levelup') doVibrate([30, 20, 30, 20, 50]);
+            }
             if (!st.soundOn) return;
             if (type === 'correct') { tone(660, 'sine', 0.14, 0.11);
-                tone(880, 'sine', 0.14, 0.08, 0.12);
-                vibrate(40); } else if (type === 'wrong') { tone(200, 'sawtooth', 0.2, 0.1);
-                vibrate([30, 20, 30]); } else if (type === 'levelup') { tone(523, 'sine', 0.1, 0.1);
+                tone(880, 'sine', 0.14, 0.08, 0.12); } else if (type === 'wrong') { tone(200, 'sawtooth', 0.2,
+                0.1); } else if (type === 'levelup') { tone(523, 'sine', 0.1, 0.1);
                 tone(659, 'sine', 0.1, 0.1, 0.1);
-                tone(784, 'sine', 0.16, 0.1, 0.2);
-                vibrate([50, 30, 80]); } else if (type === 'click') { tone(440, 'sine', 0.07, 0.06);
-                vibrate(15); } else if (type === 'open') { tone(392, 'sine', 0.1, 0.07);
+                tone(784, 'sine', 0.16, 0.1, 0.2); } else if (type === 'click') { tone(440, 'sine', 0.07, 0.06); } else if (
+                type === 'open') { tone(392, 'sine', 0.1, 0.07);
                 tone(523, 'sine', 0.12, 0.07, 0.1); } else if (type === 'tick') { tone(1000, 'sine', 0.03, 0.02); }
         }
         const bgNotes = [261, 294, 329, 349, 392, 440, 494, 523, 392, 349];
@@ -97,6 +94,7 @@
             if (!st.bgOn) return;
             const ctx = gACtx();
             if (!ctx) return;
+            const bgVol = (st.bgVolume !== undefined ? st.bgVolume : 30) / 100;
             const o = ctx.createOscillator(),
                 g = ctx.createGain();
             o.connect(g);
@@ -104,10 +102,9 @@
             o.type = 'triangle';
             o.frequency.value = bgNotes[bgIdx % bgNotes.length];
             bgIdx++;
-            const vol = (st.bgVolume / 100) * 0.04;
-            g.gain.value = Math.max(0.001, vol);
+            g.gain.value = 0.025 * bgVol;
             o.start();
-            g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2);
             o.stop(ctx.currentTime + 2.1);
         }
 
@@ -116,38 +113,9 @@
         function stopBg() { clearInterval(bgInt);
             bgInt = null; }
 
-        function setSoundVolume(val) {
-            st.soundVolume = parseInt(val);
-            saveSt();
-            // Sync all sliders
-            ['soundVolSlider','gSoundVolSlider'].forEach(id => { const el = document.getElementById(id); if(el) el.value = val; });
-            ['soundVolVal','gSoundVolVal'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = val + '%'; });
-        }
-
-        function setBgVolume(val) {
-            st.bgVolume = parseInt(val);
-            saveSt();
-            ['bgVolSlider','gBgVolSlider'].forEach(id => { const el = document.getElementById(id); if(el) el.value = val; });
-            ['bgVolVal','gBgVolVal'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = val + '%'; });
-        }
-
-        function toggleVibration() {
-            st.vibrationOn = !st.vibrationOn;
-            const el = document.getElementById('vibrationStatus');
-            if (el) el.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
-            if (st.vibrationOn) vibrate(30);
-            saveSt();
-        }
-
-        function initVolumeSliders() {
-            setSoundVolume(st.soundVolume);
-            setBgVolume(st.bgVolume);
-        }
-
         function toggleBgMusic() {
             st.bgOn = !st.bgOn;
-            const bgBtn = document.getElementById('bgBtn');
-            if (bgBtn) bgBtn.textContent = st.bgOn ? '🎵' : '🔕';
+            document.getElementById('bgBtn').textContent = st.bgOn ? '🎵' : '🔕';
             document.getElementById('bgMusicStatus').textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
             st.bgOn ? startBg() : stopBg();
             playSound('click');
@@ -156,8 +124,7 @@
 
         function toggleSound() {
             st.soundOn = !st.soundOn;
-            const soundBtn = document.getElementById('soundBtn');
-            if (soundBtn) soundBtn.textContent = st.soundOn ? '🔊' : '🔇';
+            document.getElementById('soundBtn').textContent = st.soundOn ? '🔊' : '🔇';
             const el = document.getElementById('soundStatus');
             if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
             saveSt();
