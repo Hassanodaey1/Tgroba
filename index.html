@@ -251,7 +251,7 @@
                     <span class="xp-pill-lv" id="headerXp">⚡ 0 XP</span>
                 </div>
                 <div class="th-right">
-                    <div class="icon-pill counter-pill" onclick="openCounterGame()" title="العمليات على الاعداد">🧮</div>
+                    <div class="icon-pill" onclick="goTab('settings')" title="الإعدادات">⚙️</div>
                 </div>
             </div>
 
@@ -480,6 +480,14 @@
 
                 <!-- ACHIEVEMENTS PAGE -->
                 <div class="page" id="page-achieve">
+                    <div class="hero-card">
+                        <div class="hero-row">
+                            <div>
+                                <div class="hero-greeting">📋 المهام والإنجازات</div>
+                                <div class="hero-title">تفاصيل <span>التقدم</span></div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="tasks-summary">
                         <div class="task-stat">
                             <div class="task-stat-num" id="tasksDone">0</div>
@@ -514,6 +522,9 @@
                         <div class="section-label" style="display:flex;justify-content:space-between;">🏆 الإنجازات <span id="achievePct" style="color:var(--accent2);">0/18</span></div>
                         <div id="achieveList"></div>
                         <div id="achieveCompleteReward" style="display:none;text-align:center;margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
+                    </div>
+                    <div style="margin-top:12px;padding-bottom:8px;">
+                        <button onclick="goTab('profile')" style="width:100%;padding:12px;border-radius:14px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.82em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">👤 الملف الشخصي الكامل ›</button>
                     </div>
                 </div>
 
@@ -554,7 +565,7 @@
                     <!-- ساحة المنافسة -->
                     <div class="profile-section">
                         <div class="profile-section-title">🏆 ساحة المنافسة</div>
-                        <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.12));border:1.5px solid rgba(240,185,11,0.25);border-radius:18px;padding:16px;text-align:center;margin-bottom:10px;">
+                        <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.12));border:1.5px solid rgba(240,185,11,0.25);border-radius:18px;padding:16px;text-align:center;">
                             <div style="font-size:1.8em;margin-bottom:6px;">⚔️</div>
                             <div style="font-size:0.9em;font-weight:900;color:var(--text);margin-bottom:4px;">نداء التحدي</div>
                             <div style="font-size:0.7em;color:var(--text2);margin-bottom:10px;">أفضل نتيجتك: <span style="color:var(--gold);font-weight:900;" id="profileChallengeBest">0</span> نقطة</div>
@@ -576,31 +587,64 @@
                         </div>
                     </div>
 
-                    <!-- المهام اليومية المنجزة -->
+                    <!-- المهام اليومية -->
                     <div class="profile-section">
-                        <div class="profile-section-title">✅ المهام اليومية المنجزة</div>
-                        <div id="profileDailyTasksDone" style="display:flex;flex-direction:column;gap:8px;">
-                            <div style="font-size:0.75em;color:var(--text2);text-align:center;padding:12px;">لا توجد مهام منجزة بعد اليوم</div>
+                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>📋 المهام اليومية</span>
+                            <span id="profileTasksPct" style="font-size:0.75em;color:var(--accent2);font-weight:700;">0%</span>
                         </div>
-                        <div style="margin-top:8px;">
-                            <button onclick="goTab('achieve')" style="width:100%;padding:10px;border-radius:13px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">📋 عرض كل المهام ›</button>
+                        <div class="tasks-progress-card" style="margin-bottom:10px;">
+                            <div class="tasks-prog-label"><span>تقدّم اليوم</span><span id="profileTasksLabel">0 / 0</span></div>
+                            <div class="tasks-bar-track"><div class="tasks-bar-fill" id="profileTasksBar" style="width:0%"></div></div>
+                        </div>
+                        <div id="profileTasksList" style="display:flex;flex-direction:column;gap:6px;"></div>
+                        <div class="daily-timer" style="margin-top:8px;padding:8px 12px;">
+                            <div class="daily-timer-label">⏰ تجديد في</div>
+                            <div class="daily-timer-val" id="profileDailyCountdown">--:--:--</div>
                         </div>
                     </div>
 
-                    <!-- الرموز التعبيرية المملوكة -->
+                    <!-- الإنجازات -->
                     <div class="profile-section">
-                        <div class="profile-section-title">😊 رموزي التعبيرية</div>
-                        <div style="font-size:0.68em;color:var(--text2);margin-bottom:8px;">رصيدك: <span id="shopCoinsDisplay" style="color:var(--gold);font-weight:800;">0</span> 💰 — اضغط لتفعيل أي رمز</div>
-                        <div class="emoji-shop-grid" id="emojiShopGrid"></div>
-                        <div style="margin-top:8px;font-size:0.65em;color:var(--text3);text-align:center;">لشراء رموز جديدة اذهب إلى صفحة الملف الشخصي الكاملة</div>
-                        <div style="margin-top:4px;">
-                            <div class="form-field" style="margin-top:8px;">
-                                <div class="form-label">الرمز التعبيري الحالي</div>
-                                <div style="display:flex;align-items:center;gap:10px;background:var(--surface3);border-radius:13px;padding:10px 13px;">
-                                    <div id="currentAvatarDisplay" style="font-size:2em;">🧑</div>
-                                    <div style="font-size:0.72em;color:var(--text2);">الرمز الحالي</div>
-                                </div>
+                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>🏅 الإنجازات</span>
+                            <span id="profileAchievePct" style="color:var(--accent2);font-size:0.75em;font-weight:700;">0/18</span>
+                        </div>
+                        <div id="profileAchieveList"></div>
+                        <div id="profileAchieveReward" style="display:none;text-align:center;margin-top:8px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
+                    </div>
+
+                    <!-- القوانين الرياضية -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">📜 القوانين الرياضية</div>
+                        <div onclick="openLaws()" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(6,182,212,0.1),rgba(124,58,237,0.1));border:1.5px solid rgba(6,182,212,0.25);border-radius:16px;padding:16px;cursor:pointer;transition:0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+                            <div style="font-size:2em;">📜</div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.88em;font-weight:900;color:var(--text);">تصفح القوانين والبديهيات</div>
+                                <div style="font-size:0.68em;color:var(--text2);margin-top:2px;">قوانين الجبر • الهندسة • الحساب</div>
                             </div>
+                            <div style="font-size:1.2em;color:var(--accent2);">›</div>
+                        </div>
+                    </div>
+
+                    <!-- متجر الرموز التعبيرية — يُفتح بالضغط -->
+                    <div class="profile-section">
+                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>🛍️ المتجر</span>
+                            <span style="font-size:0.75em;font-weight:900;color:var(--gold);">رصيدك: <span id="shopCoinsDisplay">0</span> 💰</span>
+                        </div>
+                        <!-- الرمز الحالي + زر فتح المتجر -->
+                        <div style="display:flex;align-items:center;gap:12px;background:var(--surface3);border-radius:14px;padding:12px 14px;margin-bottom:10px;">
+                            <div id="currentAvatarDisplay" style="font-size:2.2em;">🧑</div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.75em;font-weight:700;color:var(--text);">الرمز الحالي</div>
+                                <div style="font-size:0.63em;color:var(--text2);margin-top:2px;">اضغط لتغيير أو شراء رموز جديدة</div>
+                            </div>
+                            <button onclick="toggleEmojiShop()" id="shopToggleBtn" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;border-radius:12px;padding:8px 14px;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:900;cursor:pointer;">🛍️ المتجر</button>
+                        </div>
+                        <!-- شبكة الرموز — مخفية افتراضياً -->
+                        <div id="emojiShopContainer" style="display:none;">
+                            <div class="emoji-shop-grid" id="emojiShopGrid"></div>
                         </div>
                     </div>
 
@@ -700,15 +744,6 @@
                             <div class="theme-dot" style="background:#f97316" onclick="setTheme(this,'#f97316','#ea580c','#a855f7')"></div>
                             <div class="theme-dot" style="background:#c084fc" onclick="setTheme(this,'#c084fc','#a855f7','#06b6d4')"></div>
                             <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
-                        </div>
-                    </div>
-
-                    <!-- المحتوى -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">📖 المحتوى</div>
-                        <div class="settings-list">
-                            <div class="settings-row" onclick="openLaws()"><span class="settings-row-icon">📜</span><span class="settings-row-label">تصفح القوانين الرياضية</span><span class="settings-row-val">📖 ›</span></div>
-                            <div class="settings-row" onclick="goTab('achieve')"><span class="settings-row-icon">📋</span><span class="settings-row-label">المهام اليومية والإنجازات</span><span class="settings-row-val" id="profileTaskStatus">0 / 6 ›</span></div>
                         </div>
                     </div>
 
@@ -822,6 +857,7 @@
                                 <div class="helper-btn-cost">5💰</div>
                             </div>
                         </div>
+                        <button onclick="quitChallengeGame()" class="return-home-btn" style="margin-top:6px;">🏆 العودة إلى لائحة الصدارة</button>
                     </div>
 
                     <!-- نتيجة التحدي (تظهر بعد الانتهاء) -->
