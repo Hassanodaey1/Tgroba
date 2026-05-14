@@ -2,6 +2,10 @@
         const TABS = ['home', 'play', 'achieve', 'profile', 'leaderboard', 'settings'];
 
         function goTab(tab) {
+            // إيقاف auto-scroll اللائحة عند مغادرة صفحة المنافسة
+            if (typeof lbScrollInterval !== 'undefined' && lbScrollInterval && tab !== 'leaderboard') {
+                clearInterval(lbScrollInterval); lbScrollInterval = null;
+            }
             TABS.forEach(t => {
                 document.getElementById('page-' + t)?.classList.toggle('active', t === tab);
                 document.getElementById('nav-' + t)?.classList.toggle('active', t === tab);
