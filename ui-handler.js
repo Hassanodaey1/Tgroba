@@ -447,37 +447,72 @@ function openMainSettings() {
             } catch (e) {}
         }
 
-        function loadLeaderboard() {
-            const container = document.getElementById('leaderboardList');
+        function loadChallengeLeaderboard() {
+            const container = document.getElementById('challengeLeaderboardList');
             if (!container) return;
             if (!database) {
-                container.innerHTML =
-                    '<div style="text-align:center;color:var(--text2);">⚠️ قاعدة البيانات غير متصلة<br>قم بتكوين Firebase لتفعيل المنافسة </div>';
+                container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);font-size:0.8em;">⚠️ قاعدة البيانات غير متصلة</div>';
                 return;
             }
-            container.innerHTML = '<div style="text-align:center;">⏳ جاري التحميل...</div>';
+            container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⏳ جاري التحميل...</div>';
             try {
-                database.ref('leaderboard').orderByChild('bestScore').limitToLast(10).once('value', (snapshot) => {
-                    const players = [];
-                    snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                    players.sort((a, b) => (b.bestScore || 0) - (a.bestScore || 0));
-                    if (players.length === 0) {
-                        container.innerHTML =
-                            '<div style="text-align:center;">لا توجد نتائج بعد</div>';
-                        return;
-                    }
-                    let html = '';
-                    players.forEach((p, idx) => {
-                        const isMe = p.id === st.serialNumber;
-                        html +=
-                            `<div class="lb-row${isMe?' lb-row-me':''}"><span>${idx+1}</span><span>${p.avatar||'🧑'} ${p.name}</span><span>${p.level}</span><span>${p.bestScore}</span></div>`;
+                database.ref('challenge_leaderboard').orderByChild('challengeScore').limitToLast(50)
+                    .once('value', (snapshot) => {
+                        const players = [];
+                        snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+                        players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
+                        const top10 = players.slice(0, 10);
+                        if (top10.length === 0) {
+                            container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.8em;">لا توجد نتائج بعد — كن أول المتنافسين! 🏆</div>';
+                            return;
+                        }
+                        const myKey = (st.name + '_' + (st.playerUID || '')).replace(/[^a-zA-Z0-9_]/g, '_');
+                        const medals = ['🥇','🥈','🥉'];
+                        let html = '';
+                        top10.forEach((p, idx) => {
+                            const isMe = p.id === myKey || p.name === st.name;
+                            const rank = medals[idx] || `${idx+1}`;
+                            const scoreColor = idx === 0 ? 'var(--gold)' : idx === 1 ? '#c0c0c0' : idx === 2 ? '#cd7f32' : 'var(--text)';
+                            html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}" style="animation:lbSlideIn ${0.1 + idx * 0.07}s ease-out both;">
+                                <span style="font-size:${idx < 3 ? '1.2em' : '0.88em'};min-width:28px;text-align:center;">${rank}</span>
+                                <span style="flex:1;font-size:0.82em;font-weight:${isMe?'900':'600'};color:${isMe?'var(--accent2)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.avatar||'🧑'} ${p.name||'؟'}</span>
+                                <span style="font-size:0.7em;color:var(--text3);min-width:36px;">Lv.${p.level||1}</span>
+                                <span style="font-size:0.92em;font-weight:900;color:${scoreColor};min-width:38px;text-align:left;">${p.challengeScore||0}</span>
+                            </div>`;
+                        });
+                        container.innerHTML = html;
+                        // auto-scroll animation: scroll down then back up slowly
+                        setTimeout(() => startLbAutoScroll(container), 1200);
+                    }).catch(() => {
+                        container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⚠️ فشل التحميل</div>';
                     });
-                    container.innerHTML = html;
-                }).catch(() => { container.innerHTML =
-                        '<div style="text-align:center;">⚠️ فشل التحميل</div>'; });
             } catch (e) {
-                container.innerHTML = '<div style="text-align:center;">⚠️ قاعدة البيانات غير متاحة</div>';
+                container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⚠️ خطأ في قاعدة البيانات</div>';
             }
+        }
+
+        let lbScrollInterval = null;
+        function startLbAutoScroll(el) {
+            if (lbScrollInterval) clearInterval(lbScrollInterval);
+            if (!el || el.scrollHeight <= el.clientHeight) return;
+            let direction = 1; // 1=down, -1=up
+            let pos = 0;
+            lbScrollInterval = setInterval(() => {
+                // pause at ends
+                if (direction === 1 && pos >= el.scrollHeight - el.clientHeight) {
+                    direction = -1;
+                    setTimeout(() => {}, 800);
+                } else if (direction === -1 && pos <= 0) {
+                    direction = 1;
+                    setTimeout(() => {}, 800);
+                }
+                pos += direction * 1.2;
+                pos = Math.max(0, Math.min(pos, el.scrollHeight - el.clientHeight));
+                el.scrollTop = pos;
+            }, 30);
+            // stop scroll on user touch
+            el.addEventListener('touchstart', () => { clearInterval(lbScrollInterval); lbScrollInterval = null; }, { once: true });
+            el.addEventListener('mouseenter', () => { clearInterval(lbScrollInterval); lbScrollInterval = null; }, { once: true });
         }
 
         /* ═══════════ INIT ═══════════ */
