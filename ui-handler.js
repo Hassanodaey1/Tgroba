@@ -1,11 +1,79 @@
-function openGameSettings() {
+function openMainSettings() {
+            updateMainSettingsUI();
+            openSheet('mainSettingsSheet');
+        }
+
+        function updateMainSettingsUI() {
+            const sv = st.soundVolume !== undefined ? st.soundVolume : 80;
+            const bv = st.bgVolume !== undefined ? st.bgVolume : 30;
+            // main sheet
+            const ms = document.getElementById('msSoundStatus'); if (ms) ms.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
+            const mb = document.getElementById('msBgStatus'); if (mb) mb.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
+            const mv = document.getElementById('msVibStatus'); if (mv) mv.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+            const mss = document.getElementById('msSoundSlider'); if (mss) mss.value = sv;
+            const mbs = document.getElementById('msBgSlider'); if (mbs) mbs.value = bv;
+            const msvl = document.getElementById('msSoundVolLabel'); if (msvl) msvl.textContent = sv + '%';
+            const mbvl = document.getElementById('msBgVolLabel'); if (mbvl) mbvl.textContent = bv + '%';
+            // settings page sliders
+            const ss = document.getElementById('soundVolSlider'); if (ss) ss.value = sv;
+            const bs = document.getElementById('bgVolSlider'); if (bs) bs.value = bv;
+            const svl = document.getElementById('soundVolLabel'); if (svl) svl.textContent = sv + '%';
+            const bvl = document.getElementById('bgVolLabel'); if (bvl) bvl.textContent = bv + '%';
+            const vs = document.getElementById('vibrationStatus'); if (vs) vs.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+        }
+
+        function setSoundVolume(val) {
+            st.soundVolume = parseInt(val);
+            const svl = document.getElementById('soundVolLabel'); if (svl) svl.textContent = val + '%';
+            const msvl = document.getElementById('msSoundVolLabel'); if (msvl) msvl.textContent = val + '%';
+            const ss = document.getElementById('soundVolSlider'); if (ss) ss.value = val;
+            const mss = document.getElementById('msSoundSlider'); if (mss) mss.value = val;
+            saveSt();
+            playSound('click');
+        }
+
+        function setBgVolume(val) {
+            st.bgVolume = parseInt(val);
+            const bvl = document.getElementById('bgVolLabel'); if (bvl) bvl.textContent = val + '%';
+            const mbvl = document.getElementById('msBgVolLabel'); if (mbvl) mbvl.textContent = val + '%';
+            const bs = document.getElementById('bgVolSlider'); if (bs) bs.value = val;
+            const mbs = document.getElementById('msBgSlider'); if (mbs) mbs.value = val;
+            saveSt();
+        }
+
+        function toggleVibration() {
+            st.vibrationOn = !st.vibrationOn;
+            saveSt();
+            updateMainSettingsUI();
+            if (st.vibrationOn) doVibrate(50);
+        }
+
+        function doVibrate(ms = 30) {
+            if (!st.vibrationOn) return;
+            try { if (navigator.vibrate) navigator.vibrate(ms); } catch(e) {}
+        }
+        function renderProfileTasksSummary() {
+            const el = document.getElementById('profileTasksSummary');
+            if (!el || !st.dailyTasks) return;
+            const done = st.dailyTasks.filter(t => t.done);
+            const total = st.dailyTasks.length;
+            if (total === 0) { el.innerHTML = '<div style="font-size:0.72em;color:var(--text3);padding:6px;">لا توجد مهام اليوم</div>'; return; }
+            const pct = Math.round((done.length / total) * 100);
+            let html = `<div style="display:flex;justify-content:space-between;font-size:0.72em;color:var(--text2);margin-bottom:4px;"><span>${done.length} / ${total} مهام</span><span style="color:var(--accent2);">${pct}%</span></div>`;
+            html += `<div style="background:var(--surface3);border-radius:8px;height:6px;overflow:hidden;margin-bottom:8px;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:8px;transition:width 0.4s;"></div></div>`;
+            st.dailyTasks.forEach(t => {
+                html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border2);">
+                    <span style="font-size:1.1em;">${t.done ? '✅' : '⬜'}</span>
+                    <span style="font-size:0.72em;color:${t.done ? 'var(--text3)' : 'var(--text)'};text-decoration:${t.done ? 'line-through' : 'none'};flex:1;">${t.label || t.desc || ''}</span>
+                    <span style="font-size:0.65em;color:var(--gold);">${t.reward || 0}💰</span>
+                </div>`;
+            });
+            el.innerHTML = html;
+        }
+
+        function openGameSettings() {
             document.getElementById('gsoundStatus').textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
             document.getElementById('gbgMusicStatus').textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
-            // Sync volume sliders
-            const gSV = document.getElementById('gSoundVolSlider'); if(gSV) gSV.value = st.soundVolume;
-            const gSVV = document.getElementById('gSoundVolVal'); if(gSVV) gSVV.textContent = st.soundVolume + '%';
-            const gBV = document.getElementById('gBgVolSlider'); if(gBV) gBV.value = st.bgVolume;
-            const gBVV = document.getElementById('gBgVolVal'); if(gBVV) gBVV.textContent = st.bgVolume + '%';
             openSheet('gameSettingsSheet');
         }
 
@@ -47,37 +115,17 @@ function openGameSettings() {
             if (!grid) return;
             if (!st.ownedEmojis || st.ownedEmojis.length === 0) st.ownedEmojis = [
             getDefaultAvatarForGender(st.gender)];
-            // Full shop: owned items selectable, unowned items purchasable
             grid.innerHTML = EMOJI_CATALOG.map(item => {
                 const owned = st.ownedEmojis.includes(item.emoji);
                 const selected = st.avatar === item.emoji;
                 if (item.price === 0 && item.gender && item.gender !== st.gender) return '';
-                if (owned) {
-                    return `<div class="emoji-shop-item owned ${selected?'selected':''}" onclick="buyOrSelectEmoji('${item.emoji}',0)" title="${item.label}">
-                        <div class="emoji-shop-item-icon">${item.emoji}</div>
-                        ${selected ? `<div class="emoji-shop-item-owned">✅ مفعّل</div>` : `<div class="emoji-shop-item-owned">اختر</div>`}
-                    </div>`;
-                } else {
-                    return `<div class="emoji-shop-item locked-shop" onclick="buyOrSelectEmoji('${item.emoji}',${item.price})" title="${item.label}">
-                        <div class="emoji-shop-item-icon">${item.emoji}</div>
-                        <div class="emoji-shop-item-price">${item.price > 0 ? item.price + '💰' : 'مجاني'}</div>
-                        <div class="emoji-shop-lock">🔒</div>
-                    </div>`;
-                }
+                return `<div class="emoji-shop-item ${owned?'owned':''} ${selected?'selected':''} ${!owned&&!selected?'locked-shop':''}" onclick="buyOrSelectEmoji('${item.emoji}',${item.price})">
+                    <div class="emoji-shop-item-icon">${item.emoji}</div>
+                    ${owned?(selected?`<div class="emoji-shop-item-owned">✅ مفعّل</div>`:`<div class="emoji-shop-item-owned">مملوك</div>`):`<div class="emoji-shop-item-price">${item.price>0?item.price+'💰':'مجاني'}</div><div class="emoji-shop-lock">🔒</div>`}
+                </div>`;
             }).join('');
             const cd = document.getElementById('shopCoinsDisplay'); if (cd) cd.textContent = st.coins;
             const ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
-        }
-
-        function toggleEmojiShop() {
-            const container = document.getElementById('emojiShopContainer');
-            const btn = document.getElementById('shopToggleBtn');
-            if (!container) return;
-            const isOpen = container.style.display !== 'none';
-            container.style.display = isOpen ? 'none' : 'block';
-            if (btn) btn.textContent = isOpen ? '🛍️ المتجر' : '✖️ إغلاق';
-            if (!isOpen) renderEmojiShop();
-            playSound('click');
         }
 
         function buyOrSelectEmoji(emoji, price) {
@@ -138,78 +186,19 @@ function openGameSettings() {
         }
 
         function loadProfileForm() {
-            const inputName = document.getElementById('inputName');
-            if (inputName) inputName.value = st.name;
+            document.getElementById('inputName').value = st.name;
             if (st.birthDate) {
                 let parts = st.birthDate.split('-');
                 if (parts.length === 3) {
-                    const bd = document.getElementById('birthDay'), bm = document.getElementById('birthMonth'), by = document.getElementById('birthYear');
-                    if(by) by.value = parseInt(parts[0]);
-                    if(bm) bm.value = parseInt(parts[1]);
-                    if(bd) bd.value = parseInt(parts[2]);
+                    document.getElementById('birthYear').value = parseInt(parts[0]);
+                    document.getElementById('birthMonth').value = parseInt(parts[1]);
+                    document.getElementById('birthDay').value = parseInt(parts[2]);
                 }
             }
             selectGender(st.gender, false);
             updateOwnedEmojisForGender();
-            renderProfileDailyTasks();
-            renderProfileAchievements();
+            renderEmojiShop();
             updateBadgeIcon();
-            // Update shop coins display
-            const cd = document.getElementById('shopCoinsDisplay'); if (cd) cd.textContent = st.coins;
-            const ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
-        }
-
-        function renderProfileDailyTasks() {
-            if (!st.dailyTasks) return;
-            const container = document.getElementById('profileTasksList');
-            const barEl = document.getElementById('profileTasksBar');
-            const labelEl = document.getElementById('profileTasksLabel');
-            const pctEl = document.getElementById('profileTasksPct');
-            if (!container) return;
-            const total = st.dailyTasks.length;
-            const done = st.dailyTasks.filter(t => t.done).length;
-            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-            if (barEl) barEl.style.width = pct + '%';
-            if (labelEl) labelEl.textContent = done + ' / ' + total;
-            if (pctEl) pctEl.textContent = pct + '%';
-            if (total === 0) {
-                container.innerHTML = '<div style="font-size:0.75em;color:var(--text2);text-align:center;padding:10px;">لا توجد مهام بعد</div>';
-                return;
-            }
-            container.innerHTML = st.dailyTasks.map(t => {
-                const doneCls = t.done ? 'task-done' : '';
-                return `<div class="task-item ${doneCls}" style="padding:10px 12px;border-radius:13px;display:flex;align-items:center;gap:10px;background:${t.done?'rgba(16,185,129,0.08)':'var(--surface2)'};border:1px solid ${t.done?'rgba(16,185,129,0.25)':'var(--border2)'};">
-                    <div style="font-size:1.3em;">${t.icon||'📋'}</div>
-                    <div style="flex:1;">
-                        <div style="font-size:0.78em;font-weight:700;color:var(--text);">${t.label}</div>
-                        <div style="font-size:0.63em;color:var(--text2);margin-top:2px;">${t.done?'✅ منجزة':'⏳ قيد التنفيذ'} • +${t.coins}💰</div>
-                    </div>
-                    ${t.done ? '<div style="font-size:1.2em;">✅</div>' : `<div style="font-size:0.68em;color:var(--text3);">${t.progress||0}/${t.target||1}</div>`}
-                </div>`;
-            }).join('');
-        }
-
-        function renderProfileAchievements() {
-            const container = document.getElementById('profileAchieveList');
-            const pctEl = document.getElementById('profileAchievePct');
-            const rewardEl = document.getElementById('profileAchieveReward');
-            if (!container) return;
-            if (typeof ACHIEVEMENTS_DEF === 'undefined') return;
-            const unlocked = st.achievementsUnlocked || [];
-            if (pctEl) pctEl.textContent = unlocked.length + '/' + ACHIEVEMENTS_DEF.length;
-            const allDone = unlocked.length >= ACHIEVEMENTS_DEF.length;
-            if (rewardEl) rewardEl.style.display = (allDone && st.achievementRewardClaimed) ? 'block' : 'none';
-            container.innerHTML = ACHIEVEMENTS_DEF.map(a => {
-                const done = unlocked.includes(a.id);
-                return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:13px;background:${done?'rgba(16,185,129,0.08)':'var(--surface2)'};border:1px solid ${done?'rgba(16,185,129,0.25)':'var(--border2)'};margin-bottom:6px;">
-                    <div style="font-size:1.4em;${done?'':'filter:grayscale(1);opacity:0.5'}">${a.icon}</div>
-                    <div style="flex:1;">
-                        <div style="font-size:0.78em;font-weight:700;color:${done?'var(--text)':'var(--text2)'};">${a.name}</div>
-                        <div style="font-size:0.63em;color:var(--text2);margin-top:1px;">${a.desc}</div>
-                    </div>
-                    <div style="font-size:0.75em;font-weight:900;color:${done?'var(--gold)':'var(--text3)'};">${done?'✅ '+a.reward+'💰':'🔒'}</div>
-                </div>`;
-            }).join('');
         }
 
         function selectGender(g, snd = true) {
@@ -336,6 +325,8 @@ function openGameSettings() {
             document.getElementById('headerXpBar').style.width = xpPct + '%';
             document.getElementById('headerXp').textContent = `⚡ ${st.xp} XP`;
             document.getElementById('headerAvatar').textContent = av;
+            document.getElementById('soundBtn').textContent = st.soundOn ? '🔊' : '🔇';
+            document.getElementById('bgBtn').textContent = st.bgOn ? '🎵' : '🔕';
             document.getElementById('profileName').textContent = st.name;
             document.getElementById('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
             document.getElementById('profileXpFill').style.width = xpPct + '%';
@@ -347,27 +338,14 @@ function openGameSettings() {
             document.getElementById('statCoinsP').textContent = st.coins;
             document.getElementById('soundStatus').textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
             document.getElementById('bgMusicStatus').textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
-            const vibEl = document.getElementById('vibrationStatus');
-            if (vibEl) vibEl.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
-            // Profile competition stats
-            const pTG = document.getElementById('profileTotalGames'); if(pTG) pTG.textContent = st.totalGames;
-            const pBS = document.getElementById('profileBestScore'); if(pBS) pBS.textContent = st.bestScore;
-            const pAcc = document.getElementById('profileAccuracy');
-            if(pAcc) {
-                const tot = st.correctTotal + st.wrongTotal;
-                pAcc.textContent = tot > 0 ? Math.round((st.correctTotal/tot)*100)+'%' : '0%';
-            }
-            const pCB = document.getElementById('profileChallengeBest'); if(pCB) pCB.textContent = st.challengeBestScore || 0;
             updateHomeStats();
             renderHistory();
             renderTasks();
             renderAchievements();
-            renderProfileDailyTasks();
-            renderProfileAchievements();
             updateUnlocks();
             updateBadgeIcon();
             updateWeaknessArea();
-            initVolumeSliders();
+            updateMainSettingsUI();
         }
 
         function updateHomeStats() {
@@ -509,10 +487,7 @@ function openGameSettings() {
         applyDarkMode();
         updateUI();
         loadProfileForm();
-        initVolumeSliders();
-        // Init vibration status
-        const _vibEl = document.getElementById('vibrationStatus');
-        if (_vibEl) _vibEl.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+        updateMainSettingsUI();
         (function() {
             const chips = document.querySelectorAll('.diff-chip');
             chips.forEach(c => c.classList.remove('active'));
