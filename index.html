@@ -1,880 +1,228 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HO Math">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#07090f">
-    <meta name="telegram:card" content="summary_large_image">
-    <meta name="telegram:title" content="HO Math - تحديات الرياضيات">
-    <meta name="telegram:description" content="لعبة تعليمية ممتعة لتحدي مهاراتك في الرياضيات">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="HO Math">
-    <meta name="twitter:description" content="تحدى نفسك في العمليات الحسابية والقوانين الرياضية">
-    <meta property="og:title" content="HO Math - تحديات الرياضيات">
-    <meta property="og:description" content="لعبة تعليمية ممتعة لتطوير مهاراتك الحسابية">
-    <meta property="og:type" content="website">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="format-detection" content="telephone=no">
-    <title>HO Math - تحديات الرياضيات</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js">
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js">
-    </script>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+/* ═══════════ CHECK ANSWER ═══════════ */
+        function checkAnswer(btn) {
+            if (G.answered || G.ended) return;
+            G.answered = true;
+            const val = parseInt(btn.getAttribute('data-val'));
+            document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+            if (val === G.correctAnswer) {
+                btn.classList.add('correct');
+                G.correct++;
+                G.streak++;
+                if (G.streak > G.bestStreak) G.bestStreak = G.streak;
+                G.score += 10 + G.streak * 2;
+                G.coinsEarned += 0.4;
+                showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
+                playSound('correct');
+                const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
+                if (timerActive) {
+                    G.timeLeft = Math.min(G.maxTime, G.timeLeft + 1);
+                    const pct = (G.timeLeft / G.maxTime) * 100;
+                    document.getElementById('timerBar').style.width = pct + '%';
+                    const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
+                    if (G.timeLeft <= 10) { document.getElementById('timerBar').classList.add('danger');
+                        bt.classList.add('danger'); } else { document.getElementById('timerBar').classList.remove(
+                            'danger');
+                        bt.classList.remove('danger'); }
+                }
+                if (G.currentCatKey && st.stats[G.currentCatKey]) {
+                    const s = st.stats[G.currentCatKey];
+                    s.att++;
+                    s.cor++;
+                    s.max += 3;
+                    s.stars += Math.min(3, Math.floor(G.streak / 3) + 1);
+                    if (G.streak >= 3) s.first++;
+                }
+                updTask('correct'); if (G.streak >= 3) updTask('streak', G.streak);
+                if (G.streak >= 5) doConfetti();
+                if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
+                showFloatXP(10 + G.streak * 2);
+                if (!G.isTraining) st.correctTotal++;
+            } else {
+                btn.classList.add('wrong');
+                document.querySelectorAll('.answer-btn').forEach(b => { if (parseInt(b.getAttribute('data-val')) ===
+                        G.correctAnswer) b.classList.add('correct'); });
+                G.wrong++;
+                G.streak = 0;
+                const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
+                if (timerActive) {
+                    G.timeLeft = Math.max(0, G.timeLeft - 1);
+                    const pct = (G.timeLeft / G.maxTime) * 100;
+                    document.getElementById('timerBar').style.width = pct + '%';
+                    const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
+                    if (G.timeLeft <= 10) { document.getElementById('timerBar').classList.add('danger');
+                        bt.classList.add('danger'); }
+                    if (G.timeLeft <= 0) { clearGameTimer();
+                        endGame(); return; }
+                }
+                if (G.isTraining) {
+                    showFeedback('❌');
+                    playSound('wrong');
+                    showExplanation();
+                } else {
+                    if (G.livesLeft > 0) {
+                        G.livesLeft--;
+                        updateHeartsDisplay();
+                        showFeedback('❌');
+                        playSound('wrong');
+                        showExplanation();
+                        if (G.livesLeft <= 0) {
+                            if (!st.dailyShieldUsed && useDailyShield()) { G.livesLeft = 1;
+                                updateHeartsDisplay();
+                                showFeedback('🛡️ درع الحماية!'); } else { setTimeout(() => { if (!G.ended)
+                                        endGame(); }, 700); return; }
+                        }
+                    } else {
+                        showFeedback('❌');
+                        playSound('wrong');
+                        showExplanation();
+                    }
+                }
+                if (G.currentCatKey && st.stats[G.currentCatKey]) { st.stats[G.currentCatKey].att++;
+                    st.stats[G.currentCatKey].max += 3; }
+                if (!G.isTraining) st.wrongTotal++;
+            }
+            document.getElementById('statScore').textContent = G.score;
+            document.getElementById('streakNum').textContent = G.streak;
+            document.getElementById('streakFire').style.display = G.streak >= 3 ? 'inline' : 'none';
+            updateGameCoinsDisplay();
+            const delay = 350;
+            setTimeout(() => {
+                if (G.ended) return;
+                if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G
+                    .currentQ >= G.totalQ) endGame();
+                else loadQuestion();
+            }, delay);
+        }
 
-    <div class="ambient">
-        <div class="ambient-orb orb1"></div>
-        <div class="ambient-orb orb2"></div>
-        <div class="ambient-orb orb3"></div>
-    </div>
-    <div class="particles" id="particles"></div>
-    <div class="feedback-toast" id="feedbackToast"></div>
+        function showFeedback(msg) {
+            const t = document.getElementById('feedbackToast');
+            t.textContent = msg;
+            t.classList.remove('show');
+            void t.offsetWidth;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 900);
+        }
 
-    <!-- SPLASH SCREEN -->
-    <div class="splash-screen" id="splashScreen">
-        <div class="splash-bg-symbols" id="splashSymbols"></div>
-        <div class="splash-logo">H O</div>
-        <div class="splash-subtitle">تحديات في الرياضيات</div>
-        <div class="splash-dots"><span class="splash-dot"></span><span class="splash-dot"></span><span class="splash-dot"></span></div>
-    </div>
+        function showFloatXP(amt) {
+            let el = document.createElement('div');
+            el.className = 'float-xp';
+            el.textContent = `+${amt}`;
+            el.style.cssText = `left:${rnd(30,65)}%;top:40%;`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
 
-    <!-- CONFIRM DIALOG -->
-    <div class="confirm-overlay" id="confirmOverlay">
-        <div class="confirm-dialog">
-            <div class="confirm-title" id="confirmTitle">تأكيد</div>
-            <div class="confirm-msg" id="confirmMsg"></div>
-            <div class="confirm-btns">
-                <button class="confirm-btn-yes" id="confirmBtnYes">نعم</button>
-                <button class="confirm-btn-no" id="confirmBtnNo">إلغاء</button>
-            </div>
-        </div>
-    </div>
+        function showComboEffect(c) {
+            let popup = document.createElement('div');
+            popup.className = 'combo-popup';
+            popup.textContent = `🔥 ×${c}`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 900);
+        }
 
-    <!-- GAME OVERLAY -->
-    <div class="game-overlay" id="gameOverlay">
-        <div class="game-header">
-            <button class="game-back-btn" onclick="confirmQuit()" aria-label="رجوع">‹</button>
-            <div class="game-title" id="gameModeTitle">🧮 كلاسيك</div>
-            <div style="display:flex;align-items:center;gap:6px;">
-                <button class="game-settings-btn" onclick="openGameSettings()" aria-label="إعدادات">⚙️</button>
-                <div class="game-score-pill">💰 <span id="gameCoins">0</span></div>
-            </div>
-        </div>
-        <div class="timer-bar-wrap">
-            <div class="timer-bar-fill" id="timerBar" style="width:100%"></div>
-        </div>
-        <div class="game-body">
-            <div class="game-stats-row">
-                <div class="game-stat">
-                    <div class="game-stat-num" id="statScore" style="color:var(--gold)">0</div>
-                    <div class="game-stat-label">النقاط</div>
-                </div>
-                <div class="game-stat">
-                    <div class="game-stat-num" id="statQ" style="color:var(--accent2)">1/10</div>
-                    <div class="game-stat-label">السؤال</div>
-                </div>
-                <div class="game-stat" id="heartsStat">
-                    <div class="hearts-row" id="heartsRow">❤️❤️❤️</div>
-                    <div class="game-stat-label">القلوب</div>
-                </div>
-                <div class="game-stat">
-                    <div class="streak-display"><span class="streak-fire" id="streakFire" style="display:none">🔥</span><span id="streakNum" style="color:var(--red)">0</span></div>
-                    <div class="game-stat-label">تتابع</div>
-                </div>
-            </div>
-            <div id="bigTimerWrap" style="display:none;">
-                <div class="big-timer" id="bigTimer">00</div>
-            </div>
-            <div class="question-card">
-                <div class="question-number" id="questionNumber">السؤال 1 من 10</div>
-                <div class="question-text" id="questionText">...</div>
-                <div class="question-hint" id="questionHint">ما هو الجواب؟</div>
-            </div>
-            <div class="visual-aid" id="visualAid"></div>
-            <div class="answers-grid" id="answersGrid"></div>
-            <div id="explanationArea"></div>
-            <div class="helpers-bar" id="helpersBar">
-                <div class="helper-btn" id="helperSkip" onclick="useHelper('skip')">
-                    <div class="helper-btn-icon">⏭️</div>
-                    <div class="helper-btn-label">تخطّي</div>
-                    <div class="helper-btn-cost">3💰</div>
-                </div>
-                <div class="helper-btn" id="helperRemove" onclick="useHelper('remove')">
-                    <div class="helper-btn-icon">🗑️</div>
-                    <div class="helper-btn-label">حذف إجابة</div>
-                    <div class="helper-btn-cost">4💰</div>
-                </div>
-                <div class="helper-btn" id="helperHeart" onclick="useHelper('heart')">
-                    <div class="helper-btn-icon">💖</div>
-                    <div class="helper-btn-label">قلب إضافي</div>
-                    <div class="helper-btn-cost">7💰</div>
-                </div>
-            </div>
-            <button class="return-home-btn" onclick="confirmQuit()">🏠 العودة إلى القائمة الرئيسية</button>
-        </div>
-    </div>
+        function showExplanation() {
+            if (!G.currentExplanation) return;
+            document.getElementById('explanationArea').innerHTML =
+                `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${G.correctAnswer}</strong><br>الشرح: ${G.currentExplanation}</div>`;
+        }
 
-    <!-- RESULTS OVERLAY -->
-    <div class="results-overlay" id="resultsOverlay">
-        <div class="results-card">
-            <div class="results-emoji" id="resultsEmoji">🏆</div>
-            <div class="results-title" id="resultsTitle">رائع!</div>
-            <div class="results-sub" id="resultsSub"></div>
-            <div class="results-stats">
-                <div class="results-stat">
-                    <div class="results-stat-num" id="resScore">0</div>
-                    <div class="results-stat-label">نقاط</div>
-                </div>
-                <div class="results-stat">
-                    <div class="results-stat-num" id="resCorrect">0</div>
-                    <div class="results-stat-label">صحيح</div>
-                </div>
-                <div class="results-stat">
-                    <div class="results-stat-num" id="resStreak">0</div>
-                    <div class="results-stat-label">تتابع</div>
-                </div>
-            </div>
-            <div class="results-xp" id="resultsXP">+0 XP • +0 💰</div>
-            <button class="res-btn primary" onclick="playAgain()">🔄 العب مجدداً</button>
-            <button class="res-btn secondary" onclick="goHome()">🏠 الرئيسية</button>
-        </div>
-    </div>
+        /* ═══════════ END GAME ═══════════ */
+        function endGame() {
+            if (G.ended) return;
+            G.ended = true;
+            clearGameTimer();
+            if (!G.isTraining) {
+                const earnedCoins = Math.floor(G.coinsEarned);
+                st.correctTotal += G.correct;
+                st.wrongTotal += G.wrong;
+                st.coins += earnedCoins;
+                st.totalGames++;
+                if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
+                if (G.score > st.bestScore) st.bestScore = G.score;
+                const xpGained = G.score * 2 + G.correct * 5;
+                st.xp += xpGained;
+                while (st.xp >= st.xpToNext) { st.xp -= st.xpToNext;
+                    st.level++;
+                    st.xpToNext = Math.floor(st.xpToNext * 1.3);
+                    playSound('levelup'); }
+                if (['classic', 'speed', 'survival', 'frenzy'].includes(G.mode)) { st.catCounter.correct += G.correct;
+                    st.catCounter.total += G.correct + G.wrong; }
+                if (['speed', 'survival', 'frenzy', 'daily'].includes(G.mode)) st.catChallenges.games++;
+                updTask('game'); if (G.mode === 'daily') updTask('daily');
+                const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
+                st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
+                if (st.history.length > 10) st.history.pop();
+                saveSt();
+                updateUI();
+                checkAchievements();
+                syncWithLeaderboard();
+                const pct = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
+                const emj = pct >= 90 ? '🏆' : pct >= 70 ? '⭐' : pct >= 50 ? '😊' : '💪';
+                const ttl = pct >= 90 ? 'ممتاز!' : pct >= 70 ? 'رائع!' : pct >= 50 ? 'جيد!' : 'حاول مجدداً!';
+                document.getElementById('resultsEmoji').textContent = emj;
+                document.getElementById('resultsTitle').textContent = ttl;
+                document.getElementById('resultsSub').textContent =
+                    `${G.correct} صحيح من ${G.correct+G.wrong} سؤال • ${acc}% دقة`;
+                document.getElementById('resScore').textContent = G.score;
+                document.getElementById('resCorrect').textContent = G.correct;
+                document.getElementById('resStreak').textContent = G.bestStreak;
+                document.getElementById('resultsXP').textContent = `+${xpGained} XP • +${earnedCoins} 💰`;
+                document.getElementById('gameOverlay').classList.remove('active');
+                document.getElementById('resultsOverlay').classList.add('active');
+                if (pct >= 70) doConfetti();
+            } else {
+                document.getElementById('gameOverlay').classList.remove('active');
+                goTab('home');
+                showFeedback('🎓 انتهى التدريب');
+            }
+        }
 
-    <!-- MODE PICKER SHEET -->
-    <div class="sheet-overlay" id="modeSheet" onclick="sheetBg(event,'modeSheet')">
-        <div class="sheet-panel">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">🎯 اختر نمط اللعب</div>
-            <div class="mode-grid">
-                <div class="mode-card" onclick="startGameWith('classic',currentOp, null, false)">
-                    <div class="mode-card-badge">بدون وقت</div><span class="mode-card-icon">🧮</span>
-                    <div class="mode-card-name">كلاسيك</div>
-                    <div class="mode-card-desc">بدون ضغط وقت</div>
-                </div>
-                <div class="mode-card" onclick="startGameWith('speed',currentOp, null, true)"><span class="mode-card-icon">⚡</span>
-                    <div class="mode-card-name">السرعة</div>
-                    <div class="mode-card-desc">60 ثانية • أكثر نقاط</div>
-                </div>
-                <div class="mode-card" onclick="startGameWith('survival',currentOp, null, false)"><span class="mode-card-icon">🔥</span>
-                    <div class="mode-card-name">التحمّل</div>
-                    <div class="mode-card-desc">بدون وقت • 3 أخطاء</div>
-                </div>
-                <div class="mode-card" onclick="startGameWith('frenzy',currentOp, null, true)"><span class="mode-card-icon">💥</span>
-                    <div class="mode-card-name">الاندفاع</div>
-                    <div class="mode-card-desc">30 ثانية • كل إجابة تمنح وقتاً</div>
-                </div>
-                <div class="mode-card" onclick="startGameWith('daily','mix', null, false)">
-                    <div class="mode-card-badge">+3💰</div><span class="mode-card-icon">🌟</span>
-                    <div class="mode-card-name">تحدي اليوم</div>
-                    <div class="mode-card-desc">5 أسئلة يومية • بدون وقت</div>
-                </div>
-                <div class="mode-card" onclick="closeSheet('modeSheet');startTrainingMode()"><span class="mode-card-icon">🎓</span>
-                    <div class="mode-card-name">تدريب</div>
-                    <div class="mode-card-desc">اختر وقتك • بدون عقوبة</div>
-                </div>
-            </div>
-            <button class="sheet-cancel" onclick="closeSheet('modeSheet')">إلغاء</button>
-        </div>
-    </div>
+        function playAgain() { document.getElementById('resultsOverlay').classList.remove('active');
+            startGameWith(G.mode, G.op, G.customTable, G.hasTimer); }
 
-    <!-- OP PICKER SHEET -->
-    <div class="sheet-overlay" id="opSheet" onclick="sheetBg(event,'opSheet')">
-        <div class="sheet-panel">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title" id="opSheetTitle">🧮 العمليات على الاعداد</div>
-            <div class="mode-grid" id="opModeGrid"></div>
-            <button class="sheet-cancel" onclick="closeSheet('opSheet')">إلغاء</button>
-        </div>
-    </div>
+        function goHome() { document.getElementById('resultsOverlay').classList.remove('active');
+            goTab('home'); }
 
-    <!-- TRAINING OP SHEET -->
-    <div class="sheet-overlay" id="trainingOpSheet" onclick="sheetBg(event,'trainingOpSheet')">
-        <div class="sheet-panel">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">🎓 اختر العملية للتدريب</div>
-            <div class="mode-grid" id="trainingOpGrid"></div>
-            <button class="sheet-cancel" onclick="closeSheet('trainingOpSheet')">إلغاء</button>
-        </div>
-    </div>
+        function confirmQuit() {
+            showConfirm('إنهاء اللعبة', 'هل أنت متأكد من العودة إلى الصفحة الرئيسية؟\nستفقد تقدمك في هذه الجلسة.',
+                'نعم، عد', 'استمرار', ok => {
+                    if (ok) {
+                        clearGameTimer();
+                        document.getElementById('gameOverlay').classList.remove('active');
+                        document.getElementById('resultsOverlay').classList.remove('active');
+                        if (G.correct > 0 || G.wrong > 0 && !G.ended && !G.isTraining) endGame();
+                        else { G.ended = true;
+                            clearGameTimer();
+                            goTab('home'); }
+                    }
+                });
+        }
 
-    <!-- GAME SETTINGS SHEET -->
-    <div class="sheet-overlay" id="gameSettingsSheet" onclick="sheetBg(event,'gameSettingsSheet')">
-        <div class="sheet-panel">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">⚙️ إعدادات سريعة</div>
-            <div class="settings-list" style="margin-bottom:14px;">
-                <div class="settings-row" onclick="toggleSound()"><span class="settings-row-icon">🔊</span><span class="settings-row-label">الأصوات</span><span class="settings-row-val" id="gsoundStatus">مفعّل</span></div>
-                <div class="settings-row" onclick="toggleBgMusicInGame()"><span class="settings-row-icon">🎵</span><span class="settings-row-label">موسيقى الخلفية</span><span class="settings-row-val" id="gbgMusicStatus">مفعّلة</span></div>
-            </div>
-            <button class="sheet-cancel" onclick="closeSheet('gameSettingsSheet')">إغلاق</button>
-        </div>
-    </div>
+        function doConfetti() {
+            const c = ['#f0b90b', '#7c3aed', '#06b6d4', '#10b981', '#ef4444', '#ffd54f'];
+            for (let i = 0; i < 45; i++) { const el = document.createElement('div');
+                el.className = 'confetti-piece';
+                el.style.cssText =
+                    `left:${Math.random()*100}%;top:-10px;background:${c[rnd(0,5)]};width:${4+Math.random()*7}px;height:${4+Math.random()*7}px;border-radius:${Math.random()>0.5?'50%':'2px'};animation-delay:${Math.random()*0.9}s;animation-duration:${1.4+Math.random()*1.2}s;`;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 3200); }
+        }
 
-    <!-- MAIN SETTINGS SHEET (header ⚙️ button) -->
-    <div class="sheet-overlay" id="mainSettingsSheet" onclick="sheetBg(event,'mainSettingsSheet')">
-        <div class="sheet-panel">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">⚙️ الإعدادات</div>
-            <div class="settings-list" style="margin-bottom:8px;">
-                <div class="settings-row" onclick="toggleSound();updateMainSettingsUI()">
-                    <span class="settings-row-icon">🔊</span><span class="settings-row-label">أصوات اللعبة</span><span class="settings-row-val" id="msSoundStatus">مفعّل</span>
-                </div>
-                <div class="vol-slider-row">
-                    <span style="font-size:0.7em;color:var(--text3);">🔈</span>
-                    <input type="range" min="0" max="100" value="80" id="msSoundSlider" class="vol-slider" oninput="setSoundVolume(this.value)">
-                    <span style="font-size:0.7em;color:var(--text3);">🔊</span>
-                    <span id="msSoundVolLabel" style="font-size:0.68em;color:var(--accent2);font-weight:700;min-width:28px;text-align:center;">80%</span>
-                </div>
-                <div class="settings-row" onclick="toggleBgMusic();updateMainSettingsUI()">
-                    <span class="settings-row-icon">🎵</span><span class="settings-row-label">موسيقى الخلفية</span><span class="settings-row-val" id="msBgStatus">مفعّلة</span>
-                </div>
-                <div class="vol-slider-row">
-                    <span style="font-size:0.7em;color:var(--text3);">🔈</span>
-                    <input type="range" min="0" max="100" value="30" id="msBgSlider" class="vol-slider" oninput="setBgVolume(this.value)">
-                    <span style="font-size:0.7em;color:var(--text3);">🔊</span>
-                    <span id="msBgVolLabel" style="font-size:0.68em;color:var(--accent2);font-weight:700;min-width:28px;text-align:center;">30%</span>
-                </div>
-                <div class="settings-row" onclick="toggleVibration();updateMainSettingsUI()">
-                    <span class="settings-row-icon">📳</span><span class="settings-row-label">الاهتزاز عند النقر</span><span class="settings-row-val" id="msVibStatus">مفعّل</span>
-                </div>
-            </div>
-            <button class="sheet-cancel" onclick="closeSheet('mainSettingsSheet');goTab('settings')" style="background:var(--surface3);color:var(--text2);margin-bottom:8px;">⚙️ كل الإعدادات</button>
-            <button class="sheet-cancel" onclick="closeSheet('mainSettingsSheet')">إغلاق</button>
-        </div>
-    </div>
+        function updateDailyShield() {
+            const today = todayStr();
+            if (st.lastDailyDate !== today) {
+                let yesterday = new Date(Date.now() - 86400000).toDateString();
+                st.dailyStreak = st.lastDailyDate === yesterday ? st.dailyStreak + 1 : 1;
+                st.lastDailyDate = today;
+                st.dailyShieldUsed = false;
+                saveSt();
+            }
+        }
 
-    <!-- MAIN APP WRAPPER -->
-    <div class="app-wrapper">
-        <div class="shell">
-            <div class="top-header">
-                <div class="th-left">
-                    <div class="avatar-wrap" onclick="goTab('profile')">
-                        <div class="avatar-ring"></div>
-                        <div class="avatar-inner" id="headerAvatar">🧑</div>
-                        <span class="badge-icon" id="badgeDisplay"></span>
-                    </div>
-                    <div class="player-info">
-                        <div class="player-name" id="headerName">اللاعب</div>
-                        <div class="player-sub" id="headerSub">Lv.1 • مبتدئ</div>
-                    </div>
-                </div>
-                <div class="xp-pill">
-                    <div class="xp-pill-bar">
-                        <div class="xp-pill-fill" id="headerXpBar" style="width:0%"></div>
-                    </div>
-                    <span class="xp-pill-lv" id="headerXp">⚡ 0 XP</span>
-                </div>
-                <div class="th-right">
-                    <div class="icon-pill" onclick="openMainSettings()" title="الإعدادات">⚙️</div>
-                </div>
-            </div>
-
-            <div class="pages">
-                <!-- HOME PAGE -->
-                <div class="page active" id="page-home">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="hero-greeting">مرحباً مجدداً 👋</div>
-                                <div class="hero-title">تحديات <span>الرياضيات</span></div>
-                                <div class="stars-big" id="homeStars">☆☆☆☆☆</div>
-                            </div>
-                            <div class="coins-badge">💰 <span id="homeCoins">0</span></div>
-                        </div>
-                    </div>
-                    <div class="session-timer-card">
-                        <div class="session-timer-label">⏱️ وقت اللعب اليوم</div>
-                        <div class="session-timer-value" id="sessionTimerDisplay">00:00:00</div>
-                    </div>
-                    <div>
-                        <div class="section-label">التقييم العام</div>
-                        <div class="rating-card">
-                            <div class="rating-inner">
-                                <div>
-                                    <div class="rating-num-big" id="ratingNum">0.0</div>
-                                    <div class="rating-num-sub">من 5.0</div>
-                                </div>
-                                <div class="rating-right">
-                                    <div class="rating-stars-disp" id="ratingStars">☆☆☆☆☆</div>
-                                    <div class="rating-bar-track">
-                                        <div class="rating-bar-fill" id="ratingBar" style="width:0%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="section-label">إحصائيات متقدمة</div>
-                        <div class="adv-stats-grid">
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeCorrect" style="color:var(--green)">0</div>
-                                <div class="adv-stat-label">إجابات صحيحة</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeAccuracy" style="color:var(--accent2)">0%</div>
-                                <div class="adv-stat-label">الدقة</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeStreak" style="color:var(--red)">×0</div>
-                                <div class="adv-stat-label">أعلى تتابع</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeGames" style="color:var(--gold)">0</div>
-                                <div class="adv-stat-label">جلسات</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeLevel" style="color:var(--accent)">1</div>
-                                <div class="adv-stat-label">المستوى</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeBestScore" style="color:var(--gold2)">0</div>
-                                <div class="adv-stat-label">أعلى نقاط</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="section-label">تفاصيل الفئات</div>
-                        <div class="cat-grid">
-                            <div class="cat-card" style="--chip-color:#f0b90b" id="homeCatCounter" onclick="openOpSheet('counter')">
-                                <div class="cat-icon">🧮</div>
-                                <div class="cat-name">العمليات على الاعداد</div>
-                                <div class="cat-progress">
-                                    <div class="cat-progress-fill" id="catProg0" style="width:0%"></div>
-                                </div>
-                                <div class="cat-stats" id="catStats0">0% • 0 صح</div>
-                            </div>
-                            <div class="cat-card" style="--chip-color:#7c3aed" id="homeCatChallenges" onclick="openOpSheet('challenges')">
-                                <div class="cat-icon">⚡</div>
-                                <div class="cat-name">التحديات</div>
-                                <div class="cat-progress">
-                                    <div class="cat-progress-fill" id="catProg1" style="width:0%"></div>
-                                </div>
-                                <div class="cat-stats" id="catStats1">0 جلسة</div>
-                            </div>
-                            <div class="cat-card locked" style="--chip-color:#06b6d4" id="catAdvanced">
-                                <div class="cat-icon">📐</div>
-                                <div class="cat-name">رياضيات متقدمة</div>
-                                <div class="cat-progress">
-                                    <div class="cat-progress-fill" style="width:0%"></div>
-                                </div>
-                                <div class="cat-stats" id="catAdvancedStats">🔒 يفتح Lv.7</div>
-                            </div>
-                            <div class="cat-card locked" style="--chip-color:#10b981" id="catLaws">
-                                <div class="cat-icon">📜</div>
-                                <div class="cat-name">قوانين وألغاز</div>
-                                <div class="cat-progress">
-                                    <div class="cat-progress-fill" style="width:0%"></div>
-                                </div>
-                                <div class="cat-stats" id="catLawsStats">🔒 يفتح Lv.10</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="section-label">مستوى الصعوبة</div>
-                        <div class="diff-row">
-                            <div class="diff-chip active" onclick="selectDiff(this,'easy')"><span class="diff-chip-icon">🟢</span>سهل</div>
-                            <div class="diff-chip" id="diffMedium" onclick="selectDiff(this,'medium')"><span class="diff-chip-icon">🟡</span>متوسط
-                                <div class="lock-tag" id="lockMedium" style="display:block">🔒 Lv.3</div>
-                            </div>
-                            <div class="diff-chip" id="diffHard" onclick="selectDiff(this,'hard')"><span class="diff-chip-icon">🟠</span>صعب
-                                <div class="lock-tag" id="lockHard" style="display:block">🔒 Lv.5</div>
-                            </div>
-                            <div class="diff-chip" id="diffGenius" onclick="selectDiff(this,'genius')"><span class="diff-chip-icon">🔴</span>عبقري
-                                <div class="lock-tag" id="lockGenius" style="display:block">🔒 Lv.8</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="weaknessArea" class="weakness-area"></div>
-                    <div>
-                        <div class="section-label">آخر 10 نتائج</div>
-                        <div class="history-card">
-                            <div class="history-scroll" id="historyScroll">
-                                <div style="font-size:0.74em;color:var(--text3);padding:6px;">لا توجد نتائج بعد — العب الآن!</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="daily-banner" onclick="startGameWith('daily','mix', null, false)">
-                        <div class="daily-icon">🌟</div>
-                        <div>
-                            <div class="daily-title">تحدي اليوم</div>
-                            <div class="daily-sub">5 أسئلة متنوعة • +3 عملات</div>
-                        </div>
-                        <div class="daily-badge">جديد</div>
-                    </div>
-                </div>
-
-                <!-- PLAY PAGE -->
-                <div class="page" id="page-play">
-                    <div class="game-cat-card" style="--gc:#f0b90b" id="playCardCounter" onclick="openCounterGame()">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">🧮</div>
-                                <div class="gcard-name">العمليات على الاعداد</div>
-                            </div>
-                            <div class="gcard-badge hot">متاح</div>
-                        </div>
-                        <div class="gcard-desc">الجمع والطرح والضرب والقسمة — اختبر سرعتك في الحساب الذهني</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" id="gcatProg0" style="width:0%"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats" id="gcatStats0">0 إجابة</div>
-                            <div class="gcard-arrow">›</div>
-                        </div>
-                    </div>
-                    <div class="game-cat-card locked" style="--gc:#06b6d4" id="gcardAdvanced">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">📐</div>
-                                <div class="gcard-name">الرياضيات المتقدمة</div>
-                            </div>
-                            <div class="gcard-badge lck">🔒 Lv.7</div>
-                        </div>
-                        <div class="gcard-desc">كسور وعشريات ومعادلات — للمستويات المتقدمة</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" style="width:0%"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats" id="gcardAdvancedStats">يفتح عند Lv.7</div>
-                            <div class="gcard-arrow">🔒</div>
-                        </div>
-                    </div>
-                    <div class="game-cat-card locked" style="--gc:#10b981" id="gcardLaws">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">📜</div>
-                                <div class="gcard-name">قوانين وألغاز</div>
-                            </div>
-                            <div class="gcard-badge lck">🔒 Lv.10</div>
-                        </div>
-                        <div class="gcard-desc">قوانين ومعادلات رياضية شاملة — بطاقات القوانين للمراجعة والتعلم</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" style="width:0%"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats" id="gcardLawsStats">يفتح عند Lv.10</div>
-                            <div class="gcard-arrow">🔒</div>
-                        </div>
-                    </div>
-                    <div class="game-cat-card" style="--gc:#7c3aed" id="playCardChallenges" onclick="openOpSheet('challenges')">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">⚡</div>
-                                <div class="gcard-name">التحديات</div>
-                            </div>
-                            <div class="gcard-badge hot">متاح</div>
-                        </div>
-                        <div class="gcard-desc">أوضاع مكثّفة — السرعة والتحمّل والاندفاع وتحدي اليوم</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" id="gcatProg1" style="width:0%"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats" id="gcatStats1">0 جلسة</div>
-                            <div class="gcard-arrow">›</div>
-                        </div>
-                    </div>
-                    <div class="game-cat-card" style="--gc:#f97316" onclick="openTrainingOpSheet()">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">🎓</div>
-                                <div class="gcard-name">وضع التدريب</div>
-                            </div>
-                            <div class="gcard-badge hot">مجاني</div>
-                        </div>
-                        <div class="gcard-desc">تدرب بدون عقوبة أو ضغط وقت — مثالي للتعلم</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" style="width:0%"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats">بلا حدود</div>
-                            <div class="gcard-arrow">›</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ACHIEVEMENTS PAGE -->
-                <div class="page" id="page-achieve">
-                    <div class="tasks-summary">
-                        <div class="task-stat">
-                            <div class="task-stat-num" id="tasksDone">0</div>
-                            <div class="task-stat-label">مكتملة</div>
-                        </div>
-                        <div class="task-divider"></div>
-                        <div class="task-stat">
-                            <div class="task-stat-num" id="tasksTotal">0</div>
-                            <div class="task-stat-label">اليوم</div>
-                        </div>
-                        <div class="task-divider"></div>
-                        <div class="task-stat">
-                            <div class="task-stat-num" id="tasksCoins">0💰</div>
-                            <div class="task-stat-label">المكافآت</div>
-                        </div>
-                    </div>
-                    <div class="tasks-progress-card">
-                        <div class="tasks-prog-label"><span>تقدّم اليوم</span><span id="tasksPct">0%</span></div>
-                        <div class="tasks-bar-track">
-                            <div class="tasks-bar-fill" id="tasksBarFill" style="width:0%"></div>
-                        </div>
-                    </div>
-                    <div class="daily-timer">
-                        <div class="daily-timer-label">⏰ تجديد المهام في</div>
-                        <div class="daily-timer-val" id="dailyCountdown">--:--:--</div>
-                    </div>
-                    <div>
-                        <div class="section-label">المهام اليومية</div>
-                        <div id="tasksList"></div>
-                    </div>
-                    <div style="margin-top:12px;">
-                        <div class="section-label" style="display:flex;justify-content:space-between;">🏆 الإنجازات <span id="achievePct" style="color:var(--accent2);">0/18</span></div>
-                        <div id="achieveList"></div>
-                        <div id="achieveCompleteReward" style="display:none;text-align:center;margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
-                    </div>
-                </div>
-
-                <!-- PROFILE PAGE -->
-                <div class="page" id="page-profile">
-                    <div class="profile-hero" style="position:relative;">
-                        <div class="profile-avatar-big">
-                            <div class="profile-avatar-ring"></div>
-                            <div class="profile-avatar-img" id="profileAvatarImg">🧑</div>
-                        </div>
-                        <div class="profile-details">
-                            <div class="profile-name-big" id="profileName">اللاعب</div>
-                            <div class="profile-level-big" id="profileLevel">المستوى 1 • مبتدئ</div>
-                            <div class="profile-xp-track">
-                                <div class="profile-xp-fill" id="profileXpFill" style="width:0%"></div>
-                            </div>
-                            <div class="profile-xp-label" id="profileXpLabel">0 / 1000 XP</div>
-                        </div>
-                    </div>
-                    <!-- الإحصائيات -->
-                    <div class="stats-grid3">
-                        <div class="stat-card">
-                            <div class="stat-card-num" id="statCorrect">0</div>
-                            <div class="stat-card-label">إجابة صحيحة</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-num" id="statBestStreak">×0</div>
-                            <div class="stat-card-label">أعلى تتابع</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-num" id="statCoinsP">0</div>
-                            <div class="stat-card-label">💰 عملة</div>
-                        </div>
-                    </div>
-                    <!-- ساحة المنافسة -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🏆 ساحة المنافسة</div>
-                        <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.12));border:1.5px solid rgba(240,185,11,0.25);border-radius:18px;padding:16px;text-align:center;">
-                            <div style="font-size:1.6em;margin-bottom:4px;">⚔️</div>
-                            <div style="font-size:0.85em;font-weight:900;color:var(--text);margin-bottom:2px;">نداء التحدي</div>
-                            <div style="font-size:0.7em;color:var(--text2);margin-bottom:10px;">أفضل نتيجتك: <span style="color:var(--gold);font-weight:900;" id="profileChallengeBest">0</span> نقطة</div>
-                            <button onclick="goTab('leaderboard')" style="width:100%;padding:11px;border-radius:13px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.85em;font-weight:900;border:none;cursor:pointer;">🏆 انتقل للمنافسة</button>
-                        </div>
-                    </div>
-                    <!-- المهام اليومية المنجزة -->
-                    <div class="profile-section">
-                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">📋 المهام اليومية <span onclick="goTab('achieve')" style="font-size:0.75em;color:var(--accent2);cursor:pointer;font-weight:600;">عرض الكل ›</span></div>
-                        <div id="profileTasksSummary" style="display:flex;flex-direction:column;gap:6px;"></div>
-                    </div>
-                    <!-- الرموز التعبيرية -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🎭 الرموز التعبيرية</div>
-                        <div style="font-size:0.68em;color:var(--text2);margin-bottom:8px;">رصيدك: <span id="shopCoinsDisplay" style="color:var(--gold);font-weight:800;">0</span> 💰 — اضغط لتفعيل أو شراء</div>
-                        <div class="emoji-shop-grid" id="emojiShopGrid"></div>
-                    </div>
-                    <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
-                </div>
-
-                <!-- SETTINGS PAGE -->
-                <div class="page" id="page-settings">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="hero-greeting">⚙️ الإعدادات</div>
-                                <div class="hero-title">تخصيص <span>التجربة</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- تعديل الملف الشخصي -->
-                    <div class="profile-section" style="margin-top:12px;">
-                        <div class="profile-section-title">✏️ تعديل الملف الشخصي</div>
-                        <div class="profile-form">
-                            <div class="form-field">
-                                <div class="form-label">الاسم (إنجليزي فقط)</div>
-                                <input class="form-input" type="text" id="inputName" placeholder="English Name (A-Z, 0-9)" maxlength="30">
-                            </div>
-                            <div class="form-field">
-                                <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
-                                <div class="date-row">
-                                    <select id="birthDay" class="date-select"></select>
-                                    <select id="birthMonth" class="date-select"></select>
-                                    <select id="birthYear" class="date-select"></select>
-                                </div>
-                            </div>
-                            <div class="form-field">
-                                <div class="form-label">الجنس</div>
-                                <div class="gender-row">
-                                    <div class="gender-btn" id="gBtnM" onclick="selectGender('m')">👦 ذكر</div>
-                                    <div class="gender-btn" id="gBtnF" onclick="selectGender('f')">👧 أنثى</div>
-                                </div>
-                            </div>
-                            <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
-                        </div>
-                    </div>
-                    <!-- الثيمات والمظهر -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🎨 الثيمات والمظهر</div>
-                        <div class="themes-row">
-                            <div class="dark-light-toggle" onclick="toggleDarkMode()">
-                                <span id="darkLightIcon">🌙</span>
-                                <span id="darkLightLabel">داكن</span>
-                            </div>
-                            <div class="theme-dot active" style="background:#f0b90b" onclick="setTheme(this,'#f0b90b','#7c3aed','#06b6d4')"></div>
-                            <div class="theme-dot" style="background:#38bdf8" onclick="setTheme(this,'#38bdf8','#0ea5e9','#7c3aed')"></div>
-                            <div class="theme-dot" style="background:#4ade80" onclick="setTheme(this,'#4ade80','#16a34a','#06b6d4')"></div>
-                            <div class="theme-dot" style="background:#f97316" onclick="setTheme(this,'#f97316','#ea580c','#a855f7')"></div>
-                            <div class="theme-dot" style="background:#c084fc" onclick="setTheme(this,'#c084fc','#a855f7','#06b6d4')"></div>
-                            <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
-                        </div>
-                    </div>
-                    <!-- الصوت والموسيقى مع شريط التحكم -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🔊 الصوت والموسيقى</div>
-                        <div class="settings-list">
-                            <div class="settings-row" onclick="toggleSound()">
-                                <span class="settings-row-icon">🔊</span>
-                                <span class="settings-row-label">أصوات اللعبة</span>
-                                <span class="settings-row-val" id="soundStatus">مفعّل</span>
-                            </div>
-                            <div class="vol-slider-row" id="soundVolRow">
-                                <span style="font-size:0.7em;color:var(--text3);">🔈</span>
-                                <input type="range" min="0" max="100" value="80" id="soundVolSlider" class="vol-slider" oninput="setSoundVolume(this.value)">
-                                <span style="font-size:0.7em;color:var(--text3);">🔊</span>
-                                <span id="soundVolLabel" style="font-size:0.68em;color:var(--accent2);font-weight:700;min-width:28px;text-align:center;">80%</span>
-                            </div>
-                            <div class="settings-row" onclick="toggleBgMusic()">
-                                <span class="settings-row-icon">🎵</span>
-                                <span class="settings-row-label">موسيقى الخلفية</span>
-                                <span class="settings-row-val" id="bgMusicStatus">مفعّلة</span>
-                            </div>
-                            <div class="vol-slider-row" id="bgVolRow">
-                                <span style="font-size:0.7em;color:var(--text3);">🔈</span>
-                                <input type="range" min="0" max="100" value="30" id="bgVolSlider" class="vol-slider" oninput="setBgVolume(this.value)">
-                                <span style="font-size:0.7em;color:var(--text3);">🔊</span>
-                                <span id="bgVolLabel" style="font-size:0.68em;color:var(--accent2);font-weight:700;min-width:28px;text-align:center;">30%</span>
-                            </div>
-                            <!-- الاهتزاز -->
-                            <div class="settings-row" onclick="toggleVibration()">
-                                <span class="settings-row-icon">📳</span>
-                                <span class="settings-row-label">الاهتزاز عند النقر</span>
-                                <span class="settings-row-val" id="vibrationStatus">مفعّل</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- المحتوى -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">📖 المحتوى</div>
-                        <div class="settings-list">
-                            <div class="settings-row" onclick="openLaws()"><span class="settings-row-icon">📜</span><span class="settings-row-label">تصفح القوانين الرياضية</span><span class="settings-row-val">📖 ›</span></div>
-                            <div class="settings-row" onclick="goTab('achieve')"><span class="settings-row-icon">📋</span><span class="settings-row-label">المهام اليومية والإنجازات</span><span class="settings-row-val" id="profileTaskStatus">0 / 6 ›</span></div>
-                        </div>
-                    </div>
-                    <!-- منطقة الخطر -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">⚠️ منطقة الخطر</div>
-                        <div style="font-size:0.72em;color:var(--text2);margin-bottom:10px;">هذه الإجراءات لا يمكن التراجع عنها</div>
-                        <div style="display:flex;flex-direction:column;gap:8px;">
-                            <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات فقط</button>
-                            <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد (حذف كل شيء)</button>
-                        </div>
-                    </div>
-                    <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
-                </div>
-
-                <!-- LEADERBOARD PAGE -->
-                <div class="page" id="page-leaderboard">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="hero-greeting">🏆 ساحة المنافسة</div>
-                                <div class="hero-title">نداء <span>التحدي</span></div>
-                            </div>
-                            <div class="coins-badge" style="cursor:pointer;" onclick="loadLeaderboard();loadChallengeLeaderboard();">🔄 تحديث</div>
-                        </div>
-                    </div>
-
-                    <!-- واجهة الترحيب بلعبة التحدي -->
-                    <div id="challengeWelcome" style="display:flex;flex-direction:column;gap:12px;">
-                        <div style="background:linear-gradient(135deg,rgba(240,185,11,0.15),rgba(124,58,237,0.15));border:1.5px solid rgba(240,185,11,0.35);border-radius:22px;padding:20px;text-align:center;">
-                            <div style="font-size:2.5em;margin-bottom:8px;">⚔️</div>
-                            <div style="font-size:1.1em;font-weight:900;color:var(--text);margin-bottom:6px;">لعبة نداء التحدي</div>
-                            <div style="font-size:0.75em;color:var(--text2);line-height:1.6;margin-bottom:14px;">
-                                أجب على أسئلة الجمع والطرح والضرب والقسمة<br>
-                                60 ثانية • +1 ثانية لكل إجابة صحيحة • -2 ثانية عند الخطأ<br>
-                                الصعوبة تزداد تدريجياً كلما تقدمت
-                            </div>
-                            <div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">
-                                <div style="background:var(--surface3);border-radius:14px;padding:10px 16px;text-align:center;">
-                                    <div style="font-size:1.4em;font-weight:900;color:var(--gold);" id="challengeBestDisplay">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">أفضل نتيجة</div>
-                                </div>
-                            </div>
-                            <button onclick="startChallengeGame()" style="width:100%;padding:16px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:1.05em;font-weight:900;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(240,185,11,0.4);transition:0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
-                                ⚔️ لنبدأ التحدي
-                            </button>
-                        </div>
-
-                        <!-- لائحة المتصدرين للتحدي -->
-                        <div class="section-label" style="margin-top:4px;">🏆 لائحة المتصدرين — نداء التحدي</div>
-                        <div class="leaderboard-table" style="overflow-y:auto;max-height:320px;">
-                            <div class="lb-row lb-header">
-                                <span>المرتبة</span>
-                                <span>اللاعب</span>
-                                <span>المستوى</span>
-                                <span>النقاط</span>
-                            </div>
-                            <div id="challengeLeaderboardList" style="padding:16px;text-align:center;">جاري التحميل...</div>
-                        </div>
-                        <p style="font-size:0.65em;color:var(--text2);text-align:center;">✨ الترتيب بناءً على أعلى نتيجة في نداء التحدي ✨</p>
-                    </div>
-
-                    <!-- منطقة اللعب (تظهر عند بدء التحدي) -->
-                    <div id="challengeGameArea" style="display:none;flex-direction:column;gap:10px;width:100%;">
-                        <!-- رأس اللعبة -->
-                        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:12px 16px;">
-                            <button onclick="quitChallengeGame()" style="background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;font-family:'Tajawal',sans-serif;font-size:0.75em;font-weight:700;color:var(--text2);cursor:pointer;">⬅ خروج</button>
-                            <div style="text-align:center;">
-                                <div style="font-size:0.65em;color:var(--text3);" id="challengeQNum">السؤال 1</div>
-                                <div style="font-size:0.72em;color:var(--accent2);font-weight:700;" id="challengeDiffLabel">سهل جداً</div>
-                            </div>
-                            <div style="background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.3);border-radius:13px;padding:6px 12px;text-align:center;">
-                                <div style="font-size:1.3em;font-weight:900;color:var(--gold);line-height:1;" id="challengeScoreDisplay">0</div>
-                                <div style="font-size:0.55em;color:var(--text3);">نقاط</div>
-                            </div>
-                        </div>
-                        <!-- شريط المؤقت -->
-                        <div style="background:var(--surface2);border-radius:14px;padding:10px 14px;border:1px solid var(--border2);">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                                <span style="font-size:0.65em;color:var(--text3);">⏱️ الوقت المتبقي</span>
-                                <span style="font-size:1.1em;font-weight:900;color:var(--accent2);" id="challengeTimerDisplay">60</span>
-                            </div>
-                            <div style="background:var(--surface3);border-radius:8px;height:8px;overflow:hidden;">
-                                <div id="challengeTimerBar" style="height:100%;width:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:8px;transition:width 0.3s;"></div>
-                            </div>
-                        </div>
-                        <!-- بطاقة السؤال -->
-                        <div class="question-card" style="width:100%;max-width:100%;">
-                            <div class="question-text" id="challengeQuestionText">...</div>
-                            <div class="question-hint" id="challengeHint">ما هو الجواب؟</div>
-                        </div>
-                        <!-- شبكة الأجوبة -->
-                        <div class="answers-grid" id="challengeAnswersGrid" style="max-width:100%;"></div>
-                        <!-- منطقة الشرح -->
-                        <div id="challengeExplanation" style="display:none;width:100%;"></div>
-                        <!-- المساعدات -->
-                        <div class="helpers-bar" id="challengeHelpersBar">
-                            <div class="helper-btn" id="challengeHelperSkip" onclick="useChallengeHelper('skip')">
-                                <div class="helper-btn-icon">⏭️</div>
-                                <div class="helper-btn-label">تخطّي</div>
-                                <div class="helper-btn-cost">3💰</div>
-                            </div>
-                            <div class="helper-btn" id="challengeHelperRemove" onclick="useChallengeHelper('remove')">
-                                <div class="helper-btn-icon">🗑️</div>
-                                <div class="helper-btn-label">حذف إجابة</div>
-                                <div class="helper-btn-cost">4💰</div>
-                            </div>
-                            <div class="helper-btn" id="challengeHelperTime" onclick="useChallengeHelper('time')">
-                                <div class="helper-btn-icon">⏰</div>
-                                <div class="helper-btn-label">+10 ثانية</div>
-                                <div class="helper-btn-cost">5💰</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- نتيجة التحدي (تظهر بعد الانتهاء) -->
-                    <div id="challengeResultArea" style="display:none;flex-direction:column;gap:12px;align-items:center;width:100%;">
-                        <div style="background:linear-gradient(135deg,var(--surface2),var(--surface3));border:2px solid var(--border2);border-radius:26px;padding:26px 20px;text-align:center;width:100%;">
-                            <div style="font-size:3em;margin-bottom:8px;">🏆</div>
-                            <div style="font-size:1em;font-weight:900;color:var(--text);margin-bottom:4px;" id="challengeResultMsg">رائع!</div>
-                            <div style="font-size:0.75em;color:var(--text2);margin-bottom:16px;">نتيجة جلستك في نداء التحدي</div>
-                            <div style="display:flex;gap:10px;margin-bottom:16px;">
-                                <div style="flex:1;background:var(--surface3);border-radius:13px;padding:14px;">
-                                    <div style="font-size:1.8em;font-weight:900;color:var(--gold);" id="challengeFinalScore">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">نقاطك</div>
-                                </div>
-                                <div style="flex:1;background:var(--surface3);border-radius:13px;padding:14px;">
-                                    <div style="font-size:1.8em;font-weight:900;color:var(--accent2);" id="challengeBestScore">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">أفضل نتيجة</div>
-                                </div>
-                            </div>
-                            <button onclick="startChallengeGame()" style="width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.92em;font-weight:900;border:none;cursor:pointer;margin-bottom:8px;">🔄 حاول مجدداً</button>
-                            <button onclick="restartChallengeGame()" style="width:100%;padding:14px;border-radius:14px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.88em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">🏠 العودة للمنافسة</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BOTTOM NAV -->
-            <div class="bottom-nav">
-                <div class="nav-item" id="nav-home" onclick="goTab('home')">
-                    <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">🏠</div>
-                    <div class="nav-item-label">الرئيسية</div>
-                </div>
-                <div class="nav-item" id="nav-play" onclick="goTab('play')">
-                    <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">🎮</div>
-                    <div class="nav-item-label">ألعاب</div>
-                </div>
-                <div class="nav-item" id="nav-leaderboard" onclick="goTab('leaderboard')">
-                    <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">🏆</div>
-                    <div class="nav-item-label">المنافسة</div>
-                </div>
-                <div class="nav-item" id="nav-achieve" onclick="goTab('achieve')">
-                    <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">📋</div>
-                    <div class="nav-item-label">مهام</div>
-                </div>
-                <div class="nav-item" id="nav-profile" onclick="goTab('profile')">
-                    <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">👤</div>
-                    <div class="nav-item-label">ملفي</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- LAWS OVERLAY -->
-    <div class="game-overlay" id="lawsOverlay" style="overflow-y:auto;">
-        <div class="game-header">
-            <button class="game-back-btn" onclick="closeLaws()" aria-label="رجوع">‹</button>
-            <div class="game-title">📜 قوانين وبديهيات الرياضيات</div>
-            <div></div>
-        </div>
-        <div style="padding:14px 16px 80px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;">
-            <div class="section-label">قوانين أساسية</div>
-            <div id="lawsContent"></div>
-        </div>
-    </div>
-
-    <script src="firebase-sync.js"></script>
-    <script src="state.js"></script>
-    <script src="data.js"></script>
-    <script src="effects.js"></script>
-    <script src="navigation.js"></script>
-    <script src="questions.js"></script>
-    <script src="answer.js"></script>
-    <script src="ui-handler.js"></script>
-</body>
-</html>
+        function useDailyShield() {
+            updateDailyShield();
+            if (st.dailyShieldUsed) return false;
+            st.dailyShieldUsed = true;
+            saveSt();
+            return true;
+        }
