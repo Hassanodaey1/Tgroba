@@ -194,11 +194,8 @@
             const h = String(Math.floor(d / 3600000)).padStart(2, '0');
             const m = String(Math.floor((d % 3600000) / 60000)).padStart(2, '0');
             const s = String(Math.floor((d % 60000) / 1000)).padStart(2, '0');
-            const timeStr = `${h}:${m}:${s}`;
             const el = document.getElementById('dailyCountdown');
-            if (el) el.textContent = timeStr;
-            const el2 = document.getElementById('profileDailyCountdown');
-            if (el2) el2.textContent = timeStr;
+            if (el) el.textContent = `${h}:${m}:${s}`;
         }
         setInterval(updCountdown, 1000);
         let sessionStart = Date.now();
