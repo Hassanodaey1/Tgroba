@@ -213,19 +213,42 @@
             <div class="sheet-title">⚙️ إعدادات سريعة</div>
             <div class="settings-list" style="margin-bottom:14px;">
                 <div class="settings-row" onclick="toggleSound()"><span class="settings-row-icon">🔊</span><span class="settings-row-label">الأصوات</span><span class="settings-row-val" id="gsoundStatus">مفعّل</span></div>
-                <div class="volume-slider-row">
-                    <span class="vol-icon">🔉</span>
-                    <input type="range" class="vol-slider" id="gSoundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
-                    <span class="vol-val" id="gSoundVolVal">80%</span>
-                </div>
                 <div class="settings-row" onclick="toggleBgMusicInGame()"><span class="settings-row-icon">🎵</span><span class="settings-row-label">موسيقى الخلفية</span><span class="settings-row-val" id="gbgMusicStatus">مفعّلة</span></div>
-                <div class="volume-slider-row">
-                    <span class="vol-icon">🎶</span>
-                    <input type="range" class="vol-slider" id="gBgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
-                    <span class="vol-val" id="gBgVolVal">60%</span>
-                </div>
             </div>
             <button class="sheet-cancel" onclick="closeSheet('gameSettingsSheet')">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- MAIN SETTINGS SHEET (header ⚙️ button) -->
+    <div class="sheet-overlay" id="mainSettingsSheet" onclick="sheetBg(event,'mainSettingsSheet')">
+        <div class="sheet-panel">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">⚙️ الإعدادات</div>
+            <div class="settings-list" style="margin-bottom:8px;">
+                <div class="settings-row" onclick="toggleSound();updateMainSettingsUI()">
+                    <span class="settings-row-icon">🔊</span><span class="settings-row-label">أصوات اللعبة</span><span class="settings-row-val" id="msSoundStatus">مفعّل</span>
+                </div>
+                <div class="vol-slider-row">
+                    <span style="font-size:0.7em;color:var(--text3);">🔈</span>
+                    <input type="range" min="0" max="100" value="80" id="msSoundSlider" class="vol-slider" oninput="setSoundVolume(this.value)">
+                    <span style="font-size:0.7em;color:var(--text3);">🔊</span>
+                    <span id="msSoundVolLabel" style="font-size:0.68em;color:var(--accent2);font-weight:700;min-width:28px;text-align:center;">80%</span>
+                </div>
+                <div class="settings-row" onclick="toggleBgMusic();updateMainSettingsUI()">
+                    <span class="settings-row-icon">🎵</span><span class="settings-row-label">موسيقى الخلفية</span><span class="settings-row-val" id="msBgStatus">مفعّلة</span>
+                </div>
+                <div class="vol-slider-row">
+                    <span style="font-size:0.7em;color:var(--text3);">🔈</span>
+                    <input type="range" min="0" max="100" value="30" id="msBgSlider" class="vol-slider" oninput="setBgVolume(this.value)">
+                    <span style="font-size:0.7em;color:var(--text3);">🔊</span>
+                    <span id="msBgVolLabel" style="font-size:0.68em;color:var(--accent2);font-weight:700;min-width:28px;text-align:center;">30%</span>
+                </div>
+                <div class="settings-row" onclick="toggleVibration();updateMainSettingsUI()">
+                    <span class="settings-row-icon">📳</span><span class="settings-row-label">الاهتزاز عند النقر</span><span class="settings-row-val" id="msVibStatus">مفعّل</span>
+                </div>
+            </div>
+            <button class="sheet-cancel" onclick="closeSheet('mainSettingsSheet');goTab('settings')" style="background:var(--surface3);color:var(--text2);margin-bottom:8px;">⚙️ كل الإعدادات</button>
+            <button class="sheet-cancel" onclick="closeSheet('mainSettingsSheet')">إغلاق</button>
         </div>
     </div>
 
@@ -251,7 +274,7 @@
                     <span class="xp-pill-lv" id="headerXp">⚡ 0 XP</span>
                 </div>
                 <div class="th-right">
-                    <div class="icon-pill" onclick="goTab('settings')" title="الإعدادات">⚙️</div>
+                    <div class="icon-pill" onclick="openMainSettings()" title="الإعدادات">⚙️</div>
                 </div>
             </div>
 
@@ -480,14 +503,6 @@
 
                 <!-- ACHIEVEMENTS PAGE -->
                 <div class="page" id="page-achieve">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="hero-greeting">📋 المهام والإنجازات</div>
-                                <div class="hero-title">تفاصيل <span>التقدم</span></div>
-                            </div>
-                        </div>
-                    </div>
                     <div class="tasks-summary">
                         <div class="task-stat">
                             <div class="task-stat-num" id="tasksDone">0</div>
@@ -523,9 +538,6 @@
                         <div id="achieveList"></div>
                         <div id="achieveCompleteReward" style="display:none;text-align:center;margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
                     </div>
-                    <div style="margin-top:12px;padding-bottom:8px;">
-                        <button onclick="goTab('profile')" style="width:100%;padding:12px;border-radius:14px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.82em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">👤 الملف الشخصي الكامل ›</button>
-                    </div>
                 </div>
 
                 <!-- PROFILE PAGE -->
@@ -543,10 +555,8 @@
                             </div>
                             <div class="profile-xp-label" id="profileXpLabel">0 / 1000 XP</div>
                         </div>
-                        <button onclick="goTab('settings')" style="position:absolute;top:0;left:0;background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:8px 10px;font-size:1em;cursor:pointer;color:var(--text2);" title="الإعدادات">⚙️</button>
                     </div>
-
-                    <!-- إحصائيات عامة -->
+                    <!-- الإحصائيات -->
                     <div class="stats-grid3">
                         <div class="stat-card">
                             <div class="stat-card-num" id="statCorrect">0</div>
@@ -561,93 +571,27 @@
                             <div class="stat-card-label">💰 عملة</div>
                         </div>
                     </div>
-
                     <!-- ساحة المنافسة -->
                     <div class="profile-section">
                         <div class="profile-section-title">🏆 ساحة المنافسة</div>
                         <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.12));border:1.5px solid rgba(240,185,11,0.25);border-radius:18px;padding:16px;text-align:center;">
-                            <div style="font-size:1.8em;margin-bottom:6px;">⚔️</div>
-                            <div style="font-size:0.9em;font-weight:900;color:var(--text);margin-bottom:4px;">نداء التحدي</div>
+                            <div style="font-size:1.6em;margin-bottom:4px;">⚔️</div>
+                            <div style="font-size:0.85em;font-weight:900;color:var(--text);margin-bottom:2px;">نداء التحدي</div>
                             <div style="font-size:0.7em;color:var(--text2);margin-bottom:10px;">أفضل نتيجتك: <span style="color:var(--gold);font-weight:900;" id="profileChallengeBest">0</span> نقطة</div>
-                            <div style="display:flex;gap:8px;margin-bottom:12px;">
-                                <div style="flex:1;background:var(--surface3);border-radius:12px;padding:10px;">
-                                    <div style="font-size:1.2em;font-weight:900;color:var(--accent2);" id="profileTotalGames">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">إجمالي الجلسات</div>
-                                </div>
-                                <div style="flex:1;background:var(--surface3);border-radius:12px;padding:10px;">
-                                    <div style="font-size:1.2em;font-weight:900;color:var(--gold);" id="profileBestScore">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">أعلى نقاط</div>
-                                </div>
-                                <div style="flex:1;background:var(--surface3);border-radius:12px;padding:10px;">
-                                    <div style="font-size:1.2em;font-weight:900;color:var(--green);" id="profileAccuracy">0%</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">الدقة</div>
-                                </div>
-                            </div>
-                            <button onclick="goTab('leaderboard')" style="width:100%;padding:12px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.88em;font-weight:900;border:none;cursor:pointer;">🏆 انتقل للمنافسة</button>
+                            <button onclick="goTab('leaderboard')" style="width:100%;padding:11px;border-radius:13px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.85em;font-weight:900;border:none;cursor:pointer;">🏆 انتقل للمنافسة</button>
                         </div>
                     </div>
-
-                    <!-- المهام اليومية -->
+                    <!-- المهام اليومية المنجزة -->
                     <div class="profile-section">
-                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span>📋 المهام اليومية</span>
-                            <span id="profileTasksPct" style="font-size:0.75em;color:var(--accent2);font-weight:700;">0%</span>
-                        </div>
-                        <div class="tasks-progress-card" style="margin-bottom:10px;">
-                            <div class="tasks-prog-label"><span>تقدّم اليوم</span><span id="profileTasksLabel">0 / 0</span></div>
-                            <div class="tasks-bar-track"><div class="tasks-bar-fill" id="profileTasksBar" style="width:0%"></div></div>
-                        </div>
-                        <div id="profileTasksList" style="display:flex;flex-direction:column;gap:6px;"></div>
-                        <div class="daily-timer" style="margin-top:8px;padding:8px 12px;">
-                            <div class="daily-timer-label">⏰ تجديد في</div>
-                            <div class="daily-timer-val" id="profileDailyCountdown">--:--:--</div>
-                        </div>
+                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">📋 المهام اليومية <span onclick="goTab('achieve')" style="font-size:0.75em;color:var(--accent2);cursor:pointer;font-weight:600;">عرض الكل ›</span></div>
+                        <div id="profileTasksSummary" style="display:flex;flex-direction:column;gap:6px;"></div>
                     </div>
-
-                    <!-- الإنجازات -->
+                    <!-- الرموز التعبيرية -->
                     <div class="profile-section">
-                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span>🏅 الإنجازات</span>
-                            <span id="profileAchievePct" style="color:var(--accent2);font-size:0.75em;font-weight:700;">0/18</span>
-                        </div>
-                        <div id="profileAchieveList"></div>
-                        <div id="profileAchieveReward" style="display:none;text-align:center;margin-top:8px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
+                        <div class="profile-section-title">🎭 الرموز التعبيرية</div>
+                        <div style="font-size:0.68em;color:var(--text2);margin-bottom:8px;">رصيدك: <span id="shopCoinsDisplay" style="color:var(--gold);font-weight:800;">0</span> 💰 — اضغط لتفعيل أو شراء</div>
+                        <div class="emoji-shop-grid" id="emojiShopGrid"></div>
                     </div>
-
-                    <!-- القوانين الرياضية -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">📜 القوانين الرياضية</div>
-                        <div onclick="openLaws()" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(6,182,212,0.1),rgba(124,58,237,0.1));border:1.5px solid rgba(6,182,212,0.25);border-radius:16px;padding:16px;cursor:pointer;transition:0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-                            <div style="font-size:2em;">📜</div>
-                            <div style="flex:1;">
-                                <div style="font-size:0.88em;font-weight:900;color:var(--text);">تصفح القوانين والبديهيات</div>
-                                <div style="font-size:0.68em;color:var(--text2);margin-top:2px;">قوانين الجبر • الهندسة • الحساب</div>
-                            </div>
-                            <div style="font-size:1.2em;color:var(--accent2);">›</div>
-                        </div>
-                    </div>
-
-                    <!-- متجر الرموز التعبيرية — يُفتح بالضغط -->
-                    <div class="profile-section">
-                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span>🛍️ المتجر</span>
-                            <span style="font-size:0.75em;font-weight:900;color:var(--gold);">رصيدك: <span id="shopCoinsDisplay">0</span> 💰</span>
-                        </div>
-                        <!-- الرمز الحالي + زر فتح المتجر -->
-                        <div style="display:flex;align-items:center;gap:12px;background:var(--surface3);border-radius:14px;padding:12px 14px;margin-bottom:10px;">
-                            <div id="currentAvatarDisplay" style="font-size:2.2em;">🧑</div>
-                            <div style="flex:1;">
-                                <div style="font-size:0.75em;font-weight:700;color:var(--text);">الرمز الحالي</div>
-                                <div style="font-size:0.63em;color:var(--text2);margin-top:2px;">اضغط لتغيير أو شراء رموز جديدة</div>
-                            </div>
-                            <button onclick="toggleEmojiShop()" id="shopToggleBtn" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;border-radius:12px;padding:8px 14px;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:900;cursor:pointer;">🛍️ المتجر</button>
-                        </div>
-                        <!-- شبكة الرموز — مخفية افتراضياً -->
-                        <div id="emojiShopContainer" style="display:none;">
-                            <div class="emoji-shop-grid" id="emojiShopGrid"></div>
-                        </div>
-                    </div>
-
                     <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
                 </div>
 
@@ -661,50 +605,8 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- الصوت والموسيقى -->
-                    <div class="profile-section" style="margin-top:12px;">
-                        <div class="profile-section-title">🔊 الصوت والموسيقى</div>
-                        <div class="settings-list">
-                            <div class="settings-row" onclick="toggleSound()">
-                                <span class="settings-row-icon">🔊</span>
-                                <span class="settings-row-label">أصوات اللعبة</span>
-                                <span class="settings-row-val" id="soundStatus">مفعّل</span>
-                                <span id="soundBtn" style="display:none"></span>
-                            </div>
-                            <div class="volume-slider-row">
-                                <span class="vol-icon">🔉</span>
-                                <input type="range" class="vol-slider" id="soundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
-                                <span class="vol-val" id="soundVolVal">80%</span>
-                            </div>
-                            <div class="settings-row" onclick="toggleBgMusic()">
-                                <span class="settings-row-icon">🎵</span>
-                                <span class="settings-row-label">موسيقى الخلفية</span>
-                                <span class="settings-row-val" id="bgMusicStatus">مفعّلة</span>
-                                <span id="bgBtn" style="display:none"></span>
-                            </div>
-                            <div class="volume-slider-row">
-                                <span class="vol-icon">🎶</span>
-                                <input type="range" class="vol-slider" id="bgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
-                                <span class="vol-val" id="bgVolVal">60%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- الاهتزاز -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">📳 الاهتزاز</div>
-                        <div class="settings-list">
-                            <div class="settings-row" onclick="toggleVibration()">
-                                <span class="settings-row-icon">📳</span>
-                                <span class="settings-row-label">الاهتزاز عند النقر</span>
-                                <span class="settings-row-val" id="vibrationStatus">مفعّل</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- تعديل الملف الشخصي -->
-                    <div class="profile-section">
+                    <div class="profile-section" style="margin-top:12px;">
                         <div class="profile-section-title">✏️ تعديل الملف الشخصي</div>
                         <div class="profile-form">
                             <div class="form-field">
@@ -729,8 +631,7 @@
                             <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
                         </div>
                     </div>
-
-                    <!-- الثيمات -->
+                    <!-- الثيمات والمظهر -->
                     <div class="profile-section">
                         <div class="profile-section-title">🎨 الثيمات والمظهر</div>
                         <div class="themes-row">
@@ -746,7 +647,48 @@
                             <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
                         </div>
                     </div>
-
+                    <!-- الصوت والموسيقى مع شريط التحكم -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">🔊 الصوت والموسيقى</div>
+                        <div class="settings-list">
+                            <div class="settings-row" onclick="toggleSound()">
+                                <span class="settings-row-icon">🔊</span>
+                                <span class="settings-row-label">أصوات اللعبة</span>
+                                <span class="settings-row-val" id="soundStatus">مفعّل</span>
+                            </div>
+                            <div class="vol-slider-row" id="soundVolRow">
+                                <span style="font-size:0.7em;color:var(--text3);">🔈</span>
+                                <input type="range" min="0" max="100" value="80" id="soundVolSlider" class="vol-slider" oninput="setSoundVolume(this.value)">
+                                <span style="font-size:0.7em;color:var(--text3);">🔊</span>
+                                <span id="soundVolLabel" style="font-size:0.68em;color:var(--accent2);font-weight:700;min-width:28px;text-align:center;">80%</span>
+                            </div>
+                            <div class="settings-row" onclick="toggleBgMusic()">
+                                <span class="settings-row-icon">🎵</span>
+                                <span class="settings-row-label">موسيقى الخلفية</span>
+                                <span class="settings-row-val" id="bgMusicStatus">مفعّلة</span>
+                            </div>
+                            <div class="vol-slider-row" id="bgVolRow">
+                                <span style="font-size:0.7em;color:var(--text3);">🔈</span>
+                                <input type="range" min="0" max="100" value="30" id="bgVolSlider" class="vol-slider" oninput="setBgVolume(this.value)">
+                                <span style="font-size:0.7em;color:var(--text3);">🔊</span>
+                                <span id="bgVolLabel" style="font-size:0.68em;color:var(--accent2);font-weight:700;min-width:28px;text-align:center;">30%</span>
+                            </div>
+                            <!-- الاهتزاز -->
+                            <div class="settings-row" onclick="toggleVibration()">
+                                <span class="settings-row-icon">📳</span>
+                                <span class="settings-row-label">الاهتزاز عند النقر</span>
+                                <span class="settings-row-val" id="vibrationStatus">مفعّل</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- المحتوى -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">📖 المحتوى</div>
+                        <div class="settings-list">
+                            <div class="settings-row" onclick="openLaws()"><span class="settings-row-icon">📜</span><span class="settings-row-label">تصفح القوانين الرياضية</span><span class="settings-row-val">📖 ›</span></div>
+                            <div class="settings-row" onclick="goTab('achieve')"><span class="settings-row-icon">📋</span><span class="settings-row-label">المهام اليومية والإنجازات</span><span class="settings-row-val" id="profileTaskStatus">0 / 6 ›</span></div>
+                        </div>
+                    </div>
                     <!-- منطقة الخطر -->
                     <div class="profile-section">
                         <div class="profile-section-title">⚠️ منطقة الخطر</div>
@@ -857,7 +799,6 @@
                                 <div class="helper-btn-cost">5💰</div>
                             </div>
                         </div>
-                        <button onclick="quitChallengeGame()" class="return-home-btn" style="margin-top:6px;">🏆 العودة إلى لائحة الصدارة</button>
                     </div>
 
                     <!-- نتيجة التحدي (تظهر بعد الانتهاء) -->
