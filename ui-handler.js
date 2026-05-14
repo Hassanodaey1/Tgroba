@@ -47,17 +47,37 @@ function openGameSettings() {
             if (!grid) return;
             if (!st.ownedEmojis || st.ownedEmojis.length === 0) st.ownedEmojis = [
             getDefaultAvatarForGender(st.gender)];
-            // Show only owned emojis for selection
-            const ownedItems = EMOJI_CATALOG.filter(item => st.ownedEmojis.includes(item.emoji));
-            grid.innerHTML = ownedItems.map(item => {
+            // Full shop: owned items selectable, unowned items purchasable
+            grid.innerHTML = EMOJI_CATALOG.map(item => {
+                const owned = st.ownedEmojis.includes(item.emoji);
                 const selected = st.avatar === item.emoji;
-                return `<div class="emoji-shop-item owned ${selected?'selected':''}" onclick="buyOrSelectEmoji('${item.emoji}',0)" title="${item.label}">
-                    <div class="emoji-shop-item-icon">${item.emoji}</div>
-                    ${selected ? `<div class="emoji-shop-item-owned">✅ مفعّل</div>` : `<div class="emoji-shop-item-owned">اضغط</div>`}
-                </div>`;
+                if (item.price === 0 && item.gender && item.gender !== st.gender) return '';
+                if (owned) {
+                    return `<div class="emoji-shop-item owned ${selected?'selected':''}" onclick="buyOrSelectEmoji('${item.emoji}',0)" title="${item.label}">
+                        <div class="emoji-shop-item-icon">${item.emoji}</div>
+                        ${selected ? `<div class="emoji-shop-item-owned">✅ مفعّل</div>` : `<div class="emoji-shop-item-owned">اختر</div>`}
+                    </div>`;
+                } else {
+                    return `<div class="emoji-shop-item locked-shop" onclick="buyOrSelectEmoji('${item.emoji}',${item.price})" title="${item.label}">
+                        <div class="emoji-shop-item-icon">${item.emoji}</div>
+                        <div class="emoji-shop-item-price">${item.price > 0 ? item.price + '💰' : 'مجاني'}</div>
+                        <div class="emoji-shop-lock">🔒</div>
+                    </div>`;
+                }
             }).join('');
             const cd = document.getElementById('shopCoinsDisplay'); if (cd) cd.textContent = st.coins;
             const ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
+        }
+
+        function toggleEmojiShop() {
+            const container = document.getElementById('emojiShopContainer');
+            const btn = document.getElementById('shopToggleBtn');
+            if (!container) return;
+            const isOpen = container.style.display !== 'none';
+            container.style.display = isOpen ? 'none' : 'block';
+            if (btn) btn.textContent = isOpen ? '🛍️ المتجر' : '✖️ إغلاق';
+            if (!isOpen) renderEmojiShop();
+            playSound('click');
         }
 
         function buyOrSelectEmoji(emoji, price) {
@@ -131,32 +151,65 @@ function openGameSettings() {
             }
             selectGender(st.gender, false);
             updateOwnedEmojisForGender();
-            renderEmojiShop();
             renderProfileDailyTasks();
+            renderProfileAchievements();
             updateBadgeIcon();
+            // Update shop coins display
+            const cd = document.getElementById('shopCoinsDisplay'); if (cd) cd.textContent = st.coins;
+            const ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
         }
 
         function renderProfileDailyTasks() {
-            const container = document.getElementById('profileDailyTasksDone');
+            if (!st.dailyTasks) return;
+            const container = document.getElementById('profileTasksList');
+            const barEl = document.getElementById('profileTasksBar');
+            const labelEl = document.getElementById('profileTasksLabel');
+            const pctEl = document.getElementById('profileTasksPct');
             if (!container) return;
-            if (!st.dailyTasks || st.dailyTasks.length === 0) {
-                container.innerHTML = '<div style="font-size:0.75em;color:var(--text2);text-align:center;padding:12px;">لا توجد مهام بعد</div>';
+            const total = st.dailyTasks.length;
+            const done = st.dailyTasks.filter(t => t.done).length;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            if (barEl) barEl.style.width = pct + '%';
+            if (labelEl) labelEl.textContent = done + ' / ' + total;
+            if (pctEl) pctEl.textContent = pct + '%';
+            if (total === 0) {
+                container.innerHTML = '<div style="font-size:0.75em;color:var(--text2);text-align:center;padding:10px;">لا توجد مهام بعد</div>';
                 return;
             }
-            const done = st.dailyTasks.filter(t => t.done);
-            if (done.length === 0) {
-                container.innerHTML = '<div style="font-size:0.75em;color:var(--text2);text-align:center;padding:12px;">لا توجد مهام منجزة بعد اليوم</div>';
-                return;
-            }
-            container.innerHTML = done.map(t => `
-                <div style="display:flex;align-items:center;gap:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:13px;padding:10px 14px;">
-                    <div style="font-size:1.3em;">${t.icon||'✅'}</div>
+            container.innerHTML = st.dailyTasks.map(t => {
+                const doneCls = t.done ? 'task-done' : '';
+                return `<div class="task-item ${doneCls}" style="padding:10px 12px;border-radius:13px;display:flex;align-items:center;gap:10px;background:${t.done?'rgba(16,185,129,0.08)':'var(--surface2)'};border:1px solid ${t.done?'rgba(16,185,129,0.25)':'var(--border2)'};">
+                    <div style="font-size:1.3em;">${t.icon||'📋'}</div>
                     <div style="flex:1;">
                         <div style="font-size:0.78em;font-weight:700;color:var(--text);">${t.label}</div>
-                        <div style="font-size:0.65em;color:var(--green);">✅ منجزة • +${t.coins}💰</div>
+                        <div style="font-size:0.63em;color:var(--text2);margin-top:2px;">${t.done?'✅ منجزة':'⏳ قيد التنفيذ'} • +${t.coins}💰</div>
                     </div>
-                </div>
-            `).join('');
+                    ${t.done ? '<div style="font-size:1.2em;">✅</div>' : `<div style="font-size:0.68em;color:var(--text3);">${t.progress||0}/${t.target||1}</div>`}
+                </div>`;
+            }).join('');
+        }
+
+        function renderProfileAchievements() {
+            const container = document.getElementById('profileAchieveList');
+            const pctEl = document.getElementById('profileAchievePct');
+            const rewardEl = document.getElementById('profileAchieveReward');
+            if (!container) return;
+            if (typeof ACHIEVEMENTS_DEF === 'undefined') return;
+            const unlocked = st.achievementsUnlocked || [];
+            if (pctEl) pctEl.textContent = unlocked.length + '/' + ACHIEVEMENTS_DEF.length;
+            const allDone = unlocked.length >= ACHIEVEMENTS_DEF.length;
+            if (rewardEl) rewardEl.style.display = (allDone && st.achievementRewardClaimed) ? 'block' : 'none';
+            container.innerHTML = ACHIEVEMENTS_DEF.map(a => {
+                const done = unlocked.includes(a.id);
+                return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:13px;background:${done?'rgba(16,185,129,0.08)':'var(--surface2)'};border:1px solid ${done?'rgba(16,185,129,0.25)':'var(--border2)'};margin-bottom:6px;">
+                    <div style="font-size:1.4em;${done?'':'filter:grayscale(1);opacity:0.5'}">${a.icon}</div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.78em;font-weight:700;color:${done?'var(--text)':'var(--text2)'};">${a.name}</div>
+                        <div style="font-size:0.63em;color:var(--text2);margin-top:1px;">${a.desc}</div>
+                    </div>
+                    <div style="font-size:0.75em;font-weight:900;color:${done?'var(--gold)':'var(--text3)'};">${done?'✅ '+a.reward+'💰':'🔒'}</div>
+                </div>`;
+            }).join('');
         }
 
         function selectGender(g, snd = true) {
@@ -310,6 +363,7 @@ function openGameSettings() {
             renderTasks();
             renderAchievements();
             renderProfileDailyTasks();
+            renderProfileAchievements();
             updateUnlocks();
             updateBadgeIcon();
             updateWeaknessArea();
