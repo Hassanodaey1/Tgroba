@@ -10,22 +10,25 @@
             if (tab === 'achieve') { checkDailyReset();
                 renderTasks();
                 renderAchievements(); }
-            if (tab === 'profile') loadProfileForm();
+            if (tab === 'profile') {
+                checkDailyReset();
+                loadProfileForm();
+                renderProfileDailyTasks();
+                renderProfileAchievements();
+                const pb = document.getElementById('profileChallengeBest');
+                if (pb) pb.textContent = st.challengeBestScore || 0;
+                const pTG = document.getElementById('profileTotalGames'); if(pTG) pTG.textContent = st.totalGames;
+                const pBS = document.getElementById('profileBestScore'); if(pBS) pBS.textContent = st.bestScore;
+                const pAcc = document.getElementById('profileAccuracy');
+                if(pAcc) { const tot = st.correctTotal + st.wrongTotal; pAcc.textContent = tot > 0 ? Math.round((st.correctTotal/tot)*100)+'%' : '0%'; }
+            }
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
             if (tab === 'leaderboard') {
                 loadLeaderboard();
                 loadChallengeLeaderboard();
-                // تحديث أفضل نتيجة في واجهة الترحيب
                 const el = document.getElementById('challengeBestDisplay');
                 if (el) el.textContent = st.challengeBestScore || 0;
-                // تحديث أفضل نتيجة في الملف الشخصي
-                const pb = document.getElementById('profileChallengeBest');
-                if (pb) pb.textContent = st.challengeBestScore || 0;
-            }
-            if (tab === 'profile') {
-                const pb = document.getElementById('profileChallengeBest');
-                if (pb) pb.textContent = st.challengeBestScore || 0;
             }
         }
 
