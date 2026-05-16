@@ -698,7 +698,8 @@
             ended: false,
             correctAnswer: 0,
             currentExplanation: '',
-            askedQuestions: []
+            askedQuestions: [],
+            consecutiveWrong: 0  /* عداد الأخطاء المتتالية */
         };
 
         function startChallengeGame() {
@@ -714,7 +715,8 @@
                 timeLeft: 60,
                 maxTime: 60,
                 timer: null,
-                helpersUsed: { skip: false, remove: false, time: false }
+                helpersUsed: { skip: false, remove: false, time: false },
+                consecutiveWrong: 0  /* عداد الأخطاء المتتالية */
             };
             // إخفاء واجهة الترحيب وإظهار واجهة اللعبة
             document.getElementById('challengeWelcome').style.display = 'none';
@@ -887,13 +889,15 @@
 
             if (val === CG.correctAnswer) {
                 btn.classList.add('correct');
+                /* +1 نقطة لكل إجابة صحيحة */
                 CG.score++;
                 CG.questionIndex++;
+                CG.consecutiveWrong = 0; /* إعادة عداد الأخطاء */
                 document.getElementById('challengeScoreDisplay').textContent = CG.score;
-                // +1 ثانية عند الإجابة الصحيحة
+                /* +1 ثانية عند الإجابة الصحيحة */
                 CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 1);
                 updateChallengeTimerUI();
-                showFeedback('✅ +1⏱️');
+                showFeedback('✅ +1 نقطة');
                 playSound('correct');
                 if (CG.score % 10 === 0 && CG.score > 0) { doConfetti(); showComboEffect(CG.score); }
                 showFloatXP(1);
@@ -902,18 +906,27 @@
                 document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => {
                     if (parseInt(b.getAttribute('data-val')) === CG.correctAnswer) b.classList.add('correct');
                 });
-                // -2 ثانية عند الإجابة الخاطئة
+                /* عداد الأخطاء المتتالية: كل خطأين يخصمان نقطة واحدة */
+                CG.consecutiveWrong = (CG.consecutiveWrong || 0) + 1;
+                if (CG.consecutiveWrong >= 2) {
+                    CG.score = Math.max(0, CG.score - 1);
+                    CG.consecutiveWrong = 0;
+                    document.getElementById('challengeScoreDisplay').textContent = CG.score;
+                    showFeedback('❌ ×2 → -1 نقطة');
+                } else {
+                    showFeedback('❌ خطأ');
+                }
+                playSound('wrong');
+                /* -2 ثانية عند الإجابة الخاطئة */
                 CG.timeLeft = Math.max(0, CG.timeLeft - 2);
                 updateChallengeTimerUI();
-                showFeedback('❌ -2⏱️');
-                playSound('wrong');
-                // إظهار الشرح
+                /* إظهار الشرح */
                 const expArea = document.getElementById('challengeExplanation');
                 expArea.innerHTML = `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${CG.correctAnswer}</strong><br>الشرح: ${CG.currentExplanation}</div>`;
                 expArea.style.display = 'block';
                 if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); return; }
             }
-            // إعادة ضبط المساعدات للسؤال التالي
+            /* إعادة ضبط المساعدات للسؤال التالي */
             CG.helpersUsed = { skip: false, remove: false, time: false };
             resetChallengeHelpers();
 
@@ -1031,6 +1044,3 @@
                 }
             }
         }
-
-
-
