@@ -23,16 +23,6 @@ function initVolumeSliders() {
         const el = document.getElementById(id);
         if (el) el.textContent = st.bgVolume + '%';
     });
-    /* شريط شدة الاهتزاز */
-    if (typeof st.vibrationStrength !== 'number') st.vibrationStrength = 30;
-    ['vibVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = st.vibrationStrength;
-    });
-    ['vibVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.vibrationStrength + 'ms';
-    });
 }
 
 function setSoundVolume(val) {
@@ -59,17 +49,6 @@ function setBgVolume(val) {
         if (el) el.value = val;
     });
     saveSt();
-}
-
-function setVibrationStrength(val) {
-    st.vibrationStrength = parseInt(val);
-    const el = document.getElementById('vibVolVal');
-    if (el) el.textContent = val + 'ms';
-    const sl = document.getElementById('vibVolSlider');
-    if (sl) sl.value = val;
-    saveSt();
-    /* اهتزاز تجريبي */
-    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(parseInt(val));
 }
 
 /* ─── مكافأة يومية ─── */
@@ -119,7 +98,6 @@ function generateAndShowSerial() {
     try { updateUI(); } catch (e) { console.warn('updateUI', e); }
     try { loadProfileForm(); } catch (e) {}
     try { initVolumeSliders(); } catch (e) {}
-    try { if (typeof applyProfilePhoto === 'function') applyProfilePhoto(); } catch (e) {}
 
     /* الاهتزاز */
     ['vibrationStatus', 'gVibrationStatus'].forEach(id => {
