@@ -100,13 +100,9 @@ function playSound(type) {
     } else if (type === 'tick') {
         tone(1000, 'sine', 0.03, 0.02);
     }
-    /* اهتزاز حسب نوع الصوت والشدة المحددة */
-    if (st.vibrationOn && navigator.vibrate) {
-        const ms = st.vibrationStrength || 30;
-        if (type === 'click')   navigator.vibrate(Math.max(5, Math.round(ms * 0.5)));
-        else if (type === 'correct') navigator.vibrate(ms);
-        else if (type === 'wrong')   navigator.vibrate([ms, 40, ms]);
-        else if (type === 'levelup') navigator.vibrate([ms, 30, ms, 30, ms * 2]);
+    /* اهتزاز عند النقر إن كان مفعّلاً */
+    if (st.vibrationOn && navigator.vibrate && type === 'click') {
+        navigator.vibrate(15);
     }
 }
 
