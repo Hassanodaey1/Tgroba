@@ -399,7 +399,7 @@ function updateUI() {
     try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch (e) {}
     /* تحديث لون زر المنافسة */
     updateCompetitionNavStyle();
-    /* تطبيق الصورة الشخصية إن وجدت */
+    /* تطبيق الصورة الشخصية */
     try { applyProfilePhoto(); } catch(e) {}
 }
 
@@ -469,106 +469,94 @@ function updateWeaknessArea() {
 function startTrainingOn(cat) { startTrainingMode(cat); }
 
 
-/* ═══════════ PROFILE PHOTO ═══════════ */
-function openPhotoOptions() {
+/* ═══════════════════════════════════════════════════
+   PROFILE PHOTO — رفع وإدارة الصورة الشخصية
+═══════════════════════════════════════════════════ */
+
+function triggerPhotoUpload() {
+    /* خيار: كاميرا أم معرض الصور */
     showConfirm(
         '📷 الصورة الشخصية',
-        'اختر مصدر الصورة:
-• "التقاط" لفتح الكاميرا
-• "معرض الصور" لاختيار صورة موجودة',
-        '📷 التقاط',
+        'اختر مصدر الصورة',
+        '📷 كاميرا',
         '🖼️ معرض الصور',
-        (useCamera) => {
-            const input = document.getElementById('photoFileInput');
-            if (input) {
-                if (useCamera) {
-                    input.setAttribute('capture', 'user');
-                } else {
-                    input.removeAttribute('capture');
-                }
-                input.click();
-            }
+        function(useCamera) {
+            const inp = document.getElementById('profilePhotoInput');
+            if (!inp) return;
+            if (useCamera) inp.setAttribute('capture', 'user');
+            else           inp.removeAttribute('capture');
+            inp.click();
         }
     );
 }
 
-function handlePhotoUpload(event) {
+function handleProfilePhotoUpload(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-        showFeedback('⚠️ الملف المختار ليس صورة');
-        return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-        showFeedback('⚠️ الصورة كبيرة جداً (الحد 5 ميجا)');
-        return;
-    }
+    if (!file.type.startsWith('image/')) { showFeedback('⚠️ الملف ليس صورة'); return; }
+    if (file.size > 8 * 1024 * 1024)    { showFeedback('⚠️ حجم الصورة كبير جداً'); return; }
     const reader = new FileReader();
     reader.onload = function(e) {
-        const dataUrl = e.target.result;
-        // Compress image to max 200x200
         const img = new Image();
         img.onload = function() {
             const canvas = document.createElement('canvas');
-            const maxSize = 200;
+            const MAX = 220;
             let w = img.width, h = img.height;
-            if (w > h) { if (w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; } }
-            else { if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; } }
+            if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+            else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
             canvas.width = w; canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            const compressed = canvas.toDataURL('image/jpeg', 0.75);
-            st.profilePhoto = compressed;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            st.profilePhoto = canvas.toDataURL('image/jpeg', 0.80);
             saveSt();
             applyProfilePhoto();
             showFeedback('✅ تم تحديث الصورة الشخصية');
             playSound('levelup');
         };
-        img.src = dataUrl;
+        img.src = e.target.result;
     };
     reader.readAsDataURL(file);
-    // Reset input
     event.target.value = '';
 }
 
 function applyProfilePhoto() {
-    const bigEl = document.getElementById('profileAvatarImg');
+    const bigEl    = document.getElementById('profileAvatarImg');
     const headerEl = document.getElementById('headerAvatar');
-    const overlay = document.getElementById('profilePhotoOverlay');
+    const overlay  = document.getElementById('profilePhotoOverlay');
+    const actions  = document.getElementById('profilePhotoActions');
+
     if (st.profilePhoto) {
+        /* تطبيق الصورة على الأفاتار الكبير */
         if (bigEl) {
-            bigEl.style.backgroundImage = `url('${st.profilePhoto}')`;
-            bigEl.style.backgroundSize = 'cover';
+            bigEl.style.backgroundImage  = 'url("' + st.profilePhoto + '")';
+            bigEl.style.backgroundSize   = 'cover';
             bigEl.style.backgroundPosition = 'center';
             bigEl.textContent = '';
         }
+        /* تطبيق الصورة على الهيدر */
         if (headerEl) {
-            headerEl.style.backgroundImage = `url('${st.profilePhoto}')`;
-            headerEl.style.backgroundSize = 'cover';
+            headerEl.style.backgroundImage  = 'url("' + st.profilePhoto + '")';
+            headerEl.style.backgroundSize   = 'cover';
             headerEl.style.backgroundPosition = 'center';
             headerEl.textContent = '';
         }
         if (overlay) overlay.style.display = 'flex';
-        const removeBtn = document.getElementById('removePhotoBtn');
-        if (removeBtn) removeBtn.style.display = 'flex';
+        if (actions) actions.style.display = 'flex';
     } else {
         const av = st.avatar || getDefaultAvatarForGender(st.gender);
-        if (bigEl) { bigEl.style.backgroundImage = ''; bigEl.style.backgroundSize = ''; bigEl.textContent = av; }
+        if (bigEl)    { bigEl.style.backgroundImage = ''; bigEl.style.backgroundSize = ''; bigEl.textContent = av; }
         if (headerEl) { headerEl.style.backgroundImage = ''; headerEl.style.backgroundSize = ''; headerEl.textContent = av; }
-        if (overlay) overlay.style.display = 'none';
-        const removeBtn = document.getElementById('removePhotoBtn');
-        if (removeBtn) removeBtn.style.display = 'none';
+        if (overlay)  overlay.style.display = 'none';
+        if (actions)  actions.style.display = 'none';
     }
 }
 
 function removeProfilePhoto() {
-    showConfirm('حذف الصورة', 'هل تريد حذف الصورة الشخصية والعودة للرمز التعبيري؟', 'نعم', 'إلغاء', ok => {
-        if (ok) {
-            st.profilePhoto = null;
-            saveSt();
-            applyProfilePhoto();
-            showFeedback('🗑️ تم حذف الصورة الشخصية');
-        }
+    showConfirm('حذف الصورة', 'هل تريد حذف الصورة الشخصية والعودة للرمز التعبيري؟', 'نعم', 'إلغاء', function(ok) {
+        if (!ok) return;
+        st.profilePhoto = null;
+        saveSt();
+        applyProfilePhoto();
+        showFeedback('🗑️ تم حذف الصورة الشخصية');
     });
 }
 
