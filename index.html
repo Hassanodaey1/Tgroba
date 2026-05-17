@@ -143,6 +143,7 @@
             </div>
             <div class="results-xp" id="resultsXP">+0 XP • +0 💰</div>
             <button class="res-btn primary" onclick="playAgain()">🔄 العب مجدداً</button>
+            <div id="sessionSummaryBox" style="width:100%;margin-bottom:8px;"></div>
             <button class="res-btn secondary" onclick="goHome()">🏠 الرئيسية</button>
         </div>
     </div>
@@ -366,6 +367,24 @@
                                 <div class="cat-progress">
                                     <div class="cat-progress-fill" style="width:0%"></div>
                                 </div>
+                            <div class="cat-card" style="--chip-color:#f97316" onclick="startFlashMode()">
+                                <div class="cat-icon">⚡</div>
+                                <div class="cat-name">الفلاشات</div>
+                                <div class="cat-progress"><div class="cat-prog-fill" style="width:0%"></div></div>
+                                <div class="cat-stats" id="flashCatStats">أفضل: 0</div>
+                            </div>
+                            <div class="cat-card" style="--chip-color:#06b6d4" onclick="startMemoryMode()">
+                                <div class="cat-icon">🧠</div>
+                                <div class="cat-name">الذاكرة</div>
+                                <div class="cat-progress"><div class="cat-prog-fill" style="width:0%"></div></div>
+                                <div class="cat-stats" id="memoryCatStats">أفضل: 0</div>
+                            </div>
+                            <div class="cat-card" style="--chip-color:#ef4444" onclick="startSurvivalMode()">
+                                <div class="cat-icon">❤️</div>
+                                <div class="cat-name">البقاء</div>
+                                <div class="cat-progress"><div class="cat-prog-fill" style="width:0%"></div></div>
+                                <div class="cat-stats" id="survivalCatStats">أفضل: 0</div>
+                            </div>
                                 <div class="cat-stats" id="catLawsStats">🔒 يفتح Lv.10</div>
                             </div>
                         </div>
@@ -484,6 +503,52 @@
                             <div class="gcard-stats" id="gcatStats1">0 جلسة</div>
                             <div class="gcard-arrow">›</div>
                         </div>
+                    <!-- أوضاع جديدة v10 -->
+                    <div class="game-cat-card" style="--gc:#f97316" id="cardFlash" onclick="startFlashMode()">
+                        <div class="gcard-top">
+                            <div class="gcard-name-icon-row">
+                                <div class="gcard-icon" style="font-size:1.8em;">⚡</div>
+                                <div class="gcard-name">الفلاشات</div>
+                            </div>
+                            <div class="gcard-badge hot">جديد</div>
+                        </div>
+                        <div class="gcard-desc">أرقام تمر بسرعة — احفظ المجموع قبل أن تختفي</div>
+                        <div class="gcard-progress"><div class="gcard-prog-fill" style="width:0%"></div></div>
+                        <div class="gcard-footer">
+                            <div class="gcard-stats">أفضل: <span id="flashBestInCard">0</span></div>
+                            <div class="gcard-arrow">›</div>
+                        </div>
+                    </div>
+                    <div class="game-cat-card" style="--gc:#06b6d4" id="cardMemory" onclick="startMemoryMode()">
+                        <div class="gcard-top">
+                            <div class="gcard-name-icon-row">
+                                <div class="gcard-icon" style="font-size:1.8em;">🧠</div>
+                                <div class="gcard-name">الذاكرة</div>
+                            </div>
+                            <div class="gcard-badge hot">جديد</div>
+                        </div>
+                        <div class="gcard-desc">اعرض معادلة ثم اخفها — هل تذكر الناتج؟</div>
+                        <div class="gcard-progress"><div class="gcard-prog-fill" style="width:0%"></div></div>
+                        <div class="gcard-footer">
+                            <div class="gcard-stats">أفضل: <span id="memoryBestInCard">0</span></div>
+                            <div class="gcard-arrow">›</div>
+                        </div>
+                    </div>
+                    <div class="game-cat-card" style="--gc:#ef4444" id="cardSurvival" onclick="startSurvivalMode()">
+                        <div class="gcard-top">
+                            <div class="gcard-name-icon-row">
+                                <div class="gcard-icon" style="font-size:1.8em;">❤️</div>
+                                <div class="gcard-name">البقاء</div>
+                            </div>
+                            <div class="gcard-badge hot">جديد</div>
+                        </div>
+                        <div class="gcard-desc">3 أرواح بلا وقت — الخطأ يكلفك حياة، هل تصمد؟</div>
+                        <div class="gcard-progress"><div class="gcard-prog-fill" style="width:0%"></div></div>
+                        <div class="gcard-footer">
+                            <div class="gcard-stats">أفضل: <span id="survivalBestInCard">0</span></div>
+                            <div class="gcard-arrow">›</div>
+                        </div>
+                    </div>
                     </div>
                     <div class="game-cat-card" style="--gc:#f97316" onclick="openTrainingOpSheet()">
                         <div class="gcard-top">
@@ -541,6 +606,16 @@
                         <div class="daily-timer-val" id="dailyCountdown">--:--:--</div>
                     </div>
                     <div>
+
+                    <!-- التحدي الأسبوعي -->
+                    <div style="background:linear-gradient(135deg,rgba(240,185,11,0.15),rgba(124,58,237,0.15));border:1.5px solid rgba(240,185,11,0.35);border-radius:18px;padding:16px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                        <div>
+                            <div style="font-size:0.9em;font-weight:900;color:var(--gold);">🏅 التحدي الأسبوعي</div>
+                            <div style="font-size:0.65em;color:var(--text2);margin-top:2px;" id="weeklyChallengeStatus">⏳ لم تُكمله بعد</div>
+                            <div style="font-size:0.63em;color:var(--text3);margin-top:2px;">أتمّه واحصل على +10💰 مكافأة</div>
+                        </div>
+                        <button onclick="startWeeklyChallenge()" style="padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:900;border:none;cursor:pointer;flex-shrink:0;">▶ ابدأ</button>
+                    </div>
                         <div class="section-label">المهام اليومية</div>
                         <div id="tasksList"></div>
                     </div>
@@ -554,12 +629,10 @@
                 <!-- PROFILE PAGE -->
                 <div class="page" id="page-profile">
                     <div class="profile-hero" style="position:relative;">
-                        <div class="profile-avatar-big" id="profileAvatarWrap" onclick="triggerPhotoUpload()" style="cursor:pointer;" title="تغيير الصورة الشخصية">
+                        <div class="profile-avatar-big">
                             <div class="profile-avatar-ring"></div>
                             <div class="profile-avatar-img" id="profileAvatarImg">🧑</div>
-                            <div id="profilePhotoOverlay" class="profile-photo-overlay">📷</div>
                         </div>
-                        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(event)">
                         <div class="profile-details">
                             <div class="profile-name-big" id="profileName">اللاعب</div>
                             <div class="profile-level-big" id="profileLevel">المستوى 1 • مبتدئ</div>
@@ -567,10 +640,6 @@
                                 <div class="profile-xp-fill" id="profileXpFill" style="width:0%"></div>
                             </div>
                             <div class="profile-xp-label" id="profileXpLabel">0 / 1000 XP</div>
-                            <div id="profilePhotoActions" style="display:none;margin-top:6px;gap:5px;flex-wrap:wrap;">
-                                <button onclick="triggerPhotoUpload()" style="background:var(--gold);color:#000;border:none;border-radius:10px;padding:4px 10px;font-family:'Tajawal',sans-serif;font-size:0.62em;font-weight:800;cursor:pointer;">📷 تغيير</button>
-                                <button onclick="removeProfilePhoto()" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:4px 10px;font-family:'Tajawal',sans-serif;font-size:0.62em;font-weight:700;cursor:pointer;">🗑️ حذف</button>
-                            </div>
                         </div>
                         <button onclick="openGlobalSettings()" style="position:absolute;top:0;left:0;background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:8px 10px;font-size:1em;cursor:pointer;color:var(--text2);" title="الإعدادات">⚙️</button>
                     </div>
@@ -670,12 +739,10 @@
                         </div>
                     </div>
 
-                    <!-- الصوت والموسيقى والاهتزاز -->
+                    <!-- الصوت والموسيقى -->
                     <div class="profile-section" style="margin-top:12px;">
-                        <div class="profile-section-title">🔊 الصوت والموسيقى والاهتزاز</div>
+                        <div class="profile-section-title">🔊 الصوت والموسيقى</div>
                         <div class="settings-list">
-
-                            <!-- أصوات اللعبة -->
                             <div class="settings-row" onclick="toggleSound()">
                                 <span class="settings-row-icon">🔊</span>
                                 <span class="settings-row-label">أصوات اللعبة</span>
@@ -683,12 +750,10 @@
                                 <span id="soundBtn" style="display:none"></span>
                             </div>
                             <div class="volume-slider-row">
-                                <span class="vol-icon">🔈</span>
+                                <span class="vol-icon">🔉</span>
                                 <input type="range" class="vol-slider" id="soundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
                                 <span class="vol-val" id="soundVolVal">80%</span>
                             </div>
-
-                            <!-- موسيقى الخلفية -->
                             <div class="settings-row" onclick="toggleBgMusic()">
                                 <span class="settings-row-icon">🎵</span>
                                 <span class="settings-row-label">موسيقى الخلفية</span>
@@ -700,19 +765,18 @@
                                 <input type="range" class="vol-slider" id="bgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
                                 <span class="vol-val" id="bgVolVal">60%</span>
                             </div>
+                        </div>
+                    </div>
 
-                            <!-- الاهتزاز -->
+                    <!-- الاهتزاز -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">📳 الاهتزاز</div>
+                        <div class="settings-list">
                             <div class="settings-row" onclick="toggleVibration()">
                                 <span class="settings-row-icon">📳</span>
                                 <span class="settings-row-label">الاهتزاز عند النقر</span>
                                 <span class="settings-row-val" id="vibrationStatus">مفعّل</span>
                             </div>
-                            <div class="volume-slider-row">
-                                <span class="vol-icon">📳</span>
-                                <input type="range" class="vol-slider" id="vibVolSlider" min="10" max="200" value="30" oninput="setVibrationStrength(this.value)">
-                                <span class="vol-val" id="vibVolVal">30ms</span>
-                            </div>
-
                         </div>
                     </div>
 
@@ -739,7 +803,14 @@
                                     <div class="gender-btn" id="gBtnF" onclick="selectGender('f')">👧 أنثى</div>
                                 </div>
                             </div>
-                            <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
+                
+            <!-- ملخص الجلسات الأخيرة -->
+            <div class="profile-section">
+                <div class="profile-section-title">📊 الجلسات الأخيرة</div>
+                <div id="sessionSummariesList"></div>
+            </div>
+
+            <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
                         </div>
                     </div>
 
@@ -913,7 +984,6 @@
                         </div>
                     </div>
                 </div>
-            </div><!-- /pages -->
 
             <!-- BOTTOM NAV -->
             <div class="bottom-nav">
@@ -1020,6 +1090,23 @@
             <!-- أزرار الحفظ والإلغاء -->
             <button class="save-btn" onclick="saveMainSettings()" style="width:100%;margin-bottom:8px;">💾 حفظ التغييرات</button>
             <button class="sheet-cancel" onclick="closeMainSettings()">إلغاء</button>
+        </div>
+    </div>
+
+
+    <!-- SKILLS SHOP SHEET -->
+    <div class="sheet-overlay" id="skillsSheet" onclick="sheetBg(event,'skillsSheet')">
+        <div class="sheet-panel" style="max-height:85vh;overflow-y:auto;">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">🎯 متجر المهارات</div>
+            <div style="font-size:0.72em;color:var(--text2);margin-bottom:14px;text-align:center;">اشترِ مهارات تساعدك في اللعب</div>
+            <div style="background:var(--surface3);border-radius:14px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:1.2em;">💰</span>
+                <span style="font-weight:900;color:var(--gold);" id="skillsShopCoins">0</span>
+                <span style="font-size:0.72em;color:var(--text2);">عملاتك</span>
+            </div>
+            <div id="skillBarContainer" style="display:flex;flex-direction:column;gap:10px;"></div>
+            <button class="sheet-cancel" style="margin-top:14px;" onclick="closeSheet('skillsSheet')">إغلاق</button>
         </div>
     </div>
 
