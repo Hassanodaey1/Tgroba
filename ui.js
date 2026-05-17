@@ -548,3 +548,111 @@ function loadLeaderboard() {
         container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ قاعدة البيانات غير متاحة</div>';
     }
 }
+
+/* ═══════════════════════════════════════════════════
+   لائحة الصدارة الموحدة والمتحركة
+═══════════════════════════════════════════════════ */
+
+/* التبويب النشط حالياً: 'challenge' أو 'general' */
+var _activeLbTab = 'challenge';
+
+/**
+ * تبديل تبويب لائحة الصدارة
+ */
+function showLbTab(tab) {
+    _activeLbTab = tab;
+    const btnC = document.getElementById('lbTabChallenge');
+    const btnG = document.getElementById('lbTabGeneral');
+    const header = document.getElementById('lbScoreHeader');
+
+    if (tab === 'challenge') {
+        if (btnC) { btnC.style.background = 'linear-gradient(135deg,var(--gold),var(--gold2))'; btnC.style.color = '#000'; btnC.style.border = 'none'; }
+        if (btnG) { btnG.style.background = 'var(--surface3)'; btnG.style.color = 'var(--text2)'; btnG.style.border = '1px solid var(--border2)'; }
+        if (header) header.textContent = 'نقاط التحدي';
+    } else {
+        if (btnG) { btnG.style.background = 'linear-gradient(135deg,var(--gold),var(--gold2))'; btnG.style.color = '#000'; btnG.style.border = 'none'; }
+        if (btnC) { btnC.style.background = 'var(--surface3)'; btnC.style.color = 'var(--text2)'; btnC.style.border = '1px solid var(--border2)'; }
+        if (header) header.textContent = 'أعلى نقاط';
+    }
+    loadCombinedLeaderboard();
+}
+
+/**
+ * تحميل لائحة الصدارة الموحدة حسب التبويب النشط
+ */
+function loadCombinedLeaderboard() {
+    const container = document.getElementById('combinedLeaderboardList');
+    if (!container) return;
+
+    if (!database) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">⚠️ قاعدة البيانات غير متصلة</div>';
+        return;
+    }
+
+    container.innerHTML = '<div style="text-align:center;padding:20px;">⏳ جاري التحميل...</div>';
+
+    try {
+        if (_activeLbTab === 'challenge') {
+            /* لائحة التحدي */
+            database.ref('challenge_leaderboard').orderByChild('challengeScore').limitToLast(50).once('value', snapshot => {
+                const players = [];
+                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+                players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
+                renderLeaderboardList(container, players, 'challengeScore');
+            }).catch(() => {
+                container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⚠️ فشل التحميل</div>';
+            });
+        } else {
+            /* لائحة النقاط العامة */
+            database.ref('leaderboard').orderByChild('bestScore').limitToLast(50).once('value', snapshot => {
+                const players = [];
+                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+                players.sort((a, b) => (b.bestScore || 0) - (a.bestScore || 0));
+                renderLeaderboardList(container, players, 'bestScore');
+                /* تحديث تتبع المرتبة الأولى للألقاب */
+                try { if (typeof updateFirstPlaceTracking === 'function') updateFirstPlaceTracking(players); } catch(e) {}
+            }).catch(() => {
+                container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⚠️ فشل التحميل</div>';
+            });
+        }
+    } catch(e) {
+        container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⚠️ خطأ في الاتصال</div>';
+    }
+}
+
+/**
+ * عرض صفوف لائحة اللاعبين
+ */
+function renderLeaderboardList(container, players, scoreKey) {
+    if (!players.length) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">لا توجد نتائج بعد — كن الأول! 🏆</div>';
+        return;
+    }
+
+    const medals = ['🥇', '🥈', '🥉'];
+    const myKey = (st.name + '_' + (st.playerUID || '')).replace(/[^a-zA-Z0-9_]/g, '_');
+    let html = '';
+
+    players.forEach((p, idx) => {
+        const isMe = p.id === myKey || p.name === st.name;
+        const score = p[scoreKey] || 0;
+        html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
+            <span>${medals[idx] || (idx + 1)}</span>
+            <span>${p.avatar || '🧑'} ${p.name || 'لاعب'}</span>
+            <span>${p.level || 1}</span>
+            <span style="color:var(--gold);font-weight:900;">${score}</span>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+
+    /* تمرير تلقائي لموضع اللاعب الحالي */
+    const myRow = container.querySelector('.lb-row-me');
+    if (myRow) {
+        setTimeout(() => myRow.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+    }
+}
+
+/* استدعاء loadLeaderboard و loadChallengeLeaderboard معاً للتوافق مع الكود القديم */
+function loadLeaderboard() { if (_activeLbTab === 'general') loadCombinedLeaderboard(); }
+function loadChallengeLeaderboard() { if (_activeLbTab === 'challenge') loadCombinedLeaderboard(); }
