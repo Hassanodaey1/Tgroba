@@ -554,15 +554,12 @@
                 <!-- PROFILE PAGE -->
                 <div class="page" id="page-profile">
                     <div class="profile-hero" style="position:relative;">
-                        <div class="profile-avatar-big" style="cursor:pointer;" onclick="openPhotoOptions()" title="تغيير الصورة">
+                        <div class="profile-avatar-big" id="profileAvatarWrap" onclick="triggerPhotoUpload()" style="cursor:pointer;" title="تغيير الصورة الشخصية">
                             <div class="profile-avatar-ring"></div>
                             <div class="profile-avatar-img" id="profileAvatarImg">🧑</div>
-                            <div id="profilePhotoOverlay" style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:3;font-size:1.1em;">📷</div>
+                            <div id="profilePhotoOverlay" class="profile-photo-overlay">📷</div>
                         </div>
-                        <!-- Hidden file input for photo upload -->
-                        <!-- Remove photo button (only shown when photo exists) -->
-                        <div id="removePhotoBtn" class="remove-photo-btn" onclick="removeProfilePhoto()" title="حذف الصورة" style="display:none;">✕</div>
-                        <input type="file" id="photoFileInput" accept="image/*" capture="user" style="display:none;" onchange="handlePhotoUpload(event)">
+                        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(event)">
                         <div class="profile-details">
                             <div class="profile-name-big" id="profileName">اللاعب</div>
                             <div class="profile-level-big" id="profileLevel">المستوى 1 • مبتدئ</div>
@@ -570,6 +567,10 @@
                                 <div class="profile-xp-fill" id="profileXpFill" style="width:0%"></div>
                             </div>
                             <div class="profile-xp-label" id="profileXpLabel">0 / 1000 XP</div>
+                            <div id="profilePhotoActions" style="display:none;margin-top:6px;gap:5px;flex-wrap:wrap;">
+                                <button onclick="triggerPhotoUpload()" style="background:var(--gold);color:#000;border:none;border-radius:10px;padding:4px 10px;font-family:'Tajawal',sans-serif;font-size:0.62em;font-weight:800;cursor:pointer;">📷 تغيير</button>
+                                <button onclick="removeProfilePhoto()" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:4px 10px;font-family:'Tajawal',sans-serif;font-size:0.62em;font-weight:700;cursor:pointer;">🗑️ حذف</button>
+                            </div>
                         </div>
                         <button onclick="openGlobalSettings()" style="position:absolute;top:0;left:0;background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:8px 10px;font-size:1em;cursor:pointer;color:var(--text2);" title="الإعدادات">⚙️</button>
                     </div>
@@ -669,10 +670,12 @@
                         </div>
                     </div>
 
-                    <!-- الصوت والموسيقى -->
+                    <!-- الصوت والموسيقى والاهتزاز -->
                     <div class="profile-section" style="margin-top:12px;">
-                        <div class="profile-section-title">🔊 الصوت والموسيقى</div>
+                        <div class="profile-section-title">🔊 الصوت والموسيقى والاهتزاز</div>
                         <div class="settings-list">
+
+                            <!-- أصوات اللعبة -->
                             <div class="settings-row" onclick="toggleSound()">
                                 <span class="settings-row-icon">🔊</span>
                                 <span class="settings-row-label">أصوات اللعبة</span>
@@ -680,10 +683,12 @@
                                 <span id="soundBtn" style="display:none"></span>
                             </div>
                             <div class="volume-slider-row">
-                                <span class="vol-icon">🔉</span>
+                                <span class="vol-icon">🔈</span>
                                 <input type="range" class="vol-slider" id="soundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
                                 <span class="vol-val" id="soundVolVal">80%</span>
                             </div>
+
+                            <!-- موسيقى الخلفية -->
                             <div class="settings-row" onclick="toggleBgMusic()">
                                 <span class="settings-row-icon">🎵</span>
                                 <span class="settings-row-label">موسيقى الخلفية</span>
@@ -695,13 +700,8 @@
                                 <input type="range" class="vol-slider" id="bgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
                                 <span class="vol-val" id="bgVolVal">60%</span>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- الاهتزاز -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">📳 الاهتزاز</div>
-                        <div class="settings-list">
+                            <!-- الاهتزاز -->
                             <div class="settings-row" onclick="toggleVibration()">
                                 <span class="settings-row-icon">📳</span>
                                 <span class="settings-row-label">الاهتزاز عند النقر</span>
@@ -712,6 +712,7 @@
                                 <input type="range" class="vol-slider" id="vibVolSlider" min="10" max="200" value="30" oninput="setVibrationStrength(this.value)">
                                 <span class="vol-val" id="vibVolVal">30ms</span>
                             </div>
+
                         </div>
                     </div>
 
@@ -912,9 +913,7 @@
                         </div>
                     </div>
                 </div>
-
-            </div><!-- end page-leaderboard -->
-            </div><!-- end pages -->
+            </div><!-- /pages -->
 
             <!-- BOTTOM NAV -->
             <div class="bottom-nav">
