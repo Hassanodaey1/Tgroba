@@ -86,6 +86,12 @@ function generateAndShowSerial() {
 ═══════════════════════════════════════════════════ */
 (function initApp() {
     try { initDateSelectors(); } catch (e) { console.warn('initDateSelectors', e); }
+    try { initSettingsDateSelectors(); } catch (e) {}
+    /* إظهار زر الإعدادات فقط في الصفحات المسموح بها */
+    try {
+        const settingsBtn = document.getElementById('mainSettingsBtn');
+        if (settingsBtn) settingsBtn.style.display = 'flex'; // الصفحة الرئيسية هي الافتراضية
+    } catch(e) {}
     try { checkDailyReset(); } catch (e) {}
     try { applyTheme(); } catch (e) {}
     try { applyDarkMode(); } catch (e) {}
