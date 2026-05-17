@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   HO Math — Patches & New Features
+   HO Math — Patches & New Features v9
    © 2026 Hassan Odaey
 ═══════════════════════════════════════════════════ */
 
@@ -43,13 +43,104 @@ function resumeGameTimer() {
     }, 1000);
 }
 
-/**
- * يفتح إعدادات اللعبة السريعة ويوقف مؤقت اللعبة.
- * يعمل من داخل اللعبة وخارجها.
- */
+/* ═══ 2. الإعدادات الرئيسية — تعمل فقط من الرئيسية والملف الشخصي ═══ */
+function openMainSettings() {
+    const overlay = document.getElementById('gameOverlay');
+    if (overlay && overlay.classList.contains('active')) return;
+
+    try { initSettingsDateSelectors(); } catch(e) {}
+
+    const inName = document.getElementById('settingsInputName');
+    if (inName) inName.value = st.name || '';
+
+    if (st.birthDate) {
+        const parts = st.birthDate.split('-');
+        if (parts.length === 3) {
+            const sd = document.getElementById('settingsBirthDay');
+            const sm = document.getElementById('settingsBirthMonth');
+            const sy = document.getElementById('settingsBirthYear');
+            if (sy) sy.value = parseInt(parts[0]);
+            if (sm) sm.value = parseInt(parts[1]);
+            if (sd) sd.value = parseInt(parts[2]);
+        }
+    }
+
+    updateSettingsDarkToggle();
+    updateSettingsThemeDots();
+    openSheet('mainSettingsSheet');
+    playSound('click');
+}
+
+function closeMainSettings() {
+    closeSheet('mainSettingsSheet');
+}
+
+function saveMainSettings() {
+    const inName = document.getElementById('settingsInputName');
+    let name = inName ? inName.value.trim().replace(/[^a-zA-Z0-9 ]/g, '') : '';
+    if (!name) { showFeedback('الاسم لا يمكن أن يكون فارغاً'); return; }
+    if (name.length > 30) name = name.slice(0, 30);
+    st.name = name;
+
+    const sd = document.getElementById('settingsBirthDay');
+    const sm = document.getElementById('settingsBirthMonth');
+    const sy = document.getElementById('settingsBirthYear');
+    if (sd && sm && sy) {
+        const y = sy.value, mo = String(sm.value).padStart(2,'0'), d = String(sd.value).padStart(2,'0');
+        st.birthDate = `${y}-${mo}-${d}`;
+        st.age = calculateAgeFromBirthDate(st.birthDate);
+    }
+
+    if (!st.serialNumber) {
+        st.serialNumber = generateSerialNumber(st.birthDate, st.name);
+    }
+
+    saveSt();
+    updateUI();
+    loadProfileForm();
+    updateSerialNumberDisplay();
+    closeMainSettings();
+    showFeedback('تم حفظ الإعدادات');
+}
+
+function updateSettingsDarkToggle() {
+    const icon = document.getElementById('settingsDarkIcon');
+    const label = document.getElementById('settingsDarkLabel');
+    if (icon) icon.textContent = st.darkMode ? '🌙' : '☀️';
+    if (label) label.textContent = st.darkMode ? 'داكن' : 'فاتح';
+}
+
+function toggleSettingsDarkMode() {
+    st.darkMode = !st.darkMode;
+    saveSt();
+    applyDarkMode();
+    updateSettingsDarkToggle();
+    const icon2 = document.getElementById('darkLightIcon');
+    const label2 = document.getElementById('darkLightLabel');
+    if (icon2) icon2.textContent = st.darkMode ? '🌙' : '☀️';
+    if (label2) label2.textContent = st.darkMode ? 'داكن' : 'فاتح';
+    playSound('click');
+}
+
+function updateSettingsThemeDots() {
+    const dots = document.querySelectorAll('.settings-theme-dot');
+    dots.forEach(d => {
+        d.classList.toggle('active', d.dataset.gold === st.tGold);
+    });
+}
+
+function applySettingsTheme(el, gold, accent, accent2) {
+    document.querySelectorAll('.settings-theme-dot').forEach(d => d.classList.remove('active'));
+    if (el) el.classList.add('active');
+    /* setTheme يتوقع عنصر DOM كأول معامل أو null */
+    const dummy = { classList: { add: () => {}, remove: () => {}, toggle: () => {} } };
+    setTheme(dummy, gold, accent, accent2);
+    updateSettingsThemeDots();
+}
+
+/* ═══ 3. إعدادات اللعبة السريعة (داخل اللعبة فقط) ═══ */
 function openGameSettingsAndPause() {
     pauseGameTimer();
-    /* مزامنة حالة الأصوات */
     ['gsoundStatus'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
@@ -66,7 +157,6 @@ function openGameSettingsAndPause() {
     if (gBV) gBV.value = st.bgVolume || 60;
     const gBVV = document.getElementById('gBgVolVal');
     if (gBVV) gBVV.textContent = (st.bgVolume || 60) + '%';
-    /* مزامنة حالة الاهتزاز */
     const vibStat = document.getElementById('gVibrationStatus');
     if (vibStat) vibStat.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
     openSheet('gameSettingsSheet');
@@ -84,36 +174,20 @@ function sheetBgAndResume(e, id) {
     }
 }
 
-/**
- * زر الإعدادات العالمي — يعمل من أي صفحة.
- * إذا كانت اللعبة نشطة يفتح إعدادات اللعبة السريعة،
- * وإلا يذهب لصفحة الإعدادات.
- */
-function openGlobalSettings() {
-    const overlay = document.getElementById('gameOverlay');
-    if (overlay && overlay.classList.contains('active')) {
-        openGameSettingsAndPause();
-    } else {
-        /* فتح إعدادات اللعبة السريعة من أي صفحة */
-        openGameSettingsAndPause();
-    }
-}
-
-/* ═══ 2. تهيئة الألقاب بعد التحميل ═══ */
+/* ═══ 4. تهيئة الألقاب بعد التحميل ═══ */
 function initTitlesSystem() {
     try { checkSeasonReset(); } catch (e) {}
     try { renderProfileTitles(); } catch (e) {}
 }
 
-/* ═══ 3. toggleBgMusicInGame — تبديل الموسيقى داخل الإعدادات السريعة ═══ */
+/* ═══ 5. toggleBgMusicInGame ═══ */
 function toggleBgMusicInGame() {
     toggleBgMusic();
-    /* تحديث مؤشر الإعدادات السريعة */
     const el = document.getElementById('gbgMusicStatus');
     if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
 }
 
-/* ═══ 4. toggleVibration الكامل ═══ */
+/* ═══ 6. toggleVibration ═══ */
 function toggleVibration() {
     st.vibrationOn = !st.vibrationOn;
     ['vibrationStatus', 'gVibrationStatus'].forEach(id => {
@@ -124,3 +198,83 @@ function toggleVibration() {
     saveSt();
     playSound('click');
 }
+
+/* ═══ 7. تهيئة محددات تاريخ نافذة الإعدادات الرئيسية ═══ */
+function initSettingsDateSelectors() {
+    const daySel = document.getElementById('settingsBirthDay');
+    const monthSel = document.getElementById('settingsBirthMonth');
+    const yearSel = document.getElementById('settingsBirthYear');
+    if (!daySel) return;
+    daySel.innerHTML = '';
+    monthSel.innerHTML = '';
+    yearSel.innerHTML = '';
+    for (let i = 1; i <= 31; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.textContent = i;
+        daySel.appendChild(opt);
+    }
+    for (let i = 1; i <= 12; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.textContent = i;
+        monthSel.appendChild(opt);
+    }
+    const currentYear = (new Date()).getFullYear();
+    for (let i = currentYear - 100; i <= currentYear; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.textContent = i;
+        yearSel.appendChild(opt);
+    }
+}
+
+/* ═══ 8. الرقم التسلسلي في نافذة الإعدادات ═══ */
+
+function updateSettingsSerialDisplay() {
+    const el = document.getElementById('settingsSerialDisplay');
+    if (el) el.textContent = st.serialNumber || 'احفظ التغييرات أولاً لتوليد الرقم';
+}
+
+function copySettingsSerial() {
+    if (!st.serialNumber) { showFeedback('لا يوجد رقم بعد — احفظ التغييرات أولاً'); return; }
+    navigator.clipboard.writeText(st.serialNumber).then(() => {
+        showFeedback('📋 تم نسخ الرقم التسلسلي');
+    }).catch(() => {
+        showFeedback('📋 ' + st.serialNumber);
+    });
+}
+
+function toggleSettingsRestorePanel() {
+    const panel = document.getElementById('settingsRestorePanel');
+    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function restoreFromSettings() {
+    const input = document.getElementById('settingsRestoreInput');
+    const serial = input ? input.value.trim() : '';
+    if (!serial) { showFeedback('أدخل الرقم التسلسلي'); return; }
+    const savedData = loadSerialBackup(serial);
+    if (!savedData) { showFeedback('⚠️ لم يُعثر على حساب بهذا الرقم'); return; }
+    Object.assign(st, sanitizeState(savedData));
+    saveSt();
+    updateUI();
+    loadProfileForm();
+    applyDarkMode();
+    updateSettingsSerialDisplay();
+    if (input) input.value = '';
+    const panel = document.getElementById('settingsRestorePanel');
+    if (panel) panel.style.display = 'none';
+    showFeedback('✅ تم استعادة الحساب');
+}
+
+/* تحديث عرض الرقم التسلسلي عند فتح الإعدادات */
+const _origOpenMainSettings = openMainSettings;
+openMainSettings = function() {
+    _origOpenMainSettings();
+    updateSettingsSerialDisplay();
+};
+
+/* تحديث عرض الرقم بعد الحفظ */
+const _origSaveMainSettings = saveMainSettings;
+saveMainSettings = function() {
+    _origSaveMainSettings();
+    updateSettingsSerialDisplay();
+};
