@@ -23,6 +23,12 @@ function initVolumeSliders() {
         const el = document.getElementById(id);
         if (el) el.textContent = st.bgVolume + '%';
     });
+    // Vibration strength
+    if (typeof st.vibrationStrength !== 'number') st.vibrationStrength = 30;
+    const vibSlider = document.getElementById('vibVolSlider');
+    if (vibSlider) vibSlider.value = st.vibrationStrength;
+    const vibVal = document.getElementById('vibVolVal');
+    if (vibVal) vibVal.textContent = st.vibrationStrength + 'ms';
 }
 
 function setSoundVolume(val) {
@@ -36,6 +42,16 @@ function setSoundVolume(val) {
         if (el) el.value = val;
     });
     saveSt();
+}
+
+function setVibrationStrength(val) {
+    st.vibrationStrength = parseInt(val);
+    ['vibVolVal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val + 'ms';
+    });
+    saveSt();
+    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(parseInt(val));
 }
 
 function setBgVolume(val) {
@@ -98,6 +114,7 @@ function generateAndShowSerial() {
     try { updateUI(); } catch (e) { console.warn('updateUI', e); }
     try { loadProfileForm(); } catch (e) {}
     try { initVolumeSliders(); } catch (e) {}
+    try { if (typeof applyProfilePhoto === 'function') applyProfilePhoto(); } catch (e) {}
 
     /* الاهتزاز */
     ['vibrationStatus', 'gVibrationStatus'].forEach(id => {
