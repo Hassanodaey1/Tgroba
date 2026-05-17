@@ -2813,3 +2813,49 @@
 }
 .vol-icon { font-size: 1.1em; min-width: 20px; text-align: center; }
 .vol-val { font-size: 0.72em; color: var(--text2); min-width: 32px; text-align: right; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════
+   HO Math v9 — أنماط الإعدادات الرئيسية ولائحة الصدارة
+═══════════════════════════════════════════════════ */
+
+/* نقاط الثيم في نافذة الإعدادات */
+.settings-theme-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.18s, border-color 0.18s;
+    flex-shrink: 0;
+}
+.settings-theme-dot.active {
+    border-color: var(--text);
+    transform: scale(1.18);
+}
+
+/* زر الإعدادات الرئيسي */
+#mainSettingsBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* لائحة الصدارة الموحدة — تمرير سلس */
+#combinedLeaderboardList {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+#combinedLeaderboardList .lb-row-me {
+    background: linear-gradient(135deg, rgba(240,185,11,0.18), rgba(124,58,237,0.12));
+    border-right: 3px solid var(--gold);
+    font-weight: 900;
+}
+
+/* تأثير scroll في لائحة الصدارة */
+#combinedLeaderboardList::-webkit-scrollbar {
+    width: 4px;
+}
+#combinedLeaderboardList::-webkit-scrollbar-thumb {
+    background: var(--border2);
+    border-radius: 2px;
+}
