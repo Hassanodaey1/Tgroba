@@ -554,10 +554,15 @@
                 <!-- PROFILE PAGE -->
                 <div class="page" id="page-profile">
                     <div class="profile-hero" style="position:relative;">
-                        <div class="profile-avatar-big">
+                        <div class="profile-avatar-big" style="cursor:pointer;" onclick="openPhotoOptions()" title="تغيير الصورة">
                             <div class="profile-avatar-ring"></div>
                             <div class="profile-avatar-img" id="profileAvatarImg">🧑</div>
+                            <div id="profilePhotoOverlay" style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:3;font-size:1.1em;">📷</div>
                         </div>
+                        <!-- Hidden file input for photo upload -->
+                        <!-- Remove photo button (only shown when photo exists) -->
+                        <div id="removePhotoBtn" class="remove-photo-btn" onclick="removeProfilePhoto()" title="حذف الصورة" style="display:none;">✕</div>
+                        <input type="file" id="photoFileInput" accept="image/*" capture="user" style="display:none;" onchange="handlePhotoUpload(event)">
                         <div class="profile-details">
                             <div class="profile-name-big" id="profileName">اللاعب</div>
                             <div class="profile-level-big" id="profileLevel">المستوى 1 • مبتدئ</div>
@@ -701,6 +706,11 @@
                                 <span class="settings-row-icon">📳</span>
                                 <span class="settings-row-label">الاهتزاز عند النقر</span>
                                 <span class="settings-row-val" id="vibrationStatus">مفعّل</span>
+                            </div>
+                            <div class="volume-slider-row">
+                                <span class="vol-icon">📳</span>
+                                <input type="range" class="vol-slider" id="vibVolSlider" min="10" max="200" value="30" oninput="setVibrationStrength(this.value)">
+                                <span class="vol-val" id="vibVolVal">30ms</span>
                             </div>
                         </div>
                     </div>
@@ -902,6 +912,9 @@
                         </div>
                     </div>
                 </div>
+
+            </div><!-- end page-leaderboard -->
+            </div><!-- end pages -->
 
             <!-- BOTTOM NAV -->
             <div class="bottom-nav">
