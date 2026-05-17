@@ -102,6 +102,10 @@
                     { text: 'قيمة 2⁵ = ؟', ans: 32, explanation: '2×2×2×2×2=32' },
                     { text: 'ما الجذر التكعيبي لـ 27؟', ans: 3, explanation: '3³=27' },
                 ];
+                /* استخدام المجموعة الموسّعة إذا كانت متاحة */
+                if (typeof genExtendedLawQ === 'function' && rnd(0, 1) === 1) {
+                    return genExtendedLawQ();
+                }
                 let q = lawQ[rnd(0, lawQ.length - 1)];
                 let choices = shuffle([q.ans, q.ans + 1, q.ans - 1, q.ans + 2]);
                 return { text: q.text, hint: 'تطبيق قانون رياضي', answer: q.ans, choices, explanation: q.explanation,
@@ -119,6 +123,10 @@
             const ops = ['add', 'sub', 'mul', 'div'];
             let ch = op;
             if (op === 'mix') {
+                /* 30% من الأسئلة تأتي من المولّد المتنوع */
+                if (typeof genAdvancedDiverseQ === 'function' && rnd(0, 9) < 3) {
+                    return genAdvancedDiverseQ(actualDiff);
+                }
                 if (actualDiff === 'easy') ch = ops[rnd(0, 3)];
                 else if (actualDiff === 'medium') { const pool = ['add', 'sub', 'mul', 'div', 'percent',
                         'fraction_simple', 'word_add', 'word_mul', 'equation_simple'
@@ -1044,3 +1052,459 @@
                 }
             }
         }
+
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   توليد أسئلة متنوعة: سالبة، كسرية، نسبية، معادلات، قوانين موسعة
+   HO Math v9 — مولّد الأسئلة المتقدم
+═══════════════════════════════════════════════════════════════ */
+
+/**
+ * يولّد سؤالاً عشوائياً من مجموعة موسّعة تشمل:
+ * أعداداً سالبة، كسور، نسب مئوية، متتاليات، معادلات، ألغاز، هندسة
+ */
+function genAdvancedDiverseQ(diff) {
+    const types = [
+        'neg_add', 'neg_sub', 'neg_mul', 'neg_div',
+        'frac_add_diff', 'frac_sub_diff', 'frac_mul', 'frac_div',
+        'ratio', 'proportion', 'percent_reverse', 'percent_change',
+        'eq_linear', 'eq_two_step', 'eq_fraction',
+        'seq_arith', 'seq_geo', 'seq_neg',
+        'geo_area', 'geo_perimeter', 'geo_volume',
+        'law_distributive', 'law_commutative', 'law_power',
+        'word_neg', 'word_fraction', 'word_ratio',
+        'abs_value', 'sqrt_neg_context', 'mixed_ops'
+    ];
+
+    const ch = types[rnd(0, types.length - 1)];
+    let a, b, c, d, ans, text, hint, explanation = '', choices;
+
+    switch (ch) {
+        /* ─── أعداد سالبة ─── */
+        case 'neg_add': {
+            a = -rnd(1, 20); b = -rnd(1, 20);
+            ans = a + b;
+            text = `(${a}) + (${b})`;
+            hint = 'جمع عددين سالبين';
+            explanation = `${a} + ${b} = ${ans}`;
+            break;
+        }
+        case 'neg_sub': {
+            a = rnd(1, 15); b = rnd(1, 20);
+            ans = a - b; // قد يكون سالباً
+            text = `${a} − ${b}`;
+            hint = 'الفرق قد يكون سالباً';
+            explanation = `${a} - ${b} = ${ans}`;
+            break;
+        }
+        case 'neg_mul': {
+            a = -rnd(2, 9); b = rnd(2, 9);
+            ans = a * b;
+            text = `(${a}) × ${b}`;
+            hint = 'سالب × موجب = سالب';
+            explanation = `${a} × ${b} = ${ans}`;
+            break;
+        }
+        case 'neg_div': {
+            const divisors = [2, 3, 4, 5, 6, 7, 8, 9];
+            b = divisors[rnd(0, divisors.length - 1)];
+            ans = -rnd(1, 10);
+            a = ans * b;
+            text = `(${a}) ÷ ${b}`;
+            hint = 'سالب ÷ موجب = سالب';
+            explanation = `${a} ÷ ${b} = ${ans}`;
+            break;
+        }
+
+        /* ─── كسور بمقامات مختلفة ─── */
+        case 'frac_add_diff': {
+            // a/b + c/b حيث المقامات مختلفة → نحوّل ثم نجمع
+            const d1 = rnd(2, 6), d2 = rnd(2, 6);
+            const n1 = rnd(1, d1 - 1), n2 = rnd(1, d2 - 1);
+            const lcm = (d1 * d2) / gcd(d1, d2);
+            const numSum = n1 * (lcm / d1) + n2 * (lcm / d2);
+            const g = gcd(numSum, lcm);
+            ans = Math.round((numSum / lcm) * 100) / 100; // كعدد عشري للمقارنة
+            const ansText = g < lcm ? `${numSum/g}/${lcm/g}` : `${numSum/lcm}`;
+            // نجعل الجواب كعدد عشري مقرّب لسهولة الخيارات
+            ans = Math.round((n1/d1 + n2/d2) * 100) / 100;
+            text = `${n1}/${d1} + ${n2}/${d2}`;
+            hint = 'أوجد المقام المشترك ثم اجمع';
+            explanation = `المقام المشترك = ${lcm}، الناتج = ${ansText} ≈ ${ans}`;
+            break;
+        }
+        case 'frac_sub_diff': {
+            const d1 = rnd(2, 6), d2 = rnd(2, 6);
+            const n1 = rnd(1, d1), n2 = rnd(1, d2 - 1);
+            ans = Math.round((n1/d1 - n2/d2) * 100) / 100;
+            text = `${n1}/${d1} − ${n2}/${d2}`;
+            hint = 'أوجد المقام المشترك ثم اطرح';
+            explanation = `${n1}/${d1} - ${n2}/${d2} = ${ans}`;
+            break;
+        }
+        case 'frac_mul': {
+            const n1 = rnd(1, 7), d1 = rnd(2, 8), n2 = rnd(1, 7), d2 = rnd(2, 8);
+            const numP = n1 * n2, denP = d1 * d2;
+            const g = gcd(numP, denP);
+            ans = Math.round((numP / denP) * 100) / 100;
+            const ansDisp = g > 1 ? `${numP/g}/${denP/g}` : `${numP}/${denP}`;
+            text = `${n1}/${d1} × ${n2}/${d2}`;
+            hint = 'اضرب البسطَين والمقامَين';
+            explanation = `= ${numP}/${denP} = ${ansDisp} ≈ ${ans}`;
+            break;
+        }
+        case 'frac_div': {
+            const n1 = rnd(1, 5), d1 = rnd(2, 6), n2 = rnd(1, 5), d2 = rnd(2, 6);
+            ans = Math.round((n1 * d2) / (d1 * n2) * 100) / 100;
+            text = `${n1}/${d1} ÷ ${n2}/${d2}`;
+            hint = 'اقلب المقسوم عليه واضرب';
+            explanation = `${n1}/${d1} × ${d2}/${n2} = ${n1*d2}/${d1*n2} ≈ ${ans}`;
+            break;
+        }
+
+        /* ─── نسب مئوية متقدمة ─── */
+        case 'ratio': {
+            a = rnd(1, 9); b = rnd(1, 9);
+            const total = rnd(20, 100);
+            ans = Math.round((a / (a + b)) * total);
+            text = `قُسّمت ${total} بنسبة ${a}:${b}، الحصة الأولى = ؟`;
+            hint = 'قسّم بمجموع نسبَي الحصص';
+            explanation = `الحصة الأولى = ${a}/(${a}+${b}) × ${total} = ${ans}`;
+            break;
+        }
+        case 'proportion': {
+            a = rnd(2, 10); b = a * rnd(2, 5); c = rnd(2, 8);
+            ans = c * (b / a);
+            if (!Number.isInteger(ans)) { c = a; ans = b; }
+            text = `إذا كان ${a}/${b} = ${c}/؟`;
+            hint = 'ضرب متقاطع';
+            explanation = `؟ = ${c} × ${b} ÷ ${a} = ${ans}`;
+            break;
+        }
+        case 'percent_reverse': {
+            const pct = [10, 20, 25, 50][rnd(0, 3)];
+            const result = rnd(1, 20) * pct / 10;
+            ans = result * 100 / pct;
+            text = `${pct}% من ؟ = ${result}`;
+            hint = 'اقسم على النسبة المئوية';
+            explanation = `الأصل = ${result} ÷ ${pct}% = ${ans}`;
+            break;
+        }
+        case 'percent_change': {
+            const orig = rnd(5, 20) * 10;
+            const change = rnd(1, 5) * 10;
+            const isIncrease = rnd(0, 1) === 1;
+            ans = isIncrease ? orig + (orig * change / 100) : orig - (orig * change / 100);
+            text = `${orig} ${isIncrease ? 'زاد' : 'نقص'} بنسبة ${change}%، الجديد = ؟`;
+            hint = `احسب ${change}% ثم ${isIncrease ? 'أضف' : 'اطرح'}`;
+            explanation = `${orig} × (${isIncrease ? 1 : -1} ${change}%) = ${ans}`;
+            break;
+        }
+
+        /* ─── معادلات ─── */
+        case 'eq_linear': {
+            ans = rnd(-10, 15);
+            b = rnd(2, 8);
+            const rhs = b + ans;
+            text = `س + ${b} = ${rhs}`;
+            hint = 'عزل المجهول';
+            explanation = `س = ${rhs} - ${b} = ${ans}`;
+            break;
+        }
+        case 'eq_two_step': {
+            ans = rnd(1, 10);
+            const coef = rnd(2, 5), con = rnd(1, 8);
+            const rhs2 = coef * ans + con;
+            text = `${coef}س + ${con} = ${rhs2}`;
+            hint = 'اطرح أولاً ثم اقسم';
+            explanation = `${coef}س = ${rhs2 - con}، س = ${ans}`;
+            break;
+        }
+        case 'eq_fraction': {
+            ans = rnd(2, 12);
+            const den = rnd(2, 4);
+            const rhs3 = ans * den + rnd(1, 5);
+            text = `س/${den} + ${ans} = ${rhs3}`;
+            hint = 'اطرح ثم اضرب في المقام';
+            const xVal = (rhs3 - ans) * den;
+            ans = xVal;
+            explanation = `س/${den} = ${rhs3 - (ans/den)}، س = ${ans}`;
+            break;
+        }
+
+        /* ─── متتاليات ─── */
+        case 'seq_arith': {
+            a = rnd(-5, 10); b = rnd(-3, 5);
+            if (b === 0) b = 2;
+            text = `${a}, ${a+b}, ${a+2*b}, ${a+3*b}, ؟`;
+            ans = a + 4 * b;
+            hint = 'ما الفرق الثابت؟';
+            explanation = `الفرق = ${b}، الحد التالي = ${ans}`;
+            break;
+        }
+        case 'seq_geo': {
+            a = rnd(1, 5); const r = rnd(2, 3);
+            text = `${a}, ${a*r}, ${a*r*r}, ؟`;
+            ans = a * r * r * r;
+            hint = 'ما الأساس المشترك؟';
+            explanation = `الأساس = ${r}، الحد التالي = ${a} × ${r}³ = ${ans}`;
+            break;
+        }
+        case 'seq_neg': {
+            a = rnd(5, 20); const d = -rnd(1, 4);
+            text = `${a}, ${a+d}, ${a+2*d}, ${a+3*d}, ؟`;
+            ans = a + 4 * d;
+            hint = 'المتتالية تتناقص';
+            explanation = `الفرق = ${d}، الحد التالي = ${ans}`;
+            break;
+        }
+
+        /* ─── هندسة ─── */
+        case 'geo_area': {
+            const shapes = ['مستطيل', 'مثلث', 'معين'];
+            const shape = shapes[rnd(0, shapes.length - 1)];
+            a = rnd(3, 12); b = rnd(3, 12);
+            if (shape === 'مستطيل') {
+                ans = a * b;
+                text = `مساحة مستطيل طوله ${a} وعرضه ${b} = ؟`;
+                explanation = `المساحة = ${a} × ${b} = ${ans}`;
+            } else if (shape === 'مثلث') {
+                ans = Math.round(a * b / 2);
+                text = `مساحة مثلث قاعدته ${a} وارتفاعه ${b} = ؟`;
+                explanation = `المساحة = ½ × ${a} × ${b} = ${ans}`;
+            } else {
+                ans = Math.round(a * b / 2);
+                text = `مساحة معين قطراه ${a} و ${b} = ؟`;
+                explanation = `المساحة = (${a} × ${b}) ÷ 2 = ${ans}`;
+            }
+            hint = 'تذكّر صيغة المساحة';
+            break;
+        }
+        case 'geo_perimeter': {
+            a = rnd(3, 15); b = rnd(3, 15);
+            ans = 2 * (a + b);
+            text = `محيط مستطيل طوله ${a} وعرضه ${b} = ؟`;
+            hint = 'المحيط = 2 × (الطول + العرض)';
+            explanation = `= 2 × (${a} + ${b}) = ${ans}`;
+            break;
+        }
+        case 'geo_volume': {
+            a = rnd(2, 8); b = rnd(2, 8); c = rnd(2, 6);
+            ans = a * b * c;
+            text = `حجم متوازي مستطيلات أبعاده ${a}، ${b}، ${c} = ؟`;
+            hint = 'الحجم = الطول × العرض × الارتفاع';
+            explanation = `= ${a} × ${b} × ${c} = ${ans}`;
+            break;
+        }
+
+        /* ─── قوانين ─── */
+        case 'law_distributive': {
+            a = rnd(2, 9); b = rnd(2, 9); c = rnd(2, 9);
+            ans = a * (b + c);
+            text = `${a} × (${b} + ${c}) = ؟`;
+            hint = 'قانون التوزيع';
+            explanation = `${a}×${b} + ${a}×${c} = ${a*b} + ${a*c} = ${ans}`;
+            break;
+        }
+        case 'law_commutative': {
+            a = rnd(10, 99); b = rnd(10, 99);
+            ans = a + b;
+            text = `${b} + ${a} = ؟ (مبدأ التبادل)`;
+            hint = 'الجمع تبادلي';
+            explanation = `${a} + ${b} = ${b} + ${a} = ${ans}`;
+            break;
+        }
+        case 'law_power': {
+            a = rnd(2, 5); b = rnd(1, 3); c = rnd(1, 2);
+            ans = Math.pow(a, b + c);
+            text = `${a}^${b} × ${a}^${c} = ؟`;
+            hint = 'قانون الأسس: اجمع الأسس';
+            explanation = `${a}^(${b}+${c}) = ${a}^${b+c} = ${ans}`;
+            break;
+        }
+
+        /* ─── مسائل لفظية متنوعة ─── */
+        case 'word_neg': {
+            const temp1 = -rnd(5, 20);
+            const rise = rnd(1, 10);
+            ans = temp1 + rise;
+            text = `درجة الحرارة ${temp1}°م ثم ارتفعت ${rise}°م. الجديدة = ؟`;
+            hint = 'جمع مع عدد سالب';
+            explanation = `${temp1} + ${rise} = ${ans}`;
+            break;
+        }
+        case 'word_fraction': {
+            const whole = rnd(10, 50);
+            const frac = [2, 3, 4, 5][rnd(0, 3)];
+            ans = Math.round(whole / frac);
+            text = `قُسّمت ${whole} تفاحة بالتساوي على ${frac} أشخاص. نصيب كل شخص = ؟`;
+            hint = 'قسمة على الأشخاص';
+            explanation = `${whole} ÷ ${frac} = ${ans}`;
+            break;
+        }
+        case 'word_ratio': {
+            a = rnd(2, 6); b = rnd(2, 6);
+            const unit = rnd(3, 12);
+            ans = a * unit;
+            text = `النسبة ${a}:${b}، والكمية الثانية ${b * unit}. الأولى = ؟`;
+            hint = 'أوجد قيمة الوحدة ثم اضرب';
+            explanation = `الوحدة = ${b*unit}/${b} = ${unit}، الأولى = ${a} × ${unit} = ${ans}`;
+            break;
+        }
+        case 'abs_value': {
+            a = -rnd(1, 15);
+            ans = Math.abs(a);
+            text = `|${a}| = ؟`;
+            hint = 'القيمة المطلقة = البُعد عن الصفر';
+            explanation = `|${a}| = ${ans}`;
+            break;
+        }
+        case 'sqrt_neg_context': {
+            const sq = [1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225];
+            a = sq[rnd(0, sq.length - 1)];
+            ans = Math.sqrt(a);
+            text = `√${a} = ؟`;
+            hint = 'الجذر التربيعي';
+            explanation = `√${a} = ${ans} لأن ${ans}² = ${a}`;
+            break;
+        }
+        default: {
+            // mixed_ops
+            a = rnd(2, 10); b = rnd(2, 6); c = rnd(1, 5);
+            ans = a * b - c;
+            text = `${a} × ${b} − ${c} = ؟`;
+            hint = 'الضرب أولاً ثم الطرح';
+            explanation = `${a*b} - ${c} = ${ans}`;
+        }
+    }
+
+    // توليد الخيارات الخاطئة (تعمل مع الأعداد السالبة والكسور)
+    const ansNum = typeof ans === 'number' ? ans : parseFloat(ans);
+    const wrSet = new Set();
+    const spread = Math.max(2, Math.ceil(Math.abs(ansNum) * 0.3) + 2);
+    let safety = 0;
+    while (wrSet.size < 3 && safety < 400) {
+        safety++;
+        const off = rnd(-spread, spread);
+        if (off === 0) continue;
+        const candidate = Math.round((ansNum + off) * 100) / 100;
+        const key = String(candidate);
+        if (!wrSet.has(key) && candidate !== ansNum) wrSet.add(key);
+    }
+    let extra = 1;
+    while (wrSet.size < 3) { wrSet.add(String(Math.round((ansNum + extra * 3) * 100) / 100)); extra++; }
+
+    const choicesArr = shuffle([ansNum, ...[...wrSet].map(Number)]);
+
+    return {
+        text,
+        hint,
+        answer: ansNum,
+        choices: choicesArr,
+        explanation,
+        catKey: getCatStatsKeyDiverse(ch)
+    };
+}
+
+/** دالة مساعدة: أكبر قاسم مشترك */
+function gcd(a, b) {
+    a = Math.abs(Math.round(a)); b = Math.abs(Math.round(b));
+    while (b) { const t = b; b = a % b; a = t; }
+    return a || 1;
+}
+
+/** تحديد catKey لأنواع الأسئلة المتنوعة */
+function getCatStatsKeyDiverse(ch) {
+    if (ch.startsWith('neg_')) return 'subtraction';
+    if (ch.startsWith('frac_')) return 'division';
+    if (ch.startsWith('ratio') || ch.startsWith('proportion') || ch.startsWith('percent')) return 'percentage';
+    if (ch.startsWith('eq_')) return 'algebra';
+    if (ch.startsWith('seq_')) return 'puzzles';
+    if (ch.startsWith('geo_')) return 'geometry';
+    if (ch.startsWith('law_')) return 'mathlaws';
+    if (ch.startsWith('word_')) return 'wordproblems';
+    return 'algebra';
+}
+
+/* ═══ مولّد موسّع للائحة القوانين ═══ */
+const EXTENDED_LAWS_POOL = [
+    /* الجبر والمعادلات */
+    { text: 'ما ناتج 3 × (4 + 5) وفق قانون التوزيع؟', ans: 27, explanation: '3×4 + 3×5 = 12+15 = 27' },
+    { text: 'ما قيمة 5⁰؟', ans: 1, explanation: 'أي عدد غير صفري مرفوع للأس صفر = 1' },
+    { text: 'حل: 2س + 4 = 16', ans: 6, explanation: '2س = 12، س = 6' },
+    { text: 'حل: 3س − 9 = 0', ans: 3, explanation: '3س = 9، س = 3' },
+    { text: 'حل: س/4 = 5', ans: 20, explanation: 'س = 5 × 4 = 20' },
+    { text: 'حل: 5(س − 2) = 15', ans: 5, explanation: 'س − 2 = 3، س = 5' },
+    { text: 'ما قيمة 2⁸؟', ans: 256, explanation: '2⁸ = 256' },
+    { text: 'ما قيمة 3⁴؟', ans: 81, explanation: '3×3×3×3 = 81' },
+    { text: '2³ × 2² = 2^؟', ans: 5, explanation: 'قانون الأسس: نجمع الأسس → 2^5 = 32، الأس = 5' },
+    { text: 'ما قيمة 10³ ÷ 10²؟', ans: 10, explanation: '10^(3-2) = 10¹ = 10' },
+    /* الهندسة */
+    { text: 'مساحة مربع طول ضلعه 7؟', ans: 49, explanation: 'المساحة = الضلع² = 49' },
+    { text: 'محيط مربع طول ضلعه 6؟', ans: 24, explanation: 'المحيط = 4 × 6 = 24' },
+    { text: 'ما محيط دائرة نصف قطرها 5 (π≈3.14)؟', ans: 31, explanation: '2×3.14×5 ≈ 31' },
+    { text: 'مساحة مثلث قاعدته 10 وارتفاعه 6؟', ans: 30, explanation: '½ × 10 × 6 = 30' },
+    { text: 'مساحة دائرة نصف قطرها 3 (π≈3)؟', ans: 27, explanation: 'π × 3² ≈ 3 × 9 = 27' },
+    { text: 'حجم مكعب طول ضلعه 4؟', ans: 64, explanation: '4³ = 64' },
+    { text: 'محيط مثلث متساوي الأضلاع طول ضلعه 8؟', ans: 24, explanation: '3 × 8 = 24' },
+    /* الحساب والنسب */
+    { text: 'ما متوسط الأعداد 4، 8، 12، 16؟', ans: 10, explanation: '(4+8+12+16)/4 = 40/4 = 10' },
+    { text: 'ما 30% من 200؟', ans: 60, explanation: '200 × 0.3 = 60' },
+    { text: 'ما 75% من 80؟', ans: 60, explanation: '80 × 0.75 = 60' },
+    { text: 'ما النسبة المئوية لـ 15 من 60؟', ans: 25, explanation: '15/60 × 100 = 25%' },
+    { text: 'ما 1/3 من 99؟', ans: 33, explanation: '99 ÷ 3 = 33' },
+    { text: 'ناتج (1/2) ÷ (1/4) = ؟', ans: 2, explanation: '(1/2) × 4 = 2' },
+    { text: 'ما قيمة 1/2 + 1/3؟', ans: 0.83, explanation: '3/6 + 2/6 = 5/6 ≈ 0.83' },
+    /* أعداد سالبة */
+    { text: 'ما ناتج (−3) × (−4)؟', ans: 12, explanation: 'سالب × سالب = موجب' },
+    { text: 'ما ناتج (−5) × 3؟', ans: -15, explanation: 'سالب × موجب = سالب' },
+    { text: 'ما ناتج (−20) ÷ (−4)؟', ans: 5, explanation: 'سالب ÷ سالب = موجب' },
+    { text: '|−13| = ؟', ans: 13, explanation: 'القيمة المطلقة دائماً موجبة' },
+    { text: 'ما ناتج −8 + (−5)؟', ans: -13, explanation: '−8 − 5 = −13' },
+    { text: 'ما ناتج −7 − (−3)؟', ans: -4, explanation: '−7 + 3 = −4' },
+    /* الجذور والأسس */
+    { text: 'جذر 144 = ؟', ans: 12, explanation: '12² = 144' },
+    { text: 'جذر 225 = ؟', ans: 15, explanation: '15² = 225' },
+    { text: 'الجذر التكعيبي لـ 27 = ؟', ans: 3, explanation: '3³ = 27' },
+    { text: 'الجذر التكعيبي لـ 64 = ؟', ans: 4, explanation: '4³ = 64' },
+    { text: '√169 = ؟', ans: 13, explanation: '13² = 169' },
+    /* متتاليات وأنماط */
+    { text: 'ما الحد التالي: 1، 4، 9، 16، ؟', ans: 25, explanation: 'مربعات: 5² = 25' },
+    { text: 'ما الحد التالي: 2، 6، 18، 54، ؟', ans: 162, explanation: 'كل حد يُضرب في 3' },
+    { text: 'ما الحد التالي: 100، 50، 25، ؟', ans: 12.5, explanation: 'كل حد يُقسم على 2' },
+    /* قوانين احتمالات ومتوسطات */
+    { text: 'إذا رمينا حجر نرد احتمال ظهور 3 = ؟ (كسر)', ans: 0.17, explanation: '1/6 ≈ 0.17' },
+    { text: 'المدى للأعداد 3، 7، 15، 2، 10 = ؟', ans: 13, explanation: 'أكبر − أصغر = 15 − 2 = 13' },
+    { text: 'الوسيط للأعداد 1، 3، 5، 7، 9 = ؟', ans: 5, explanation: 'العدد الأوسط في المتسلسلة = 5' },
+];
+
+/**
+ * يولّد سؤالاً من مجموعة القوانين الموسّعة
+ */
+function genExtendedLawQ() {
+    const q = EXTENDED_LAWS_POOL[rnd(0, EXTENDED_LAWS_POOL.length - 1)];
+    const ansNum = typeof q.ans === 'number' ? q.ans : parseFloat(q.ans);
+    const spread = Math.max(2, Math.ceil(Math.abs(ansNum) * 0.25) + 2);
+    const wrSet = new Set();
+    let safety = 0;
+    while (wrSet.size < 3 && safety < 400) {
+        safety++;
+        const off = rnd(-spread, spread);
+        if (off === 0) continue;
+        const candidate = Math.round((ansNum + off) * 100) / 100;
+        if (candidate !== ansNum) wrSet.add(String(candidate));
+    }
+    let extra = 1;
+    while (wrSet.size < 3) { wrSet.add(String(Math.round((ansNum + extra * 4) * 100) / 100)); extra++; }
+
+    return {
+        text: q.text,
+        hint: 'تطبيق قانون رياضي',
+        answer: ansNum,
+        choices: shuffle([ansNum, ...[...wrSet].map(Number)]),
+        explanation: q.explanation,
+        catKey: 'mathlaws'
+    };
+}
