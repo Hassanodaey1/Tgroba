@@ -194,7 +194,7 @@ function toggleVibration() {
         const el = document.getElementById(id);
         if (el) el.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
     });
-    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(30);
+    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(st.vibrationStrength || 30);
     saveSt();
     playSound('click');
 }
