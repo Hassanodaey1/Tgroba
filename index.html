@@ -64,8 +64,6 @@
             <button class="game-back-btn" onclick="confirmQuit()" aria-label="رجوع">‹</button>
             <div class="game-title" id="gameModeTitle">🧮 كلاسيك</div>
             <div style="display:flex;align-items:center;gap:6px;">
-                <!-- زر الإعدادات يعمل في جميع الصفحات ويوقف المؤقت -->
-                <button class="game-settings-btn" onclick="openGameSettingsAndPause()" aria-label="إعدادات">⚙️</button>
                 <div class="game-score-pill">💰 <span id="gameCoins">0</span></div>
             </div>
         </div>
@@ -206,26 +204,42 @@
         </div>
     </div>
 
-    <!-- GAME SETTINGS SHEET — يعمل في أثناء اللعب ويوقف المؤقت -->
+    <!-- GAME SETTINGS SHEET — يعمل في أثناء اللعب ويوقف المؤقت، ويعمل من أي صفحة -->
     <div class="sheet-overlay" id="gameSettingsSheet" onclick="sheetBgAndResume(event,'gameSettingsSheet')">
         <div class="sheet-panel">
             <div class="sheet-handle"></div>
-            <div class="sheet-title">⚙️ إعدادات سريعة</div>
+            <div class="sheet-title">⚙️ الإعدادات السريعة</div>
             <div class="settings-list" style="margin-bottom:14px;">
-                <div class="settings-row" onclick="toggleSound()"><span class="settings-row-icon">🔊</span><span class="settings-row-label">الأصوات</span><span class="settings-row-val" id="gsoundStatus">مفعّل</span></div>
+                <!-- الأصوات -->
+                <div class="settings-row" onclick="toggleSound()">
+                    <span class="settings-row-icon">🔊</span>
+                    <span class="settings-row-label">الأصوات</span>
+                    <span class="settings-row-val" id="gsoundStatus">مفعّل</span>
+                </div>
                 <div class="volume-slider-row">
                     <span class="vol-icon">🔉</span>
                     <input type="range" class="vol-slider" id="gSoundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
                     <span class="vol-val" id="gSoundVolVal">80%</span>
                 </div>
-                <div class="settings-row" onclick="toggleBgMusicInGame()"><span class="settings-row-icon">🎵</span><span class="settings-row-label">موسيقى الخلفية</span><span class="settings-row-val" id="gbgMusicStatus">مفعّلة</span></div>
+                <!-- موسيقى الخلفية -->
+                <div class="settings-row" onclick="toggleBgMusicInGame()">
+                    <span class="settings-row-icon">🎵</span>
+                    <span class="settings-row-label">موسيقى الخلفية</span>
+                    <span class="settings-row-val" id="gbgMusicStatus">مفعّلة</span>
+                </div>
                 <div class="volume-slider-row">
                     <span class="vol-icon">🎶</span>
                     <input type="range" class="vol-slider" id="gBgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
                     <span class="vol-val" id="gBgVolVal">60%</span>
                 </div>
+                <!-- الاهتزاز -->
+                <div class="settings-row" onclick="toggleVibration()">
+                    <span class="settings-row-icon">📳</span>
+                    <span class="settings-row-label">الاهتزاز</span>
+                    <span class="settings-row-val" id="gVibrationStatus">مفعّل</span>
+                </div>
             </div>
-            <button class="sheet-cancel" onclick="closeGameSettingsAndResume()">متابعة اللعب ▶</button>
+            <button class="sheet-cancel" onclick="closeGameSettingsAndResume()" style="background:linear-gradient(135deg,var(--gold),#e0a80b);color:#000;font-weight:900;">▶ متابعة اللعب</button>
         </div>
     </div>
 
@@ -251,8 +265,8 @@
                     <span class="xp-pill-lv" id="headerXp">⚡ 0 XP</span>
                 </div>
                 <div class="th-right">
-                    <!-- زر الإعدادات العالمي — يعمل من أي صفحة -->
-                    <div class="icon-pill" onclick="openGlobalSettings()" title="الإعدادات">⚙️</div>
+                    <!-- زر الإعدادات — يعمل من الرئيسية والملف الشخصي فقط -->
+                    <div class="icon-pill" id="mainSettingsBtn" onclick="openMainSettings()" title="الإعدادات">⚙️</div>
                 </div>
             </div>
 
@@ -772,7 +786,7 @@
                                 <div class="hero-greeting">🏆 ساحة المنافسة</div>
                                 <div class="hero-title">نداء <span>التحدي</span></div>
                             </div>
-                            <div class="coins-badge" style="cursor:pointer;" onclick="loadLeaderboard();loadChallengeLeaderboard();">🔄 تحديث</div>
+                            <div class="coins-badge" style="cursor:pointer;" onclick="loadCombinedLeaderboard();">🔄 تحديث</div>
                         </div>
                     </div>
 
@@ -789,7 +803,7 @@
                             <div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">
                                 <div style="background:var(--surface3);border-radius:14px;padding:10px 16px;text-align:center;">
                                     <div style="font-size:1.4em;font-weight:900;color:var(--gold);" id="challengeBestDisplay">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">أفضل نتيجة</div>
+                                    <div style="font-size:0.6em;color:var(--text2);">أفضل نتيجة في التحدي</div>
                                 </div>
                             </div>
                             <button onclick="startChallengeGame()" style="width:100%;padding:16px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:1.05em;font-weight:900;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(240,185,11,0.4);transition:0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
@@ -797,28 +811,26 @@
                             </button>
                         </div>
 
-                        <!-- لائحة المتصدرين للتحدي -->
-                        <div class="section-label" style="margin-top:4px;">🏆 لائحة المتصدرين — نداء التحدي</div>
-                        <div class="leaderboard-table" style="overflow-y:auto;max-height:320px;">
+                        <!-- لائحة الصدارة الموحدة والمتحركة -->
+                        <div class="section-label" style="margin-top:4px;">🏆 لائحة الصدارة الموحدة</div>
+                        <div style="display:flex;gap:8px;margin-bottom:6px;">
+                            <button onclick="showLbTab('challenge')" id="lbTabChallenge" style="flex:1;padding:8px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:900;border:none;cursor:pointer;">⚔️ التحدي</button>
+                            <button onclick="showLbTab('general')" id="lbTabGeneral" style="flex:1;padding:8px;border-radius:12px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">📊 النقاط العامة</button>
+                        </div>
+                        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;overflow:hidden;">
+                            <!-- رأس الجدول -->
                             <div class="lb-row lb-header">
                                 <span>المرتبة</span>
                                 <span>اللاعب</span>
-                                <span>المستوى</span>
-                                <span>النقاط</span>
+                                <span>Lv.</span>
+                                <span id="lbScoreHeader">نقاط التحدي</span>
                             </div>
-                            <div id="challengeLeaderboardList" style="padding:16px;text-align:center;">جاري التحميل...</div>
-                        </div>
-                        <p style="font-size:0.65em;color:var(--text2);text-align:center;">✨ الترتيب بناءً على أعلى نتيجة في نداء التحدي ✨</p>
-                    <!-- لائحة المتصدرين العامة -->
-                    <div style="margin-top:10px;">
-                        <div class="section-label" style="margin-bottom:6px;">📊 المتصدرون — أعلى نقاط</div>
-                        <div class="leaderboard-table">
-                            <div class="lb-row lb-header">
-                                <span>المرتبة</span><span>اللاعب</span><span>Lv.</span><span>أعلى نقاط</span>
+                            <!-- المحتوى المتمرير -->
+                            <div id="combinedLeaderboardList" style="max-height:360px;overflow-y:auto;padding:4px 0;">
+                                <div style="text-align:center;padding:20px;color:var(--text2);">جاري التحميل...</div>
                             </div>
-                            <div id="leaderboardList" style="padding:16px;text-align:center;color:var(--text2);">جاري التحميل...</div>
                         </div>
-                    </div>
+                        <p style="font-size:0.65em;color:var(--text2);text-align:center;">✨ مرّر لأسفل لعرض المزيد من اللاعبين ✨</p>
                     </div>
 
                     <!-- منطقة اللعب (تظهر عند بدء التحدي) -->
@@ -890,7 +902,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- BOTTOM NAV -->
             <div class="bottom-nav">
@@ -933,6 +944,70 @@
         <div style="padding:14px 16px 80px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;">
             <div class="section-label">قوانين أساسية</div>
             <div id="lawsContent"></div>
+        </div>
+    </div>
+
+
+    <!-- MAIN SETTINGS SHEET — يعمل من الرئيسية والملف الشخصي فقط -->
+    <div class="sheet-overlay" id="mainSettingsSheet" onclick="sheetBg(event,'mainSettingsSheet')">
+        <div class="sheet-panel" style="max-height:90vh;overflow-y:auto;">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">⚙️ الإعدادات</div>
+
+            <!-- الاسم -->
+            <div class="profile-form" style="margin-bottom:14px;">
+                <div class="form-field">
+                    <div class="form-label">الاسم (إنجليزي)</div>
+                    <input class="form-input" type="text" id="settingsInputName" placeholder="English Name" maxlength="30">
+                </div>
+                <!-- تاريخ الميلاد -->
+                <div class="form-field">
+                    <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
+                    <div class="date-row">
+                        <select id="settingsBirthDay" class="date-select"></select>
+                        <select id="settingsBirthMonth" class="date-select"></select>
+                        <select id="settingsBirthYear" class="date-select"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الوضع الداكن/الفاتح والثيمات -->
+            <div class="profile-section" style="margin-bottom:14px;">
+                <div class="profile-section-title">🎨 المظهر والثيمات</div>
+                <div class="themes-row" style="margin-bottom:10px;">
+                    <div class="dark-light-toggle" onclick="toggleSettingsDarkMode()">
+                        <span id="settingsDarkIcon">🌙</span>
+                        <span id="settingsDarkLabel">داكن</span>
+                    </div>
+                    <div class="settings-theme-dot theme-dot active" data-gold="#f0b90b" style="background:#f0b90b" onclick="applySettingsTheme(this,'#f0b90b','#7c3aed','#06b6d4')"></div>
+                    <div class="settings-theme-dot theme-dot" data-gold="#38bdf8" style="background:#38bdf8" onclick="applySettingsTheme(this,'#38bdf8','#0ea5e9','#7c3aed')"></div>
+                    <div class="settings-theme-dot theme-dot" data-gold="#4ade80" style="background:#4ade80" onclick="applySettingsTheme(this,'#4ade80','#16a34a','#06b6d4')"></div>
+                    <div class="settings-theme-dot theme-dot" data-gold="#f97316" style="background:#f97316" onclick="applySettingsTheme(this,'#f97316','#ea580c','#a855f7')"></div>
+                    <div class="settings-theme-dot theme-dot" data-gold="#c084fc" style="background:#c084fc" onclick="applySettingsTheme(this,'#c084fc','#a855f7','#06b6d4')"></div>
+                    <div class="settings-theme-dot theme-dot" data-gold="#e2e8f0" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="applySettingsTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
+                </div>
+            </div>
+
+            <!-- الرقم التسلسلي -->
+            <div class="profile-section" style="margin-bottom:14px;">
+                <div class="profile-section-title">🔢 الرقم التسلسلي</div>
+                <div style="background:var(--surface3);border-radius:14px;padding:14px;">
+                    <div style="font-size:0.68em;color:var(--text2);margin-bottom:8px;">يتيح استعادة حسابك على أي جهاز</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:0.68em;font-weight:700;color:var(--gold);word-break:break-all;" id="settingsSerialDisplay">احفظ التغييرات أولاً</div>
+                        <button onclick="copySettingsSerial()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;font-size:0.9em;cursor:pointer;color:var(--text2);">📋</button>
+                    </div>
+                    <button onclick="toggleSettingsRestorePanel()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;margin-bottom:8px;">📥 استعادة حساب بالرقم التسلسلي</button>
+                    <div id="settingsRestorePanel" style="display:none;">
+                        <input id="settingsRestoreInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;box-sizing:border-box;">
+                        <button onclick="restoreFromSettings()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- أزرار الحفظ والإلغاء -->
+            <button class="save-btn" onclick="saveMainSettings()" style="width:100%;margin-bottom:8px;">💾 حفظ التغييرات</button>
+            <button class="sheet-cancel" onclick="closeMainSettings()">إلغاء</button>
         </div>
     </div>
 
