@@ -26,9 +26,13 @@
             }
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
+        /* إظهار زر الإعدادات فقط في الرئيسية والملف الشخصي */
+        const settingsBtn = document.getElementById('mainSettingsBtn');
+        if (settingsBtn) {
+            settingsBtn.style.display = (tab === 'home' || tab === 'profile') ? 'flex' : 'none';
+        }
             if (tab === 'leaderboard') {
-                loadLeaderboard();
-                loadChallengeLeaderboard();
+                loadCombinedLeaderboard();
                 const el = document.getElementById('challengeBestDisplay');
                 if (el) el.textContent = st.challengeBestScore || 0;
             }
@@ -247,3 +251,6 @@
                 geometry: 'geometry', advanced: 'algebra', laws: 'mathlaws' };
             return map[op] || 'addition';
         }
+
+
+
