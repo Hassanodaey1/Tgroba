@@ -101,8 +101,12 @@ function playSound(type) {
         tone(1000, 'sine', 0.03, 0.02);
     }
     /* اهتزاز عند النقر إن كان مفعّلاً */
-    if (st.vibrationOn && navigator.vibrate && type === 'click') {
-        navigator.vibrate(15);
+    if (st.vibrationOn && navigator.vibrate) {
+        const duration = (st.vibrationStrength || 30);
+        if (type === 'click') navigator.vibrate(Math.max(5, duration / 2));
+        else if (type === 'correct') navigator.vibrate(duration);
+        else if (type === 'wrong') navigator.vibrate([duration, 50, duration]);
+        else if (type === 'levelup') navigator.vibrate([duration, 30, duration, 30, duration * 2]);
     }
 }
 
