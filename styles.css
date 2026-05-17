@@ -2861,34 +2861,126 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   Profile Photo Upload Styles
+   HO Math v10 — أنماط الأوضاع الجديدة
 ═══════════════════════════════════════════════════ */
-.profile-photo-overlay {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.48);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 3;
-    font-size: 1.3em;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-#profileAvatarWrap:hover .profile-photo-overlay {
-    display: flex !important;
-}
-.profile-avatar-img {
-    overflow: hidden;
+
+/* ─── وضع الفلاشات والذاكرة ─── */
+.flash-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 420px;
+    padding: 16px;
+    animation: fadeIn .3s ease;
 }
 
-/* ═══ Vibration strength slider accent ═══ */
-#vibVolSlider::-webkit-slider-thumb {
-    background: var(--accent2);
-    box-shadow: 0 0 6px rgba(6,182,212,0.5);
+.flash-display {
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 22px;
+    padding: 28px 20px;
+    text-align: center;
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
-#vibVolSlider::-moz-range-thumb {
-    background: var(--accent2);
-    border: none;
+
+/* ─── ملخص الجلسة ─── */
+.sum-chip {
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.7em;
+    color: var(--text2);
+    font-weight: 700;
+}
+.sum-chip.warn-chip {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.3);
+    color: #ef4444;
+}
+
+/* ─── بطاقة المهارة ─── */
+.skill-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.skill-pill {
+    background: linear-gradient(135deg, rgba(240,185,11,0.15), rgba(124,58,237,0.15));
+    border: 1px solid rgba(240,185,11,0.3);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.72em;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    transition: transform .15s;
+}
+.skill-pill:active { transform: scale(0.95); }
+
+/* ─── نتائج البقاء/الذاكرة/الفلاشات ─── */
+.mode-result-card {
+    background: var(--surface2);
+    border: 2px solid var(--border2);
+    border-radius: 22px;
+    padding: 24px 20px;
+    text-align: center;
+    width: 100%;
+}
+
+/* ─── شارة الأسبوع ─── */
+#weeklyChallengeStatus {
+    transition: color .3s;
+}
+
+/* ─── أنيميشن انتقال السؤال ─── */
+@keyframes questionSlideIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.question-card {
+    animation: questionSlideIn .28s ease;
+}
+
+/* ─── تأثير تمييز الجواب الصحيح ─── */
+.answer-btn.correct {
+    animation: correctPop .35s ease;
+}
+@keyframes correctPop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+/* ─── بطاقات الأوضاع الجديدة في صفحة اللعب ─── */
+#cardFlash, #cardMemory, #cardSurvival {
+    position: relative;
+    overflow: hidden;
+}
+#cardFlash::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(249,115,22,0.08), transparent);
+    pointer-events: none;
+}
+#cardMemory::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(6,182,212,0.08), transparent);
+    pointer-events: none;
+}
+#cardSurvival::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(239,68,68,0.08), transparent);
+    pointer-events: none;
 }
