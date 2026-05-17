@@ -24,5 +24,3 @@
             console.warn('Firebase غير مهيأ، سيتم تعطيل لوحة المتصدرين:', e.message);
             database = null;
         }
-
-
