@@ -49,7 +49,9 @@
                 achievementRewardClaimed: false,
                 serialNumber: '',
                 darkMode: true,
-                challengeBestScore: 0
+                challengeBestScore: 0,
+                vibrationStrength: 30,
+                profilePhoto: null
             };
         }
 
@@ -69,6 +71,7 @@
             if (typeof s.age !== 'number') s.age = 0;
             if (s.darkMode === undefined) s.darkMode = true;
             if (typeof s.challengeBestScore !== 'number') s.challengeBestScore = 0;
+            if (typeof s.vibrationStrength !== 'number') s.vibrationStrength = 30;
             return s;
         }
 
