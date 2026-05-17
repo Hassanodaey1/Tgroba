@@ -23,12 +23,16 @@ function initVolumeSliders() {
         const el = document.getElementById(id);
         if (el) el.textContent = st.bgVolume + '%';
     });
-    // Vibration strength
+    /* شريط شدة الاهتزاز */
     if (typeof st.vibrationStrength !== 'number') st.vibrationStrength = 30;
-    const vibSlider = document.getElementById('vibVolSlider');
-    if (vibSlider) vibSlider.value = st.vibrationStrength;
-    const vibVal = document.getElementById('vibVolVal');
-    if (vibVal) vibVal.textContent = st.vibrationStrength + 'ms';
+    ['vibVolSlider'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = st.vibrationStrength;
+    });
+    ['vibVolVal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.vibrationStrength + 'ms';
+    });
 }
 
 function setSoundVolume(val) {
@@ -44,16 +48,6 @@ function setSoundVolume(val) {
     saveSt();
 }
 
-function setVibrationStrength(val) {
-    st.vibrationStrength = parseInt(val);
-    ['vibVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val + 'ms';
-    });
-    saveSt();
-    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(parseInt(val));
-}
-
 function setBgVolume(val) {
     st.bgVolume = parseInt(val);
     ['bgVolVal', 'gBgVolVal'].forEach(id => {
@@ -65,6 +59,17 @@ function setBgVolume(val) {
         if (el) el.value = val;
     });
     saveSt();
+}
+
+function setVibrationStrength(val) {
+    st.vibrationStrength = parseInt(val);
+    const el = document.getElementById('vibVolVal');
+    if (el) el.textContent = val + 'ms';
+    const sl = document.getElementById('vibVolSlider');
+    if (sl) sl.value = val;
+    saveSt();
+    /* اهتزاز تجريبي */
+    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(parseInt(val));
 }
 
 /* ─── مكافأة يومية ─── */
