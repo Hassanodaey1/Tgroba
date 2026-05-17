@@ -72,6 +72,7 @@
             if (s.darkMode === undefined) s.darkMode = true;
             if (typeof s.challengeBestScore !== 'number') s.challengeBestScore = 0;
             if (typeof s.vibrationStrength !== 'number') s.vibrationStrength = 30;
+            if (s.profilePhoto === undefined) s.profilePhoto = null;
             return s;
         }
 
@@ -169,6 +170,3 @@
                     }
                 });
         }
-
-
-
