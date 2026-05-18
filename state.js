@@ -14,11 +14,6 @@
             return `${d.getFullYear()}-W${week}`;
         }
 
-        function monthStr() {
-            const d = new Date();
-            return `${d.getFullYear()}-${d.getMonth()+1}`;
-        }
-
         function defState() {
             return {
                 name: 'Player',
@@ -71,9 +66,9 @@
                 serialNumber: '',
                 darkMode: true,
                 challengeBestScore: 0,
-                monthlyStats: { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: '' },
-                challengeMissions: null,
-                challengeMissionsDate: ''
+                monthlyStats: { correct: 0, wrong: 0, games: 0, bestStreak: 0, month: '' },
+                challengeTasks: [],
+                challengeTasksDate: ''
             };
         }
 
@@ -93,11 +88,6 @@
             if (typeof s.age !== 'number') s.age = 0;
             if (s.darkMode === undefined) s.darkMode = true;
             if (typeof s.challengeBestScore !== 'number') s.challengeBestScore = 0;
-            if (!s.monthlyStats || s.monthlyStats.month !== monthStr()) {
-                s.monthlyStats = { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: monthStr() };
-            }
-            if (!s.challengeMissions) s.challengeMissions = null;
-            if (!s.challengeMissionsDate) s.challengeMissionsDate = '';
             if (typeof s.soundVolume !== 'number') s.soundVolume = 80;
             if (typeof s.bgVolume !== 'number') s.bgVolume = 60;
             if (s.vibrationOn === undefined) s.vibrationOn = false;
@@ -109,6 +99,9 @@
             if (!s.weeklyStats || s.weeklyStats.week !== weekStr()) {
                 s.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
             }
+            if (!s.monthlyStats) s.monthlyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, month: '' };
+            if (!s.challengeTasks) s.challengeTasks = [];
+            if (!s.challengeTasksDate) s.challengeTasksDate = '';
             return s;
         }
 
@@ -239,29 +232,10 @@
             if (!st.weeklyStats || st.weeklyStats.week !== weekStr()) {
                 st.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
             }
-            if (!st.monthlyStats || st.monthlyStats.month !== monthStr()) {
-                st.monthlyStats = { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: monthStr() };
-            }
-            if (type === 'correct') {
-                st.dailyStats.correct++;
-                st.weeklyStats.correct++;
-                st.monthlyStats.correct++;
-            }
-            if (type === 'wrong') {
-                st.dailyStats.wrong++;
-                st.weeklyStats.wrong++;
-                st.monthlyStats.wrong++;
-            }
-            if (type === 'game') {
-                st.dailyStats.games++;
-                st.weeklyStats.games++;
-                st.monthlyStats.games++;
-            }
-            if (type === 'streak') {
-                if (st.bestStreak > st.weeklyStats.bestStreak) st.weeklyStats.bestStreak = st.bestStreak;
-                if (st.bestStreak > (st.monthlyStats.bestStreak||0)) st.monthlyStats.bestStreak = st.bestStreak;
-            }
-            if (type === 'score') {
-                if ((st.bestScore||0) > (st.monthlyStats.bestScore||0)) st.monthlyStats.bestScore = st.bestScore;
+            if (type === 'correct') { st.dailyStats.correct++; st.weeklyStats.correct++; }
+            if (type === 'wrong')   { st.dailyStats.wrong++;   st.weeklyStats.wrong++;   }
+            if (type === 'game')    { st.dailyStats.games++;   st.weeklyStats.games++;   }
+            if (type === 'streak' && st.bestStreak > st.weeklyStats.bestStreak) {
+                st.weeklyStats.bestStreak = st.bestStreak;
             }
         }
