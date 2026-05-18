@@ -369,7 +369,7 @@
 
 
         /* ═══════════ مهام التحدي اليومية ═══════════ */
-        const CHALLENGE_MISSIONS_DEF = [
+        var CHALLENGE_MISSIONS_DEF = [
             { id: 'cm1', icon: '⚡', name: 'أول انتصار', desc: 'سجّل 5 نقاط في التحدي', goal: 5, type: 'score', reward: { coins: 3, pts: 5 } },
             { id: 'cm2', icon: '🔥', name: 'متسلق القمم', desc: 'سجّل 15 نقطة في التحدي', goal: 15, type: 'score', reward: { coins: 6, pts: 15 } },
             { id: 'cm3', icon: '💥', name: 'تتابع التحدي', desc: 'حقّق تتابع 5 في التحدي', goal: 5, type: 'streak', reward: { coins: 4, pts: 10 } },
@@ -379,9 +379,9 @@
 
         function getChallengeMissions() {
             if (!st.challengeMissions || st.challengeMissionsDate !== todayStr()) {
-                st.challengeMissions = CHALLENGE_MISSIONS_DEF.map(m => ({
-                    ...m, progress: 0, done: false
-                }));
+                st.challengeMissions = CHALLENGE_MISSIONS_DEF.map(function(m) {
+                    return { id: m.id, icon: m.icon, name: m.name, desc: m.desc, goal: m.goal, type: m.type, reward: m.reward, progress: 0, done: false };
+                });
                 st.challengeMissionsDate = todayStr();
                 saveSt();
             }
@@ -389,40 +389,41 @@
         }
 
         function renderChallengeMissions() {
-            const missions = getChallengeMissions();
-            const list = document.getElementById('challengeMissionsList');
+            var missions = getChallengeMissions();
+            var list = document.getElementById('challengeMissionsList');
             if (!list) return;
-            const done = missions.filter(m => m.done).length;
-            const totalCoins = missions.filter(m => m.done).reduce((s,m) => s+m.reward.coins, 0);
-            const totalPts = missions.filter(m => m.done).reduce((s,m) => s+m.reward.pts, 0);
-            const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-            el('challengeMissionsDone', done);
-            el('challengeMissionsTotal', missions.length);
-            el('challengeMissionsReward', '+'+totalCoins+'💰 +'+totalPts+'⭐');
-            const pct = missions.length ? Math.round((done/missions.length)*100) : 0;
-            const bar = document.getElementById('challengeMissionsBar');
+            var done = missions.filter(function(m){ return m.done; }).length;
+            var totalCoins = missions.filter(function(m){ return m.done; }).reduce(function(s,m){ return s+m.reward.coins; }, 0);
+            var totalPts = missions.filter(function(m){ return m.done; }).reduce(function(s,m){ return s+m.reward.pts; }, 0);
+            var setEl = function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
+            setEl('challengeMissionsDone', done);
+            setEl('challengeMissionsTotal', missions.length);
+            setEl('challengeMissionsReward', '+' + totalCoins + '💰 +' + totalPts + '⭐');
+            var pct = missions.length ? Math.round((done/missions.length)*100) : 0;
+            var bar = document.getElementById('challengeMissionsBar');
             if (bar) bar.style.width = pct + '%';
-            list.innerHTML = missions.map(m => {
-                const p = Math.min(100, Math.round((m.progress/m.goal)*100));
-                return `<div class="challenge-mission-item ${m.done?'done':''}">
-                    <div class="challenge-mission-icon">${m.icon}</div>
-                    <div class="challenge-mission-info">
-                        <div class="challenge-mission-name">${m.name}</div>
-                        <div class="challenge-mission-desc">${m.desc}</div>
-                        <div class="challenge-mission-prog">
-                            <div class="challenge-mission-prog-fill" style="width:${p}%"></div>
-                        </div>
-                    </div>
-                    <div class="challenge-mission-reward">${m.done?'✅':`+${m.reward.coins}💰`}</div>
-                </div>`;
+            list.innerHTML = missions.map(function(m) {
+                var p = Math.min(100, Math.round((m.progress/m.goal)*100));
+                var rewardTxt = m.done ? '✅' : '+' + m.reward.coins + '💰';
+                return '<div class="challenge-mission-item ' + (m.done?'done':'') + '">' +
+                    '<div class="challenge-mission-icon">' + m.icon + '</div>' +
+                    '<div class="challenge-mission-info">' +
+                        '<div class="challenge-mission-name">' + m.name + '</div>' +
+                        '<div class="challenge-mission-desc">' + m.desc + '</div>' +
+                        '<div class="challenge-mission-prog">' +
+                            '<div class="challenge-mission-prog-fill" style="width:' + p + '%"></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="challenge-mission-reward">' + rewardTxt + '</div>' +
+                '</div>';
             }).join('');
         }
         window.renderChallengeMissions = renderChallengeMissions;
 
         function updChallengeMission(type, value) {
-            const missions = getChallengeMissions();
-            let changed = false;
-            missions.forEach(m => {
+            var missions = getChallengeMissions();
+            var changed = false;
+            missions.forEach(function(m) {
                 if (m.done) return;
                 if (m.type === type) {
                     if (type === 'score') {
@@ -438,11 +439,12 @@
                 }
             });
             if (changed) {
-                missions.filter(m => m.done && !m._rewarded).forEach(m => {
-                    m._rewarded = true;
-                    st.coins += m.reward.coins;
-                    st.challengeBestScore = Math.max(st.challengeBestScore||0, (st.challengeBestScore||0) + m.reward.pts);
-                    showFeedback(`⚡ مهمة تحدي: ${m.name} • +${m.reward.coins}💰 +${m.reward.pts}⭐`);
+                missions.forEach(function(m) {
+                    if (m.done && !m._rewarded) {
+                        m._rewarded = true;
+                        st.coins += m.reward.coins;
+                        showFeedback('⚡ مهمة تحدي: ' + m.name + ' • +' + m.reward.coins + '💰 +' + m.reward.pts + '⭐');
+                    }
                 });
                 saveSt();
                 renderChallengeMissions();
