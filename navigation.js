@@ -1,7 +1,6 @@
 /* NAVIGATION */
         /* ═══════════ NAVIGATION ═══════════ */
-        const TABS = ['home', 'play', 'achieve', 'leaderboard', 'settings'];
-        const HIDDEN_PAGES = ['profile'];
+        const TABS = ['home', 'play', 'achieve', 'profile', 'leaderboard', 'settings', 'stats'];
 
         function goTab(tab) {
             TABS.forEach(t => {
@@ -9,145 +8,37 @@
                 document.getElementById('nav-' + t)?.classList.toggle('active', t === tab);
             });
             playSound('click');
-
-            if (tab === 'achieve') {
-                /* صفحة الإحصائيات */
-                renderStatsPage();
-                renderAchievements();
+            if (tab === 'achieve') { checkDailyReset();
+                renderTasks();
+                renderAchievements(); }
+            if (tab === 'profile') {
+                checkDailyReset();
+                loadProfileForm();
+                renderProfileDailyTasks();
+                renderProfileAchievements();
+                const pb = document.getElementById('profileChallengeBest');
+                if (pb) pb.textContent = st.challengeBestScore || 0;
+                const pTG = document.getElementById('profileTotalGames'); if(pTG) pTG.textContent = st.totalGames;
+                const pBS = document.getElementById('profileBestScore'); if(pBS) pBS.textContent = st.bestScore;
+                const pAcc = document.getElementById('profileAccuracy');
+                if(pAcc) { const tot = st.correctTotal + st.wrongTotal; pAcc.textContent = tot > 0 ? Math.round((st.correctTotal/tot)*100)+'%' : '0%'; }
+                try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch(e) {}
             }
-            if (tab === 'settings') {
-                /* صفحة الإعدادات */
-                updateSerialNumberDisplay();
-            }
-            if (tab === 'home') {
-                updateHomeStats();
-                renderHistory();
-                updateHomeDailyStats();
-                renderHomeTasks();
-            }
-            if (tab === 'play') {
-                syncPlayDiffChips();
+            if (tab === 'home') { updateHomeStats(); renderHistory(); renderHomeDailySection(); }
+            if (tab === 'stats') { renderStatsPage(); }
+            /* إظهار زر الإعدادات فقط في الرئيسية */
+            const settingsBtn = document.getElementById('mainSettingsBtn');
+            if (settingsBtn) {
+                settingsBtn.style.display = (tab === 'home') ? 'flex' : 'none';
             }
             if (tab === 'leaderboard') {
                 loadCombinedLeaderboard();
+                renderChallengeTasks();
                 const el = document.getElementById('challengeBestDisplay');
                 if (el) el.textContent = st.challengeBestScore || 0;
-                renderChallengeMissions();
             }
-            /* إخفاء زر الإعدادات العلوي دائماً (استُبدل بالشريط) */
-            const settingsBtn = document.getElementById('mainSettingsBtn');
-            if (settingsBtn) settingsBtn.style.display = 'none';
+            if (tab === 'settings') { openSettingsPage(); }
         }
-
-        /* مزامنة chips الصعوبة في صفحة الألعاب */
-        function syncPlayDiffChips() {
-            ['easy','medium','hard','genius'].forEach(d => {
-                const el = document.getElementById('playDiff' + d.charAt(0).toUpperCase() + d.slice(1));
-                if (el) el.classList.toggle('active', st.difficulty === d);
-            });
-            const level = st.level;
-            const elM = document.getElementById('playLockMedium');
-            const elH = document.getElementById('playLockHard');
-            const elG = document.getElementById('playLockGenius');
-            const dM = document.getElementById('playDiffMedium');
-            const dH = document.getElementById('playDiffHard');
-            const dG = document.getElementById('playDiffGenius');
-            if (elM && dM) { const lk = level < 3; dM.classList.toggle('locked', lk); elM.style.display = lk ? 'block' : 'none'; }
-            if (elH && dH) { const lk = level < 5; dH.classList.toggle('locked', lk); elH.style.display = lk ? 'block' : 'none'; }
-            if (elG && dG) { const lk = level < 8; dG.classList.toggle('locked', lk); elG.style.display = lk ? 'block' : 'none'; }
-        }
-
-        /* إحصائيات يومية في الرئيسية */
-        function updateHomeDailyStats() {
-            const ds = st.dailyStats || { correct:0, wrong:0, games:0 };
-            const el = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
-            el('homeDailyCorrect', ds.correct || 0);
-            el('homeDailyWrong', ds.wrong || 0);
-            el('homeDailyGames', ds.games || 0);
-            const tot = (ds.correct||0) + (ds.wrong||0);
-            el('homeDailyAccuracy', tot > 0 ? Math.round((ds.correct/tot)*100)+'%' : '0%');
-        }
-
-        /* تابات المهام في الرئيسية */
-        function switchHomeTab(which) {
-            const tBtn = document.getElementById('homeTabTasks');
-            const aBtn = document.getElementById('homeTabAchieve');
-            const tList = document.getElementById('homeTasksList');
-            const aList = document.getElementById('homeAchieveList');
-            if (!tBtn || !aBtn) return;
-            tBtn.classList.toggle('active', which === 'tasks');
-            aBtn.classList.toggle('active', which === 'achieve');
-            if (tList) tList.style.display = which === 'tasks' ? 'block' : 'none';
-            if (aList) aList.style.display = which === 'achieve' ? 'block' : 'none';
-        }
-        window.switchHomeTab = switchHomeTab;
-
-        /* عرض المهام في الرئيسية */
-        function renderHomeTasks() {
-            if (!st.dailyTasks) return;
-            checkDailyReset();
-            const level = st.level;
-            let filtered = st.dailyTasks;
-            if (level < 2) filtered = st.dailyTasks.filter(t => ['t1','t2'].includes(t.id));
-            else if (level < 4) filtered = st.dailyTasks.filter(t => ['t1','t2','t3'].includes(t.id));
-            else if (level < 5) filtered = st.dailyTasks.filter(t => ['t1','t2','t3','t4'].includes(t.id));
-            const doneCount = filtered.filter(t => t.done).length;
-            const pct = filtered.length ? Math.round((doneCount/filtered.length)*100) : 0;
-            const elSet = function(id, v) { var e = document.getElementById(id); if(e) e.textContent = v; };
-            elSet('homeTaskDone', doneCount);
-            elSet('homeTaskTotal', filtered.length);
-            elSet('homeTaskPct', pct + '%');
-            var bar = document.getElementById('homeTaskBar');
-            if (bar) bar.style.width = pct + '%';
-            /* تحديث العداد التنازلي */
-            var now = new Date(), midnight = new Date(now);
-            midnight.setHours(24,0,0,0);
-            var diff = midnight - now;
-            var hh = String(Math.floor(diff/3600000)).padStart(2,'0');
-            var mm = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
-            var ss = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
-            elSet('homeTaskCountdown', hh+':'+mm+':'+ss);
-            /* رسم المهام */
-            var tList = document.getElementById('homeTasksList');
-            if (tList) {
-                tList.innerHTML = filtered.map(function(t) {
-                    var p = Math.min(100, Math.round((t.progress/t.goal)*100));
-                    var reward = t.done ? '✅' : '+' + t.reward + '💰';
-                    var prog = t.done ? '' : '<div class="task-prog-txt">' + t.progress + '/' + t.goal + '</div>';
-                    return '<div class="task-item ' + (t.done?'done':'') + '">' +
-                        '<div class="task-item-icon">' + t.icon + '</div>' +
-                        '<div class="task-item-info">' +
-                            '<div class="task-item-name">' + t.name + '</div>' +
-                            '<div class="task-item-desc">' + t.desc + '</div>' +
-                            '<div class="task-prog-bar"><div class="task-prog-fill" style="width:' + p + '%"></div></div>' +
-                        '</div>' +
-                        '<div class="task-right">' +
-                            '<div class="task-reward">' + reward + '</div>' +
-                            prog +
-                        '</div>' +
-                    '</div>';
-                }).join('');
-            }
-            /* رسم الإنجازات في الرئيسية */
-            var aList = document.getElementById('homeAchieveList');
-            if (aList && typeof ACHIEVEMENTS_DEF !== 'undefined') {
-                var shown = ACHIEVEMENTS_DEF.slice(0, 6);
-                aList.innerHTML = shown.map(function(a) {
-                    var done = st.achievementsUnlocked.includes(a.id) || a.check();
-                    var reward = done ? '✅' : '+' + a.reward + '💰';
-                    return '<div class="task-item ' + (done?'done':'') + '">' +
-                        '<div class="task-item-icon">' + a.icon + '</div>' +
-                        '<div class="task-item-info">' +
-                            '<div class="task-item-name">' + a.name + '</div>' +
-                            '<div class="task-item-desc">' + a.desc + '</div>' +
-                        '</div>' +
-                        '<div class="task-right"><div class="task-reward">' + reward + '</div></div>' +
-                    '</div>';
-                }).join('') + '<div style="text-align:center;padding:8px;font-size:0.7em;color:var(--text3);cursor:pointer;" onclick="goTab('achieve')">عرض كل الإنجازات ›</div>';
-            }
-        }
-        window.renderHomeTasks = renderHomeTasks;        setInterval(() => { if(document.getElementById('page-home')?.classList.contains('active')) { el_safe('homeTaskCountdown'); } }, 1000);
-        function el_safe(id){ const e=document.getElementById(id); return e||{}; }
 
         function getDifficultyByLevel() {
             if (st.level >= 8) return 'genius';
@@ -366,198 +257,244 @@
 
 
 
-        /* ═══════════ صفحة الإحصائيات ═══════════ */
-        function renderStatsPage() {
-            /* الألقاب */
-            const titlesEl = document.getElementById('statsTitlesSection');
-            if (titlesEl) {
-                try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch(e) {}
-                /* نسخ محتوى الألقاب من profileTitlesSection */
-                const src = document.getElementById('profileTitlesSection');
-                if (src && src.innerHTML.trim()) titlesEl.innerHTML = src.innerHTML;
-            }
-
-            /* إحصائيات أسبوعية */
-            const ws = st.weeklyStats || {};
-            const wTot = (ws.correct||0) + (ws.wrong||0);
-            const setEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-            setEl('weekCorrect', ws.correct||0);
-            setEl('weekWrong', ws.wrong||0);
-            setEl('weekGames', ws.games||0);
-            setEl('weekAccuracy', wTot>0 ? Math.round(((ws.correct||0)/wTot)*100)+'%' : '0%');
-            setEl('weekStreak', '×'+(ws.bestStreak||0));
-            const wRat = wTot>0 ? Math.min(5,(((ws.correct||0)/wTot)*5)).toFixed(1) : '0.0';
-            setEl('weekRating', wRat);
-
-            /* إحصائيات شهرية - من البيانات الإجمالية */
-            const ms = st.monthlyStats || {};
-            const mTot = (ms.correct||0) + (ms.wrong||0);
-            setEl('monthCorrect', ms.correct||st.correctTotal||0);
-            setEl('monthWrong', ms.wrong||st.wrongTotal||0);
-            setEl('monthGames', ms.games||st.totalGames||0);
-            const mAcc = mTot>0 ? Math.round(((ms.correct||0)/mTot)*100)+'%' :
-                         (st.correctTotal+st.wrongTotal)>0 ? Math.round((st.correctTotal/(st.correctTotal+st.wrongTotal))*100)+'%' : '0%';
-            setEl('monthAccuracy', mAcc);
-            setEl('monthBestScore', ms.bestScore||st.bestScore||0);
-            setEl('monthBestStreak', '×'+(ms.bestStreak||st.bestStreak||0));
-            setEl('monthCoins', ms.coins||st.coins||0);
-            setEl('monthXp', (ms.xp||st.xp||0)+' XP');
-
-            /* إحصائيات إجمالية */
-            setEl('totalCorrectStat', st.correctTotal||0);
-            const tot = st.correctTotal + st.wrongTotal;
-            setEl('totalAccuracyStat', tot>0 ? Math.round((st.correctTotal/tot)*100)+'%' : '0%');
-            setEl('totalGamesStat', st.totalGames||0);
-            setEl('totalStreakStat', '×'+(st.bestStreak||0));
-            setEl('totalLevelStat', st.level||1);
-            setEl('totalBestStat', st.bestScore||0);
-            setEl('statsCoinsDisplay', st.coins||0);
-        }
-        window.renderStatsPage = renderStatsPage;
-
-        /* ═══════════ فتح sheets الإعدادات ═══════════ */
-        function openSettingsSheet(type) {
-            if (type === 'profile') {
-                loadSettingsProfileForm();
-                openSheet('profileSettingsSheet');
-            } else if (type === 'sound') {
-                openSheet('soundSettingsSheet');
-            } else if (type === 'themes') {
-                updateThemeSheetState();
-                openSheet('themesSettingsSheet');
-            }
-        }
-        window.openSettingsSheet = openSettingsSheet;
-
-        function loadSettingsProfileForm() {
-            const n = document.getElementById('settingsName');
-            if (n) n.value = st.name || '';
-            /* صورة الملف */
-            const img = document.getElementById('settingsAvatarImg');
-            if (img) {
-                if (st.profilePhoto) {
-                    img.innerHTML = `<img src="${st.profilePhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else {
-                    img.textContent = st.avatar || '🧑';
+        /* ═══════════ SETTINGS PAGE ═══════════ */
+        function openSettingsPage() {
+            /* تحديث حالة مستمعات الإعدادات */
+            ['soundStatus','gsoundStatus'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=st.soundOn?'مفعّل':'مطفأ';});
+            ['bgMusicStatus','gbgMusicStatus'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=st.bgOn?'مفعّلة':'مطفأة';});
+            ['vibrationStatus','gVibrationStatus'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=st.vibrationOn?'مفعّل':'مطفأ';});
+            updateSettingsDarkToggle && updateSettingsDarkToggle();
+            updateSettingsThemeDots && updateSettingsThemeDots();
+            updateSerialNumberDisplay && updateSerialNumberDisplay();
+            try { initVolumeSliders(); } catch(e) {}
+            /* تعبئة نموذج الملف الشخصي */
+            const inName = document.getElementById('settingsInputName');
+            if (inName) inName.value = st.name || '';
+            if (st.birthDate) {
+                const parts = st.birthDate.split('-');
+                if (parts.length === 3) {
+                    const sd=document.getElementById('settingsBirthDay'),sm=document.getElementById('settingsBirthMonth'),sy=document.getElementById('settingsBirthYear');
+                    if(sy)sy.value=parseInt(parts[0]);if(sm)sm.value=parseInt(parts[1]);if(sd)sd.value=parseInt(parts[2]);
                 }
             }
-            /* المستوى والاسم */
-            const pn = document.getElementById('settingsProfileName');
-            if (pn) pn.textContent = st.name || 'اللاعب';
-            const pl = document.getElementById('settingsProfileLevel');
-            if (pl) pl.textContent = 'المستوى ' + (st.level||1);
-            /* تاريخ الميلاد */
-            const parts = (st.birthDate||'2000-01-01').split('-');
-            populateDateSelect('settingsBirthDayNew', 1, 31, parseInt(parts[2])||1);
-            populateDateSelect('settingsBirthMonthNew', 1, 12, parseInt(parts[1])||1);
-            const curYear = new Date().getFullYear();
-            populateDateSelect('settingsBirthYearNew', curYear-100, curYear, parseInt(parts[0])||2000);
-            /* الجنس */
-            const gM = document.getElementById('settingsGBtnM');
-            const gF = document.getElementById('settingsGBtnF');
-            if (gM) gM.classList.toggle('active', st.gender === 'm');
-            if (gF) gF.classList.toggle('active', st.gender === 'f');
+            /* تحديث الصورة الشخصية في صفحة الإعدادات */
+            const spImg = document.getElementById('settingsProfilePhoto');
+            if (spImg) {
+                if (st.profilePhoto) {
+                    spImg.style.backgroundImage='url("'+st.profilePhoto+'")';
+                    spImg.style.backgroundSize='cover';
+                    spImg.style.backgroundPosition='center';
+                    spImg.textContent='';
+                } else {
+                    spImg.style.backgroundImage='';
+                    spImg.textContent = st.avatar || '🧑';
+                }
+            }
+            const spLevel = document.getElementById('settingsProfileLevel');
+            if(spLevel) spLevel.textContent = 'المستوى ' + st.level + ' • ' + getTitle();
+            const spName = document.getElementById('settingsProfileName');
+            if(spName) spName.textContent = st.name || 'اللاعب';
+            /* XP bar */
+            const spXp = document.getElementById('settingsXpBar');
+            if(spXp) spXp.style.width = Math.min(100,Math.round((st.xp/st.xpToNext)*100))+'%';
         }
 
-        function populateDateSelect(id, min, max, selected) {
-            const el = document.getElementById(id);
+        /* ═══════════ STATS PAGE ═══════════ */
+        function renderStatsPage() {
+            try { renderStatsTitles(); } catch(e) {}
+            try { renderWeeklyStats(); } catch(e) {}
+            try { renderMonthlyStats(); } catch(e) {}
+        }
+
+        function renderStatsTitles() {
+            const el = document.getElementById('statsTitlesSection');
             if (!el) return;
-            el.innerHTML = '';
-            for (let i = min; i <= max; i++) {
-                const o = document.createElement('option');
-                o.value = i;
-                o.textContent = i;
-                if (i === selected) o.selected = true;
-                el.appendChild(o);
+            try { if (typeof renderProfileTitles === 'function') {
+                /* clone to stats page */
+                const tmp = document.createElement('div');
+                tmp.id = '_tmpTitles';
+                const container = document.getElementById('profileTitlesSection');
+                if (container) {
+                    if (typeof renderProfileTitles === 'function') renderProfileTitles();
+                    el.innerHTML = container.innerHTML;
+                }
+            }} catch(e) {}
+        }
+
+        function renderWeeklyStats() {
+            const el = document.getElementById('statsWeeklyContent');
+            if (!el) return;
+            const ws = st.weeklyStats || {};
+            const tot = (ws.correct||0) + (ws.wrong||0);
+            const acc = tot > 0 ? Math.round(((ws.correct||0)/tot)*100) : 0;
+            el.innerHTML = `
+            <div class="stats-grid3" style="margin-bottom:8px;">
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--green)">${ws.correct||0}</div><div class="stat-card-label">صحيح</div></div>
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--red)">${ws.wrong||0}</div><div class="stat-card-label">خطأ</div></div>
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--accent2)">${acc}%</div><div class="stat-card-label">الدقة</div></div>
+            </div>
+            <div class="stats-grid3">
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--gold)">${ws.games||0}</div><div class="stat-card-label">جلسات</div></div>
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--red)">×${ws.bestStreak||0}</div><div class="stat-card-label">أعلى تتابع</div></div>
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--accent)">${tot}</div><div class="stat-card-label">إجمالي إجابات</div></div>
+            </div>`;
+        }
+
+        function renderMonthlyStats() {
+            const el = document.getElementById('statsMonthlyContent');
+            if (!el) return;
+            /* نحسب الإحصائيات الشهرية من التاريخ المحفوظ */
+            if (!st.monthlyStats || !isCurrentMonth(st.monthlyStats.month)) {
+                st.monthlyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, month: currentMonthStr() };
             }
+            const ms = st.monthlyStats;
+            const tot = (ms.correct||0) + (ms.wrong||0);
+            const acc = tot > 0 ? Math.round(((ms.correct||0)/tot)*100) : 0;
+            el.innerHTML = `
+            <div class="stats-grid3" style="margin-bottom:8px;">
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--green)">${ms.correct||0}</div><div class="stat-card-label">صحيح</div></div>
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--red)">${ms.wrong||0}</div><div class="stat-card-label">خطأ</div></div>
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--accent2)">${acc}%</div><div class="stat-card-label">الدقة</div></div>
+            </div>
+            <div class="stats-grid3">
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--gold)">${ms.games||0}</div><div class="stat-card-label">جلسات</div></div>
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--red)">×${ms.bestStreak||0}</div><div class="stat-card-label">أعلى تتابع</div></div>
+                <div class="stat-card"><div class="stat-card-num" style="color:var(--accent)">${tot}</div><div class="stat-card-label">إجمالي إجابات</div></div>
+            </div>`;
         }
 
-        let _settingsGender = '';
-        function selectSettingsGender(g) {
-            _settingsGender = g;
-            const gM = document.getElementById('settingsGBtnM');
-            const gF = document.getElementById('settingsGBtnF');
-            if (gM) gM.classList.toggle('active', g === 'm');
-            if (gF) gF.classList.toggle('active', g === 'f');
-            playSound('click');
+        function currentMonthStr() {
+            const d = new Date();
+            return d.getFullYear()+'-'+d.getMonth();
         }
-        window.selectSettingsGender = selectSettingsGender;
+        function isCurrentMonth(m) { return m === currentMonthStr(); }
 
-        function saveSettingsProfile() {
-            const nameEl = document.getElementById('settingsName');
-            const name = nameEl ? nameEl.value.trim().replace(/[^a-zA-Z0-9 ]/g,'').slice(0,30) : '';
-            if (!name) { showFeedback('الاسم يجب أن يكون بالإنجليزية فقط'); return; }
-            const day = document.getElementById('settingsBirthDayNew')?.value;
-            const month = document.getElementById('settingsBirthMonthNew')?.value;
-            const year = document.getElementById('settingsBirthYearNew')?.value;
-            const birthDate = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-            const age = new Date().getFullYear() - parseInt(year||2000);
-            if (_settingsGender) st.gender = _settingsGender;
-            st.name = name;
-            st.birthDate = birthDate;
-            st.age = age;
-            if (!st.serialNumber) {
-                st.serialNumber = generateSerialNumber(birthDate, name);
+        /* ═══════════ HOME DAILY SECTION ═══════════ */
+        function renderHomeDailySection() {
+            try { checkDailyReset(); } catch(e) {}
+            renderHomeDailyStats();
+            renderHomeDailyTasks();
+            renderHomeDailyAchievements();
+        }
+
+        function renderHomeDailyStats() {
+            const el = document.getElementById('homeDailyStatsGrid');
+            if (!el) return;
+            const ds = st.dailyStats || {};
+            const tot = (ds.correct||0) + (ds.wrong||0);
+            const acc = tot > 0 ? Math.round(((ds.correct||0)/tot)*100) : 0;
+            el.innerHTML = `
+                <div class="adv-stat"><div class="adv-stat-num" style="color:var(--green)">${ds.correct||0}</div><div class="adv-stat-label">صحيح اليوم</div></div>
+                <div class="adv-stat"><div class="adv-stat-num" style="color:var(--red)">${ds.wrong||0}</div><div class="adv-stat-label">خطأ اليوم</div></div>
+                <div class="adv-stat"><div class="adv-stat-num" style="color:var(--accent2)">${acc}%</div><div class="adv-stat-label">الدقة</div></div>
+                <div class="adv-stat"><div class="adv-stat-num" style="color:var(--gold)">${ds.games||0}</div><div class="adv-stat-label">جلسات</div></div>
+            `;
+        }
+
+        function renderHomeDailyTasks() {
+            const el = document.getElementById('homeDailyTasksList');
+            if (!el) return;
+            checkDailyReset();
+            const T = st.dailyTasks || [];
+            let level = st.level;
+            let filtered = T;
+            if (level < 2) filtered = T.filter(t=>['t1','t2'].includes(t.id));
+            else if (level < 4) filtered = T.filter(t=>['t1','t2','t3'].includes(t.id));
+            else if (level < 5) filtered = T.filter(t=>['t1','t2','t3','t4'].includes(t.id));
+            el.innerHTML = filtered.map(t => {
+                const p = Math.min(100, Math.round((t.progress/t.goal)*100));
+                return `<div class="task-item ${t.done?'done':''}" style="margin-bottom:6px;">
+                    <div class="task-item-icon">${t.icon}</div>
+                    <div class="task-item-info">
+                        <div class="task-item-name">${t.name}</div>
+                        <div class="task-prog-bar"><div class="task-prog-fill" style="width:${p}%"></div></div>
+                    </div>
+                    <div class="task-right"><div class="task-reward">${t.done?'✅':`+${t.reward}💰`}</div></div>
+                </div>`;
+            }).join('');
+            const doneEl = document.getElementById('homeDailyTasksDone');
+            if(doneEl) doneEl.textContent = filtered.filter(t=>t.done).length + '/' + filtered.length;
+        }
+
+        function renderHomeDailyAchievements() {
+            const el = document.getElementById('homeDailyAchieveList');
+            if (!el) return;
+            if (typeof ACHIEVEMENTS_DEF === 'undefined') return;
+            const unlocked = st.achievementsUnlocked || [];
+            /* عرض أول 4 إنجازات غير مكتملة */
+            const pending = ACHIEVEMENTS_DEF.filter(a => !unlocked.includes(a.id)).slice(0,4);
+            if (!pending.length) {
+                el.innerHTML = '<div style="text-align:center;font-size:0.78em;color:var(--green);padding:8px;">🎉 أكملت جميع الإنجازات!</div>';
+                return;
             }
-            saveSt(); updateUI();
-            updateSerialNumberDisplay();
-            showFeedback('✅ تم حفظ الملف الشخصي');
-            closeSheet('profileSettingsSheet');
+            el.innerHTML = pending.map(a => `
+                <div class="task-item" style="margin-bottom:6px;">
+                    <div class="task-item-icon">${a.icon}</div>
+                    <div class="task-item-info">
+                        <div class="task-item-name">${a.name}</div>
+                        <div class="task-item-desc">${a.desc}</div>
+                    </div>
+                    <div class="task-right"><div class="task-reward">+${a.reward}💰</div></div>
+                </div>`).join('');
         }
-        window.saveSettingsProfile = saveSettingsProfile;
 
-        /* خيارات الصورة */
-        function openPhotoOptions() {
-            const bar = document.getElementById('photoOptionsBar');
-            if (bar) bar.style.display = bar.style.display === 'none' ? 'flex' : 'none';
-        }
-        function closePhotoOptions() {
-            const bar = document.getElementById('photoOptionsBar');
-            if (bar) bar.style.display = 'none';
-        }
-        function triggerSettingsPhotoUpload() {
-            closePhotoOptions();
-            document.getElementById('settingsPhotoInput')?.click();
-        }
-        function triggerSettingsCamera() {
-            closePhotoOptions();
-            document.getElementById('settingsCameraInput')?.click();
-        }
-        function handleSettingsPhotoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                st.profilePhoto = e.target.result;
+        /* ═══════════ CHALLENGE TASKS ═══════════ */
+        const CHALLENGE_TASKS_DEF = [
+            { id: 'ch1', icon: '⚔️', name: 'أول تحدي', desc: 'العب جلسة تحدي واحدة', reward: 3, xpBonus: 20, goal: 1, progress: 0, done: false },
+            { id: 'ch2', icon: '🎯', name: '5 إجابات في التحدي', desc: 'أجب على 5 أسئلة صحيحة في التحدي', reward: 5, xpBonus: 30, goal: 5, progress: 0, done: false },
+            { id: 'ch3', icon: '🔥', name: 'سجل 50 نقطة', desc: 'احصل على 50 نقطة في التحدي', reward: 8, xpBonus: 50, goal: 50, progress: 0, done: false },
+            { id: 'ch4', icon: '💎', name: 'تتابع ×5 في التحدي', desc: '5 إجابات صحيحة متتالية', reward: 6, xpBonus: 40, goal: 5, progress: 0, done: false },
+            { id: 'ch5', icon: '🏆', name: 'تجاوز 100 نقطة', desc: 'احصل على أكثر من 100 نقطة', reward: 15, xpBonus: 100, goal: 100, progress: 0, done: false },
+        ];
+
+        function initChallengeTasks() {
+            if (!st.challengeTasks || !st.challengeTasksDate || st.challengeTasksDate !== todayStr()) {
+                st.challengeTasks = CHALLENGE_TASKS_DEF.map(t => ({...t}));
+                st.challengeTasksDate = todayStr();
                 saveSt();
-                applyProfilePhoto();
-                loadSettingsProfileForm();
-                showFeedback('✅ تم تحديث الصورة الشخصية');
-            };
-            reader.readAsDataURL(file);
+            }
         }
-        window.openPhotoOptions = openPhotoOptions;
-        window.closePhotoOptions = closePhotoOptions;
-        window.triggerSettingsPhotoUpload = triggerSettingsPhotoUpload;
-        window.triggerSettingsCamera = triggerSettingsCamera;
-        window.handleSettingsPhotoUpload = handleSettingsPhotoUpload;
 
-        /* ثيمات الإعدادات */
-        function applyMode(mode) {
-            st.darkMode = (mode === 'dark');
-            saveSt(); applyDarkMode(); updateThemeSheetState();
-            playSound('click');
+        function renderChallengeTasks() {
+            const el = document.getElementById('challengeTasksList');
+            if (!el) return;
+            initChallengeTasks();
+            const T = st.challengeTasks;
+            const done = T.filter(t=>t.done).length;
+            const pct = T.length ? Math.round((done/T.length)*100) : 0;
+            const pctEl = document.getElementById('challengeTasksPct');
+            if(pctEl) pctEl.textContent = pct + '%';
+            const barEl = document.getElementById('challengeTasksBar');
+            if(barEl) barEl.style.width = pct+'%';
+            el.innerHTML = T.map(t => {
+                const p = Math.min(100, Math.round((t.progress/t.goal)*100));
+                return `<div class="task-item ${t.done?'done':''}" style="margin-bottom:6px;">
+                    <div class="task-item-icon">${t.icon}</div>
+                    <div class="task-item-info">
+                        <div class="task-item-name">${t.name}</div>
+                        <div class="task-item-desc">${t.desc}</div>
+                        <div class="task-prog-bar"><div class="task-prog-fill" style="width:${p}%"></div></div>
+                    </div>
+                    <div class="task-right">
+                        <div class="task-reward">${t.done?'✅':`+${t.reward}💰`}</div>
+                        <div class="task-prog-txt" style="font-size:0.6em;color:var(--accent2);">${t.done?'':`+${t.xpBonus}XP`}</div>
+                    </div>
+                </div>`;
+            }).join('');
         }
-        function applyThemeFromSheet(el, gold, accent, accent2) {
-            document.querySelectorAll('.theme-sheet-item').forEach(e => e.classList.remove('active'));
-            el.classList.add('active');
-            setTheme(null, gold, accent, accent2);
+
+        function updChallengeTask(type, amount) {
+            initChallengeTasks();
+            const T = st.challengeTasks;
+            let changed = false;
+            T.forEach(t => {
+                if (t.done) return;
+                if (type==='game' && t.id==='ch1') { t.progress=Math.min(t.goal,t.progress+1); if(t.progress>=t.goal){t.done=true;st.coins+=t.reward;st.xp+=t.xpBonus;changed=true;} }
+                if (type==='correct' && (t.id==='ch2'||t.id==='ch4')) { t.progress=Math.min(t.goal,t.progress+1); if(t.progress>=t.goal){t.done=true;st.coins+=t.reward;st.xp+=t.xpBonus;changed=true;} }
+                if (type==='score' && (t.id==='ch3'||t.id==='ch5')) { t.progress=Math.max(t.progress,amount); if(t.progress>=t.goal){t.done=true;st.coins+=t.reward;st.xp+=t.xpBonus;changed=true;} }
+            });
+            if (changed) { playSound('levelup'); showFeedback('✅ مهمة تحدي مكتملة!'); }
+            saveSt();
+            renderChallengeTasks();
         }
-        function updateThemeSheetState() {
-            const dark = document.getElementById('darkModeBtn');
-            const light = document.getElementById('lightModeBtn');
-            if (dark) dark.classList.toggle('active-mode', !!st.darkMode);
-            if (light) light.classList.toggle('active-mode', !st.darkMode);
-        }
-        window.applyMode = applyMode;
-        window.applyThemeFromSheet = applyThemeFromSheet;
+
