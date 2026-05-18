@@ -829,14 +829,6 @@
             }
             // مزامنة مع لائحة المتصدرين
             syncChallengeScore(CG.score);
-            // تحديث مهام التحدي
-            try {
-                if (typeof updChallengeMission === 'function') {
-                    updChallengeMission('score', CG.score);
-                    updChallengeMission('games', 1);
-                    if (CG.bestStreak) updChallengeMission('streak', CG.bestStreak);
-                }
-            } catch(e) {}
             // إظهار نتيجة التحدي
             document.getElementById('challengeGameArea').style.display = 'none';
             document.getElementById('challengeResultArea').style.display = 'flex';
