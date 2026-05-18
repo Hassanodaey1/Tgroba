@@ -2861,126 +2861,204 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   HO Math v10 — أنماط الأوضاع الجديدة
+   Profile Photo Upload Styles
 ═══════════════════════════════════════════════════ */
-
-/* ─── وضع الفلاشات والذاكرة ─── */
-.flash-container {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    width: 100%;
-    max-width: 420px;
-    padding: 16px;
-    animation: fadeIn .3s ease;
-}
-
-.flash-display {
-    background: var(--surface2);
-    border: 1.5px solid var(--border2);
-    border-radius: 22px;
-    padding: 28px 20px;
-    text-align: center;
-    min-height: 130px;
-    display: flex;
-    flex-direction: column;
+.profile-photo-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.48);
+    display: none;
     align-items: center;
     justify-content: center;
-}
-
-/* ─── ملخص الجلسة ─── */
-.sum-chip {
-    background: var(--surface3);
-    border: 1px solid var(--border2);
-    border-radius: 20px;
-    padding: 6px 12px;
-    font-size: 0.7em;
-    color: var(--text2);
-    font-weight: 700;
-}
-.sum-chip.warn-chip {
-    background: rgba(239,68,68,0.1);
-    border-color: rgba(239,68,68,0.3);
-    color: #ef4444;
-}
-
-/* ─── بطاقة المهارة ─── */
-.skill-bar {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-}
-.skill-pill {
-    background: linear-gradient(135deg, rgba(240,185,11,0.15), rgba(124,58,237,0.15));
-    border: 1px solid rgba(240,185,11,0.3);
-    border-radius: 20px;
-    padding: 6px 12px;
-    font-size: 0.72em;
-    font-weight: 700;
-    color: var(--text);
+    z-index: 3;
+    font-size: 1.3em;
     cursor: pointer;
-    transition: transform .15s;
+    transition: opacity 0.2s;
 }
-.skill-pill:active { transform: scale(0.95); }
-
-/* ─── نتائج البقاء/الذاكرة/الفلاشات ─── */
-.mode-result-card {
-    background: var(--surface2);
-    border: 2px solid var(--border2);
-    border-radius: 22px;
-    padding: 24px 20px;
-    text-align: center;
-    width: 100%;
+#profileAvatarWrap:hover .profile-photo-overlay {
+    display: flex !important;
 }
-
-/* ─── شارة الأسبوع ─── */
-#weeklyChallengeStatus {
-    transition: color .3s;
-}
-
-/* ─── أنيميشن انتقال السؤال ─── */
-@keyframes questionSlideIn {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-.question-card {
-    animation: questionSlideIn .28s ease;
-}
-
-/* ─── تأثير تمييز الجواب الصحيح ─── */
-.answer-btn.correct {
-    animation: correctPop .35s ease;
-}
-@keyframes correctPop {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.08); }
-    100% { transform: scale(1); }
-}
-
-/* ─── بطاقات الأوضاع الجديدة في صفحة اللعب ─── */
-#cardFlash, #cardMemory, #cardSurvival {
-    position: relative;
+.profile-avatar-img {
     overflow: hidden;
 }
-#cardFlash::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(249,115,22,0.08), transparent);
-    pointer-events: none;
+
+/* ═══ Vibration strength slider accent ═══ */
+#vibVolSlider::-webkit-slider-thumb {
+    background: var(--accent2);
+    box-shadow: 0 0 6px rgba(6,182,212,0.5);
 }
-#cardMemory::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(6,182,212,0.08), transparent);
-    pointer-events: none;
+#vibVolSlider::-moz-range-thumb {
+    background: var(--accent2);
+    border: none;
 }
-#cardSurvival::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(239,68,68,0.08), transparent);
-    pointer-events: none;
+
+/* ═══════════════════════════════════════════════════
+   🆕 التعديلات الجديدة - إحصائيات وإعدادات ومهام
+═══════════════════════════════════════════════════ */
+
+/* --- شريط التنقل - ضمان تناسق الحجم --- */
+.bottom-nav { display:flex; align-items:stretch; justify-content:space-around; }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px 2px 8px; gap:2px; cursor:pointer; position:relative; transition:color 0.2s; min-width:0; }
+.nav-item-icon { font-size:1.35em; line-height:1; }
+.nav-item-label { font-size:0.55em; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; text-align:center; }
+
+/* --- إحصائيات يومية في الرئيسية --- */
+.daily-stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:4px; }
+.daily-stat-card { background:var(--surface2); border:1px solid var(--border2); border-radius:14px; padding:10px 6px; text-align:center; }
+.daily-stat-icon { font-size:1.1em; margin-bottom:3px; }
+.daily-stat-num { font-size:1.1em; font-weight:900; color:var(--gold); line-height:1; margin-bottom:2px; }
+.daily-stat-label { font-size:0.58em; color:var(--text3); font-weight:600; }
+
+/* --- تابات المهام في الرئيسية --- */
+.home-tasks-tabs { display:flex; gap:8px; margin-bottom:8px; }
+.home-task-tab { flex:1; padding:9px; border-radius:12px; background:var(--surface3); border:1.5px solid var(--border2); color:var(--text2); font-family:'Tajawal',sans-serif; font-size:0.78em; font-weight:700; cursor:pointer; transition:0.2s; }
+.home-task-tab.active { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#000; border-color:transparent; font-weight:900; }
+.home-tasks-summary { background:var(--surface2); border:1px solid var(--border2); border-radius:14px; padding:12px 14px; margin-bottom:8px; }
+.home-task-prog-label { display:flex; justify-content:space-between; align-items:center; font-size:0.75em; font-weight:800; color:var(--text); }
+.home-task-prog-pct { color:var(--accent2); font-weight:900; }
+
+/* --- صفحة الإحصائيات --- */
+.stats-week-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:4px; }
+.stat-week-card { background:var(--surface2); border:1px solid var(--border2); border-radius:14px; padding:12px 8px; text-align:center; }
+.stat-week-icon { font-size:1.2em; margin-bottom:4px; }
+.stat-week-num { font-size:1.15em; font-weight:900; color:var(--gold); line-height:1; margin-bottom:3px; }
+.stat-week-label { font-size:0.58em; color:var(--text3); font-weight:600; line-height:1.3; }
+
+.stats-month-card { background:var(--surface2); border:1px solid var(--border2); border-radius:16px; padding:14px; margin-bottom:4px; }
+.stats-month-row { display:flex; flex-direction:column; gap:10px; }
+.stats-month-item { display:flex; align-items:center; gap:10px; }
+.stats-month-icon { font-size:1.1em; min-width:24px; text-align:center; }
+.stats-month-label { flex:1; font-size:0.75em; color:var(--text2); font-weight:600; }
+.stats-month-val { font-size:0.82em; font-weight:900; color:var(--gold); min-width:50px; text-align:left; }
+
+/* --- صفحة الإعدادات Hub --- */
+.settings-hub-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:4px; }
+.settings-hub-btn {
+    display:flex; align-items:center; gap:14px;
+    background:var(--surface2); border:1.5px solid var(--border2);
+    border-radius:18px; padding:16px;
+    cursor:pointer; transition:0.2s;
+    position:relative;
+}
+.settings-hub-btn:active { transform:scale(0.98); }
+.settings-hub-icon { font-size:1.8em; min-width:40px; text-align:center; }
+.settings-hub-label { font-size:0.88em; font-weight:900; color:var(--text); }
+.settings-hub-sub { font-size:0.68em; color:var(--text3); margin-top:2px; }
+.settings-hub-arrow { margin-right:auto; font-size:1.3em; color:var(--text3); }
+.settings-hub-btn > div:nth-child(3) { flex:1; }
+
+/* --- sheet الثيمات --- */
+.themes-sheet-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.theme-sheet-item {
+    border-radius:14px; padding:16px 10px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:0.2s;
+    border:2.5px solid transparent;
+}
+.theme-sheet-item.active { border-color:#fff; box-shadow:0 0 0 2px var(--gold); }
+.theme-sheet-item:active { transform:scale(0.95); }
+.dark-mode-option.active-mode { border-color:var(--gold) !important; background:linear-gradient(135deg,rgba(240,185,11,0.15),rgba(124,58,237,0.1)) !important; }
+
+/* --- صفحة الألعاب - مستوى الصعوبة في الأعلى --- */
+.play-diff-section {
+    background:var(--surface2); border:1px solid var(--border2);
+    border-radius:16px; padding:12px 14px; margin-bottom:4px;
+}
+.play-diff-title { font-size:0.75em; font-weight:900; color:var(--text2); margin-bottom:8px; }
+
+/* --- مهام التحدي في المنافسة --- */
+.challenge-missions-card {
+    background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(6,182,212,0.08));
+    border:1.5px solid rgba(124,58,237,0.3);
+    border-radius:18px; padding:16px; margin-bottom:4px;
+}
+.challenge-missions-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.challenge-missions-title { font-size:0.85em; font-weight:900; color:var(--text); }
+.challenge-missions-reward { font-size:0.72em; font-weight:900; color:var(--gold); }
+.challenge-missions-sub { font-size:0.68em; color:var(--text3); margin-bottom:10px; }
+.challenge-mission-item {
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface3); border-radius:12px;
+    padding:10px 12px; margin-bottom:6px;
+    transition:0.2s;
+}
+.challenge-mission-item.done { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); }
+.challenge-mission-icon { font-size:1.1em; min-width:24px; text-align:center; }
+.challenge-mission-info { flex:1; }
+.challenge-mission-name { font-size:0.76em; font-weight:800; color:var(--text); }
+.challenge-mission-desc { font-size:0.62em; color:var(--text3); margin-top:1px; }
+.challenge-mission-prog { height:4px; background:var(--surface2); border-radius:4px; margin-top:4px; overflow:hidden; }
+.challenge-mission-prog-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:4px; transition:width 0.4s; }
+.challenge-mission-reward { font-size:0.7em; font-weight:900; color:var(--gold); text-align:center; min-width:44px; }
+.challenge-missions-progress { margin-top:10px; display:flex; flex-direction:column; gap:4px; }
+.challenge-mp-label { font-size:0.7em; font-weight:800; color:var(--text2); display:flex; justify-content:space-between; }
+
+/* --- ألقاب الإحصائيات --- */
+.stats-titles-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.stats-title-badge {
+    background:linear-gradient(135deg,rgba(240,185,11,0.15),rgba(124,58,237,0.1));
+    border:1.5px solid rgba(240,185,11,0.3);
+    border-radius:12px; padding:8px 12px;
+    display:flex; align-items:center; gap:6px;
+}
+.stats-title-icon { font-size:1.1em; }
+.stats-title-name { font-size:0.72em; font-weight:800; color:var(--gold); }
+
+/* --- responsive للشاشات الصغيرة جداً --- */
+@media (max-width:360px) {
+    .daily-stats-row { grid-template-columns:repeat(4,1fr); gap:5px; }
+    .daily-stat-num { font-size:0.95em; }
+    .stats-week-grid { grid-template-columns:repeat(2,1fr); }
+    .settings-hub-icon { font-size:1.4em; min-width:32px; }
+    .nav-item-label { font-size:0.5em; }
+}
+@media (min-width:480px) {
+    .daily-stats-row { gap:12px; }
+    .stats-week-grid { grid-template-columns:repeat(3,1fr); }
+}
+
+/* ═══ تحسينات إضافية للتناسق الكامل ═══ */
+
+/* صفحة الإعدادات Hub - تحسين التوافق */
+.settings-hub-btn .settings-hub-label { display:block; }
+.settings-hub-btn .settings-hub-sub { display:block; }
+.settings-hub-btn > div:last-child { font-size:1.4em; color:var(--text3); }
+
+/* إخفاء الزر العلوي دائماً */
+#mainSettingsBtn { display:none !important; }
+
+/* ضمان أن page-profile مخفية */
+#page-profile { display:none !important; }
+
+/* diff-row في صفحة play تأخذ نفس حجم الرئيسية */
+.play-diff-section .diff-row { display:flex; gap:6px; flex-wrap:nowrap; }
+.play-diff-section .diff-chip {
+    flex:1; min-width:0; padding:8px 4px;
+    font-size:0.78em; text-align:center;
+    border-radius:12px; white-space:nowrap;
+}
+.play-diff-section .diff-chip .diff-chip-icon { display:block; font-size:1.1em; margin-bottom:2px; }
+
+/* مهام الرئيسية - task-item */
+.home-tasks-summary { background:var(--surface2); border:1px solid var(--border2); border-radius:14px; padding:12px 14px; margin-bottom:8px; }
+
+/* ضمان تناسق task-item في الرئيسية */
+#homeTasksList .task-item,
+#homeAchieveList .task-item { margin-bottom:6px; }
+
+/* challenge missions في المنافسة */
+.challenge-missions-card { width:100%; box-sizing:border-box; }
+
+/* إصلاح مرونة شريط التنقل للشاشات الصغيرة */
+.bottom-nav { padding:0; }
+.nav-item { padding:5px 0 6px; }
+.nav-item.active .nav-item-icon { transform:translateY(-1px); }
+.nav-item.active .nav-item-label { color:var(--gold); }
+
+/* theme sheet على الشاشات الكبيرة */
+@media (min-width:480px) {
+    .settings-hub-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .settings-hub-grid > div:last-child { grid-column:1 / -1; }
+    .challenge-missions-card { max-width:100%; }
 }
