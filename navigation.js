@@ -84,6 +84,7 @@
 
         /* عرض المهام في الرئيسية */
         function renderHomeTasks() {
+            if (!st.dailyTasks) return;
             checkDailyReset();
             const level = st.level;
             let filtered = st.dailyTasks;
@@ -92,60 +93,60 @@
             else if (level < 5) filtered = st.dailyTasks.filter(t => ['t1','t2','t3','t4'].includes(t.id));
             const doneCount = filtered.filter(t => t.done).length;
             const pct = filtered.length ? Math.round((doneCount/filtered.length)*100) : 0;
-            const el = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
-            el('homeTaskDone', doneCount);
-            el('homeTaskTotal', filtered.length);
-            el('homeTaskPct', pct + '%');
-            const bar = document.getElementById('homeTaskBar');
+            const elSet = function(id, v) { var e = document.getElementById(id); if(e) e.textContent = v; };
+            elSet('homeTaskDone', doneCount);
+            elSet('homeTaskTotal', filtered.length);
+            elSet('homeTaskPct', pct + '%');
+            var bar = document.getElementById('homeTaskBar');
             if (bar) bar.style.width = pct + '%';
-            /* تحديث العداد */
-            const now = new Date(), midnight = new Date(now);
+            /* تحديث العداد التنازلي */
+            var now = new Date(), midnight = new Date(now);
             midnight.setHours(24,0,0,0);
-            const d = midnight - now;
-            const h = String(Math.floor(d/3600000)).padStart(2,'0');
-            const m = String(Math.floor((d%3600000)/60000)).padStart(2,'0');
-            const s = String(Math.floor((d%60000)/1000)).padStart(2,'0');
-            el('homeTaskCountdown', h+':'+m+':'+s);
+            var diff = midnight - now;
+            var hh = String(Math.floor(diff/3600000)).padStart(2,'0');
+            var mm = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+            var ss = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+            elSet('homeTaskCountdown', hh+':'+mm+':'+ss);
             /* رسم المهام */
-            const tList = document.getElementById('homeTasksList');
+            var tList = document.getElementById('homeTasksList');
             if (tList) {
-                tList.innerHTML = filtered.map(t => {
-                    const p = Math.min(100, Math.round((t.progress/t.goal)*100));
-                    return \`<div class="task-item \${t.done?'done':''}">
-                        <div class="task-item-icon">\${t.icon}</div>
-                        <div class="task-item-info">
-                            <div class="task-item-name">\${t.name}</div>
-                            <div class="task-item-desc">\${t.desc}</div>
-                            <div class="task-prog-bar"><div class="task-prog-fill" style="width:\${p}%"></div></div>
-                        </div>
-                        <div class="task-right">
-                            <div class="task-reward">\${t.done?'✅':\`+\${t.reward}💰`}</div>
-                            \${t.done?'':\`<div class="task-prog-txt">\${t.progress}/\${t.goal}</div>\`}
-                        </div>
-                    </div>\`;
+                tList.innerHTML = filtered.map(function(t) {
+                    var p = Math.min(100, Math.round((t.progress/t.goal)*100));
+                    var reward = t.done ? '✅' : '+' + t.reward + '💰';
+                    var prog = t.done ? '' : '<div class="task-prog-txt">' + t.progress + '/' + t.goal + '</div>';
+                    return '<div class="task-item ' + (t.done?'done':'') + '">' +
+                        '<div class="task-item-icon">' + t.icon + '</div>' +
+                        '<div class="task-item-info">' +
+                            '<div class="task-item-name">' + t.name + '</div>' +
+                            '<div class="task-item-desc">' + t.desc + '</div>' +
+                            '<div class="task-prog-bar"><div class="task-prog-fill" style="width:' + p + '%"></div></div>' +
+                        '</div>' +
+                        '<div class="task-right">' +
+                            '<div class="task-reward">' + reward + '</div>' +
+                            prog +
+                        '</div>' +
+                    '</div>';
                 }).join('');
             }
             /* رسم الإنجازات في الرئيسية */
-            const aList = document.getElementById('homeAchieveList');
-            if (aList) {
-                const shown = ACHIEVEMENTS_DEF.slice(0, 6);
-                aList.innerHTML = shown.map(a => {
-                    const done = st.achievementsUnlocked.includes(a.id) || a.check();
-                    return \`<div class="task-item \${done?'done':''}">
-                        <div class="task-item-icon">\${a.icon}</div>
-                        <div class="task-item-info">
-                            <div class="task-item-name">\${a.name}</div>
-                            <div class="task-item-desc">\${a.desc}</div>
-                        </div>
-                        <div class="task-right">
-                            <div class="task-reward">\${done?'✅':\`+\${a.reward}💰`}</div>
-                        </div>
-                    </div>\`;
-                }).join('') + \`<div style="text-align:center;padding:8px;font-size:0.7em;color:var(--text3);cursor:pointer;" onclick="goTab('achieve')">عرض كل الإنجازات ›</div>\`;
+            var aList = document.getElementById('homeAchieveList');
+            if (aList && typeof ACHIEVEMENTS_DEF !== 'undefined') {
+                var shown = ACHIEVEMENTS_DEF.slice(0, 6);
+                aList.innerHTML = shown.map(function(a) {
+                    var done = st.achievementsUnlocked.includes(a.id) || a.check();
+                    var reward = done ? '✅' : '+' + a.reward + '💰';
+                    return '<div class="task-item ' + (done?'done':'') + '">' +
+                        '<div class="task-item-icon">' + a.icon + '</div>' +
+                        '<div class="task-item-info">' +
+                            '<div class="task-item-name">' + a.name + '</div>' +
+                            '<div class="task-item-desc">' + a.desc + '</div>' +
+                        '</div>' +
+                        '<div class="task-right"><div class="task-reward">' + reward + '</div></div>' +
+                    '</div>';
+                }).join('') + '<div style="text-align:center;padding:8px;font-size:0.7em;color:var(--text3);cursor:pointer;" onclick="goTab('achieve')">عرض كل الإنجازات ›</div>';
             }
         }
-        window.renderHomeTasks = renderHomeTasks;
-        setInterval(() => { if(document.getElementById('page-home')?.classList.contains('active')) { el_safe('homeTaskCountdown'); } }, 1000);
+        window.renderHomeTasks = renderHomeTasks;        setInterval(() => { if(document.getElementById('page-home')?.classList.contains('active')) { el_safe('homeTaskCountdown'); } }, 1000);
         function el_safe(id){ const e=document.getElementById(id); return e||{}; }
 
         function getDifficultyByLevel() {
