@@ -1,228 +1,267 @@
-/* ═══════════════════════════════════════════════════
-   HO Math v10 — Patches & Glue
-   © 2026 Hassan Odaey
-═══════════════════════════════════════════════════ */
+/* STATE */
+        /* ═══════════ GLOBAL STATE ═══════════ */
+        const SK = 'ho_math_v7';
 
-/* ═══ 1. إيقاف/استئناف المؤقت ═══ */
-var _gamePaused = false, _pausedTimeLeft = 0;
-
-function pauseGameTimer() {
-    if (!G || G.ended || !G.hasTimer || _gamePaused) return;
-    _gamePaused = true; _pausedTimeLeft = G.timeLeft;
-    clearGameTimer();
-}
-
-function resumeGameTimer() {
-    if (!_gamePaused || !G || G.ended || !G.hasTimer) return;
-    _gamePaused = false;
-    G.timeLeft = _pausedTimeLeft;
-    G.timer = setInterval(() => {
-        G.timeLeft--;
-        if (G.timeLeft <= 0) { clearGameTimer(); endGame(); }
-        else { updateTimerDisplay(); }
-    }, 1000);
-}
-
-/* ═══ 2. الإعدادات الرئيسية ═══ */
-function openMainSettings() {
-    const overlay = document.getElementById('gameOverlay');
-    if (overlay?.classList.contains('active')) return;
-    try { initSettingsDateSelectors(); } catch(e) {}
-    const inName = document.getElementById('settingsInputName');
-    if (inName) inName.value = st.name || '';
-    if (st.birthDate) {
-        const [y,mo,d] = st.birthDate.split('-');
-        const sd = document.getElementById('settingsBirthDay');
-        const sm = document.getElementById('settingsBirthMonth');
-        const sy = document.getElementById('settingsBirthYear');
-        if (sy) sy.value = parseInt(y);
-        if (sm) sm.value = parseInt(mo);
-        if (sd) sd.value = parseInt(d);
-    }
-    updateSettingsDarkToggle();
-    updateSettingsThemeDots();
-    updateSettingsSerialDisplay();
-    openSheet('mainSettingsSheet');
-    playSound('click');
-}
-
-function closeMainSettings() { closeSheet('mainSettingsSheet'); }
-
-function saveMainSettings() {
-    const inName = document.getElementById('settingsInputName');
-    let name = inName ? inName.value.trim().replace(/[^a-zA-Z0-9 ]/g,'') : '';
-    if (!name) { showFeedback('الاسم لا يمكن أن يكون فارغاً'); return; }
-    if (name.length > 30) name = name.slice(0,30);
-    st.name = name;
-    const sd = document.getElementById('settingsBirthDay');
-    const sm = document.getElementById('settingsBirthMonth');
-    const sy = document.getElementById('settingsBirthYear');
-    if (sd && sm && sy) {
-        const y = sy.value, mo = String(sm.value).padStart(2,'0'), d = String(sd.value).padStart(2,'0');
-        st.birthDate = `${y}-${mo}-${d}`;
-        try { st.age = calculateAgeFromBirthDate(st.birthDate); } catch(e) {}
-    }
-    if (!st.serialNumber) st.serialNumber = generateSerialNumber(st.birthDate, st.name);
-    saveSt(); updateUI(); loadProfileForm(); updateSerialNumberDisplay(); updateSettingsSerialDisplay();
-    closeMainSettings();
-    showFeedback('✅ تم الحفظ');
-}
-
-function updateSettingsDarkToggle() {
-    const icon = document.getElementById('settingsDarkIcon');
-    const label = document.getElementById('settingsDarkLabel');
-    if (icon) icon.textContent = st.darkMode ? '🌙' : '☀️';
-    if (label) label.textContent = st.darkMode ? 'داكن' : 'فاتح';
-}
-
-function toggleSettingsDarkMode() {
-    st.darkMode = !st.darkMode; saveSt(); applyDarkMode(); updateSettingsDarkToggle();
-    const i2 = document.getElementById('darkLightIcon'); if (i2) i2.textContent = st.darkMode ? '🌙' : '☀️';
-    const l2 = document.getElementById('darkLightLabel'); if (l2) l2.textContent = st.darkMode ? 'داكن' : 'فاتح';
-    playSound('click');
-}
-
-function updateSettingsThemeDots() {
-    document.querySelectorAll('.settings-theme-dot').forEach(d => d.classList.toggle('active', d.dataset.gold === st.tGold));
-}
-
-function applySettingsTheme(el, gold, accent, accent2) {
-    document.querySelectorAll('.settings-theme-dot').forEach(d => d.classList.remove('active'));
-    if (el) el.classList.add('active');
-    document.documentElement.style.setProperty('--gold', gold);
-    document.documentElement.style.setProperty('--accent', accent);
-    document.documentElement.style.setProperty('--accent2', accent2);
-    st.tGold = gold; st.tAccent = accent; st.tAccent2 = accent2;
-    saveSt(); playSound('click');
-}
-
-function updateSettingsSerialDisplay() {
-    const el = document.getElementById('settingsSerialDisplay');
-    if (el) el.textContent = st.serialNumber || 'احفظ التغييرات أولاً';
-}
-
-function copySettingsSerial() {
-    if (!st.serialNumber) { showFeedback('لا يوجد رقم بعد'); return; }
-    navigator.clipboard.writeText(st.serialNumber).catch(() => {});
-    showFeedback('📋 تم النسخ!');
-}
-
-function toggleSettingsRestorePanel() {
-    const p = document.getElementById('settingsRestorePanel');
-    if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
-}
-
-function restoreFromSettings() {
-    const input = document.getElementById('settingsRestoreInput');
-    const serial = input ? input.value.trim() : '';
-    if (!serial) { showFeedback('أدخل الرقم التسلسلي'); return; }
-    const data = loadSerialBackup(serial);
-    if (!data) { showFeedback('⚠️ لم يُعثر على حساب'); return; }
-    Object.assign(st, sanitizeState(data));
-    saveSt(); updateUI(); loadProfileForm(); applyDarkMode(); updateSettingsSerialDisplay();
-    if (input) input.value = '';
-    const p = document.getElementById('settingsRestorePanel'); if (p) p.style.display = 'none';
-    closeMainSettings();
-    showFeedback('✅ تم الاستعادة');
-}
-
-/* ═══ 3. إعدادات داخل اللعبة ═══ */
-function openGameSettingsAndPause() {
-    pauseGameTimer();
-    const gSV = document.getElementById('gSoundVolSlider'); if (gSV) gSV.value = st.soundVolume||80;
-    const gSVV = document.getElementById('gSoundVolVal'); if (gSVV) gSVV.textContent = (st.soundVolume||80)+'%';
-    const gBV = document.getElementById('gBgVolSlider'); if (gBV) gBV.value = st.bgVolume||60;
-    const gBVV = document.getElementById('gBgVolVal'); if (gBVV) gBVV.textContent = (st.bgVolume||60)+'%';
-    ['gsoundStatus'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent=st.soundOn?'مفعّل':'مطفأ'; });
-    ['gbgMusicStatus'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent=st.bgOn?'مفعّلة':'مطفأة'; });
-    const vib = document.getElementById('gVibrationStatus'); if (vib) vib.textContent = st.vibrationOn?'مفعّل':'مطفأ';
-    openSheet('gameSettingsSheet');
-}
-
-function closeGameSettingsAndResume() { closeSheet('gameSettingsSheet'); resumeGameTimer(); }
-function sheetBgAndResume(e, id) { if (e.target.id === id) { closeSheet(id); resumeGameTimer(); } }
-
-/* ═══ 4. مكملات ═══ */
-function initTitlesSystem() {
-    try { checkSeasonReset(); } catch(e) {}
-    try { renderProfileTitles(); } catch(e) {}
-}
-
-function toggleBgMusicInGame() {
-    toggleBgMusic();
-    const el = document.getElementById('gbgMusicStatus'); if (el) el.textContent = st.bgOn?'مفعّلة':'مطفأة';
-}
-
-function toggleVibration() {
-    st.vibrationOn = !st.vibrationOn;
-    ['vibrationStatus','gVibrationStatus'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent=st.vibrationOn?'مفعّل':'مطفأ'; });
-    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(30);
-    saveSt(); playSound('click');
-}
-
-function initSettingsDateSelectors() {
-    const daySel = document.getElementById('settingsBirthDay');
-    const monthSel = document.getElementById('settingsBirthMonth');
-    const yearSel = document.getElementById('settingsBirthYear');
-    if (!daySel) return;
-    daySel.innerHTML = ''; monthSel.innerHTML = ''; yearSel.innerHTML = '';
-    for (let i=1;i<=31;i++) { const o=document.createElement('option'); o.value=i; o.textContent=i; daySel.appendChild(o); }
-    for (let i=1;i<=12;i++) { const o=document.createElement('option'); o.value=i; o.textContent=i; monthSel.appendChild(o); }
-    const cy = (new Date()).getFullYear();
-    for (let i=cy-100;i<=cy;i++) { const o=document.createElement('option'); o.value=i; o.textContent=i; yearSel.appendChild(o); }
-}
-
-/* ═══ 5. تحديث بطاقات الصفحة الرئيسية ═══ */
-function updateHomeNewModes() {
-    const flashStat = document.getElementById('flashCatStats');
-    if (flashStat) flashStat.textContent = 'أفضل: ' + (st.flashBestScore||0);
-    const memStat = document.getElementById('memoryCatStats');
-    if (memStat) memStat.textContent = 'أفضل: ' + (st.memoryBestScore||0);
-    const svStat = document.getElementById('survivalCatStats');
-    if (svStat) svStat.textContent = 'أفضل: ' + (st.survivalBestScore||0);
-    /* بطاقات صفحة اللعب */
-    const fl = document.getElementById('flashBestInCard'); if (fl) fl.textContent = st.flashBestScore||0;
-    const mm = document.getElementById('memoryBestInCard'); if (mm) mm.textContent = st.memoryBestScore||0;
-    const sv = document.getElementById('survivalBestInCard'); if (sv) sv.textContent = st.survivalBestScore||0;
-    /* متجر المهارات */
-    const sc = document.getElementById('skillsShopCoins'); if (sc) sc.textContent = st.coins||0;
-}
-
-/* ═══ 6. التحدي الأسبوعي — مكافأة عند الإتمام ═══ */
-(function patchEndGame() {
-    const origEndGame = window.endGame;
-    if (!origEndGame) return;
-    window.endGame = function() {
-        origEndGame.apply(this, arguments);
-        if (window._afterWeeklyEnd && G && !st.weeklyChallengeDone) {
-            st.weeklyChallengeDone = true;
-            st.coins += 10;
-            saveSt();
-            updateUI();
-            showFeedback('🏅 أتممت التحدي الأسبوعي! +10💰');
-            window._afterWeeklyEnd = false;
+        function todayStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
         }
-        updateHomeNewModes();
-        try { renderSessionSummaries(); } catch(e) {}
-    };
-})();
 
-/* ═══ 7. تطبيق updateUI الموسّع ═══ */
-const _origUpdateUI = typeof updateUI === 'function' ? updateUI : null;
-function updateUI() {
-    if (_origUpdateUI) _origUpdateUI();
-    try { updateHomeNewModes(); } catch(e) {}
-}
+        function weekStr() {
+            const d = new Date();
+            const jan1 = new Date(d.getFullYear(), 0, 1);
+            const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+            return `${d.getFullYear()}-W${week}`;
+        }
 
-/* ═══ 8. مهارة درع إضافي عند بدء اللعبة ═══ */
-(function patchStartGame() {
-    const orig = window.startGameWith;
-    if (!orig) { setTimeout(patchStartGame, 500); return; }
-    window.startGameWith = function(mode, op, customTable, hasTimer) {
-        orig.apply(this, arguments);
-        /* مهارة الدرع */
-        if (st.skills && st.skills.shield && G) { G.livesLeft = (G.livesLeft||3) + 1; updateHeartsDisplay(); }
-        /* مهارة الوقت الإضافي */
-        if (st.skills && st.skills.extraTime && G && G.hasTimer) { G.timeLeft = (G.timeLeft||60) + 5; G.maxTime = (G.maxTime||60) + 5; updateTimerDisplay(); }
-    };
-})();
+        function monthStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${d.getMonth()+1}`;
+        }
+
+        function defState() {
+            return {
+                name: 'Player',
+                age: 0,
+                birthDate: '2000-01-01',
+                gender: 'm',
+                avatar: '👦',
+                profilePhoto: null,
+                xp: 0,
+                xpToNext: 1000,
+                level: 1,
+                coins: 10,
+                correctTotal: 0,
+                wrongTotal: 0,
+                bestStreak: 0,
+                totalGames: 0,
+                bestScore: 0,
+                difficulty: 'easy',
+                lastMode: 'classic',
+                lastOp: 'mix',
+                soundOn: true,
+                soundVolume: 80,
+                bgOn: true,
+                bgVolume: 60,
+                vibrationOn: false,
+                vibrationStrength: 30,
+                stats: {},
+                history: [],
+                catCounter: { correct: 0, total: 0 },
+                catChallenges: { games: 0 },
+                dailyTasks: [],
+                dailyDate: todayStr(),
+                /* إحصائيات يومية */
+                dailyStats: { correct: 0, wrong: 0, games: 0, date: todayStr() },
+                /* إحصائيات أسبوعية */
+                weeklyStats: { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() },
+                tGold: '#f0b90b',
+                tAccent: '#7c3aed',
+                tAccent2: '#06b6d4',
+                sessionTimeSecs: 0,
+                sessionDate: todayStr(),
+                ownedEmojis: ['👦'],
+                hearts: 3,
+                dailyStreak: 0,
+                lastDailyDate: null,
+                dailyShieldUsed: false,
+                lastShieldDate: null,
+                achievementsUnlocked: [],
+                achievementRewardClaimed: false,
+                serialNumber: '',
+                darkMode: true,
+                challengeBestScore: 0,
+                monthlyStats: { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: '' },
+                challengeMissions: null,
+                challengeMissionsDate: ''
+            };
+        }
+
+        function sanitizeState(s) {
+            if (typeof s.coins !== 'number' || s.coins < 0) s.coins = 0;
+            if (typeof s.level !== 'number' || s.level < 1) s.level = 1;
+            if (typeof s.xp !== 'number' || s.xp < 0) s.xp = 0;
+            if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 1000;
+            if (!s.ownedEmojis || !Array.isArray(s.ownedEmojis)) s.ownedEmojis = ['👦'];
+            if (!s.stats || typeof s.stats !== 'object') s.stats = {};
+            if (!s.history) s.history = [];
+            if (!s.catCounter) s.catCounter = { correct: 0, total: 0 };
+            if (!s.catChallenges) s.catChallenges = { games: 0 };
+            if (!s.achievementsUnlocked) s.achievementsUnlocked = [];
+            if (s.achievementRewardClaimed === undefined) s.achievementRewardClaimed = false;
+            if (!s.birthDate) s.birthDate = '2000-01-01';
+            if (typeof s.age !== 'number') s.age = 0;
+            if (s.darkMode === undefined) s.darkMode = true;
+            if (typeof s.challengeBestScore !== 'number') s.challengeBestScore = 0;
+            if (!s.monthlyStats || s.monthlyStats.month !== monthStr()) {
+                s.monthlyStats = { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: monthStr() };
+            }
+            if (!s.challengeMissions) s.challengeMissions = null;
+            if (!s.challengeMissionsDate) s.challengeMissionsDate = '';
+            if (typeof s.soundVolume !== 'number') s.soundVolume = 80;
+            if (typeof s.bgVolume !== 'number') s.bgVolume = 60;
+            if (s.vibrationOn === undefined) s.vibrationOn = false;
+            if (typeof s.vibrationStrength !== 'number') s.vibrationStrength = 30;
+            if (s.profilePhoto === undefined) s.profilePhoto = null;
+            if (!s.dailyStats || s.dailyStats.date !== todayStr()) {
+                s.dailyStats = { correct: 0, wrong: 0, games: 0, date: todayStr() };
+            }
+            if (!s.weeklyStats || s.weeklyStats.week !== weekStr()) {
+                s.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
+            }
+            return s;
+        }
+
+        function loadSt() {
+            try {
+                const s = JSON.parse(localStorage.getItem(SK));
+                if (s && s.name !== undefined) return sanitizeState(s);
+            } catch (e) {}
+            return defState();
+        }
+
+        function saveSt() {
+            try {
+                localStorage.setItem(SK, JSON.stringify(st));
+                if (st.serialNumber) saveSerialBackup(st.serialNumber, st);
+            } catch (e) {}
+        }
+
+        function saveSerialBackup(serial, data) {
+            try { localStorage.setItem(`ho_math_backup_${serial}`, JSON.stringify(data)); } catch (e) {}
+        }
+
+        function loadSerialBackup(serial) {
+            try {
+                const d = localStorage.getItem(`ho_math_backup_${serial}`);
+                if (d) return JSON.parse(d);
+            } catch (e) {}
+            return null;
+        }
+
+        function generateSerialNumber(birthDate, name) {
+            const nameEng = (name || 'User').replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase();
+            const cleanDate = birthDate.replace(/-/g, '');
+            const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            const count = parseInt(localStorage.getItem('ho_math_user_count') || '0') + 1;
+            localStorage.setItem('ho_math_user_count', count);
+            return `${cleanDate}-${nameEng}-${randomPart}-${count}`;
+        }
+
+        function updateSerialNumberDisplay() {
+            ['serialNumberDisplay', 'settingsSerialDisplay'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = st.serialNumber || 'احفظ الملف الشخصي أولاً';
+            });
+        }
+
+        function copySerialNumber() {
+            if (!st.serialNumber) { showFeedback('لا يوجد رقم تسلسلي — احفظ الملف الشخصي أولاً'); return; }
+            navigator.clipboard.writeText(st.serialNumber).catch(() => {});
+            showFeedback('📋 تم نسخ الرقم التسلسلي');
+        }
+
+        function showRestoreAccount() {
+            const panel = document.getElementById('restorePanel');
+            if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function restoreAccount() {
+            const serial = document.getElementById('restoreSerialInput').value.trim();
+            if (!serial) { showFeedback('الرجاء إدخال الرقم التسلسلي'); return; }
+            const savedData = loadSerialBackup(serial);
+            if (!savedData) { showFeedback('⚠️ لم يتم العثور على حساب بهذا الرقم'); return; }
+            Object.assign(st, sanitizeState(savedData));
+            saveSt(); updateUI(); loadProfileForm(); applyDarkMode();
+            applyProfilePhoto();
+            showFeedback('✅ تم استعادة الحساب بنجاح');
+            const panel = document.getElementById('restorePanel');
+            if (panel) panel.style.display = 'none';
+            const inp = document.getElementById('restoreSerialInput');
+            if (inp) inp.value = '';
+        }
+
+        /* استعادة من صفحة الإعدادات */
+        function restoreFromSettings() {
+            const inp = document.getElementById('settingsRestoreInput');
+            const serial = inp ? inp.value.trim() : '';
+            if (!serial) { showFeedback('أدخل الرقم التسلسلي'); return; }
+            const savedData = loadSerialBackup(serial);
+            if (!savedData) { showFeedback('⚠️ لم يُعثر على حساب بهذا الرقم'); return; }
+            Object.assign(st, sanitizeState(savedData));
+            saveSt(); updateUI(); loadProfileForm(); applyDarkMode();
+            applyProfilePhoto();
+            updateSerialNumberDisplay();
+            if (inp) inp.value = '';
+            const panel = document.getElementById('settingsRestorePanel');
+            if (panel) panel.style.display = 'none';
+            showFeedback('✅ تم استعادة الحساب');
+        }
+
+        function toggleSettingsRestorePanel() {
+            const p = document.getElementById('settingsRestorePanel');
+            if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+        }
+
+        var st = loadSt();
+        var currentOp = st.lastOp || 'mix';
+
+        /* ═══════════ RESET COMPLETE ═══════════ */
+        function confirmResetComplete(force) {
+            showConfirm('البدء من جديد',
+                'سيتم حذف جميع البيانات: الإحصائيات، العملات، المستوى، المهام، الإنجازات، الرقم التسلسلي، وكل شيء. لا يمكن التراجع. هل أنت متأكد؟',
+                'نعم، احذف الكل', 'إلغاء', (ok) => {
+                    if (ok) {
+                        localStorage.removeItem(SK);
+                        for (let i = 0; i < localStorage.length; i++) {
+                            let key = localStorage.key(i);
+                            if (key && key.startsWith('ho_math_backup_')) localStorage.removeItem(key);
+                        }
+                        localStorage.removeItem('ho_math_user_count');
+                        st = defState();
+                        saveSt(); currentOp = st.lastOp || 'mix';
+                        updateUI(); loadProfileForm(); applyDarkMode();
+                        applyProfilePhoto();
+                        if (typeof clearGameTimer === 'function') clearGameTimer();
+                        if (G) { G.ended = true; if (G.timer) clearInterval(G.timer); }
+                        goTab('home');
+                        showFeedback('🔄 تم إعادة اللعبة إلى حالتها الأولية');
+                    }
+                });
+        }
+
+        /* ═══════════ تحديث الإحصائيات اليومية والأسبوعية ═══════════ */
+        function recordDailyStat(type) {
+            /* تحقق من التاريخ */
+            if (!st.dailyStats || st.dailyStats.date !== todayStr()) {
+                st.dailyStats = { correct: 0, wrong: 0, games: 0, date: todayStr() };
+            }
+            if (!st.weeklyStats || st.weeklyStats.week !== weekStr()) {
+                st.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
+            }
+            if (!st.monthlyStats || st.monthlyStats.month !== monthStr()) {
+                st.monthlyStats = { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: monthStr() };
+            }
+            if (type === 'correct') {
+                st.dailyStats.correct++;
+                st.weeklyStats.correct++;
+                st.monthlyStats.correct++;
+            }
+            if (type === 'wrong') {
+                st.dailyStats.wrong++;
+                st.weeklyStats.wrong++;
+                st.monthlyStats.wrong++;
+            }
+            if (type === 'game') {
+                st.dailyStats.games++;
+                st.weeklyStats.games++;
+                st.monthlyStats.games++;
+            }
+            if (type === 'streak') {
+                if (st.bestStreak > st.weeklyStats.bestStreak) st.weeklyStats.bestStreak = st.bestStreak;
+                if (st.bestStreak > (st.monthlyStats.bestStreak||0)) st.monthlyStats.bestStreak = st.bestStreak;
+            }
+            if (type === 'score') {
+                if ((st.bestScore||0) > (st.monthlyStats.bestScore||0)) st.monthlyStats.bestScore = st.bestScore;
+            }
+        }
