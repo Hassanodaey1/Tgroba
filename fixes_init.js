@@ -120,6 +120,7 @@ function generateAndShowSerial() {
     try { loadProfileForm(); } catch (e) {}
     try { initVolumeSliders(); } catch (e) {}
     try { if (typeof applyProfilePhoto === 'function') applyProfilePhoto(); } catch (e) {}
+    try { renderHomeDailySection(); } catch (e) {}
 
     /* الاهتزاز */
     ['vibrationStatus', 'gVibrationStatus'].forEach(id => {
@@ -144,16 +145,6 @@ function generateAndShowSerial() {
     try { updCountdown(); } catch (e) {}
     try { updateStreakBanner(); } catch (e) {}
     try { updateSerialNumberDisplay(); } catch (e) {}
-
-    /* تهيئة الصفحة الرئيسية مع الإضافات الجديدة */
-    try { if (typeof updateHomeDailyStats === 'function') updateHomeDailyStats(); } catch (e) {}
-    try { if (typeof renderHomeTasks === 'function') renderHomeTasks(); } catch (e) {}
-
-    /* مزامنة chips الصعوبة في صفحة الألعاب */
-    try { if (typeof syncPlayDiffChips === 'function') syncPlayDiffChips(); } catch (e) {}
-
-    /* تهيئة مهام التحدي */
-    try { if (typeof getChallengeMissions === 'function') getChallengeMissions(); } catch (e) {}
 
     /* تطبيق لون زر المنافسة حسب الثيم */
     try { applyCompetitionButtonTheme(); } catch (e) {}
