@@ -37,10 +37,8 @@
                 if (G.streak >= 5) doConfetti();
                 if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
                 showFloatXP(10 + G.streak * 2);
-                if (!G.isTraining) {
-                    st.correctTotal++;
-                    try { recordDailyStat('correct'); } catch(e) {}
-                }
+                if (!G.isTraining) st.correctTotal++;
+                try { updateMonthlyStats('correct'); } catch(e) {}
             } else {
                 btn.classList.add('wrong');
                 document.querySelectorAll('.answer-btn').forEach(b => { if (parseInt(b.getAttribute('data-val')) ===
@@ -83,10 +81,8 @@
                 }
                 if (G.currentCatKey && st.stats[G.currentCatKey]) { st.stats[G.currentCatKey].att++;
                     st.stats[G.currentCatKey].max += 3; }
-                if (!G.isTraining) {
-                    st.wrongTotal++;
-                    try { recordDailyStat('wrong'); } catch(e) {}
-                }
+                if (!G.isTraining) st.wrongTotal++;
+                try { updateMonthlyStats('wrong'); } catch(e) {}
             }
             document.getElementById('statScore').textContent = G.score;
             document.getElementById('streakNum').textContent = G.streak;
@@ -144,8 +140,6 @@
                 st.wrongTotal += G.wrong;
                 st.coins += earnedCoins;
                 st.totalGames++;
-                try { recordDailyStat('game'); } catch(e) {}
-                try { recordDailyStat('score'); } catch(e) {}
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
                 if (G.score > st.bestScore) st.bestScore = G.score;
                 const xpGained = G.score * 2 + G.correct * 5;
@@ -158,6 +152,11 @@
                     st.catCounter.total += G.correct + G.wrong; }
                 if (['speed', 'survival', 'frenzy', 'daily'].includes(G.mode)) st.catChallenges.games++;
                 updTask('game'); if (G.mode === 'daily') updTask('daily');
+                try { updateMonthlyStats('game'); } catch(e) {}
+                /* مهام التحدي */
+                if (G.mode === 'challenge' || document.getElementById('challengeGameArea')?.style.display !== 'none') {
+                    try { updChallengeTask('game',1); updChallengeTask('score', G.score); } catch(e) {}
+                }
                 const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
                 st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
                 if (st.history.length > 10) st.history.pop();
