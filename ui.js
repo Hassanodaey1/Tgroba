@@ -399,6 +399,21 @@ function updateUI() {
     try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch (e) {}
     /* تحديث لون زر المنافسة */
     updateCompetitionNavStyle();
+    /* تطبيق الصورة الشخصية */
+    try { applyProfilePhoto(); } catch(e) {}
+    /* تحديث الإحصائيات اليومية في الرئيسية */
+    try { if (typeof updateHomeDailyStats === 'function') updateHomeDailyStats(); } catch(e) {}
+    try { if (typeof renderHomeTasks === 'function') renderHomeTasks(); } catch(e) {}
+    /* تحديث مهام التحدي إن كانت المنافسة مفتوحة */
+    try { if (typeof renderChallengeMissions === 'function') {
+        const lb = document.getElementById('page-leaderboard');
+        if (lb && lb.classList.contains('active')) renderChallengeMissions();
+    }} catch(e) {}
+    /* عرض الإحصائيات إن كانت مفتوحة */
+    try { if (typeof renderStatsPage === 'function') {
+        const ap = document.getElementById('page-achieve');
+        if (ap && ap.classList.contains('active')) renderStatsPage();
+    }} catch(e) {}
 }
 
 function updateHomeStats() {
@@ -465,6 +480,98 @@ function updateWeaknessArea() {
 }
 
 function startTrainingOn(cat) { startTrainingMode(cat); }
+
+
+/* ═══════════════════════════════════════════════════
+   PROFILE PHOTO — رفع وإدارة الصورة الشخصية
+═══════════════════════════════════════════════════ */
+
+function triggerPhotoUpload() {
+    /* خيار: كاميرا أم معرض الصور */
+    showConfirm(
+        '📷 الصورة الشخصية',
+        'اختر مصدر الصورة',
+        '📷 كاميرا',
+        '🖼️ معرض الصور',
+        function(useCamera) {
+            const inp = document.getElementById('profilePhotoInput');
+            if (!inp) return;
+            if (useCamera) inp.setAttribute('capture', 'user');
+            else           inp.removeAttribute('capture');
+            inp.click();
+        }
+    );
+}
+
+function handleProfilePhotoUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { showFeedback('⚠️ الملف ليس صورة'); return; }
+    if (file.size > 8 * 1024 * 1024)    { showFeedback('⚠️ حجم الصورة كبير جداً'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX = 220;
+            let w = img.width, h = img.height;
+            if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+            else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            st.profilePhoto = canvas.toDataURL('image/jpeg', 0.80);
+            saveSt();
+            applyProfilePhoto();
+            showFeedback('✅ تم تحديث الصورة الشخصية');
+            playSound('levelup');
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+}
+
+function applyProfilePhoto() {
+    const bigEl    = document.getElementById('profileAvatarImg');
+    const headerEl = document.getElementById('headerAvatar');
+    const overlay  = document.getElementById('profilePhotoOverlay');
+    const actions  = document.getElementById('profilePhotoActions');
+
+    if (st.profilePhoto) {
+        /* تطبيق الصورة على الأفاتار الكبير */
+        if (bigEl) {
+            bigEl.style.backgroundImage  = 'url("' + st.profilePhoto + '")';
+            bigEl.style.backgroundSize   = 'cover';
+            bigEl.style.backgroundPosition = 'center';
+            bigEl.textContent = '';
+        }
+        /* تطبيق الصورة على الهيدر */
+        if (headerEl) {
+            headerEl.style.backgroundImage  = 'url("' + st.profilePhoto + '")';
+            headerEl.style.backgroundSize   = 'cover';
+            headerEl.style.backgroundPosition = 'center';
+            headerEl.textContent = '';
+        }
+        if (overlay) overlay.style.display = 'flex';
+        if (actions) actions.style.display = 'flex';
+    } else {
+        const av = st.avatar || getDefaultAvatarForGender(st.gender);
+        if (bigEl)    { bigEl.style.backgroundImage = ''; bigEl.style.backgroundSize = ''; bigEl.textContent = av; }
+        if (headerEl) { headerEl.style.backgroundImage = ''; headerEl.style.backgroundSize = ''; headerEl.textContent = av; }
+        if (overlay)  overlay.style.display = 'none';
+        if (actions)  actions.style.display = 'none';
+    }
+}
+
+function removeProfilePhoto() {
+    showConfirm('حذف الصورة', 'هل تريد حذف الصورة الشخصية والعودة للرمز التعبيري؟', 'نعم', 'إلغاء', function(ok) {
+        if (!ok) return;
+        st.profilePhoto = null;
+        saveSt();
+        applyProfilePhoto();
+        showFeedback('🗑️ تم حذف الصورة الشخصية');
+    });
+}
 
 /* ═══════════ KEYBOARD SUPPORT ═══════════ */
 document.addEventListener('keydown', e => {
@@ -656,57 +763,3 @@ function renderLeaderboardList(container, players, scoreKey) {
 /* استدعاء loadLeaderboard و loadChallengeLeaderboard معاً للتوافق مع الكود القديم */
 function loadLeaderboard() { if (_activeLbTab === 'general') loadCombinedLeaderboard(); }
 function loadChallengeLeaderboard() { if (_activeLbTab === 'challenge') loadCombinedLeaderboard(); }
-
-/* ═══════════════════════════════════════════════════
-   HO Math v10 — وظائف جديدة
-═══════════════════════════════════════════════════ */
-
-/* ─── تحديث بطاقات أفضل النتائج في صفحة اللعب ─── */
-function updatePlayPageBests() {
-    const fl = document.getElementById('flashBestInCard');
-    if (fl) fl.textContent = st.flashBestScore || 0;
-    const mm = document.getElementById('memoryBestInCard');
-    if (mm) mm.textContent = st.memoryBestScore || 0;
-    const sv = document.getElementById('survivalBestInCard');
-    if (sv) sv.textContent = st.survivalBestScore || 0;
-}
-
-/* ─── شريط المهارات ─── */
-const SKILLS_CATALOG = [
-    { id: 'extraTime', icon: '⏰', label: '+5 ثانية عند البدء', price: 20, desc: 'تبدأ كل جولة بـ 5 ثوانٍ إضافية' },
-    { id: 'freeHint', icon: '💡', label: 'تلميح مجاني', price: 25, desc: 'تلميح بدون خصم عملات في اللعبة' },
-    { id: 'shield', icon: '🛡️', label: 'درع إضافي', price: 30, desc: 'قلب إضافي في بداية كل جلسة' },
-    { id: 'doubleCoins', icon: '💰', label: 'مضاعفة العملات', price: 50, desc: 'احصل على ضعف العملات بعد كل جلسة' },
-    { id: 'slowTimer', icon: '🐢', label: 'تباطؤ المؤقت', price: 40, desc: 'المؤقت يسير بنصف السرعة في وضع السرعة' },
-];
-
-function renderSkillBar() {
-    const el = document.getElementById('skillBarContainer');
-    if (!el) return;
-    if (!st.skills) st.skills = {};
-    el.innerHTML = SKILLS_CATALOG.map(s => {
-        const owned = !!st.skills[s.id];
-        return `<div class="skill-pill ${owned ? 'owned-skill' : ''}" onclick="${owned ? '' : `buySkill('${s.id}')`}" title="${s.desc}">
-            ${s.icon} ${s.label} ${owned ? '✅' : `(${s.price}💰)`}
-        </div>`;
-    }).join('');
-}
-
-function buySkill(id) {
-    const skill = SKILLS_CATALOG.find(s => s.id === id);
-    if (!skill) return;
-    if (st.skills[id]) { showFeedback('✅ امتلكت هذه المهارة بالفعل'); return; }
-    if (st.coins < skill.price) { showFeedback('💸 عملاتك لا تكفي!'); return; }
-    showConfirm('شراء مهارة', `هل تريد شراء "${skill.label}" بـ ${skill.price}💰؟\n${skill.desc}`, 'شراء', 'إلغاء', ok => {
-        if (!ok) return;
-        st.coins -= skill.price;
-        st.skills[id] = true;
-        saveSt(); updateUI(); renderSkillBar();
-        showFeedback(`🎉 تم شراء ${skill.icon} ${skill.label}!`);
-    });
-}
-
-function openSkillsShop() {
-    renderSkillBar();
-    openSheet('skillsSheet');
-}
