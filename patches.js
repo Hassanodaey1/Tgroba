@@ -1,267 +1,316 @@
-/* STATE */
-        /* ═══════════ GLOBAL STATE ═══════════ */
-        const SK = 'ho_math_v7';
+/* ═══════════════════════════════════════════════════
+   HO Math — Patches & New Features v9
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════ */
 
-        function todayStr() {
-            const d = new Date();
-            return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-        }
+/* ═══ 1. إيقاف/استئناف مؤقت اللعبة ═══ */
+var _gamePaused = false;
+var _pausedTimeLeft = 0;
 
-        function weekStr() {
-            const d = new Date();
-            const jan1 = new Date(d.getFullYear(), 0, 1);
-            const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
-            return `${d.getFullYear()}-W${week}`;
-        }
+function pauseGameTimer() {
+    if (!G || G.ended || !G.hasTimer) return;
+    if (_gamePaused) return;
+    _gamePaused = true;
+    _pausedTimeLeft = G.timeLeft;
+    clearGameTimer();
+}
 
-        function monthStr() {
-            const d = new Date();
-            return `${d.getFullYear()}-${d.getMonth()+1}`;
-        }
-
-        function defState() {
-            return {
-                name: 'Player',
-                age: 0,
-                birthDate: '2000-01-01',
-                gender: 'm',
-                avatar: '👦',
-                profilePhoto: null,
-                xp: 0,
-                xpToNext: 1000,
-                level: 1,
-                coins: 10,
-                correctTotal: 0,
-                wrongTotal: 0,
-                bestStreak: 0,
-                totalGames: 0,
-                bestScore: 0,
-                difficulty: 'easy',
-                lastMode: 'classic',
-                lastOp: 'mix',
-                soundOn: true,
-                soundVolume: 80,
-                bgOn: true,
-                bgVolume: 60,
-                vibrationOn: false,
-                vibrationStrength: 30,
-                stats: {},
-                history: [],
-                catCounter: { correct: 0, total: 0 },
-                catChallenges: { games: 0 },
-                dailyTasks: [],
-                dailyDate: todayStr(),
-                /* إحصائيات يومية */
-                dailyStats: { correct: 0, wrong: 0, games: 0, date: todayStr() },
-                /* إحصائيات أسبوعية */
-                weeklyStats: { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() },
-                tGold: '#f0b90b',
-                tAccent: '#7c3aed',
-                tAccent2: '#06b6d4',
-                sessionTimeSecs: 0,
-                sessionDate: todayStr(),
-                ownedEmojis: ['👦'],
-                hearts: 3,
-                dailyStreak: 0,
-                lastDailyDate: null,
-                dailyShieldUsed: false,
-                lastShieldDate: null,
-                achievementsUnlocked: [],
-                achievementRewardClaimed: false,
-                serialNumber: '',
-                darkMode: true,
-                challengeBestScore: 0,
-                monthlyStats: { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: '' },
-                challengeMissions: null,
-                challengeMissionsDate: ''
-            };
-        }
-
-        function sanitizeState(s) {
-            if (typeof s.coins !== 'number' || s.coins < 0) s.coins = 0;
-            if (typeof s.level !== 'number' || s.level < 1) s.level = 1;
-            if (typeof s.xp !== 'number' || s.xp < 0) s.xp = 0;
-            if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 1000;
-            if (!s.ownedEmojis || !Array.isArray(s.ownedEmojis)) s.ownedEmojis = ['👦'];
-            if (!s.stats || typeof s.stats !== 'object') s.stats = {};
-            if (!s.history) s.history = [];
-            if (!s.catCounter) s.catCounter = { correct: 0, total: 0 };
-            if (!s.catChallenges) s.catChallenges = { games: 0 };
-            if (!s.achievementsUnlocked) s.achievementsUnlocked = [];
-            if (s.achievementRewardClaimed === undefined) s.achievementRewardClaimed = false;
-            if (!s.birthDate) s.birthDate = '2000-01-01';
-            if (typeof s.age !== 'number') s.age = 0;
-            if (s.darkMode === undefined) s.darkMode = true;
-            if (typeof s.challengeBestScore !== 'number') s.challengeBestScore = 0;
-            if (!s.monthlyStats || s.monthlyStats.month !== monthStr()) {
-                s.monthlyStats = { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: monthStr() };
+function resumeGameTimer() {
+    if (!_gamePaused) return;
+    _gamePaused = false;
+    if (!G || G.ended || !G.hasTimer) return;
+    G.timeLeft = _pausedTimeLeft;
+    G.timer = setInterval(function () {
+        G.timeLeft--;
+        if (G.timeLeft <= 0) {
+            clearGameTimer();
+            endGame();
+        } else {
+            var pct = G.maxTime > 0 ? (G.timeLeft / G.maxTime) * 100 : 100;
+            var bar = document.getElementById('timerBar');
+            if (bar) {
+                bar.style.width = pct + '%';
+                if (pct < 25) bar.classList.add('danger');
+                else bar.classList.remove('danger');
             }
-            if (!s.challengeMissions) s.challengeMissions = null;
-            if (!s.challengeMissionsDate) s.challengeMissionsDate = '';
-            if (typeof s.soundVolume !== 'number') s.soundVolume = 80;
-            if (typeof s.bgVolume !== 'number') s.bgVolume = 60;
-            if (s.vibrationOn === undefined) s.vibrationOn = false;
-            if (typeof s.vibrationStrength !== 'number') s.vibrationStrength = 30;
-            if (s.profilePhoto === undefined) s.profilePhoto = null;
-            if (!s.dailyStats || s.dailyStats.date !== todayStr()) {
-                s.dailyStats = { correct: 0, wrong: 0, games: 0, date: todayStr() };
-            }
-            if (!s.weeklyStats || s.weeklyStats.week !== weekStr()) {
-                s.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
-            }
-            return s;
-        }
-
-        function loadSt() {
-            try {
-                const s = JSON.parse(localStorage.getItem(SK));
-                if (s && s.name !== undefined) return sanitizeState(s);
-            } catch (e) {}
-            return defState();
-        }
-
-        function saveSt() {
-            try {
-                localStorage.setItem(SK, JSON.stringify(st));
-                if (st.serialNumber) saveSerialBackup(st.serialNumber, st);
-            } catch (e) {}
-        }
-
-        function saveSerialBackup(serial, data) {
-            try { localStorage.setItem(`ho_math_backup_${serial}`, JSON.stringify(data)); } catch (e) {}
-        }
-
-        function loadSerialBackup(serial) {
-            try {
-                const d = localStorage.getItem(`ho_math_backup_${serial}`);
-                if (d) return JSON.parse(d);
-            } catch (e) {}
-            return null;
-        }
-
-        function generateSerialNumber(birthDate, name) {
-            const nameEng = (name || 'User').replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase();
-            const cleanDate = birthDate.replace(/-/g, '');
-            const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-            const count = parseInt(localStorage.getItem('ho_math_user_count') || '0') + 1;
-            localStorage.setItem('ho_math_user_count', count);
-            return `${cleanDate}-${nameEng}-${randomPart}-${count}`;
-        }
-
-        function updateSerialNumberDisplay() {
-            ['serialNumberDisplay', 'settingsSerialDisplay'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = st.serialNumber || 'احفظ الملف الشخصي أولاً';
-            });
-        }
-
-        function copySerialNumber() {
-            if (!st.serialNumber) { showFeedback('لا يوجد رقم تسلسلي — احفظ الملف الشخصي أولاً'); return; }
-            navigator.clipboard.writeText(st.serialNumber).catch(() => {});
-            showFeedback('📋 تم نسخ الرقم التسلسلي');
-        }
-
-        function showRestoreAccount() {
-            const panel = document.getElementById('restorePanel');
-            if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function restoreAccount() {
-            const serial = document.getElementById('restoreSerialInput').value.trim();
-            if (!serial) { showFeedback('الرجاء إدخال الرقم التسلسلي'); return; }
-            const savedData = loadSerialBackup(serial);
-            if (!savedData) { showFeedback('⚠️ لم يتم العثور على حساب بهذا الرقم'); return; }
-            Object.assign(st, sanitizeState(savedData));
-            saveSt(); updateUI(); loadProfileForm(); applyDarkMode();
-            applyProfilePhoto();
-            showFeedback('✅ تم استعادة الحساب بنجاح');
-            const panel = document.getElementById('restorePanel');
-            if (panel) panel.style.display = 'none';
-            const inp = document.getElementById('restoreSerialInput');
-            if (inp) inp.value = '';
-        }
-
-        /* استعادة من صفحة الإعدادات */
-        function restoreFromSettings() {
-            const inp = document.getElementById('settingsRestoreInput');
-            const serial = inp ? inp.value.trim() : '';
-            if (!serial) { showFeedback('أدخل الرقم التسلسلي'); return; }
-            const savedData = loadSerialBackup(serial);
-            if (!savedData) { showFeedback('⚠️ لم يُعثر على حساب بهذا الرقم'); return; }
-            Object.assign(st, sanitizeState(savedData));
-            saveSt(); updateUI(); loadProfileForm(); applyDarkMode();
-            applyProfilePhoto();
-            updateSerialNumberDisplay();
-            if (inp) inp.value = '';
-            const panel = document.getElementById('settingsRestorePanel');
-            if (panel) panel.style.display = 'none';
-            showFeedback('✅ تم استعادة الحساب');
-        }
-
-        function toggleSettingsRestorePanel() {
-            const p = document.getElementById('settingsRestorePanel');
-            if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
-        }
-
-        var st = loadSt();
-        var currentOp = st.lastOp || 'mix';
-
-        /* ═══════════ RESET COMPLETE ═══════════ */
-        function confirmResetComplete(force) {
-            showConfirm('البدء من جديد',
-                'سيتم حذف جميع البيانات: الإحصائيات، العملات، المستوى، المهام، الإنجازات، الرقم التسلسلي، وكل شيء. لا يمكن التراجع. هل أنت متأكد؟',
-                'نعم، احذف الكل', 'إلغاء', (ok) => {
-                    if (ok) {
-                        localStorage.removeItem(SK);
-                        for (let i = 0; i < localStorage.length; i++) {
-                            let key = localStorage.key(i);
-                            if (key && key.startsWith('ho_math_backup_')) localStorage.removeItem(key);
-                        }
-                        localStorage.removeItem('ho_math_user_count');
-                        st = defState();
-                        saveSt(); currentOp = st.lastOp || 'mix';
-                        updateUI(); loadProfileForm(); applyDarkMode();
-                        applyProfilePhoto();
-                        if (typeof clearGameTimer === 'function') clearGameTimer();
-                        if (G) { G.ended = true; if (G.timer) clearInterval(G.timer); }
-                        goTab('home');
-                        showFeedback('🔄 تم إعادة اللعبة إلى حالتها الأولية');
-                    }
-                });
-        }
-
-        /* ═══════════ تحديث الإحصائيات اليومية والأسبوعية ═══════════ */
-        function recordDailyStat(type) {
-            /* تحقق من التاريخ */
-            if (!st.dailyStats || st.dailyStats.date !== todayStr()) {
-                st.dailyStats = { correct: 0, wrong: 0, games: 0, date: todayStr() };
-            }
-            if (!st.weeklyStats || st.weeklyStats.week !== weekStr()) {
-                st.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
-            }
-            if (!st.monthlyStats || st.monthlyStats.month !== monthStr()) {
-                st.monthlyStats = { correct:0, wrong:0, games:0, bestScore:0, bestStreak:0, coins:0, xp:0, month: monthStr() };
-            }
-            if (type === 'correct') {
-                st.dailyStats.correct++;
-                st.weeklyStats.correct++;
-                st.monthlyStats.correct++;
-            }
-            if (type === 'wrong') {
-                st.dailyStats.wrong++;
-                st.weeklyStats.wrong++;
-                st.monthlyStats.wrong++;
-            }
-            if (type === 'game') {
-                st.dailyStats.games++;
-                st.weeklyStats.games++;
-                st.monthlyStats.games++;
-            }
-            if (type === 'streak') {
-                if (st.bestStreak > st.weeklyStats.bestStreak) st.weeklyStats.bestStreak = st.bestStreak;
-                if (st.bestStreak > (st.monthlyStats.bestStreak||0)) st.monthlyStats.bestStreak = st.bestStreak;
-            }
-            if (type === 'score') {
-                if ((st.bestScore||0) > (st.monthlyStats.bestScore||0)) st.monthlyStats.bestScore = st.bestScore;
+            var bt = document.getElementById('bigTimer');
+            if (bt) {
+                bt.textContent = G.timeLeft < 10 ? '0' + G.timeLeft : String(G.timeLeft);
+                if (G.timeLeft <= 5) bt.classList.add('danger');
+                else bt.classList.remove('danger');
             }
         }
+    }, 1000);
+}
+
+/* ═══ 2. الإعدادات الرئيسية — تعمل فقط من الرئيسية والملف الشخصي ═══ */
+function openMainSettings() {
+    const overlay = document.getElementById('gameOverlay');
+    if (overlay && overlay.classList.contains('active')) return;
+
+    try { initSettingsDateSelectors(); } catch(e) {}
+
+    const inName = document.getElementById('settingsInputName');
+    if (inName) inName.value = st.name || '';
+
+    if (st.birthDate) {
+        const parts = st.birthDate.split('-');
+        if (parts.length === 3) {
+            const sd = document.getElementById('settingsBirthDay');
+            const sm = document.getElementById('settingsBirthMonth');
+            const sy = document.getElementById('settingsBirthYear');
+            if (sy) sy.value = parseInt(parts[0]);
+            if (sm) sm.value = parseInt(parts[1]);
+            if (sd) sd.value = parseInt(parts[2]);
+        }
+    }
+
+    updateSettingsDarkToggle();
+    updateSettingsThemeDots();
+    openSheet('mainSettingsSheet');
+    playSound('click');
+}
+
+function closeMainSettings() {
+    closeSheet('mainSettingsSheet');
+}
+
+function saveMainSettings() {
+    const inName = document.getElementById('settingsInputName');
+    let name = inName ? inName.value.trim().replace(/[^a-zA-Z0-9 ]/g, '') : '';
+    if (!name) { showFeedback('الاسم لا يمكن أن يكون فارغاً'); return; }
+    if (name.length > 30) name = name.slice(0, 30);
+    st.name = name;
+
+    const sd = document.getElementById('settingsBirthDay');
+    const sm = document.getElementById('settingsBirthMonth');
+    const sy = document.getElementById('settingsBirthYear');
+    if (sd && sm && sy) {
+        const y = sy.value, mo = String(sm.value).padStart(2,'0'), d = String(sd.value).padStart(2,'0');
+        st.birthDate = `${y}-${mo}-${d}`;
+        st.age = calculateAgeFromBirthDate(st.birthDate);
+    }
+
+    if (!st.serialNumber) {
+        st.serialNumber = generateSerialNumber(st.birthDate, st.name);
+    }
+
+    saveSt();
+    updateUI();
+    loadProfileForm();
+    updateSerialNumberDisplay();
+    closeMainSettings();
+    showFeedback('تم حفظ الإعدادات');
+}
+
+function updateSettingsDarkToggle() {
+    const icon = document.getElementById('settingsDarkIcon');
+    const label = document.getElementById('settingsDarkLabel');
+    if (icon) icon.textContent = st.darkMode ? '🌙' : '☀️';
+    if (label) label.textContent = st.darkMode ? 'داكن' : 'فاتح';
+}
+
+function toggleSettingsDarkMode() {
+    st.darkMode = !st.darkMode;
+    saveSt();
+    applyDarkMode();
+    updateSettingsDarkToggle();
+    const icon2 = document.getElementById('darkLightIcon');
+    const label2 = document.getElementById('darkLightLabel');
+    if (icon2) icon2.textContent = st.darkMode ? '🌙' : '☀️';
+    if (label2) label2.textContent = st.darkMode ? 'داكن' : 'فاتح';
+    playSound('click');
+}
+
+function updateSettingsThemeDots() {
+    const dots = document.querySelectorAll('.settings-theme-dot');
+    dots.forEach(d => {
+        d.classList.toggle('active', d.dataset.gold === st.tGold);
+    });
+}
+
+function applySettingsTheme(el, gold, accent, accent2) {
+    document.querySelectorAll('.settings-theme-dot').forEach(d => d.classList.remove('active'));
+    if (el) el.classList.add('active');
+    /* setTheme يتوقع عنصر DOM كأول معامل أو null */
+    const dummy = { classList: { add: () => {}, remove: () => {}, toggle: () => {} } };
+    setTheme(dummy, gold, accent, accent2);
+    updateSettingsThemeDots();
+}
+
+/* ═══ 3. إعدادات اللعبة السريعة (داخل اللعبة فقط) ═══ */
+function openGameSettingsAndPause() {
+    pauseGameTimer();
+    ['gsoundStatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
+    });
+    ['gbgMusicStatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
+    });
+    const gSV = document.getElementById('gSoundVolSlider');
+    if (gSV) gSV.value = st.soundVolume || 80;
+    const gSVV = document.getElementById('gSoundVolVal');
+    if (gSVV) gSVV.textContent = (st.soundVolume || 80) + '%';
+    const gBV = document.getElementById('gBgVolSlider');
+    if (gBV) gBV.value = st.bgVolume || 60;
+    const gBVV = document.getElementById('gBgVolVal');
+    if (gBVV) gBVV.textContent = (st.bgVolume || 60) + '%';
+    const vibStat = document.getElementById('gVibrationStatus');
+    if (vibStat) vibStat.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+    openSheet('gameSettingsSheet');
+}
+
+function closeGameSettingsAndResume() {
+    closeSheet('gameSettingsSheet');
+    resumeGameTimer();
+}
+
+function sheetBgAndResume(e, id) {
+    if (e.target.id === id) {
+        closeSheet(id);
+        resumeGameTimer();
+    }
+}
+
+/* ═══ 4. تهيئة الألقاب بعد التحميل ═══ */
+function initTitlesSystem() {
+    try { checkSeasonReset(); } catch (e) {}
+    try { renderProfileTitles(); } catch (e) {}
+}
+
+/* ═══ 5. toggleBgMusicInGame ═══ */
+function toggleBgMusicInGame() {
+    toggleBgMusic();
+    const el = document.getElementById('gbgMusicStatus');
+    if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
+}
+
+/* ═══ 6. toggleVibration ═══ */
+function toggleVibration() {
+    st.vibrationOn = !st.vibrationOn;
+    ['vibrationStatus', 'gVibrationStatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+    });
+    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(st.vibrationStrength || 30);
+    saveSt();
+    playSound('click');
+}
+
+/* ═══ 7. تهيئة محددات تاريخ نافذة الإعدادات الرئيسية ═══ */
+function initSettingsDateSelectors() {
+    const daySel = document.getElementById('settingsBirthDay');
+    const monthSel = document.getElementById('settingsBirthMonth');
+    const yearSel = document.getElementById('settingsBirthYear');
+    if (!daySel) return;
+    daySel.innerHTML = '';
+    monthSel.innerHTML = '';
+    yearSel.innerHTML = '';
+    for (let i = 1; i <= 31; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.textContent = i;
+        daySel.appendChild(opt);
+    }
+    for (let i = 1; i <= 12; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.textContent = i;
+        monthSel.appendChild(opt);
+    }
+    const currentYear = (new Date()).getFullYear();
+    for (let i = currentYear - 100; i <= currentYear; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.textContent = i;
+        yearSel.appendChild(opt);
+    }
+}
+
+/* ═══ 8. الرقم التسلسلي في نافذة الإعدادات ═══ */
+
+function updateSettingsSerialDisplay() {
+    const el = document.getElementById('settingsSerialDisplay');
+    if (el) el.textContent = st.serialNumber || 'احفظ التغييرات أولاً لتوليد الرقم';
+}
+
+function copySettingsSerial() {
+    if (!st.serialNumber) { showFeedback('لا يوجد رقم بعد — احفظ التغييرات أولاً'); return; }
+    navigator.clipboard.writeText(st.serialNumber).then(() => {
+        showFeedback('📋 تم نسخ الرقم التسلسلي');
+    }).catch(() => {
+        showFeedback('📋 ' + st.serialNumber);
+    });
+}
+
+function toggleSettingsRestorePanel() {
+    const panel = document.getElementById('settingsRestorePanel');
+    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function restoreFromSettings() {
+    const input = document.getElementById('settingsRestoreInput');
+    const serial = input ? input.value.trim() : '';
+    if (!serial) { showFeedback('أدخل الرقم التسلسلي'); return; }
+    const savedData = loadSerialBackup(serial);
+    if (!savedData) { showFeedback('⚠️ لم يُعثر على حساب بهذا الرقم'); return; }
+    Object.assign(st, sanitizeState(savedData));
+    saveSt();
+    updateUI();
+    loadProfileForm();
+    applyDarkMode();
+    updateSettingsSerialDisplay();
+    if (input) input.value = '';
+    const panel = document.getElementById('settingsRestorePanel');
+    if (panel) panel.style.display = 'none';
+    showFeedback('✅ تم استعادة الحساب');
+}
+
+/* تحديث عرض الرقم التسلسلي عند فتح الإعدادات */
+const _origOpenMainSettings = openMainSettings;
+openMainSettings = function() {
+    _origOpenMainSettings();
+    updateSettingsSerialDisplay();
+};
+
+/* تحديث عرض الرقم بعد الحفظ */
+const _origSaveMainSettings = saveMainSettings;
+saveMainSettings = function() {
+    _origSaveMainSettings();
+    updateSettingsSerialDisplay();
+};
+
+/* ═══ الجديد: فتح صفحة الإعدادات مباشرة في شريط التنقل ═══ */
+/* نضمن أن goTab('settings') يعمل ويعرض الصفحة الصحيحة */
+
+/* openGlobalSettings — للأزرار القديمة في الكود */
+function openGlobalSettings() {
+    goTab('settings');
+    playSound('click');
+}
+window.openGlobalSettings = openGlobalSettings;
+
+/* updateSerialNumberDisplay — يحدث العرض في صفحة الإعدادات */
+const _origUpdateSerial = typeof updateSerialNumberDisplay === 'function'
+    ? updateSerialNumberDisplay : function(){};
+updateSerialNumberDisplay = function() {
+    try { _origUpdateSerial(); } catch(e) {}
+    const el = document.getElementById('serialNumberDisplay');
+    if (el) el.textContent = st.serialNumber || 'احفظ الملف الشخصي أولاً';
+};
+
+/* إخفاء زر الإعدادات العلوي دائماً */
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('mainSettingsBtn');
+    if (btn) btn.style.display = 'none';
+});
+setTimeout(function() {
+    const btn = document.getElementById('mainSettingsBtn');
+    if (btn) btn.style.display = 'none';
+}, 500);
+
+/* ═══ showRestoreAccount — توافق مع الكود القديم ═══ */
+function showRestoreAccount() {
+    const panel = document.getElementById('restorePanel');
+    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+window.showRestoreAccount = showRestoreAccount;
