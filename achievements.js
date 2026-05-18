@@ -180,11 +180,18 @@
                     </div>`;
                 }).join('');
             }
-            document.getElementById('tasksDone').textContent = doneCount;
-            document.getElementById('tasksTotal').textContent = filtered.length;
-            document.getElementById('tasksCoins').textContent = totalR + '💰';
-            document.getElementById('tasksPct').textContent = pct + '%';
-            document.getElementById('tasksBarFill').style.width = pct + '%';
+            const setT = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+            const setS = (id, p, v) => { const e = document.getElementById(id); if(e) e.style[p] = v; };
+            setT('tasksDone', doneCount);
+            setT('tasksTotal', filtered.length);
+            setT('tasksCoins', totalR + '💰');
+            setT('tasksPct', pct + '%');
+            setS('tasksBarFill', 'width', pct + '%');
+            /* تحديث المهام في الرئيسية أيضاً */
+            setT('homeTaskDone', doneCount);
+            setT('homeTaskTotal', filtered.length);
+            setT('homeTaskPct', pct + '%');
+            setS('homeTaskBar', 'width', pct + '%');
             const _pts = document.getElementById('profileTaskStatus'); if(_pts) _pts.textContent = `${doneCount} / ${filtered.length} ›`;
         }
         var renderTasks = renderTasksFiltered;
@@ -360,3 +367,86 @@
 
 
 
+
+        /* ═══════════ مهام التحدي اليومية ═══════════ */
+        const CHALLENGE_MISSIONS_DEF = [
+            { id: 'cm1', icon: '⚡', name: 'أول انتصار', desc: 'سجّل 5 نقاط في التحدي', goal: 5, type: 'score', reward: { coins: 3, pts: 5 } },
+            { id: 'cm2', icon: '🔥', name: 'متسلق القمم', desc: 'سجّل 15 نقطة في التحدي', goal: 15, type: 'score', reward: { coins: 6, pts: 15 } },
+            { id: 'cm3', icon: '💥', name: 'تتابع التحدي', desc: 'حقّق تتابع 5 في التحدي', goal: 5, type: 'streak', reward: { coins: 4, pts: 10 } },
+            { id: 'cm4', icon: '🏃', name: 'مثابر التحدي', desc: 'العب التحدي 3 مرات', goal: 3, type: 'games', reward: { coins: 5, pts: 8 } },
+            { id: 'cm5', icon: '🎯', name: 'دقيق التحدي', desc: 'أجب 10 صح متتالية في التحدي', goal: 10, type: 'streak', reward: { coins: 8, pts: 20 } },
+        ];
+
+        function getChallengeMissions() {
+            if (!st.challengeMissions || st.challengeMissionsDate !== todayStr()) {
+                st.challengeMissions = CHALLENGE_MISSIONS_DEF.map(m => ({
+                    ...m, progress: 0, done: false
+                }));
+                st.challengeMissionsDate = todayStr();
+                saveSt();
+            }
+            return st.challengeMissions;
+        }
+
+        function renderChallengeMissions() {
+            const missions = getChallengeMissions();
+            const list = document.getElementById('challengeMissionsList');
+            if (!list) return;
+            const done = missions.filter(m => m.done).length;
+            const totalCoins = missions.filter(m => m.done).reduce((s,m) => s+m.reward.coins, 0);
+            const totalPts = missions.filter(m => m.done).reduce((s,m) => s+m.reward.pts, 0);
+            const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+            el('challengeMissionsDone', done);
+            el('challengeMissionsTotal', missions.length);
+            el('challengeMissionsReward', '+'+totalCoins+'💰 +'+totalPts+'⭐');
+            const pct = missions.length ? Math.round((done/missions.length)*100) : 0;
+            const bar = document.getElementById('challengeMissionsBar');
+            if (bar) bar.style.width = pct + '%';
+            list.innerHTML = missions.map(m => {
+                const p = Math.min(100, Math.round((m.progress/m.goal)*100));
+                return `<div class="challenge-mission-item ${m.done?'done':''}">
+                    <div class="challenge-mission-icon">${m.icon}</div>
+                    <div class="challenge-mission-info">
+                        <div class="challenge-mission-name">${m.name}</div>
+                        <div class="challenge-mission-desc">${m.desc}</div>
+                        <div class="challenge-mission-prog">
+                            <div class="challenge-mission-prog-fill" style="width:${p}%"></div>
+                        </div>
+                    </div>
+                    <div class="challenge-mission-reward">${m.done?'✅':`+${m.reward.coins}💰`}</div>
+                </div>`;
+            }).join('');
+        }
+        window.renderChallengeMissions = renderChallengeMissions;
+
+        function updChallengeMission(type, value) {
+            const missions = getChallengeMissions();
+            let changed = false;
+            missions.forEach(m => {
+                if (m.done) return;
+                if (m.type === type) {
+                    if (type === 'score') {
+                        if (value >= m.goal) { m.progress = m.goal; m.done = true; changed = true; }
+                        else m.progress = Math.max(m.progress, value);
+                    } else if (type === 'streak') {
+                        if (value >= m.goal) { m.progress = m.goal; m.done = true; changed = true; }
+                        else m.progress = Math.max(m.progress, value);
+                    } else if (type === 'games') {
+                        m.progress = Math.min(m.goal, m.progress + 1);
+                        if (m.progress >= m.goal) { m.done = true; changed = true; }
+                    }
+                }
+            });
+            if (changed) {
+                missions.filter(m => m.done && !m._rewarded).forEach(m => {
+                    m._rewarded = true;
+                    st.coins += m.reward.coins;
+                    st.challengeBestScore = Math.max(st.challengeBestScore||0, (st.challengeBestScore||0) + m.reward.pts);
+                    showFeedback(`⚡ مهمة تحدي: ${m.name} • +${m.reward.coins}💰 +${m.reward.pts}⭐`);
+                });
+                saveSt();
+                renderChallengeMissions();
+                updateUI();
+            }
+        }
+        window.updChallengeMission = updChallengeMission;
