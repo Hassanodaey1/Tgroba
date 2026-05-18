@@ -23,6 +23,16 @@ function initVolumeSliders() {
         const el = document.getElementById(id);
         if (el) el.textContent = st.bgVolume + '%';
     });
+    /* شريط شدة الاهتزاز */
+    if (typeof st.vibrationStrength !== 'number') st.vibrationStrength = 30;
+    ['vibVolSlider'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = st.vibrationStrength;
+    });
+    ['vibVolVal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.vibrationStrength + 'ms';
+    });
 }
 
 function setSoundVolume(val) {
@@ -49,6 +59,17 @@ function setBgVolume(val) {
         if (el) el.value = val;
     });
     saveSt();
+}
+
+function setVibrationStrength(val) {
+    st.vibrationStrength = parseInt(val);
+    const el = document.getElementById('vibVolVal');
+    if (el) el.textContent = val + 'ms';
+    const sl = document.getElementById('vibVolSlider');
+    if (sl) sl.value = val;
+    saveSt();
+    /* اهتزاز تجريبي */
+    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(parseInt(val));
 }
 
 /* ─── مكافأة يومية ─── */
@@ -98,6 +119,7 @@ function generateAndShowSerial() {
     try { updateUI(); } catch (e) { console.warn('updateUI', e); }
     try { loadProfileForm(); } catch (e) {}
     try { initVolumeSliders(); } catch (e) {}
+    try { if (typeof applyProfilePhoto === 'function') applyProfilePhoto(); } catch (e) {}
 
     /* الاهتزاز */
     ['vibrationStatus', 'gVibrationStatus'].forEach(id => {
@@ -122,6 +144,16 @@ function generateAndShowSerial() {
     try { updCountdown(); } catch (e) {}
     try { updateStreakBanner(); } catch (e) {}
     try { updateSerialNumberDisplay(); } catch (e) {}
+
+    /* تهيئة الصفحة الرئيسية مع الإضافات الجديدة */
+    try { if (typeof updateHomeDailyStats === 'function') updateHomeDailyStats(); } catch (e) {}
+    try { if (typeof renderHomeTasks === 'function') renderHomeTasks(); } catch (e) {}
+
+    /* مزامنة chips الصعوبة في صفحة الألعاب */
+    try { if (typeof syncPlayDiffChips === 'function') syncPlayDiffChips(); } catch (e) {}
+
+    /* تهيئة مهام التحدي */
+    try { if (typeof getChallengeMissions === 'function') getChallengeMissions(); } catch (e) {}
 
     /* تطبيق لون زر المنافسة حسب الثيم */
     try { applyCompetitionButtonTheme(); } catch (e) {}
