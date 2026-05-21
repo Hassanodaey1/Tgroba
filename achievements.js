@@ -42,21 +42,28 @@
         ];
 
         function checkAchievements() {
-            let newUnlocks = [];
+            const newUnlocks = [];
             ACHIEVEMENTS_DEF.forEach(a => {
                 if (!st.achievementsUnlocked.includes(a.id) && a.check()) {
                     st.achievementsUnlocked.push(a.id);
-                    if (a.reward > 0) st.coins += a.reward;
+                    if (a.reward > 0) {
+                        if (typeof earnCoins === 'function') earnCoins(a.reward, 'achievement');
+                        else { st.coins += a.reward; st.totalCoinsEarned = (st.totalCoinsEarned||0) + a.reward; }
+                    }
                     newUnlocks.push(a.name);
                 }
             });
-            if (newUnlocks.length) { saveSt();
-                showFeedback(`🏆 إنجاز: ${newUnlocks.join(', ')}`);
+            if (newUnlocks.length) {
+                saveSt();
+                showFeedback('🏆 إنجاز: ' + newUnlocks.join('، '));
                 playSound('levelup');
-                updateUI(); }
+                updateUI();
+            }
+            /* مكافأة اكتمال الكل */
             if (st.achievementsUnlocked.length === ACHIEVEMENTS_DEF.length && !st.achievementRewardClaimed) {
                 st.achievementRewardClaimed = true;
-                st.coins += 5;
+                if (typeof earnCoins === 'function') earnCoins(5, 'all_achievements');
+                else { st.coins += 5; st.totalCoinsEarned = (st.totalCoinsEarned||0) + 5; }
                 saveSt();
                 showFeedback('🎉 جميع الإنجازات! +5 عملات إضافية');
                 playSound('levelup');
@@ -64,25 +71,58 @@
             }
         }
 
+        /* ── _showAllAchievements: يُتحكم فيها من index.html ── */
+        if (typeof _showAllAchievements === 'undefined') var _showAllAchievements = false;
+
         function renderAchievements() {
             const el = document.getElementById('achieveList');
             if (!el) return;
-            const total = ACHIEVEMENTS_DEF.length;
-            const doneCount = st.achievementsUnlocked.length;
-            document.getElementById('achievePct').textContent = `${doneCount}/${total}`;
-            el.innerHTML = ACHIEVEMENTS_DEF.map(a => {
-                let done = st.achievementsUnlocked.includes(a.id) || a.check();
-                return `<div class="task-item ${done?'done':''}">
+            const total     = ACHIEVEMENTS_DEF.length;
+            const doneCount = (st.achievementsUnlocked || []).length;
+
+            /* ── شريط تقدم + عداد ── */
+            const pct     = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+            const barEl   = document.getElementById('achieveProgressBar');
+            const textEl  = document.getElementById('achieveProgressText');
+            const pctEl   = document.getElementById('achievePct');
+            if (barEl)  barEl.style.width  = pct + '%';
+            if (textEl) textEl.textContent = doneCount + ' من أصل ' + total + ' إنجاز';
+            if (pctEl)  pctEl.textContent  = doneCount + '/' + total;
+
+            /* ── فرز: المكتملة أولاً ── */
+            const sorted = [...ACHIEVEMENTS_DEF].sort((a, b) => {
+                const da = st.achievementsUnlocked.includes(a.id) ? 1 : 0;
+                const db = st.achievementsUnlocked.includes(b.id) ? 1 : 0;
+                return db - da;
+            });
+
+            /* ── عرض 5 فقط أو الكل ── */
+            const toShow = _showAllAchievements ? sorted : sorted.slice(0, 5);
+
+            el.innerHTML = toShow.map(a => {
+                const done = st.achievementsUnlocked.includes(a.id) || a.check();
+                return `<div class="task-item ${done ? 'done' : ''}">
                     <div class="task-item-icon">${a.icon}</div>
                     <div class="task-item-info">
                         <div class="task-item-name">${a.name}</div>
                         <div class="task-item-desc">${a.desc}</div>
                     </div>
                     <div class="task-right">
-                        <div class="task-reward">${done?'✅':`+${a.reward}💰`}</div>
+                        <div class="task-reward">${done ? '✅' : '+' + a.reward + '💰'}</div>
                     </div>
                 </div>`;
             }).join('');
+
+            /* ── زر عرض الكل ── */
+            const showBtn = document.getElementById('achieveShowMoreBtn');
+            if (showBtn) {
+                showBtn.style.display = total > 5 ? 'block' : 'none';
+                showBtn.textContent   = _showAllAchievements
+                    ? '🔼 عرض أقل'
+                    : '📋 عرض جميع الإنجازات الـ ' + total;
+            }
+
+            /* ── مكافأة اكتمال الكل ── */
             const rewardDiv = document.getElementById('achieveCompleteReward');
             if (rewardDiv) rewardDiv.style.display = doneCount === total ? 'block' : 'none';
         }
@@ -129,65 +169,105 @@
 
         function updTask(type, amount = 1) {
             checkDailyReset();
-            const T = st.dailyTasks;
+            const T = st.dailyTasks || [];
             let changed = false;
+
+            function _completeTask(t) {
+                if (!t || t.done) return;
+                t.progress = t.goal;
+                t.done = true;
+                if (typeof earnCoins === 'function') earnCoins(t.reward, 'daily_task');
+                else { st.coins += t.reward; st.totalCoinsEarned = (st.totalCoinsEarned||0) + t.reward; }
+                changed = true;
+            }
+
             if (type === 'correct') {
-                ['t1', 't3', 't5'].forEach(id => {
+                ['t1','t3','t5'].forEach(id => {
                     const t = T.find(x => x.id === id);
-                    if (t && !t.done) { t.progress = Math.min(t.goal, t.progress + amount); if (t.progress >= t
-                            .goal) { t.done = true;
-                            st.coins += t.reward;
-                            changed = true; } }
+                    if (t && !t.done) {
+                        t.progress = Math.min(t.goal, (t.progress||0) + amount);
+                        if (t.progress >= t.goal) _completeTask(t);
+                    }
                 });
             }
-            if (type === 'streak' && amount >= 3) { const t = T.find(x => x.id === 't2'); if (t && !t.done) { t.progress =
-                        t.goal;
-                    t.done = true;
-                    st.coins += t.reward;
-                    changed = true; } }
-            if (type === 'game') { const t = T.find(x => x.id === 't4'); if (t && !t.done) { t.progress = Math.min(t.goal, t
-                        .progress + 1); if (t.progress >= t.goal) { t.done = true;
-                        st.coins += t.reward;
-                        changed = true; } } }
-            if (type === 'daily') { const t = T.find(x => x.id === 't6'); if (t && !t.done) { t.progress = t.goal;
-                    t.done = true;
-                    st.coins += t.reward;
-                    changed = true; } }
+            if (type === 'streak' && amount >= 3) {
+                const t = T.find(x => x.id === 't2');
+                if (t && !t.done) _completeTask(t);
+            }
+            if (type === 'game') {
+                const t = T.find(x => x.id === 't4');
+                if (t && !t.done) {
+                    t.progress = Math.min(t.goal, (t.progress||0) + 1);
+                    if (t.progress >= t.goal) _completeTask(t);
+                }
+            }
+            if (type === 'daily') {
+                const t = T.find(x => x.id === 't6');
+                if (t && !t.done) _completeTask(t);
+            }
             if (changed) playSound('levelup');
             saveSt();
             renderTasks();
         }
 
+        /* ── _showAllTasks: يُتحكم فيها من index.html ── */
+        if (typeof _showAllTasks === 'undefined') var _showAllTasks = false;
+
         function renderTasksFiltered() {
-            const level = st.level;
-            const tasksData = st.dailyTasks;
+            const level     = st.level;
+            const tasksData = st.dailyTasks || [];
+
+            /* فلترة حسب المستوى */
             let filtered = tasksData;
-            if (level < 2) filtered = tasksData.filter(t => ['t1', 't2'].includes(t.id));
-            else if (level < 4) filtered = tasksData.filter(t => ['t1', 't2', 't3'].includes(t.id));
-            else if (level < 5) filtered = tasksData.filter(t => ['t1', 't2', 't3', 't4'].includes(t.id));
-            else filtered = tasksData;
+            if (level < 2)      filtered = tasksData.filter(t => ['t1','t2'].includes(t.id));
+            else if (level < 4) filtered = tasksData.filter(t => ['t1','t2','t3'].includes(t.id));
+            else if (level < 5) filtered = tasksData.filter(t => ['t1','t2','t3','t4'].includes(t.id));
+
+            /* عرض 5 فقط أو الكل */
+            const toShow = _showAllTasks ? filtered : filtered.slice(0, 5);
+
             const doneCount = filtered.filter(t => t.done).length;
-            const pct = filtered.length ? Math.round((doneCount / filtered.length) * 100) : 0;
-            const totalR = filtered.filter(t => t.done).reduce((s, t) => s + t.reward, 0);
+            const pct       = filtered.length ? Math.round((doneCount / filtered.length) * 100) : 0;
+            const totalR    = filtered.filter(t => t.done).reduce((s, t) => s + (t.reward || 0), 0);
+
             const tasksContainer = document.getElementById('tasksList');
             if (tasksContainer) {
-                tasksContainer.innerHTML = filtered.map(t => {
-                    const p = Math.min(100, Math.round((t.progress / t.goal) * 100));
-                    return `<div class="task-item ${t.done?'done':''}">
+                tasksContainer.innerHTML = toShow.map(t => {
+                    const p = Math.min(100, Math.round(((t.progress || 0) / (t.goal || 1)) * 100));
+                    return `<div class="task-item ${t.done ? 'done' : ''}">
                         <div class="task-item-icon">${t.icon}</div>
-                        <div class="task-item-info"><div class="task-item-name">${t.name}</div><div class="task-item-desc">${t.desc}</div><div class="task-prog-bar"><div class="task-prog-fill" style="width:${p}%"></div></div></div>
-                        <div class="task-right"><div class="task-reward">${t.done?'✅':`+${t.reward}💰`}</div>${t.done?'':`<div class="task-prog-txt">${t.progress}/${t.goal}</div>`}</div>
+                        <div class="task-item-info">
+                            <div class="task-item-name">${t.name}</div>
+                            <div class="task-item-desc">${t.desc}</div>
+                            <div class="task-prog-bar">
+                                <div class="task-prog-fill" style="width:${p}%"></div>
+                            </div>
+                        </div>
+                        <div class="task-right">
+                            <div class="task-reward">${t.done ? '✅' : '+' + t.reward + '💰'}</div>
+                            ${t.done ? '' : `<div class="task-prog-txt">${t.progress || 0}/${t.goal}</div>`}
+                        </div>
                     </div>`;
                 }).join('');
             }
-            document.getElementById('tasksDone').textContent = doneCount;
-            document.getElementById('tasksTotal').textContent = filtered.length;
-            document.getElementById('tasksCoins').textContent = totalR + '💰';
-            document.getElementById('tasksPct').textContent = pct + '%';
-            document.getElementById('tasksBarFill').style.width = pct + '%';
-            const _pts = document.getElementById('profileTaskStatus'); if(_pts) _pts.textContent = `${doneCount} / ${filtered.length} ›`;
+
+            /* ── تحديث إحصائيات المهام ── */
+            const setT = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            setT('tasksDone',  doneCount);
+            setT('tasksTotal', filtered.length);
+            setT('tasksCoins', totalR + '💰');
+            setT('tasksPct',   pct + '%');
+            const bar = document.getElementById('tasksBarFill');
+            if (bar) bar.style.width = pct + '%';
+            const pts = document.getElementById('profileTaskStatus');
+            if (pts) pts.textContent = doneCount + ' / ' + filtered.length + ' ›';
+
+            /* ── زر عرض الكل ── */
+            const btn = document.getElementById('tasksShowAllBtn');
+            if (btn) btn.textContent = _showAllTasks ? 'عرض أقل' : 'عرض الكل';
         }
-        function recordDailyStat_orig(type) {
+        var renderTasks = renderTasksFiltered;
+        window.renderTasks = renderTasksFiltered;
 
         function updCountdown() {
             const now = new Date(),
@@ -359,17 +439,3 @@
 
 
 
-        var renderTasks = renderTasksFiltered;
-        window.renderTasks = renderTasksFiltered;
-
-        /* تسجيل الإحصائيات الشهرية */
-        function updateMonthlyStats(type) {
-            const cm = (function(){ const d=new Date(); return d.getFullYear()+'-'+d.getMonth(); })();
-            if (!st.monthlyStats || st.monthlyStats.month !== cm) {
-                st.monthlyStats = { correct:0, wrong:0, games:0, bestStreak:0, month: cm };
-            }
-            if (type==='correct') st.monthlyStats.correct++;
-            if (type==='wrong')   st.monthlyStats.wrong++;
-            if (type==='game')    st.monthlyStats.games++;
-            if (type==='streak' && st.bestStreak > (st.monthlyStats.bestStreak||0)) st.monthlyStats.bestStreak = st.bestStreak;
-        }
