@@ -79,8 +79,10 @@ function buyOrSelectEmoji(emoji, price) {
         st.avatar = emoji;
         saveSt();
         playSound('click');
-        document.getElementById('headerAvatar').textContent = emoji;
-        document.getElementById('profileAvatarImg').textContent = emoji;
+        const ha = document.getElementById('headerAvatar');
+        const pa = document.getElementById('profileAvatarImg');
+        if (ha) ha.textContent = emoji;
+        if (pa) pa.textContent = emoji;
         renderEmojiShop();
         updateBadgeIcon();
         return;
@@ -88,7 +90,10 @@ function buyOrSelectEmoji(emoji, price) {
     if (st.coins < price) { showFeedback('💸 لا يكفي!'); return; }
     showConfirm('شراء رمز', 'هل تريد شراء هذا الرمز بـ ' + price + ' عملة؟', 'نعم', 'إلغاء', ok => {
         if (ok) {
-            st.coins -= price;
+            const success = typeof spendCoins === 'function'
+                ? spendCoins(price, 'emoji_shop')
+                : (() => { st.coins -= price; st.totalCoinsSpent = (st.totalCoinsSpent||0) + price; return true; })();
+            if (!success) { showFeedback('💸 لا يكفي!'); return; }
             st.ownedEmojis.push(emoji);
             st.avatar = emoji;
             saveSt();
@@ -279,12 +284,12 @@ function toggleDarkMode() {
 function applyDarkMode() {
     if (st.darkMode) {
         document.documentElement.classList.remove('light-mode');
-        ['darkLightIcon'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='🌙';});
-        ['darkLightLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='داكن';});
+        document.getElementById('darkLightIcon').textContent = '🌙';
+        document.getElementById('darkLightLabel').textContent = 'داكن';
     } else {
         document.documentElement.classList.add('light-mode');
-        ['darkLightIcon'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='☀️';});
-        ['darkLightLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='فاتح';});
+        document.getElementById('darkLightIcon').textContent = '☀️';
+        document.getElementById('darkLightLabel').textContent = 'فاتح';
     }
 }
 
@@ -404,39 +409,81 @@ function updateUI() {
 }
 
 function updateHomeStats() {
-    document.getElementById('homeCoins').textContent = st.coins;
-    document.getElementById('homeCorrect').textContent = st.correctTotal;
-    const total = st.correctTotal + st.wrongTotal;
-    const acc = total > 0 ? Math.round((st.correctTotal / total) * 100) : 0;
-    document.getElementById('homeAccuracy').textContent = acc + '%';
-    document.getElementById('homeStreak').textContent = '×' + st.bestStreak;
-    document.getElementById('homeGames').textContent = st.totalGames;
-    document.getElementById('homeLevel').textContent = st.level;
-    document.getElementById('homeBestScore').textContent = st.bestScore;
+    const _s = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+
+    /* ── عملات ومؤشر العنوان ── */
+    _s('homeCoins', st.coins);
+
+    /* ── إحصائيات يومية (للـ IDs القديمة المخفية للتوافق) ── */
+    const ds  = st.dailyStats || { correct:0, wrong:0, games:0 };
+    const tot = ds.correct + ds.wrong;
+    const acc = tot > 0 ? Math.round((ds.correct / tot) * 100) : 0;
+    _s('homeCorrect',  ds.correct);
+    _s('homeAccuracy', acc + '%');
+    _s('homeStreak',   '×' + (st.bestStreak || 0));
+    _s('homeGames',    ds.games);
+
+    /* ── إحصائيات يومية الجديدة ── */
+    _s('dailyCorrect',  ds.correct);
+    _s('dailyWrong',    ds.wrong);
+    _s('dailyGames',    ds.games);
+    _s('dailyAccuracy', acc + '%');
+    _s('homeLevel',     st.level);
+    _s('homeBestScore', st.bestScore);
+
+    /* ── إحصائيات أسبوعية ── */
+    const ws   = st.weeklyStats || { correct:0, wrong:0, games:0, bestStreak:0 };
+    const wtot = ws.correct + ws.wrong;
+    _s('weeklyCorrect',    ws.correct);
+    _s('weeklyWrong',      ws.wrong);
+    _s('weeklyGames',      ws.games);
+    _s('weeklyBestStreak', '×' + (ws.bestStreak || 0));
+    _s('weeklyAccuracy',   wtot > 0 ? Math.round((ws.correct/wtot)*100)+'%' : '0%');
+
+    /* ── إحصائيات شهرية ── */
+    const ms   = st.monthlyStats || { correct:0, wrong:0, games:0, bestStreak:0 };
+    const mtot = ms.correct + ms.wrong;
+    _s('monthlyCorrect',    ms.correct);
+    _s('monthlyWrong',      ms.wrong);
+    _s('monthlyGames',      ms.games);
+    _s('monthlyBestStreak', '×' + (ms.bestStreak || 0));
+    _s('monthlyAccuracy',   mtot > 0 ? Math.round((ms.correct/mtot)*100)+'%' : '0%');
+
+    /* ── التقييم والنجوم ── */
+    const totalAll = st.correctTotal + st.wrongTotal;
+    const accAll   = totalAll > 0 ? Math.round((st.correctTotal / totalAll) * 100) : 0;
     let r = 0;
-    if (total > 0) r += (acc / 100) * 2.5;
+    if (totalAll > 0) r += (accAll / 100) * 2.5;
     r += Math.min(1.5, st.level * 0.15);
-    r += Math.min(1.0, st.bestStreak * 0.1);
+    r += Math.min(1.0, (st.bestStreak || 0) * 0.1);
     r = Math.min(5, r);
     const rr = Math.round(r * 10) / 10;
-    document.getElementById('ratingNum').textContent = rr.toFixed(1);
-    document.getElementById('ratingBar').style.width = (r / 5 * 100) + '%';
+    _s('ratingNum', rr.toFixed(1));
+    const rb = document.getElementById('ratingBar');
+    if (rb) rb.style.width = (r / 5 * 100) + '%';
     const rs = starsStr(r);
-    document.getElementById('ratingStars').textContent = rs;
-    const hs = document.getElementById('homeStars'); if (hs) hs.textContent = rs;
-    const cc = st.catCounter;
+    _s('ratingStars', rs);
+    const hs = document.getElementById('homeStars');
+    if (hs) hs.textContent = rs;
+
+    /* ── تقدم الفئات ── */
+    const cc   = st.catCounter || { correct:0, total:0 };
     const cpct = cc.total > 0 ? Math.round((cc.correct / cc.total) * 100) : 0;
-    document.getElementById('catProg0').style.width = cpct + '%';
-    document.getElementById('catStats0').textContent = `${cpct}% • ${cc.correct} صح`;
-    const cg = st.catChallenges.games;
-    document.getElementById('catProg1').style.width = Math.min(100, cg * 10) + '%';
-    document.getElementById('catStats1').textContent = `${cg} جلسة`;
-    const g0 = document.getElementById('gcatProg0'), g1 = document.getElementById('gcatProg1');
-    if (g0) g0.style.width = cpct + '%';
-    if (g1) g1.style.width = Math.min(100, cg * 10) + '%';
-    const gs0 = document.getElementById('gcatStats0'), gs1 = document.getElementById('gcatStats1');
-    if (gs0) gs0.textContent = `${cc.correct} / ${cc.total} إجابة`;
-    if (gs1) gs1.textContent = `${cg} جلسة تحدي`;
+    const cp0  = document.getElementById('catProg0');
+    const cs0  = document.getElementById('catStats0');
+    if (cp0) cp0.style.width = cpct + '%';
+    if (cs0) cs0.textContent = cpct + '% • ' + cc.correct + ' صح';
+
+    const cg  = (st.catChallenges || { games:0 }).games;
+    const cp1 = document.getElementById('catProg1');
+    const cs1 = document.getElementById('catStats1');
+    if (cp1) cp1.style.width = Math.min(100, cg * 10) + '%';
+    if (cs1) cs1.textContent = cg + ' جلسة';
+
+    const g0 = document.getElementById('gcatProg0'); if (g0) g0.style.width = cpct + '%';
+    const g1 = document.getElementById('gcatProg1'); if (g1) g1.style.width = Math.min(100, cg*10) + '%';
+    const gs0 = document.getElementById('gcatStats0'); if (gs0) gs0.textContent = cc.correct + ' / ' + cc.total + ' إجابة';
+    const gs1 = document.getElementById('gcatStats1'); if (gs1) gs1.textContent = cg + ' جلسة تحدي';
 }
 
 function renderHistory() {
