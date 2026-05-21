@@ -265,8 +265,6 @@
                     <span class="xp-pill-lv" id="headerXp">⚡ 0 XP</span>
                 </div>
                 <div class="th-right">
-                    <!-- زر الإعدادات — يعمل من الرئيسية والملف الشخصي فقط -->
-                    <div class="icon-pill" id="mainSettingsBtn" onclick="openMainSettings()" title="الإعدادات">⚙️</div>
                 </div>
             </div>
 
@@ -304,24 +302,28 @@
                             </div>
                         </div>
                     </div>
+                    <!-- ═══ إحصائيات يومية ═══ -->
                     <div>
-                        <div class="section-label">إحصائيات متقدمة</div>
+                        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            📅 إحصائيات اليوم
+                            <span style="font-size:0.65em;color:var(--text3);font-weight:500;" id="dailyStatsResetLabel">تتصفر كل 24 ساعة</span>
+                        </div>
                         <div class="adv-stats-grid">
                             <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeCorrect" style="color:var(--green)">0</div>
+                                <div class="adv-stat-num" id="dailyCorrect" style="color:var(--green)">0</div>
                                 <div class="adv-stat-label">إجابات صحيحة</div>
                             </div>
                             <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeAccuracy" style="color:var(--accent2)">0%</div>
-                                <div class="adv-stat-label">الدقة</div>
+                                <div class="adv-stat-num" id="dailyWrong" style="color:var(--red)">0</div>
+                                <div class="adv-stat-label">إجابات خاطئة</div>
                             </div>
                             <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeStreak" style="color:var(--red)">×0</div>
-                                <div class="adv-stat-label">أعلى تتابع</div>
+                                <div class="adv-stat-num" id="dailyGames" style="color:var(--gold)">0</div>
+                                <div class="adv-stat-label">جلسات اليوم</div>
                             </div>
                             <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeGames" style="color:var(--gold)">0</div>
-                                <div class="adv-stat-label">جلسات</div>
+                                <div class="adv-stat-num" id="dailyAccuracy" style="color:var(--accent2)">0%</div>
+                                <div class="adv-stat-label">الدقة اليومية</div>
                             </div>
                             <div class="adv-stat">
                                 <div class="adv-stat-num" id="homeLevel" style="color:var(--accent)">1</div>
@@ -330,6 +332,74 @@
                             <div class="adv-stat">
                                 <div class="adv-stat-num" id="homeBestScore" style="color:var(--gold2)">0</div>
                                 <div class="adv-stat-label">أعلى نقاط</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ إحصائيات أسبوعية ═══ -->
+                    <div>
+                        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            📊 إحصائيات الأسبوع
+                            <span style="font-size:0.65em;color:var(--text3);font-weight:500;" id="weeklyStatsResetLabel">تظهر كاملة آخر الأسبوع</span>
+                        </div>
+                        <div class="adv-stats-grid">
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="weeklyCorrect" style="color:var(--green)">0</div>
+                                <div class="adv-stat-label">صحيح هذا الأسبوع</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="weeklyWrong" style="color:var(--red)">0</div>
+                                <div class="adv-stat-label">خطأ هذا الأسبوع</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="weeklyGames" style="color:var(--gold)">0</div>
+                                <div class="adv-stat-label">جلسات الأسبوع</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="weeklyBestStreak" style="color:var(--red)">×0</div>
+                                <div class="adv-stat-label">أعلى تتابع</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="weeklyAccuracy" style="color:var(--accent2)">0%</div>
+                                <div class="adv-stat-label">الدقة الأسبوعية</div>
+                            </div>
+                            <div class="adv-stat" id="weeklyEndCard" style="position:relative;">
+                                <div class="adv-stat-num" id="weeklyStatus" style="color:var(--gold);font-size:0.75em;">جارٍ</div>
+                                <div class="adv-stat-label">حالة الأسبوع</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ إحصائيات شهرية ═══ -->
+                    <div>
+                        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            🗓️ إحصائيات الشهر
+                            <span style="font-size:0.65em;color:var(--text3);font-weight:500;" id="monthlyStatsResetLabel">تظهر كاملة آخر الشهر</span>
+                        </div>
+                        <div class="adv-stats-grid">
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="monthlyCorrect" style="color:var(--green)">0</div>
+                                <div class="adv-stat-label">صحيح هذا الشهر</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="monthlyWrong" style="color:var(--red)">0</div>
+                                <div class="adv-stat-label">خطأ هذا الشهر</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="monthlyGames" style="color:var(--gold)">0</div>
+                                <div class="adv-stat-label">جلسات الشهر</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="monthlyBestStreak" style="color:var(--red)">×0</div>
+                                <div class="adv-stat-label">أعلى تتابع</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="monthlyAccuracy" style="color:var(--accent2)">0%</div>
+                                <div class="adv-stat-label">الدقة الشهرية</div>
+                            </div>
+                            <div class="adv-stat">
+                                <div class="adv-stat-num" id="monthlyStatus" style="color:var(--gold);font-size:0.75em;">جارٍ</div>
+                                <div class="adv-stat-label">حالة الشهر</div>
                             </div>
                         </div>
                     </div>
@@ -370,6 +440,21 @@
                             </div>
                         </div>
                     </div>
+                    <div>
+                        <div class="section-label">مستوى الصعوبة</div>
+                        <div class="diff-row">
+                            <div class="diff-chip active" onclick="selectDiff(this,'easy')"><span class="diff-chip-icon">🟢</span>سهل</div>
+                            <div class="diff-chip" id="diffMedium" onclick="selectDiff(this,'medium')"><span class="diff-chip-icon">🟡</span>متوسط
+                                <div class="lock-tag" id="lockMedium" style="display:block">🔒 Lv.3</div>
+                            </div>
+                            <div class="diff-chip" id="diffHard" onclick="selectDiff(this,'hard')"><span class="diff-chip-icon">🟠</span>صعب
+                                <div class="lock-tag" id="lockHard" style="display:block">🔒 Lv.5</div>
+                            </div>
+                            <div class="diff-chip" id="diffGenius" onclick="selectDiff(this,'genius')"><span class="diff-chip-icon">🔴</span>عبقري
+                                <div class="lock-tag" id="lockGenius" style="display:block">🔒 Lv.8</div>
+                            </div>
+                        </div>
+                    </div>
                     <div id="weaknessArea" class="weakness-area"></div>
                     <div>
                         <div class="section-label">آخر 10 نتائج</div>
@@ -398,55 +483,10 @@
                         </div>
                         <div class="daily-badge">جديد</div>
                     </div>
-
-                    <!-- إحصائيات اليوم -->
-                    <div>
-                        <div class="section-label">📅 إحصائياتي اليوم</div>
-                        <div class="adv-stats-grid" id="homeDailyStatsGrid">
-                            <div class="adv-stat"><div class="adv-stat-num" style="color:var(--green)">0</div><div class="adv-stat-label">صحيح اليوم</div></div>
-                            <div class="adv-stat"><div class="adv-stat-num" style="color:var(--red)">0</div><div class="adv-stat-label">خطأ اليوم</div></div>
-                            <div class="adv-stat"><div class="adv-stat-num" style="color:var(--accent2)">0%</div><div class="adv-stat-label">الدقة</div></div>
-                            <div class="adv-stat"><div class="adv-stat-num" style="color:var(--gold)">0</div><div class="adv-stat-label">جلسات</div></div>
-                        </div>
-                    </div>
-
-                    <!-- المهام اليومية -->
-                    <div>
-                        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span>📋 المهام اليومية</span>
-                            <span id="homeDailyTasksDone" style="font-size:0.72em;color:var(--accent2);font-weight:700;">0/0</span>
-                        </div>
-                        <div id="homeDailyTasksList"></div>
-                    </div>
-
-                    <!-- الإنجازات القادمة -->
-                    <div>
-                        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span>🏆 الإنجازات القادمة</span>
-                            <span onclick="goTab('stats')" style="font-size:0.72em;color:var(--gold);cursor:pointer;">عرض الكل ›</span>
-                        </div>
-                        <div id="homeDailyAchieveList"></div>
-                    </div>
                 </div>
 
                 <!-- PLAY PAGE -->
                 <div class="page" id="page-play">
-                    <!-- مستوى الصعوبة في الأعلى -->
-                    <div style="margin-bottom:10px;">
-                        <div class="section-label">🎚️ مستوى الصعوبة</div>
-                        <div class="diff-row">
-                            <div class="diff-chip active" onclick="selectDiff(this,'easy')"><span class="diff-chip-icon">🟢</span>سهل</div>
-                            <div class="diff-chip" id="diffMedium" onclick="selectDiff(this,'medium')"><span class="diff-chip-icon">🟡</span>متوسط
-                                <div class="lock-tag" id="lockMedium" style="display:block">🔒 Lv.3</div>
-                            </div>
-                            <div class="diff-chip" id="diffHard" onclick="selectDiff(this,'hard')"><span class="diff-chip-icon">🟠</span>صعب
-                                <div class="lock-tag" id="lockHard" style="display:block">🔒 Lv.5</div>
-                            </div>
-                            <div class="diff-chip" id="diffGenius" onclick="selectDiff(this,'genius')"><span class="diff-chip-icon">🔴</span>عبقري
-                                <div class="lock-tag" id="lockGenius" style="display:block">🔒 Lv.8</div>
-                            </div>
-                        </div>
-                    </div>
                     <div class="game-cat-card" style="--gc:#f0b90b" id="playCardCounter" onclick="openCounterGame()">
                         <div class="gcard-top">
                             <div class="gcard-name-icon-row">
@@ -571,12 +611,29 @@
                         <div class="daily-timer-val" id="dailyCountdown">--:--:--</div>
                     </div>
                     <div>
-                        <div class="section-label">المهام اليومية</div>
+                        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            المهام اليومية
+                            <span style="font-size:0.68em;color:var(--text3);" id="tasksShowAllBtn" onclick="toggleAllTasks()" style="cursor:pointer;color:var(--accent2);">عرض الكل</span>
+                        </div>
                         <div id="tasksList"></div>
                     </div>
                     <div style="margin-top:12px;">
-                        <div class="section-label" style="display:flex;justify-content:space-between;">🏆 الإنجازات <span id="achievePct" style="color:var(--accent2);">0/18</span></div>
+                        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            🏆 الإنجازات
+                            <span id="achievePct" style="color:var(--accent2);font-size:0.85em;font-weight:900;">0/18</span>
+                        </div>
+                        <!-- شريط تقدم الإنجازات -->
+                        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:12px 14px;margin-bottom:10px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                <span style="font-size:0.72em;font-weight:700;color:var(--text);">تقدم الإنجازات</span>
+                                <span style="font-size:0.7em;color:var(--gold);font-weight:900;" id="achieveProgressText">0 من أصل 18 إنجاز</span>
+                            </div>
+                            <div style="background:var(--surface3);border-radius:8px;height:10px;overflow:hidden;">
+                                <div id="achieveProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--accent));border-radius:8px;transition:width 0.5s ease;"></div>
+                            </div>
+                        </div>
                         <div id="achieveList"></div>
+                        <div id="achieveShowMoreBtn" onclick="toggleAllAchievements()" style="text-align:center;padding:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;cursor:pointer;font-size:0.75em;color:var(--accent2);font-weight:700;margin-top:6px;">📋 عرض جميع الإنجازات الـ 18</div>
                         <div id="achieveCompleteReward" style="display:none;text-align:center;margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
                     </div>
                 </div>
@@ -602,7 +659,7 @@
                                 <button onclick="removeProfilePhoto()" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:4px 10px;font-family:'Tajawal',sans-serif;font-size:0.62em;font-weight:700;cursor:pointer;">🗑️ حذف</button>
                             </div>
                         </div>
-                        <button onclick="openGlobalSettings()" style="position:absolute;top:0;left:0;background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:8px 10px;font-size:1em;cursor:pointer;color:var(--text2);" title="الإعدادات">⚙️</button>
+
                     </div>
 
                     <!-- إحصائيات عامة -->
@@ -690,15 +747,133 @@
                 </div>
 
                 <!-- SETTINGS PAGE -->
-                <!-- حقول مخفية للتوافق مع الكود القديم -->
-                <div style="display:none;">
-                    <input id="inputName" type="text">
-                    <select id="birthDay"></select>
-                    <select id="birthMonth"></select>
-                    <select id="birthYear"></select>
-                    <div id="gBtnM"></div>
-                    <div id="gBtnF"></div>
-                    <button id="saveBtn"></button>
+                <div class="page" id="page-settings">
+                    <div class="hero-card">
+                        <div class="hero-row">
+                            <div>
+                                <div class="hero-greeting">⚙️ الإعدادات</div>
+                                <div class="hero-title">تخصيص <span>التجربة</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- الصوت والموسيقى والاهتزاز -->
+                    <div class="profile-section" style="margin-top:12px;">
+                        <div class="profile-section-title">🔊 الصوت والموسيقى والاهتزاز</div>
+                        <div class="settings-list">
+
+                            <!-- أصوات اللعبة -->
+                            <div class="settings-row" onclick="toggleSound()">
+                                <span class="settings-row-icon">🔊</span>
+                                <span class="settings-row-label">أصوات اللعبة</span>
+                                <span class="settings-row-val" id="soundStatus">مفعّل</span>
+                                <span id="soundBtn" style="display:none"></span>
+                            </div>
+                            <div class="volume-slider-row">
+                                <span class="vol-icon">🔈</span>
+                                <input type="range" class="vol-slider" id="soundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
+                                <span class="vol-val" id="soundVolVal">80%</span>
+                            </div>
+
+                            <!-- موسيقى الخلفية -->
+                            <div class="settings-row" onclick="toggleBgMusic()">
+                                <span class="settings-row-icon">🎵</span>
+                                <span class="settings-row-label">موسيقى الخلفية</span>
+                                <span class="settings-row-val" id="bgMusicStatus">مفعّلة</span>
+                                <span id="bgBtn" style="display:none"></span>
+                            </div>
+                            <div class="volume-slider-row">
+                                <span class="vol-icon">🎶</span>
+                                <input type="range" class="vol-slider" id="bgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
+                                <span class="vol-val" id="bgVolVal">60%</span>
+                            </div>
+
+                            <!-- الاهتزاز -->
+                            <div class="settings-row" onclick="toggleVibration()">
+                                <span class="settings-row-icon">📳</span>
+                                <span class="settings-row-label">الاهتزاز عند النقر</span>
+                                <span class="settings-row-val" id="vibrationStatus">مفعّل</span>
+                            </div>
+                            <div class="volume-slider-row">
+                                <span class="vol-icon">📳</span>
+                                <input type="range" class="vol-slider" id="vibVolSlider" min="10" max="200" value="30" oninput="setVibrationStrength(this.value)">
+                                <span class="vol-val" id="vibVolVal">30ms</span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- تعديل الملف الشخصي -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">✏️ تعديل الملف الشخصي</div>
+                        <div class="profile-form">
+                            <div class="form-field">
+                                <div class="form-label">الاسم (إنجليزي فقط)</div>
+                                <input class="form-input" type="text" id="inputName" placeholder="English Name (A-Z, 0-9)" maxlength="30">
+                            </div>
+                            <div class="form-field">
+                                <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
+                                <div class="date-row">
+                                    <select id="birthDay" class="date-select"></select>
+                                    <select id="birthMonth" class="date-select"></select>
+                                    <select id="birthYear" class="date-select"></select>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <div class="form-label">الجنس</div>
+                                <div class="gender-row">
+                                    <div class="gender-btn" id="gBtnM" onclick="selectGender('m')">👦 ذكر</div>
+                                    <div class="gender-btn" id="gBtnF" onclick="selectGender('f')">👧 أنثى</div>
+                                </div>
+                            </div>
+                            <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
+                        </div>
+                    </div>
+
+                    <!-- الثيمات -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">🎨 الثيمات والمظهر</div>
+                        <div class="themes-row">
+                            <div class="dark-light-toggle" onclick="toggleDarkMode()">
+                                <span id="darkLightIcon">🌙</span>
+                                <span id="darkLightLabel">داكن</span>
+                            </div>
+                            <div class="theme-dot active" style="background:#f0b90b" onclick="setTheme(this,'#f0b90b','#7c3aed','#06b6d4')"></div>
+                            <div class="theme-dot" style="background:#38bdf8" onclick="setTheme(this,'#38bdf8','#0ea5e9','#7c3aed')"></div>
+                            <div class="theme-dot" style="background:#4ade80" onclick="setTheme(this,'#4ade80','#16a34a','#06b6d4')"></div>
+                            <div class="theme-dot" style="background:#f97316" onclick="setTheme(this,'#f97316','#ea580c','#a855f7')"></div>
+                            <div class="theme-dot" style="background:#c084fc" onclick="setTheme(this,'#c084fc','#a855f7','#06b6d4')"></div>
+                            <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
+                        </div>
+                    </div>
+
+                    <!-- إدارة الحساب -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">🔢 إدارة الحساب</div>
+                        <div style="background:var(--surface3);border-radius:14px;padding:14px;">
+                            <div style="font-size:0.7em;color:var(--text2);margin-bottom:8px;">الرقم التسلسلي يتيح استعادة حسابك على أي جهاز</div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                                <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:0.68em;font-weight:700;color:var(--gold);word-break:break-all;" id="serialNumberDisplay">احفظ الملف الشخصي أولاً</div>
+                                <button onclick="copySerialNumber()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;font-size:0.9em;cursor:pointer;color:var(--text2);">📋</button>
+                            </div>
+                            <button onclick="showRestoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;margin-bottom:8px;">📥 استعادة حساب بالرقم التسلسلي</button>
+                            <div id="restorePanel" style="display:none;margin-top:8px;">
+                                <input id="restoreSerialInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;">
+                                <button onclick="restoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- منطقة الخطر -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">⚠️ منطقة الخطر</div>
+                        <div style="font-size:0.72em;color:var(--text2);margin-bottom:10px;">هذه الإجراءات لا يمكن التراجع عنها</div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات فقط</button>
+                            <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد (حذف كل شيء)</button>
+                        </div>
+                    </div>
+                    <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
                 </div>
 
                 <!-- LEADERBOARD PAGE -->
@@ -715,6 +890,22 @@
 
                     <!-- واجهة الترحيب بلعبة التحدي -->
                     <div id="challengeWelcome" style="display:flex;flex-direction:column;gap:12px;">
+
+                        <!-- مهام التحدي اليومية -->
+                        <div style="background:var(--surface2);border:1.5px solid rgba(240,185,11,0.25);border-radius:18px;padding:14px 16px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                                <div style="font-size:0.85em;font-weight:900;color:var(--text);">🎯 مهام التحدي اليومية</div>
+                                <div style="font-size:0.62em;color:var(--text3);" id="challengeTasksResetLabel">تتجدد كل 24 ساعة</div>
+                            </div>
+                            <!-- شريط التقدم -->
+                            <div style="background:var(--surface3);border-radius:6px;height:7px;overflow:hidden;margin-bottom:10px;">
+                                <div id="challengeTasksBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--accent));border-radius:6px;transition:width 0.4s;"></div>
+                            </div>
+                            <div id="challengeTasksList" style="display:flex;flex-direction:column;gap:8px;">
+                                <!-- تتم تعبئتها بـ renderChallengeTasks() -->
+                                <div style="text-align:center;font-size:0.72em;color:var(--text3);padding:8px;">جاري تحميل المهام...</div>
+                            </div>
+                        </div>
                         <div style="background:linear-gradient(135deg,rgba(240,185,11,0.15),rgba(124,58,237,0.15));border:1.5px solid rgba(240,185,11,0.35);border-radius:22px;padding:20px;text-align:center;">
                             <div style="font-size:2.5em;margin-bottom:8px;">⚔️</div>
                             <div style="font-size:1.1em;font-weight:900;color:var(--text);margin-bottom:6px;">لعبة نداء التحدي</div>
@@ -732,18 +923,6 @@
                             <button onclick="startChallengeGame()" style="width:100%;padding:16px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:1.05em;font-weight:900;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(240,185,11,0.4);transition:0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
                                 ⚔️ لنبدأ التحدي
                             </button>
-                        </div>
-
-                        <!-- مهام التحدي -->
-                        <div style="margin-top:12px;">
-                            <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
-                                <span>⚔️ مهام التحدي اليومية</span>
-                                <span id="challengeTasksPct" style="font-size:0.72em;color:var(--gold);font-weight:700;">0%</span>
-                            </div>
-                            <div style="background:var(--surface3);border-radius:8px;height:6px;overflow:hidden;margin-bottom:8px;">
-                                <div id="challengeTasksBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:8px;transition:width 0.5s;"></div>
-                            </div>
-                            <div id="challengeTasksList"></div>
                         </div>
 
                         <!-- لائحة الصدارة الموحدة والمتحركة -->
@@ -837,137 +1016,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- STATS PAGE — الإحصائيات -->
-                <div class="page" id="page-stats">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="hero-greeting">📊 الإحصائيات</div>
-                                <div class="hero-title">تقدمك <span>الكامل</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- الألقاب -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🎖️ الألقاب والتقييم الموسمي</div>
-                        <div id="statsTitlesSection">
-                            <!-- يتم ملؤه بـ renderStatsTitles() -->
-                        </div>
-                    </div>
-
-                    <!-- الإحصائيات الأسبوعية -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">📅 إحصائيات هذا الأسبوع</div>
-                        <div id="statsWeeklyContent"></div>
-                    </div>
-
-                    <!-- الإحصائيات الشهرية -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🗓️ إحصائيات هذا الشهر</div>
-                        <div id="statsMonthlyContent"></div>
-                    </div>
-
-                    <!-- الإنجازات الكاملة -->
-                    <div class="profile-section">
-                        <div class="profile-section-title" style="display:flex;justify-content:space-between;">🏆 الإنجازات <span id="statsAchievePct" style="color:var(--accent2);">0/18</span></div>
-                        <div id="statsAchieveList"></div>
-                    </div>
-
-                    <!-- المهام اليومية -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">📋 المهام اليومية</div>
-                        <div class="tasks-summary" style="margin-bottom:8px;">
-                            <div class="task-stat"><div class="task-stat-num" id="statsTasksDone">0</div><div class="task-stat-label">مكتملة</div></div>
-                            <div class="task-divider"></div>
-                            <div class="task-stat"><div class="task-stat-num" id="statsTasksTotal">0</div><div class="task-stat-label">اليوم</div></div>
-                            <div class="task-divider"></div>
-                            <div class="task-stat"><div class="task-stat-num" id="statsTasksCoins">0💰</div><div class="task-stat-label">المكافآت</div></div>
-                        </div>
-                        <div class="tasks-progress-card" style="margin-bottom:8px;">
-                            <div class="tasks-prog-label"><span>تقدّم اليوم</span><span id="statsTasksPct">0%</span></div>
-                            <div class="tasks-bar-track"><div class="tasks-bar-fill" id="statsTasksBarFill" style="width:0%"></div></div>
-                        </div>
-                        <div id="statsTasksList"></div>
-                    </div>
-                </div>
-
-                <!-- SETTINGS PAGE — الإعدادات الجديدة -->
-                <div class="page" id="page-settings">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="hero-greeting">⚙️ الإعدادات</div>
-                                <div class="hero-title">تخصيص <span>التجربة</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- بطاقة الملف الشخصي السريعة -->
-                    <div class="profile-section" style="cursor:pointer;" onclick="openProfileSheet()">
-                        <div style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(240,185,11,0.1),rgba(124,58,237,0.1));border:1.5px solid rgba(240,185,11,0.2);border-radius:18px;padding:16px;">
-                            <div id="settingsProfilePhoto" style="width:56px;height:56px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:1.8em;border:2px solid var(--gold);overflow:hidden;">🧑</div>
-                            <div style="flex:1;">
-                                <div style="font-size:0.92em;font-weight:900;color:var(--text);" id="settingsProfileName">اللاعب</div>
-                                <div style="font-size:0.7em;color:var(--text2);margin-top:2px;" id="settingsProfileLevel">المستوى 1</div>
-                                <div style="background:var(--surface3);border-radius:10px;height:5px;margin-top:6px;overflow:hidden;">
-                                    <div id="settingsXpBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--accent));border-radius:10px;transition:width 0.5s;"></div>
-                                </div>
-                            </div>
-                            <div style="font-size:1.2em;color:var(--text3);">›</div>
-                        </div>
-                    </div>
-
-                    <!-- خيارات الإعدادات -->
-                    <div class="settings-list" style="margin-bottom:14px;">
-                        <!-- الملف الشخصي -->
-                        <div class="settings-row" onclick="openProfileSheet()">
-                            <span class="settings-row-icon">👤</span>
-                            <span class="settings-row-label">الملف الشخصي</span>
-                            <span class="settings-row-val" style="color:var(--text3);">الاسم والعمر والصورة ›</span>
-                        </div>
-                        <!-- الصوت -->
-                        <div class="settings-row" onclick="openSoundSheet()">
-                            <span class="settings-row-icon">🔊</span>
-                            <span class="settings-row-label">الصوت والموسيقى</span>
-                            <span class="settings-row-val" id="settingsSoundSummary">مفعّل ›</span>
-                        </div>
-                        <!-- الثيمات -->
-                        <div class="settings-row" onclick="openThemeSheet()">
-                            <span class="settings-row-icon">🎨</span>
-                            <span class="settings-row-label">الثيمات والمظهر</span>
-                            <span class="settings-row-val" id="settingsThemeSummary">داكن ›</span>
-                        </div>
-                    </div>
-
-                    <!-- الرقم التسلسلي -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🔢 الرقم التسلسلي</div>
-                        <div style="background:var(--surface3);border-radius:14px;padding:14px;">
-                            <div style="font-size:0.68em;color:var(--text2);margin-bottom:8px;">يتيح استعادة حسابك على أي جهاز</div>
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                                <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:0.68em;font-weight:700;color:var(--gold);word-break:break-all;" id="serialNumberDisplay">احفظ الملف الشخصي أولاً</div>
-                                <button onclick="copySerialNumber()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;font-size:0.9em;cursor:pointer;color:var(--text2);">📋</button>
-                            </div>
-                            <button onclick="showRestoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;margin-bottom:8px;">📥 استعادة حساب</button>
-                            <div id="restorePanel" style="display:none;margin-top:8px;">
-                                <input id="restoreSerialInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;box-sizing:border-box;">
-                                <button onclick="restoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- منطقة الخطر -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">⚠️ منطقة الخطر</div>
-                        <div style="display:flex;flex-direction:column;gap:8px;">
-                            <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات فقط</button>
-                            <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد (حذف كل شيء)</button>
-                        </div>
-                    </div>
-                    <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
-                </div>
-
             </div><!-- /pages -->
 
             <!-- BOTTOM NAV -->
@@ -982,20 +1030,21 @@
                     <div class="nav-item-icon">🎮</div>
                     <div class="nav-item-label">ألعاب</div>
                 </div>
-                <div class="nav-item" id="nav-leaderboard" onclick="goTab('leaderboard')">
-                    <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">🏆</div>
-                    <div class="nav-item-label">المنافسة</div>
+                <!-- زر المنافسة المميز -->
+                <div class="nav-item nav-competition-btn" id="nav-leaderboard" onclick="goTab('leaderboard')" style="position:relative;transform:translateY(-10px);">
+                    <div class="nav-competition-glow"></div>
+                    <div style="background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:50%;width:54px;height:54px;display:flex;align-items:center;justify-content:center;font-size:1.6em;box-shadow:0 4px 18px rgba(240,185,11,0.55);border:2.5px solid rgba(255,255,255,0.18);">🏆</div>
+                    <div class="nav-item-label" style="color:var(--gold);font-weight:900;font-size:0.62em;margin-top:2px;">المنافسة</div>
                 </div>
-                <div class="nav-item" id="nav-stats" onclick="goTab('stats')">
+                <div class="nav-item" id="nav-achieve" onclick="goTab('achieve')">
                     <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">📊</div>
-                    <div class="nav-item-label">الإحصائيات</div>
+                    <div class="nav-item-icon">📋</div>
+                    <div class="nav-item-label">مهام</div>
                 </div>
-                <div class="nav-item" id="nav-settings" onclick="goTab('settings')">
+                <div class="nav-item" id="nav-profile" onclick="goTab('profile')">
                     <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">⚙️</div>
-                    <div class="nav-item-label">الإعدادات</div>
+                    <div class="nav-item-icon">👤</div>
+                    <div class="nav-item-label">ملفي</div>
                 </div>
             </div>
         </div>
@@ -1078,122 +1127,6 @@
         </div>
     </div>
 
-    <!-- PROFILE SHEET — الملف الشخصي السريع -->
-    <div class="sheet-overlay" id="profileSheet" onclick="sheetBg(event,'profileSheet')">
-        <div class="sheet-panel" style="max-height:92vh;overflow-y:auto;">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">👤 الملف الشخصي</div>
-
-            <!-- الصورة والمستوى -->
-            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:18px;">
-                <div style="position:relative;cursor:pointer;" onclick="triggerProfileSheetPhoto()">
-                    <div id="profileSheetAvatar" style="width:80px;height:80px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:2.2em;border:3px solid var(--gold);overflow:hidden;">🧑</div>
-                    <div style="position:absolute;bottom:0;right:0;background:var(--gold);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.8em;">📷</div>
-                </div>
-                <div id="profileSheetPhotoActions" style="display:none;gap:6px;">
-                    <button onclick="triggerPhotoUpload()" style="background:var(--gold);color:#000;border:none;border-radius:10px;padding:5px 12px;font-family:'Tajawal',sans-serif;font-size:0.72em;font-weight:800;cursor:pointer;">📷 كاميرا</button>
-                    <button onclick="triggerPhotoGallery()" style="background:var(--surface3);color:var(--text);border:1px solid var(--border2);border-radius:10px;padding:5px 12px;font-family:'Tajawal',sans-serif;font-size:0.72em;font-weight:700;cursor:pointer;">🖼️ الاستوديو</button>
-                    <button onclick="removeProfilePhoto()" style="background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:5px 12px;font-family:'Tajawal',sans-serif;font-size:0.72em;cursor:pointer;">🗑️</button>
-                </div>
-                <div style="text-align:center;">
-                    <div id="profileSheetName" style="font-size:1em;font-weight:900;color:var(--text);">اللاعب</div>
-                    <div id="profileSheetLevel" style="font-size:0.72em;color:var(--text2);margin-top:2px;">المستوى 1 • مبتدئ</div>
-                </div>
-            </div>
-
-            <!-- نموذج التعديل -->
-            <div class="profile-form" style="margin-bottom:14px;">
-                <div class="form-field">
-                    <div class="form-label">الاسم (إنجليزي)</div>
-                    <input class="form-input" type="text" id="sheetInputName" placeholder="English Name" maxlength="30">
-                </div>
-                <div class="form-field">
-                    <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
-                    <div class="date-row">
-                        <select id="sheetBirthDay" class="date-select"></select>
-                        <select id="sheetBirthMonth" class="date-select"></select>
-                        <select id="sheetBirthYear" class="date-select"></select>
-                    </div>
-                </div>
-                <div class="form-field">
-                    <div class="form-label">الجنس</div>
-                    <div class="gender-row">
-                        <div class="gender-btn" id="sheetGBtnM" onclick="selectSheetGender('m')">👦 ذكر</div>
-                        <div class="gender-btn" id="sheetGBtnF" onclick="selectSheetGender('f')">👧 أنثى</div>
-                    </div>
-                </div>
-            </div>
-            <button class="save-btn" onclick="saveProfileSheet()" style="width:100%;margin-bottom:8px;">💾 حفظ التغييرات</button>
-            <button class="sheet-cancel" onclick="closeSheet('profileSheet')">إلغاء</button>
-        </div>
-    </div>
-
-    <!-- SOUND SHEET — إعدادات الصوت -->
-    <div class="sheet-overlay" id="soundSheet" onclick="sheetBg(event,'soundSheet')">
-        <div class="sheet-panel">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">🔊 الصوت والموسيقى</div>
-            <div class="settings-list" style="margin-bottom:14px;">
-                <div class="settings-row" onclick="toggleSound()">
-                    <span class="settings-row-icon">🔊</span>
-                    <span class="settings-row-label">أصوات اللعبة</span>
-                    <span class="settings-row-val" id="soundStatus">مفعّل</span>
-                    <span id="soundBtn" style="display:none"></span>
-                </div>
-                <div class="volume-slider-row">
-                    <span class="vol-icon">🔈</span>
-                    <input type="range" class="vol-slider" id="soundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
-                    <span class="vol-val" id="soundVolVal">80%</span>
-                </div>
-                <div class="settings-row" onclick="toggleBgMusic()">
-                    <span class="settings-row-icon">🎵</span>
-                    <span class="settings-row-label">موسيقى الخلفية</span>
-                    <span class="settings-row-val" id="bgMusicStatus">مفعّلة</span>
-                    <span id="bgBtn" style="display:none"></span>
-                </div>
-                <div class="volume-slider-row">
-                    <span class="vol-icon">🎶</span>
-                    <input type="range" class="vol-slider" id="bgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
-                    <span class="vol-val" id="bgVolVal">60%</span>
-                </div>
-                <div class="settings-row" onclick="toggleVibration()">
-                    <span class="settings-row-icon">📳</span>
-                    <span class="settings-row-label">الاهتزاز</span>
-                    <span class="settings-row-val" id="vibrationStatus">مطفأ</span>
-                </div>
-                <div class="volume-slider-row">
-                    <span class="vol-icon">📳</span>
-                    <input type="range" class="vol-slider" id="vibVolSlider" min="5" max="100" value="30" oninput="setVibrationStrength(this.value)">
-                    <span class="vol-val" id="vibVolVal">30ms</span>
-                </div>
-            </div>
-            <button class="sheet-cancel" onclick="closeSheet('soundSheet')">إغلاق</button>
-        </div>
-    </div>
-
-    <!-- THEME SHEET — إعدادات الثيمات -->
-    <div class="sheet-overlay" id="themeSheet" onclick="sheetBg(event,'themeSheet')">
-        <div class="sheet-panel">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">🎨 الثيمات والمظهر</div>
-            <div class="profile-section" style="margin-bottom:14px;">
-                <div class="themes-row">
-                    <div class="dark-light-toggle" onclick="toggleDarkMode()">
-                        <span id="darkLightIcon">🌙</span>
-                        <span id="darkLightLabel">داكن</span>
-                    </div>
-                    <div class="theme-dot active" style="background:#f0b90b" onclick="setTheme(this,'#f0b90b','#7c3aed','#06b6d4')"></div>
-                    <div class="theme-dot" style="background:#38bdf8" onclick="setTheme(this,'#38bdf8','#0ea5e9','#7c3aed')"></div>
-                    <div class="theme-dot" style="background:#4ade80" onclick="setTheme(this,'#4ade80','#16a34a','#06b6d4')"></div>
-                    <div class="theme-dot" style="background:#f97316" onclick="setTheme(this,'#f97316','#ea580c','#a855f7')"></div>
-                    <div class="theme-dot" style="background:#c084fc" onclick="setTheme(this,'#c084fc','#a855f7','#06b6d4')"></div>
-                    <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
-                </div>
-            </div>
-            <button class="sheet-cancel" onclick="closeSheet('themeSheet')">إغلاق</button>
-        </div>
-    </div>
-
     <!-- JavaScript Modules -->
     <script src="firebase.js"></script>
     <script src="state.js"></script>
@@ -1206,5 +1139,179 @@
     <script src="ui.js"></script>
     <script src="fixes_init.js"></script>
     <script src="patches.js"></script>
+
+    <script>
+    /* ═══════════════════════════════════════════════
+       تحديث الإحصائيات اليومية / الأسبوعية / الشهرية
+    ═══════════════════════════════════════════════ */
+
+    /* دالة مساعدة: رقم الشهر الحالي */
+    function monthStr() {
+        const d = new Date();
+        return d.getFullYear() + '-' + (d.getMonth() + 1);
+    }
+
+    /* حساب الدقة */
+    function calcAccuracy(correct, wrong) {
+        const tot = correct + wrong;
+        return tot > 0 ? Math.round((correct / tot) * 100) + '%' : '0%';
+    }
+
+    /* تحقق هل اليوم آخر يوم في الأسبوع (السبت = 6) */
+    function isLastDayOfWeek() {
+        return new Date().getDay() === 6;
+    }
+
+    /* تحقق هل اليوم آخر يوم في الشهر */
+    function isLastDayOfMonth() {
+        const d = new Date();
+        const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        return d.getDate() === lastDay;
+    }
+
+    /* ═══ تحديث الإحصائيات على الصفحة الرئيسية ═══ */
+    function updatePeriodStats() {
+        /* — يومية — */
+        const ds = st.dailyStats || { correct: 0, wrong: 0, games: 0 };
+        setEl('dailyCorrect',  ds.correct  || 0);
+        setEl('dailyWrong',    ds.wrong    || 0);
+        setEl('dailyGames',    ds.games    || 0);
+        setEl('dailyAccuracy', calcAccuracy(ds.correct || 0, ds.wrong || 0));
+
+        /* — أسبوعية — */
+        const ws = st.weeklyStats || { correct: 0, wrong: 0, games: 0, bestStreak: 0 };
+        setEl('weeklyCorrect',    ws.correct    || 0);
+        setEl('weeklyWrong',      ws.wrong      || 0);
+        setEl('weeklyGames',      ws.games      || 0);
+        setEl('weeklyBestStreak', '×' + (ws.bestStreak || 0));
+        setEl('weeklyAccuracy',   calcAccuracy(ws.correct || 0, ws.wrong || 0));
+        const weekEl = document.getElementById('weeklyStatus');
+        if (weekEl) {
+            if (isLastDayOfWeek()) {
+                weekEl.textContent = '📊 اليوم آخر الأسبوع';
+                weekEl.style.color = 'var(--gold)';
+                weekEl.style.fontSize = '0.6em';
+            } else {
+                const daysLeft = 6 - new Date().getDay();
+                weekEl.textContent = daysLeft + ' أيام';
+                weekEl.style.color = 'var(--text2)';
+                weekEl.style.fontSize = '0.85em';
+            }
+        }
+
+        /* — شهرية — */
+        const ms = st.monthlyStats || { correct: 0, wrong: 0, games: 0, bestStreak: 0 };
+        setEl('monthlyCorrect',    ms.correct    || 0);
+        setEl('monthlyWrong',      ms.wrong      || 0);
+        setEl('monthlyGames',      ms.games      || 0);
+        setEl('monthlyBestStreak', '×' + (ms.bestStreak || 0));
+        setEl('monthlyAccuracy',   calcAccuracy(ms.correct || 0, ms.wrong || 0));
+        const monEl = document.getElementById('monthlyStatus');
+        if (monEl) {
+            if (isLastDayOfMonth()) {
+                monEl.textContent = '📅 اليوم آخر الشهر';
+                monEl.style.color = 'var(--gold)';
+                monEl.style.fontSize = '0.6em';
+            } else {
+                const d = new Date();
+                const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+                const daysLeft = lastDay - d.getDate();
+                monEl.textContent = daysLeft + ' يوماً';
+                monEl.style.color = 'var(--text2)';
+                monEl.style.fontSize = '0.85em';
+            }
+        }
+    }
+
+    function setEl(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    }
+
+    /* ═══ مهام التحدي اليومية ═══ */
+    const CHALLENGE_TASKS_DEF = [
+        { id: 'ch_play3',    icon: '🎮', name: 'العب 3 جلسات تحدي',      target: 3,  coins: 5,  points: 15 },
+        { id: 'ch_correct10',icon: '✅', name: 'أجب على 10 صحيح في التحدي', target: 10, coins: 4,  points: 20 },
+        { id: 'ch_streak5',  icon: '🔥', name: 'حقق تتابع 5 في التحدي',   target: 5,  coins: 6,  points: 25 },
+        { id: 'ch_score50',  icon: '🏆', name: 'سجل 50 نقطة في التحدي',   target: 50, coins: 8,  points: 30 },
+        { id: 'ch_nohints',  icon: '🧠', name: 'جلسة كاملة بدون مساعدة',  target: 1,  coins: 10, points: 35 },
+    ];
+
+    function initChallengeTasks() {
+        if (!st.challengeTasks || st.challengeTasksDate !== todayStr()) {
+            st.challengeTasks = CHALLENGE_TASKS_DEF.map(t => ({
+                ...t, progress: 0, done: false
+            }));
+            st.challengeTasksDate = todayStr();
+            saveSt();
+        }
+    }
+
+    function renderChallengeTasks() {
+        initChallengeTasks();
+        const container = document.getElementById('challengeTasksList');
+        if (!container) return;
+        const tasks = st.challengeTasks || [];
+        const doneCount = tasks.filter(t => t.done).length;
+        const bar = document.getElementById('challengeTasksBar');
+        if (bar) bar.style.width = (tasks.length > 0 ? (doneCount / tasks.length) * 100 : 0) + '%';
+
+        container.innerHTML = tasks.map(t => {
+            const pct = t.target > 0 ? Math.min(100, Math.round((t.progress / t.target) * 100)) : 0;
+            return `<div class="challenge-task-item ${t.done ? 'done' : ''}">
+                <div class="challenge-task-icon">${t.icon}</div>
+                <div class="challenge-task-info">
+                    <div class="challenge-task-name">${t.name}</div>
+                    <div class="challenge-task-reward">+${t.coins}💰 • +${t.points} نقطة${t.done ? '' : ' • ' + t.progress + '/' + t.target}</div>
+                </div>
+                <div class="challenge-task-status">${t.done ? '✅' : pct + '%'}</div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ═══ تبديل عرض الكل / أول 5 مهام ═══ */
+    var _showAllTasks = false;
+    function toggleAllTasks() {
+        _showAllTasks = !_showAllTasks;
+        renderTasks();
+        const btn = document.getElementById('tasksShowAllBtn');
+        if (btn) btn.textContent = _showAllTasks ? 'عرض أقل' : 'عرض الكل';
+    }
+
+    /* ═══ تبديل عرض الكل / أول 5 إنجازات ═══ */
+    var _showAllAchievements = false;
+    function toggleAllAchievements() {
+        _showAllAchievements = !_showAllAchievements;
+        renderAchievements();
+        const btn = document.getElementById('achieveShowMoreBtn');
+        if (btn) btn.textContent = _showAllAchievements ? '🔼 عرض أقل' : '📋 عرض جميع الإنجازات الـ 18';
+    }
+
+    /* ═══ ربط updateHomeStats بالإحصائيات الجديدة ═══ */
+    const _origUpdateHomeStats = typeof updateHomeStats === 'function' ? updateHomeStats : null;
+    function updateHomeStats() {
+        if (_origUpdateHomeStats) _origUpdateHomeStats();
+        updatePeriodStats();
+    }
+
+    /* ═══ تشغيل عند تحميل صفحة المنافسة ═══ */
+    const _origGoTab = goTab;
+    goTab = function(tab) {
+        _origGoTab(tab);
+        if (tab === 'leaderboard') {
+            renderChallengeTasks();
+        }
+        if (tab === 'home') {
+            updatePeriodStats();
+        }
+    };
+    </script>
+<!-- عناصر مخفية للتوافق مع دوال JS القديمة -->
+    <div style="display:none">
+        <span id="homeCorrect">0</span>
+        <span id="homeAccuracy">0%</span>
+        <span id="homeStreak">×0</span>
+        <span id="homeGames">0</span>
+    </div>
 </body>
 </html>
