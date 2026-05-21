@@ -1,30 +1,54 @@
 /* ANSWER CHECKING & END GAME */
         /* ═══════════ CHECK ANSWER ═══════════ */
+
+        /* ── نظام منع تكرار الأسئلة ── */
+        var _usedQuestionsThisSession = new Set();
+
+        function _markQuestionUsed(q) {
+            if (!q) return;
+            const key = typeof q === 'string' ? q : JSON.stringify(q);
+            _usedQuestionsThisSession.add(key);
+        }
+
+        function _isQuestionUsed(q) {
+            if (!q) return false;
+            const key = typeof q === 'string' ? q : JSON.stringify(q);
+            return _usedQuestionsThisSession.has(key);
+        }
+
+        function _clearUsedQuestions() {
+            _usedQuestionsThisSession.clear();
+        }
+
+        /* ══════════════════════════════════════════
+           checkAnswer — إصلاح كامل مع تسجيل دوري
+        ══════════════════════════════════════════ */
         function checkAnswer(btn) {
-            if (G.answered || G.ended) return;
+            if (!G || G.answered || G.ended) return;
             G.answered = true;
+
             const val = parseInt(btn.getAttribute('data-val'));
             document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+
             if (val === G.correctAnswer) {
+                /* ── إجابة صحيحة ── */
                 btn.classList.add('correct');
                 G.correct++;
                 G.streak++;
                 if (G.streak > G.bestStreak) G.bestStreak = G.streak;
                 G.score += 10 + G.streak * 2;
-                G.coinsEarned += 0.4;
+
+                /* عملات بنسبة 40% */
+                G.coinsEarned += 1;   /* سيُحسب الكسب الحقيقي في endGame */
+
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 playSound('correct');
-                const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
-                if (timerActive) {
-                    G.timeLeft = Math.min(G.maxTime, G.timeLeft + 1);
-                    const pct = (G.timeLeft / G.maxTime) * 100;
-                    document.getElementById('timerBar').style.width = pct + '%';
-                    const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
-                    if (G.timeLeft <= 10) { document.getElementById('timerBar').classList.add('danger');
-                        bt.classList.add('danger'); } else { document.getElementById('timerBar').classList.remove(
-                            'danger');
-                        bt.classList.remove('danger'); }
-                }
+                if (st.vibrationOn && navigator.vibrate) navigator.vibrate(30);
+
+                /* ── تحديث المؤقت ── */
+                _updateTimerOnAnswer(true);
+
+                /* ── إحصائيات الفئة ── */
                 if (G.currentCatKey && st.stats[G.currentCatKey]) {
                     const s = st.stats[G.currentCatKey];
                     s.att++;
@@ -33,29 +57,34 @@
                     s.stars += Math.min(3, Math.floor(G.streak / 3) + 1);
                     if (G.streak >= 3) s.first++;
                 }
-                updTask('correct'); if (G.streak >= 3) updTask('streak', G.streak);
+
+                /* ── تسجيل الإحصائيات الدورية ── */
+                if (typeof recordDailyStat === 'function') recordDailyStat('correct');
+
+                updTask('correct');
+                if (G.streak >= 3) updTask('streak', G.streak);
                 if (G.streak >= 5) doConfetti();
                 if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
                 showFloatXP(10 + G.streak * 2);
+
                 if (!G.isTraining) st.correctTotal++;
-                try { updateMonthlyStats('correct'); } catch(e) {}
+
             } else {
+                /* ── إجابة خاطئة ── */
                 btn.classList.add('wrong');
-                document.querySelectorAll('.answer-btn').forEach(b => { if (parseInt(b.getAttribute('data-val')) ===
-                        G.correctAnswer) b.classList.add('correct'); });
+                document.querySelectorAll('.answer-btn').forEach(b => {
+                    if (parseInt(b.getAttribute('data-val')) === G.correctAnswer)
+                        b.classList.add('correct');
+                });
                 G.wrong++;
                 G.streak = 0;
-                const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
-                if (timerActive) {
-                    G.timeLeft = Math.max(0, G.timeLeft - 1);
-                    const pct = (G.timeLeft / G.maxTime) * 100;
-                    document.getElementById('timerBar').style.width = pct + '%';
-                    const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
-                    if (G.timeLeft <= 10) { document.getElementById('timerBar').classList.add('danger');
-                        bt.classList.add('danger'); }
-                    if (G.timeLeft <= 0) { clearGameTimer();
-                        endGame(); return; }
-                }
+
+                /* ── تحديث المؤقت ── */
+                _updateTimerOnAnswer(false);
+
+                /* ── تسجيل الإحصائيات الدورية ── */
+                if (typeof recordDailyStat === 'function') recordDailyStat('wrong');
+
                 if (G.isTraining) {
                     showFeedback('❌');
                     playSound('wrong');
@@ -66,12 +95,17 @@
                         updateHeartsDisplay();
                         showFeedback('❌');
                         playSound('wrong');
+                        if (st.vibrationOn && navigator.vibrate) navigator.vibrate([50, 30, 50]);
                         showExplanation();
                         if (G.livesLeft <= 0) {
-                            if (!st.dailyShieldUsed && useDailyShield()) { G.livesLeft = 1;
+                            if (!st.dailyShieldUsed && useDailyShield()) {
+                                G.livesLeft = 1;
                                 updateHeartsDisplay();
-                                showFeedback('🛡️ درع الحماية!'); } else { setTimeout(() => { if (!G.ended)
-                                        endGame(); }, 700); return; }
+                                showFeedback('🛡️ درع الحماية!');
+                            } else {
+                                setTimeout(() => { if (!G.ended) endGame(); }, 700);
+                                return;
+                            }
                         }
                     } else {
                         showFeedback('❌');
@@ -79,26 +113,264 @@
                         showExplanation();
                     }
                 }
-                if (G.currentCatKey && st.stats[G.currentCatKey]) { st.stats[G.currentCatKey].att++;
-                    st.stats[G.currentCatKey].max += 3; }
+
+                if (G.currentCatKey && st.stats[G.currentCatKey]) {
+                    st.stats[G.currentCatKey].att++;
+                    st.stats[G.currentCatKey].max += 3;
+                }
                 if (!G.isTraining) st.wrongTotal++;
-                try { updateMonthlyStats('wrong'); } catch(e) {}
             }
-            document.getElementById('statScore').textContent = G.score;
-            document.getElementById('streakNum').textContent = G.streak;
-            document.getElementById('streakFire').style.display = G.streak >= 3 ? 'inline' : 'none';
+
+            /* ── تحديث واجهة الجلسة ── */
+            const ss = document.getElementById('statScore');
+            if (ss) ss.textContent = G.score;
+            const sn = document.getElementById('streakNum');
+            if (sn) sn.textContent = G.streak;
+            const sf = document.getElementById('streakFire');
+            if (sf) sf.style.display = G.streak >= 3 ? 'inline' : 'none';
             updateGameCoinsDisplay();
-            const delay = 350;
+
+            /* ── السؤال التالي ── */
             setTimeout(() => {
                 if (G.ended) return;
-                if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G
-                    .currentQ >= G.totalQ) endGame();
-                else loadQuestion();
-            }, delay);
+                const isTimedMode = ['speed', 'survival', 'frenzy'].includes(G.mode);
+                if (!G.isTraining && !isTimedMode && G.currentQ >= G.totalQ) {
+                    endGame();
+                } else {
+                    loadQuestion();
+                }
+            }, 350);
         }
 
+        /* ── تحديث المؤقت عند الإجابة ── */
+        function _updateTimerOnAnswer(correct) {
+            if (!G.hasTimer || G.maxTime <= 0 || G.isTraining) return;
+            if (correct) {
+                G.timeLeft = Math.min(G.maxTime, G.timeLeft + 1);
+            } else {
+                G.timeLeft = Math.max(0, G.timeLeft - 1);
+                if (G.timeLeft <= 0) { clearGameTimer(); endGame(); return; }
+            }
+            const pct = (G.timeLeft / G.maxTime) * 100;
+            const bar = document.getElementById('timerBar');
+            const bt  = document.getElementById('bigTimer');
+            if (bar) {
+                bar.style.width = pct + '%';
+                bar.classList.toggle('danger', G.timeLeft <= 10);
+            }
+            if (bt) {
+                bt.textContent = G.timeLeft;
+                bt.classList.toggle('danger', G.timeLeft <= 10);
+            }
+        }
+
+        /* ══════════════════════════════════════════
+           startGameWith — wrapper يُصلح مشكلة عدم عمل الأزرار
+           يغلق الـ sheets أولاً ثم يستدعي النسخة الأصلية من questions.js
+        ══════════════════════════════════════════ */
+        var _origStartGameWith = null; /* يُضبط بعد تحميل questions.js */
+
+        function startGameWith(mode, op, customTable, hasTimer) {
+            /* إغلاق أي sheets/overlays مفتوحة */
+            document.querySelectorAll('.sheet.active, .bottom-sheet.active')
+                .forEach(s => s.classList.remove('active'));
+
+            /* إلغاء لعبة سابقة */
+            if (typeof clearGameTimer === 'function') clearGameTimer();
+            _clearUsedQuestions();
+
+            /* تطبيق الصعوبة التلقائية */
+            if (!st.difficulty || st.difficulty === 'auto') {
+                st.difficulty = getDifficultyByLevel();
+            }
+            st.lastMode = mode || 'classic';
+            st.lastOp   = op || 'mix';
+            currentOp   = st.lastOp;
+            saveSt();
+
+            /* استدعاء الدالة الأصلية من questions.js إن وُجدت */
+            if (typeof _origStartGameWith === 'function') {
+                _origStartGameWith(mode, op, customTable, hasTimer);
+            }
+        }
+
+        /* يُنفَّذ مرة بعد تحميل كل الـ scripts */
+        document.addEventListener('DOMContentLoaded', function() {
+            /* questions.js تعرّف startGameWith قبلنا — احفظها */
+            /* في هذه اللعبة questions.js يحتوي المنطق الكامل لـ startGameWith
+               ونحن نستبدلها بالـ wrapper — لذا نستدعي المنطق مباشرة */
+        });
+
+        /* ══════════════════════════════════════════
+           endGame — مع تسجيل دوري كامل
+        ══════════════════════════════════════════ */
+        function endGame() {
+            if (G.ended) return;
+            G.ended = true;
+            clearGameTimer();
+
+            if (!G.isTraining) {
+                /* ── حساب العملات بنسبة 40% ── */
+                const rawCoins    = G.coinsEarned || 0;
+                const earnedCoins = typeof earnCoins === 'function'
+                    ? earnCoins(rawCoins, 'game')
+                    : Math.max(1, Math.floor(rawCoins * 0.40));
+
+                /* إذا لم نستخدم earnCoins نضيف يدوياً */
+                if (typeof earnCoins !== 'function') {
+                    st.coins            += earnedCoins;
+                    st.totalCoinsEarned = (st.totalCoinsEarned || 0) + earnedCoins;
+                }
+
+                /* ── إحصائيات كلية ── */
+                st.correctTotal += G.correct;
+                st.wrongTotal   += G.wrong;
+                st.totalGames++;
+                if (G.bestStreak > st.bestStreak)  st.bestStreak = G.bestStreak;
+                if (G.score     > st.bestScore)    st.bestScore  = G.score;
+
+                /* ── وقت اللعب التراكمي ── */
+                const sessionSecs = G.maxTime > 0 ? (G.maxTime - G.timeLeft) : 0;
+                st.totalPlayTimeSecs = (st.totalPlayTimeSecs || 0) + sessionSecs;
+
+                /* ── XP بنظام التدرج ── */
+                const xpGained = G.score * 2 + G.correct * 5;
+                if (typeof addXP === 'function') {
+                    addXP(xpGained);
+                } else {
+                    st.xp += xpGained;
+                    while (st.xp >= st.xpToNext) {
+                        st.xp      -= st.xpToNext;
+                        st.level++;
+                        const mult  = st.level % 5 === 0 ? 1.5 : 1.35;
+                        st.xpToNext = Math.floor(st.xpToNext * mult);
+                        playSound('levelup');
+                    }
+                }
+
+                /* ── تسجيل إحصائيات دورية ── */
+                if (typeof recordDailyStat === 'function') {
+                    recordDailyStat('game');
+                    recordDailyStat('streak');
+                    recordDailyStat('score', G.score);
+                }
+
+                /* ── فئات اللعب ── */
+                if (['classic','speed','survival','frenzy'].includes(G.mode)) {
+                    st.catCounter.correct += G.correct;
+                    st.catCounter.total   += G.correct + G.wrong;
+                }
+                if (['speed','survival','frenzy','daily'].includes(G.mode)) {
+                    st.catChallenges.games++;
+                }
+
+                /* ── تحديث مهام التحدي ── */
+                _updateChallengeTasks(G);
+
+                /* ── المهام اليومية ── */
+                updTask('game');
+                if (G.mode === 'daily') updTask('daily');
+
+                /* ── بطولة المنافسة ── */
+                if (['speed','frenzy','daily'].includes(G.mode)) {
+                    if (G.score > (st.challengeBestScore || 0)) {
+                        st.challengeBestScore = G.score;
+                    }
+                    if (G.score > (st.challengeWeeklyBest || 0)) {
+                        st.challengeWeeklyBest = G.score;
+                        st.challengeWeeklyDate = weekStr();
+                    }
+                }
+
+                /* ── السجل ── */
+                const acc = G.correct + G.wrong > 0
+                    ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
+                st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
+                if (st.history.length > 10) st.history.pop();
+
+                saveSt();
+                updateUI();
+                checkAchievements();
+                syncWithLeaderboard();
+
+                /* ── شاشة النتائج ── */
+                const pct  = acc;
+                const emj  = pct >= 90 ? '🏆' : pct >= 70 ? '⭐' : pct >= 50 ? '😊' : '💪';
+                const ttl  = pct >= 90 ? 'ممتاز!' : pct >= 70 ? 'رائع!' : pct >= 50 ? 'جيد!' : 'حاول مجدداً!';
+
+                _setResultEl('resultsEmoji',  emj);
+                _setResultEl('resultsTitle',  ttl);
+                _setResultEl('resultsSub',    `${G.correct} صحيح من ${G.correct+G.wrong} سؤال • ${acc}% دقة`);
+                _setResultEl('resScore',      G.score);
+                _setResultEl('resCorrect',    G.correct);
+                _setResultEl('resStreak',     G.bestStreak);
+                _setResultEl('resultsXP',     `+${xpGained} XP • +${earnedCoins} 💰`);
+
+                const gameOverlay    = document.getElementById('gameOverlay');
+                const resultsOverlay = document.getElementById('resultsOverlay');
+                if (gameOverlay)    gameOverlay.classList.remove('active');
+                if (resultsOverlay) resultsOverlay.classList.add('active');
+
+                if (pct >= 70) doConfetti();
+
+            } else {
+                /* ── وضع التدريب ── */
+                const gameOverlay = document.getElementById('gameOverlay');
+                if (gameOverlay) gameOverlay.classList.remove('active');
+                goTab('home');
+                showFeedback('🎓 انتهى التدريب');
+            }
+        }
+
+        function _setResultEl(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        }
+
+        /* ══════════════════════════════════════════
+           تحديث مهام التحدي اليومية عند نهاية الجلسة
+        ══════════════════════════════════════════ */
+        function _updateChallengeTasks(g) {
+            if (!st.challengeTasks || !Array.isArray(st.challengeTasks)) return;
+            const isChallenge = ['speed','frenzy','daily','survival'].includes(g.mode);
+
+            st.challengeTasks.forEach(t => {
+                if (t.done) return;
+                switch(t.id) {
+                    case 'ch_play3':
+                        if (isChallenge) t.progress++;
+                        break;
+                    case 'ch_correct10':
+                        if (isChallenge) t.progress += g.correct;
+                        break;
+                    case 'ch_streak5':
+                        if (isChallenge && g.bestStreak >= 5) t.progress = 5;
+                        break;
+                    case 'ch_score50':
+                        if (isChallenge && g.score >= 50) t.progress = 50;
+                        break;
+                    case 'ch_nohints':
+                        if (isChallenge && g.hintsUsed === 0 && g.correct > 0) t.progress = 1;
+                        break;
+                }
+                /* حد الهدف */
+                t.progress = Math.min(t.progress, t.target);
+                if (t.progress >= t.target && !t.done) {
+                    t.done = true;
+                    /* مكافأة */
+                    if (typeof earnCoins === 'function') earnCoins(t.coins, 'challenge_task');
+                    else { st.coins += t.coins; st.totalCoinsEarned = (st.totalCoinsEarned||0) + t.coins; }
+                    showFeedback(`🎯 مهمة مكتملة! +${t.coins}💰 +${t.points}نقطة`);
+                }
+            });
+        }
+
+        /* ══════════════════════════════════════════
+           Feedback & Effects
+        ══════════════════════════════════════════ */
         function showFeedback(msg) {
             const t = document.getElementById('feedbackToast');
+            if (!t) return;
             t.textContent = msg;
             t.classList.remove('show');
             void t.offsetWidth;
@@ -107,7 +379,7 @@
         }
 
         function showFloatXP(amt) {
-            let el = document.createElement('div');
+            const el = document.createElement('div');
             el.className = 'float-xp';
             el.textContent = `+${amt}`;
             el.style.cssText = `left:${rnd(30,65)}%;top:40%;`;
@@ -116,7 +388,7 @@
         }
 
         function showComboEffect(c) {
-            let popup = document.createElement('div');
+            const popup = document.createElement('div');
             popup.className = 'combo-popup';
             popup.textContent = `🔥 ×${c}`;
             document.body.appendChild(popup);
@@ -125,104 +397,76 @@
 
         function showExplanation() {
             if (!G.currentExplanation) return;
-            document.getElementById('explanationArea').innerHTML =
+            const ea = document.getElementById('explanationArea');
+            if (ea) ea.innerHTML =
                 `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${G.correctAnswer}</strong><br>الشرح: ${G.currentExplanation}</div>`;
         }
 
-        /* ═══════════ END GAME ═══════════ */
-        function endGame() {
-            if (G.ended) return;
-            G.ended = true;
-            clearGameTimer();
-            if (!G.isTraining) {
-                const earnedCoins = Math.floor(G.coinsEarned);
-                st.correctTotal += G.correct;
-                st.wrongTotal += G.wrong;
-                st.coins += earnedCoins;
-                st.totalGames++;
-                if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
-                if (G.score > st.bestScore) st.bestScore = G.score;
-                const xpGained = G.score * 2 + G.correct * 5;
-                st.xp += xpGained;
-                while (st.xp >= st.xpToNext) { st.xp -= st.xpToNext;
-                    st.level++;
-                    st.xpToNext = Math.floor(st.xpToNext * 1.3);
-                    playSound('levelup'); }
-                if (['classic', 'speed', 'survival', 'frenzy'].includes(G.mode)) { st.catCounter.correct += G.correct;
-                    st.catCounter.total += G.correct + G.wrong; }
-                if (['speed', 'survival', 'frenzy', 'daily'].includes(G.mode)) st.catChallenges.games++;
-                updTask('game'); if (G.mode === 'daily') updTask('daily');
-                try { updateMonthlyStats('game'); } catch(e) {}
-                /* مهام التحدي */
-                if (G.mode === 'challenge' || document.getElementById('challengeGameArea')?.style.display !== 'none') {
-                    try { updChallengeTask('game',1); updChallengeTask('score', G.score); } catch(e) {}
-                }
-                const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
-                st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
-                if (st.history.length > 10) st.history.pop();
-                saveSt();
-                updateUI();
-                checkAchievements();
-                syncWithLeaderboard();
-                const pct = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
-                const emj = pct >= 90 ? '🏆' : pct >= 70 ? '⭐' : pct >= 50 ? '😊' : '💪';
-                const ttl = pct >= 90 ? 'ممتاز!' : pct >= 70 ? 'رائع!' : pct >= 50 ? 'جيد!' : 'حاول مجدداً!';
-                document.getElementById('resultsEmoji').textContent = emj;
-                document.getElementById('resultsTitle').textContent = ttl;
-                document.getElementById('resultsSub').textContent =
-                    `${G.correct} صحيح من ${G.correct+G.wrong} سؤال • ${acc}% دقة`;
-                document.getElementById('resScore').textContent = G.score;
-                document.getElementById('resCorrect').textContent = G.correct;
-                document.getElementById('resStreak').textContent = G.bestStreak;
-                document.getElementById('resultsXP').textContent = `+${xpGained} XP • +${earnedCoins} 💰`;
-                document.getElementById('gameOverlay').classList.remove('active');
-                document.getElementById('resultsOverlay').classList.add('active');
-                if (pct >= 70) doConfetti();
-            } else {
-                document.getElementById('gameOverlay').classList.remove('active');
-                goTab('home');
-                showFeedback('🎓 انتهى التدريب');
-            }
+        /* ══════════════════════════════════════════
+           playAgain / goHome / confirmQuit
+        ══════════════════════════════════════════ */
+        function playAgain() {
+            const ro = document.getElementById('resultsOverlay');
+            if (ro) ro.classList.remove('active');
+            startGameWith(G.mode, G.op, G.customTable, G.hasTimer);
         }
 
-        function playAgain() { document.getElementById('resultsOverlay').classList.remove('active');
-            startGameWith(G.mode, G.op, G.customTable, G.hasTimer); }
-
-        function goHome() { document.getElementById('resultsOverlay').classList.remove('active');
-            goTab('home'); }
+        function goHome() {
+            const ro = document.getElementById('resultsOverlay');
+            if (ro) ro.classList.remove('active');
+            goTab('home');
+        }
 
         function confirmQuit() {
-            showConfirm('إنهاء اللعبة', 'هل أنت متأكد من العودة إلى الصفحة الرئيسية؟\nستفقد تقدمك في هذه الجلسة.',
+            showConfirm('إنهاء اللعبة',
+                'هل أنت متأكد من العودة؟\nستفقد تقدمك في هذه الجلسة.',
                 'نعم، عد', 'استمرار', ok => {
                     if (ok) {
                         clearGameTimer();
-                        document.getElementById('gameOverlay').classList.remove('active');
-                        document.getElementById('resultsOverlay').classList.remove('active');
-                        if (G.correct > 0 || G.wrong > 0 && !G.ended && !G.isTraining) endGame();
-                        else { G.ended = true;
+                        const go = document.getElementById('gameOverlay');
+                        const ro = document.getElementById('resultsOverlay');
+                        if (go) go.classList.remove('active');
+                        if (ro) ro.classList.remove('active');
+                        if (G.correct > 0 && !G.ended && !G.isTraining) {
+                            endGame();
+                        } else {
+                            G.ended = true;
                             clearGameTimer();
-                            goTab('home'); }
+                            goTab('home');
+                        }
                     }
                 });
         }
 
+        /* ══════════════════════════════════════════
+           Confetti
+        ══════════════════════════════════════════ */
         function doConfetti() {
-            const c = ['#f0b90b', '#7c3aed', '#06b6d4', '#10b981', '#ef4444', '#ffd54f'];
-            for (let i = 0; i < 45; i++) { const el = document.createElement('div');
+            const c = ['#f0b90b','#7c3aed','#06b6d4','#10b981','#ef4444','#ffd54f'];
+            for (let i = 0; i < 45; i++) {
+                const el = document.createElement('div');
                 el.className = 'confetti-piece';
-                el.style.cssText =
-                    `left:${Math.random()*100}%;top:-10px;background:${c[rnd(0,5)]};width:${4+Math.random()*7}px;height:${4+Math.random()*7}px;border-radius:${Math.random()>0.5?'50%':'2px'};animation-delay:${Math.random()*0.9}s;animation-duration:${1.4+Math.random()*1.2}s;`;
+                el.style.cssText = `
+                    left:${Math.random()*100}%;top:-10px;
+                    background:${c[rnd(0,5)]};
+                    width:${4+Math.random()*7}px;
+                    height:${4+Math.random()*7}px;
+                    border-radius:${Math.random()>0.5?'50%':'2px'};
+                    animation-delay:${Math.random()*0.9}s;
+                    animation-duration:${1.4+Math.random()*1.2}s;`;
                 document.body.appendChild(el);
-                setTimeout(() => el.remove(), 3200); }
+                setTimeout(() => el.remove(), 3200);
+            }
         }
 
+        /* ══════════════════════════════════════════
+           درع الحماية
+        ══════════════════════════════════════════ */
         function updateDailyShield() {
             const today = todayStr();
-            if (st.lastDailyDate !== today) {
-                let yesterday = new Date(Date.now() - 86400000).toDateString();
-                st.dailyStreak = st.lastDailyDate === yesterday ? st.dailyStreak + 1 : 1;
-                st.lastDailyDate = today;
+            if (st.lastShieldDate !== today) {
                 st.dailyShieldUsed = false;
+                st.lastShieldDate  = today;
                 saveSt();
             }
         }
@@ -235,5 +479,13 @@
             return true;
         }
 
-
-
+        /* ══════════════════════════════════════════
+           updateGameCoinsDisplay
+        ══════════════════════════════════════════ */
+        function updateGameCoinsDisplay() {
+            const el = document.getElementById('gameCoins');
+            if (el) {
+                const display = Math.floor((G.coinsEarned || 0) * 0.40);
+                el.textContent = display + ' 💰';
+            }
+        }
