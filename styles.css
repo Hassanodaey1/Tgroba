@@ -2894,104 +2894,96 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   HO Math v9 — New Pages & Components
+   تحديثات اليوم الأول — إحصائيات + منافسة + مهام
 ═══════════════════════════════════════════════════ */
 
-/* ─── Bottom Nav — 5 أزرار متساوية ─── */
-.bottom-nav {
-    display: grid !important;
-    grid-template-columns: repeat(5, 1fr) !important;
+/* ═══ زر المنافسة المميز في الشريط السفلي ═══ */
+.nav-competition-btn {
+    flex: 1.3;
+    position: relative;
 }
-.nav-item {
-    padding: 6px 2px 4px !important;
-    min-width: 0;
+.nav-competition-glow {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(240,185,11,0.35) 0%, transparent 70%);
+    animation: competitionPulse 2s ease-in-out infinite;
+    pointer-events: none;
 }
-.nav-item-icon {
-    font-size: clamp(1.1em, 4.5vw, 1.5em) !important;
-    line-height: 1.2;
+@keyframes competitionPulse {
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
+    50%       { transform: translateX(-50%) scale(1.18); opacity: 1; }
 }
-.nav-item-label {
-    font-size: clamp(0.52em, 2.5vw, 0.7em) !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+.nav-competition-btn .nav-item-label {
+    color: var(--gold) !important;
+    font-weight: 900 !important;
 }
 
-/* ─── Settings Page Rows ─── */
-.settings-page-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: background 0.2s;
-    margin-bottom: 6px;
-}
-.settings-page-btn:active { background: var(--surface3); }
-
-/* ─── Stats Page ─── */
+/* ═══ بطاقة الإحصائيات (يومية / أسبوعية / شهرية) ═══ */
 .stats-period-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, rgba(240,185,11,0.12), rgba(124,58,237,0.1));
-    border: 1px solid rgba(240,185,11,0.25);
+    gap: 4px;
+    background: rgba(240,185,11,0.1);
+    border: 1px solid rgba(240,185,11,0.2);
     border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 0.72em;
+    padding: 3px 10px;
+    font-size: 0.6em;
     font-weight: 700;
     color: var(--gold);
-    margin-bottom: 10px;
 }
 
-/* ─── Challenge Tasks ─── */
-#challengeTasksList .task-item {
-    font-size: 0.9em;
-}
-
-/* ─── Profile Sheet Avatar ─── */
-#profileSheetAvatar {
+/* ═══ مهمة التحدي ═══ */
+.challenge-task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     background: var(--surface3);
-    transition: transform 0.2s;
+    border: 1px solid var(--border2);
+    border-radius: 13px;
+    padding: 10px 13px;
+    transition: border-color 0.2s;
 }
-#profileSheetAvatar:active { transform: scale(0.95); }
-
-/* ─── Settings Summary Values ─── */
-.settings-row-val {
-    font-size: 0.72em;
-    color: var(--accent2);
+.challenge-task-item.done {
+    background: rgba(16,185,129,0.08);
+    border-color: rgba(16,185,129,0.28);
+}
+.challenge-task-icon {
+    font-size: 1.25em;
+    min-width: 28px;
+    text-align: center;
+}
+.challenge-task-info { flex: 1; }
+.challenge-task-name {
+    font-size: 0.77em;
     font-weight: 700;
-    white-space: nowrap;
+    color: var(--text);
+}
+.challenge-task-reward {
+    font-size: 0.62em;
+    color: var(--text2);
+    margin-top: 2px;
+}
+.challenge-task-status {
+    font-size: 0.72em;
+    font-weight: 900;
+    color: var(--gold);
+    min-width: 32px;
+    text-align: center;
+}
+.challenge-task-item.done .challenge-task-status {
+    color: var(--green);
 }
 
-/* ─── Daily Stats Grid on Home ─── */
-#homeDailyStatsGrid {
-    margin-bottom: 6px;
+/* ═══ شريط تقدم الإنجازات ═══ */
+#achieveShowMoreBtn {
+    transition: background 0.2s, transform 0.15s;
 }
-
-/* ─── Home Daily Sections ─── */
-#homeDailyTasksList .task-item,
-#homeDailyAchieveList .task-item {
-    font-size: 0.9em;
+#achieveShowMoreBtn:active {
+    transform: scale(0.97);
+    background: var(--surface3);
 }
-
-/* ─── Play page difficulty at top ─── */
-#page-play .diff-row {
-    margin-bottom: 4px;
-}
-
-/* ─── Responsive: شاشات صغيرة جداً ─── */
-@media (max-width: 360px) {
-    .nav-item-label { font-size: 0.48em !important; }
-    .nav-item-icon  { font-size: 1em !important; }
-    .nav-item       { padding: 5px 1px 3px !important; }
-}
-@media (max-width: 320px) {
-    .nav-item-label { display: none !important; }
-    .nav-item       { padding: 8px 2px !important; }
-}
-
