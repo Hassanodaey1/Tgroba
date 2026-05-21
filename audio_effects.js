@@ -1,181 +1,168 @@
-/* ═══════════════════════════════════════════════════════════════
-   FIXES & INIT — HO Math v8
-   إصلاح جميع الدوال المفقودة + تهيئة التطبيق
-═══════════════════════════════════════════════════════════════ */
-
-/* ─── مستوى الصوت ─── */
-function initVolumeSliders() {
-    if (typeof st.soundVolume !== 'number') st.soundVolume = 80;
-    if (typeof st.bgVolume !== 'number') st.bgVolume = 60;
-    ['soundVolSlider', 'gSoundVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = st.soundVolume;
-    });
-    ['bgVolSlider', 'gBgVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = st.bgVolume;
-    });
-    ['soundVolVal', 'gSoundVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.soundVolume + '%';
-    });
-    ['bgVolVal', 'gBgVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.bgVolume + '%';
-    });
-    /* شريط شدة الاهتزاز */
-    if (typeof st.vibrationStrength !== 'number') st.vibrationStrength = 30;
-    ['vibVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = st.vibrationStrength;
-    });
-    ['vibVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.vibrationStrength + 'ms';
-    });
-}
-
-function setSoundVolume(val) {
-    st.soundVolume = parseInt(val);
-    ['soundVolVal', 'gSoundVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val + '%';
-    });
-    ['soundVolSlider', 'gSoundVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-    });
-    saveSt();
-}
-
-function setBgVolume(val) {
-    st.bgVolume = parseInt(val);
-    ['bgVolVal', 'gBgVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val + '%';
-    });
-    ['bgVolSlider', 'gBgVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-    });
-    saveSt();
-}
-
-function setVibrationStrength(val) {
-    st.vibrationStrength = parseInt(val);
-    const el = document.getElementById('vibVolVal');
-    if (el) el.textContent = val + 'ms';
-    const sl = document.getElementById('vibVolSlider');
-    if (sl) sl.value = val;
-    saveSt();
-    /* اهتزاز تجريبي */
-    if (st.vibrationOn && navigator.vibrate) navigator.vibrate(parseInt(val));
-}
-
-/* ─── مكافأة يومية ─── */
-function checkDailyLoginBonus() {
-    const today = todayStr();
-    if (st._lastLoginBonus === today) return;
-    st._lastLoginBonus = today;
-    const bonus = Math.min(10, 3 + Math.floor(st.dailyStreak / 3));
-    st.coins += bonus;
-    saveSt();
-    setTimeout(() => {
-        showFeedback(`🎁 مكافأة يومية: +${bonus}💰`);
-        doConfetti();
-    }, 3500);
-}
-
-/* ─── عداد السلسلة اليومية ─── */
-function updateStreakBanner() {
-    const el = document.getElementById('streakBannerVal');
-    if (el) el.textContent = st.dailyStreak || 0;
-}
-
-/* ─── الرقم التسلسلي ─── */
-function generateAndShowSerial() {
-    if (!st.serialNumber) {
-        st.serialNumber = generateSerialNumber(st.birthDate, st.name);
-        saveSt();
-    }
-    updateSerialNumberDisplay();
-    showFeedback('🔢 تم إنشاء الرقم التسلسلي');
-}
-
 /* ═══════════════════════════════════════════════════
-   APP INIT — runs after all functions defined
+   HO Math — Audio Effects & Game State
+   © 2026 Hassan Odaey
 ═══════════════════════════════════════════════════ */
-(function initApp() {
-    try { initDateSelectors(); } catch (e) { console.warn('initDateSelectors', e); }
-    try { initSettingsDateSelectors(); } catch (e) {}
-    /* إظهار زر الإعدادات فقط في الصفحات المسموح بها */
-    try {
-        const settingsBtn = document.getElementById('mainSettingsBtn');
-        if (settingsBtn) settingsBtn.style.display = 'flex'; // الصفحة الرئيسية هي الافتراضية
-    } catch(e) {}
-    try { checkDailyReset(); } catch (e) {}
-    try { applyTheme(); } catch (e) {}
-    try { applyDarkMode(); } catch (e) {}
-    try { updateUI(); } catch (e) { console.warn('updateUI', e); }
-    try { loadProfileForm(); } catch (e) {}
-    try { initVolumeSliders(); } catch (e) {}
-    try { if (typeof applyProfilePhoto === 'function') applyProfilePhoto(); } catch (e) {}
-    try { renderHomeDailySection(); } catch (e) {}
 
-    /* الاهتزاز */
-    ['vibrationStatus', 'gVibrationStatus'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
-    });
+/* ═══════════ GAME STATE ═══════════ */
+var G = {
+    mode: 'classic', op: 'mix', score: 0, correct: 0, wrong: 0, streak: 0,
+    bestStreak: 0, currentQ: 0, totalQ: 10, correctAnswer: 0, answered: false,
+    timer: null, timeLeft: 0, maxTime: 0, coinsEarned: 0, livesLeft: 3,
+    helpersUsed: { skip: false, remove: false }, ended: false, isTraining: false,
+    customTable: null, hasTimer: false, askedQuestions: [], currentExplanation: '',
+    currentCatKey: ''
+};
 
-    /* رقائق الصعوبة */
-    (function () {
-        const chips = document.querySelectorAll('.diff-chip');
-        chips.forEach(c => c.classList.remove('active'));
-        const diffMap = { medium: 'diffMedium', hard: 'diffHard', genius: 'diffGenius' };
-        const tid = diffMap[st.difficulty];
-        if (tid) {
-            const dc = document.getElementById(tid);
-            if (dc && !dc.classList.contains('locked')) { dc.classList.add('active'); return; }
-        }
-        if (chips[0]) chips[0].classList.add('active');
-    })();
+function clearGameTimer() {
+    if (G.timer) { clearInterval(G.timer); G.timer = null; }
+}
 
-    try { updSessionTimer(); } catch (e) {}
-    try { updCountdown(); } catch (e) {}
-    try { updateStreakBanner(); } catch (e) {}
-    try { updateSerialNumberDisplay(); } catch (e) {}
-
-    /* تطبيق لون زر المنافسة حسب الثيم */
-    try { applyCompetitionButtonTheme(); } catch (e) {}
-
-    if (st.bgOn) document.addEventListener('click', () => startBg(), { once: true });
-
-    /* إخفاء شاشة البداية */
-    setTimeout(() => {
-        const ss = document.getElementById('splashScreen');
-        if (ss) { ss.classList.add('hidden'); setTimeout(() => { if (ss) ss.style.display = 'none'; }, 500); }
-        try { checkDailyLoginBonus(); } catch (e) {}
-        try { if (typeof initTitlesSystem === 'function') initTitlesSystem(); } catch (e) {}
-    }, 2800);
-
-    document.addEventListener('touchstart', function () {
-        gACtx();
-        if (aCtx && aCtx.state === 'suspended') aCtx.resume();
-    }, { once: true });
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js').catch(() => {});
-        });
+/* ═══════════ PARTICLES ═══════════ */
+document.addEventListener('DOMContentLoaded', function () {
+    const c = document.getElementById('particles');
+    if (!c) return;
+    const col = ['#f0b90b', '#7c3aed', '#06b6d4', '#10b981'];
+    for (let i = 0; i < 18; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.cssText = `left:${Math.random() * 100}%;background:${col[~~(Math.random() * 4)]};width:${2 + Math.random() * 3}px;height:${2 + Math.random() * 3}px;animation-delay:${Math.random() * 9}s;animation-duration:${6 + Math.random() * 7}s;`;
+        c.appendChild(p);
     }
-})();
 
-/* ─── تطبيق لون زر المنافسة حسب الثيم المختار ─── */
-function applyCompetitionButtonTheme() {
-    /* يتم استدعاؤها أيضاً من setTheme */
-    const navLB = document.getElementById('nav-leaderboard');
-    if (!navLB) return;
-    const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim() || '#f0b90b';
-    navLB.style.setProperty('--nav-active-color', gold);
+    /* ═══════════ SPLASH SYMBOLS ═══════════ */
+    const sym = ['∑', '∏', '√', '∞', 'π', 'Δ', '∫', '∂', '±', '×', '÷', '=', 'α', 'β', 'θ', 'λ', 'μ', 'σ', 'φ', 'ψ', 'Ω', '∈', '∀', '∃', '≅', '≈', '≠', '≤', '≥', '+', '-', '*', '/'];
+    let container = document.getElementById('splashSymbols');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < 55; i++) {
+        let span = document.createElement('span');
+        let s = sym[Math.floor(Math.random() * sym.length)];
+        span.textContent = s;
+        let size = Math.random() * 2 + 0.8;
+        span.style.position = 'absolute';
+        span.style.left = Math.random() * 100 + '%';
+        span.style.top = Math.random() * 100 + '%';
+        span.style.fontSize = size + 'em';
+        span.style.opacity = Math.random() * 0.3 + 0.05;
+        span.style.transform = `rotate(${Math.random() * 360}deg)`;
+        span.style.animation = `floatSymbol ${Math.random() * 10 + 8}s infinite alternate ease-in-out`;
+        span.style.animationDelay = `-${Math.random() * 5}s`;
+        span.classList.add('animated-symbol');
+        container.appendChild(span);
+    }
+});
+
+/* ═══════════ AUDIO CONTEXT ═══════════ */
+var aCtx = null;
+var bgInt = null;
+
+function gACtx() {
+    if (!aCtx) {
+        try { aCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+    }
+    return aCtx;
+}
+
+function tone(f, t = 'sine', d = 0.25, v = 0.12, delay = 0) {
+    if (!st.soundOn) return;
+    const ctx = gACtx();
+    if (!ctx) return;
+    /* تطبيق مستوى الصوت */
+    const vol = (typeof st.soundVolume === 'number' ? st.soundVolume : 80) / 100;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.type = t;
+    o.frequency.value = f;
+    g.gain.value = v * vol;
+    const ts = ctx.currentTime + delay;
+    o.start(ts);
+    g.gain.exponentialRampToValueAtTime(0.001, ts + d);
+    o.stop(ts + d + 0.01);
+}
+
+function playSound(type) {
+    if (!st.soundOn) return;
+    if (type === 'correct') {
+        tone(660, 'sine', 0.14, 0.11);
+        tone(880, 'sine', 0.14, 0.08, 0.12);
+    } else if (type === 'wrong') {
+        tone(200, 'sawtooth', 0.2, 0.1);
+    } else if (type === 'levelup') {
+        tone(523, 'sine', 0.1, 0.1);
+        tone(659, 'sine', 0.1, 0.1, 0.1);
+        tone(784, 'sine', 0.16, 0.1, 0.2);
+    } else if (type === 'click') {
+        tone(440, 'sine', 0.07, 0.06);
+    } else if (type === 'open') {
+        tone(392, 'sine', 0.1, 0.07);
+        tone(523, 'sine', 0.12, 0.07, 0.1);
+    } else if (type === 'tick') {
+        tone(1000, 'sine', 0.03, 0.02);
+    }
+    /* اهتزاز حسب نوع الصوت والشدة المحددة */
+    if (st.vibrationOn && navigator.vibrate) {
+        const ms = st.vibrationStrength || 30;
+        if (type === 'click')   navigator.vibrate(Math.max(5, Math.round(ms * 0.5)));
+        else if (type === 'correct') navigator.vibrate(ms);
+        else if (type === 'wrong')   navigator.vibrate([ms, 40, ms]);
+        else if (type === 'levelup') navigator.vibrate([ms, 30, ms, 30, ms * 2]);
+    }
+}
+
+/* ═══════════ BACKGROUND MUSIC ═══════════ */
+const bgNotes = [261, 294, 329, 349, 392, 440, 494, 523, 392, 349];
+let bgIdx = 0;
+
+function bgNote() {
+    if (!st.bgOn) return;
+    const ctx = gACtx();
+    if (!ctx) return;
+    const vol = (typeof st.bgVolume === 'number' ? st.bgVolume : 60) / 100;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.type = 'triangle';
+    o.frequency.value = bgNotes[bgIdx % bgNotes.length];
+    bgIdx++;
+    g.gain.value = 0.025 * vol;
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2);
+    o.stop(ctx.currentTime + 2.1);
+}
+
+function startBg() {
+    if (!bgInt) { bgInt = setInterval(bgNote, 2400); }
+}
+
+function stopBg() {
+    clearInterval(bgInt);
+    bgInt = null;
+}
+
+/* ═══════════ TOGGLE FUNCTIONS ═══════════ */
+function toggleBgMusic() {
+    st.bgOn = !st.bgOn;
+    /* تحديث جميع عناصر زر الموسيقى */
+    const bgBtn = document.getElementById('bgBtn');
+    if (bgBtn) bgBtn.textContent = st.bgOn ? '🎵' : '🔕';
+    ['bgMusicStatus', 'gbgMusicStatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
+    });
+    st.bgOn ? startBg() : stopBg();
+    playSound('click');
+    saveSt();
+}
+
+function toggleSound() {
+    st.soundOn = !st.soundOn;
+    const soundBtn = document.getElementById('soundBtn');
+    if (soundBtn) soundBtn.textContent = st.soundOn ? '🔊' : '🔇';
+    ['soundStatus', 'gsoundStatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
+    });
+    saveSt();
+    if (st.soundOn) playSound('click');
 }
