@@ -83,6 +83,11 @@
             if (tab === 'settings') {
                 /* مزامنة حالة الصوت في صفحة الإعدادات */
                 _syncSettingsPage();
+                /* توليد الرقم التسلسلي إن لم يكن موجوداً */
+                if (!st.serialNumber && typeof _autoGenerateSerial === 'function') {
+                    _autoGenerateSerial();
+                }
+                if (typeof updateSerialNumberDisplay === 'function') updateSerialNumberDisplay();
             }
         }
 
