@@ -1,6 +1,6 @@
 /* NAVIGATION */
         /* ═══════════ NAVIGATION ═══════════ */
-        const TABS = ['home', 'play', 'achieve', 'profile', 'leaderboard', 'settings'];
+        const TABS = ['home', 'play', 'stats', 'store', 'profile', 'leaderboard', 'settings'];
 
         function goTab(tab) {
             TABS.forEach(t => {
@@ -12,18 +12,34 @@
             /* ── تحديث الشريط السفلي: تمييز زر المنافسة دائماً ── */
             _highlightCompetitionBtn(tab);
 
-            if (tab === 'achieve') {
+            if (tab === 'stats') {
                 checkDailyReset();
                 renderTasks();
                 renderAchievements();
                 _updateAchieveProgress();
+                updatePeriodStats();
+                /* تحديث الإحصائيات في صفحة stats */
+                const ds = st.dailyStats || {};
+                function _s(id, val) { const e = document.getElementById(id); if(e) e.textContent = val; }
+                _s('statsDailyCorrect', ds.correct || 0);
+                _s('statsDailyWrong', ds.wrong || 0);
+                _s('statsDailyGames', ds.games || 0);
+                const tot = (ds.correct||0) + (ds.wrong||0);
+                _s('statsDailyAccuracy', tot > 0 ? Math.round(((ds.correct||0)/tot)*100)+'%' : '0%');
+            }
+
+            if (tab === 'store') {
+                /* تحديث عملات المتجر */
+                const sc = document.getElementById('storeCoinsDisplay');
+                if (sc) sc.textContent = st.coins;
+                if (typeof renderEmojiShop === 'function') renderEmojiShop();
             }
 
             if (tab === 'profile') {
                 checkDailyReset();
                 loadProfileForm();
-                renderProfileDailyTasks();
-                renderProfileAchievements();
+                renderProfileDailyTasks && renderProfileDailyTasks();
+                renderProfileAchievements && renderProfileAchievements();
                 const pb  = document.getElementById('profileChallengeBest');
                 if (pb)   pb.textContent  = st.challengeBestScore || 0;
                 const pTG = document.getElementById('profileTotalGames');
@@ -35,6 +51,10 @@
                     const tot = st.correctTotal + st.wrongTotal;
                     pAcc.textContent = tot > 0 ? Math.round((st.correctTotal / tot) * 100) + '%' : '0%';
                 }
+                /* تحديث إحصائيات الملف الشخصي */
+                const sc = document.getElementById('statCorrect'); if(sc) sc.textContent = st.correctTotal || 0;
+                const sb = document.getElementById('statBestStreak'); if(sb) sb.textContent = '×'+(st.bestStreak||0);
+                const scp = document.getElementById('statCoinsP'); if(scp) scp.textContent = st.coins || 0;
                 try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch(e) {}
             }
 
@@ -42,7 +62,10 @@
                 checkDailyReset();
                 updateHomeStats();
                 renderHistory();
-                updatePeriodStats();          /* إحصائيات يومية/أسبوعية/شهرية */
+                updatePeriodStats();
+                /* تحديث المهام في الرئيسية */
+                _renderHomeTasks();
+                _renderHomeAchievements();
             }
 
             if (tab === 'leaderboard') {
@@ -56,6 +79,83 @@
             if (tab === 'play') {
                 updateUnlocks();
             }
+
+            if (tab === 'settings') {
+                /* مزامنة حالة الصوت في صفحة الإعدادات */
+                _syncSettingsPage();
+            }
+        }
+
+        /* ── مزامنة حالة الصوت في صفحة الإعدادات ── */
+        function _syncSettingsPage() {
+            const ss = document.getElementById('soundStatus');
+            const bs = document.getElementById('bgMusicStatus');
+            const vs = document.getElementById('vibrationStatus');
+            if (ss) ss.textContent = st.soundOn ? 'مفعّل' : 'معطّل';
+            if (bs) bs.textContent = st.bgOn ? 'مفعّلة' : 'معطّلة';
+            if (vs) vs.textContent = st.vibrationOn ? 'مفعّل' : 'معطّل';
+            const svs = document.getElementById('soundVolSlider');
+            const bvs = document.getElementById('bgVolSlider');
+            if (svs) { svs.value = st.soundVolume; const sv = document.getElementById('soundVolVal'); if(sv) sv.textContent = st.soundVolume + '%'; }
+            if (bvs) { bvs.value = st.bgVolume;    const bv = document.getElementById('bgVolVal');   if(bv) bv.textContent = st.bgVolume + '%'; }
+            /* مزامنة الثيم */
+            const di = document.getElementById('darkLightIcon');
+            const dl = document.getElementById('darkLightLabel');
+            if (di) di.textContent = st.darkMode ? '🌙' : '☀️';
+            if (dl) dl.textContent = st.darkMode ? 'داكن' : 'فاتح';
+        }
+
+        /* ── رسم المهام في الصفحة الرئيسية ── */
+        function _renderHomeTasks() {
+            if (typeof generateDailyTasks !== 'function') return;
+            const tasks = st.dailyTasks || [];
+            const container = document.getElementById('homeTasksList');
+            if (!container) return;
+            const done = tasks.filter(t => t.done).length;
+            const pctEl = document.getElementById('homeTasksPct');
+            const barEl = document.getElementById('homeTasksBarFill');
+            const cdEl  = document.getElementById('homeDailyCountdown');
+            if (pctEl) pctEl.textContent = tasks.length > 0 ? Math.round(done/tasks.length*100)+'%' : '0%';
+            if (barEl) barEl.style.width = tasks.length > 0 ? (done/tasks.length*100)+'%' : '0%';
+            const shown = tasks.slice(0, 4);
+            container.innerHTML = shown.map(t => {
+                const pct = t.target > 0 ? Math.min(100, Math.round((t.progress/t.target)*100)) : 0;
+                return `<div class="task-item ${t.done ? 'done' : ''}" style="margin-bottom:6px;">
+                    <div class="task-check">${t.done ? '✅' : '⬜'}</div>
+                    <div class="task-info">
+                        <div class="task-name">${t.icon || '🎯'} ${t.name}</div>
+                        <div class="task-reward">+${t.coins}💰 • ${t.done ? 'مكتمل' : t.progress+'/'+t.target}</div>
+                    </div>
+                    <div class="task-pct">${t.done ? '' : pct+'%'}</div>
+                </div>`;
+            }).join('');
+        }
+
+        /* ── رسم الإنجازات في الصفحة الرئيسية (أول 3) ── */
+        function _renderHomeAchievements() {
+            if (typeof ACHIEVEMENTS_DEF === 'undefined') return;
+            const total = ACHIEVEMENTS_DEF.length;
+            const done  = (st.achievementsUnlocked || []).length;
+            const pct   = total > 0 ? Math.round((done/total)*100) : 0;
+            const bar   = document.getElementById('homeAchieveProgressBar');
+            const pctEl = document.getElementById('homeAchievePct');
+            if (bar)   bar.style.width = pct + '%';
+            if (pctEl) pctEl.textContent = done + '/' + total;
+            const list = document.getElementById('homeAchieveList');
+            if (!list) return;
+            const unlocked = st.achievementsUnlocked || [];
+            const shown = ACHIEVEMENTS_DEF.slice(0, 3);
+            list.innerHTML = shown.map(a => {
+                const isDone = unlocked.includes(a.id);
+                return `<div class="achieve-item ${isDone ? 'unlocked' : ''}" style="margin-bottom:6px;">
+                    <div class="achieve-icon">${a.icon || '🏆'}</div>
+                    <div class="achieve-info">
+                        <div class="achieve-name">${a.name}</div>
+                        <div class="achieve-desc">${a.desc || ''}</div>
+                    </div>
+                    <div class="achieve-status">${isDone ? '✅' : '🔒'}</div>
+                </div>`;
+            }).join('');
         }
 
         /* ── تمييز زر المنافسة في الشريط السفلي ── */
