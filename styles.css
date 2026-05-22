@@ -2987,3 +2987,10 @@
     transform: scale(0.97);
     background: var(--surface3);
 }
+
+/* ═══ صفحات جديدة ═══ */
+#page-stats, #page-store, #page-settings { display: none; }
+#page-stats.active, #page-store.active, #page-settings.active { display: block; }
+
+/* ═══ إصلاح: صفحة achieve تم استبدالها بـ stats ═══ */
+#page-achieve { display: none !important; }
