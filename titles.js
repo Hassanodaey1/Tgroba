@@ -33,7 +33,7 @@ function updateFirstPlaceTracking(leaderboardData) {
     if (!st.firstPlaceData) { st.firstPlaceData = { streak: 0, lastDate: null, titles: [], currentTitle: null }; }
     if (isFirst) {
         if (st.firstPlaceData.lastDate !== today) {
-            const yesterday = (() => { const d = new Date(); d.setDate(d.getDate()-1); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; })();
+            const yesterday = (() => { const d = new Date(); d.setDate(d.getDate()-1); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; })();
             if (st.firstPlaceData.lastDate === yesterday) st.firstPlaceData.streak = (st.firstPlaceData.streak || 0) + 1;
             else if (st.firstPlaceData.lastDate !== today) st.firstPlaceData.streak = 1;
             st.firstPlaceData.lastDate = today;
