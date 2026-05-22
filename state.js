@@ -12,7 +12,7 @@ const SK = 'ho_math_v11';
 /* ─── دوال الوقت ─── */
 function todayStr() {
     const d = new Date();
-    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 }
 function weekStr() {
     const d = new Date();
@@ -343,7 +343,7 @@ function recordDailyStat(type, value) {
 function checkDailyLoginReward() {
     const today = todayStr();
     if (st.loginRewardDate === today) return;
-    const yesterday = (() => { const d = new Date(); d.setDate(d.getDate()-1); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; })();
+    const yesterday = (() => { const d = new Date(); d.setDate(d.getDate()-1); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; })();
     if (st.loginRewardDate === yesterday) {
         st.dailyStreak = (st.dailyStreak || 0) + 1;
     } else {
