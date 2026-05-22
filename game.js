@@ -170,15 +170,12 @@
         ══════════════════════════════════════════ */
         var _origStartGameWith = null;
 
-        /* يُنفَّذ مرة بعد تحميل كل الـ scripts */
-        document.addEventListener('DOMContentLoaded', function() {
-            /* نحفظ دالة startGameWith الأصلية من questions.js */
-            if (typeof startGameWith === 'function') {
-                _origStartGameWith = startGameWith;
+        /* wrapper آمن يعمل في أي وقت */
+        function _makeGameWrapper() {
+            if (typeof window._origStartGameWith !== 'function' && typeof startGameWith === 'function') {
+                window._origStartGameWith = startGameWith;
             }
-
-            /* نستبدلها بالـ wrapper */
-            startGameWith = function(mode, op, customTable, hasTimer) {
+            window.startGameWith = function(mode, op, customTable, hasTimer) {
                 /* إغلاق أي sheets مفتوحة */
                 ['modeSheet','opSheet','trainingOpSheet','gameSettingsSheet'].forEach(id => {
                     const el = document.getElementById(id);
@@ -187,11 +184,12 @@
 
                 /* إلغاء لعبة سابقة */
                 if (typeof clearGameTimer === 'function') clearGameTimer();
-                _clearUsedQuestions();
+                if (typeof _clearUsedQuestions === 'function') _clearUsedQuestions();
 
                 /* تطبيق الصعوبة التلقائية */
                 if (!st.difficulty || st.difficulty === 'auto') {
-                    st.difficulty = getDifficultyByLevel();
+                    if (typeof getDifficultyByLevel === 'function')
+                        st.difficulty = getDifficultyByLevel();
                 }
                 st.lastMode = mode || 'classic';
                 st.lastOp   = op || 'mix';
@@ -199,11 +197,26 @@
                 saveSt();
 
                 /* استدعاء الدالة الأصلية */
-                if (typeof _origStartGameWith === 'function') {
-                    _origStartGameWith(mode, op, customTable, hasTimer);
+                if (typeof window._origStartGameWith === 'function') {
+                    window._origStartGameWith(mode, op, customTable, hasTimer);
                 }
             };
+        }
+
+        /* يُنفَّذ مرة بعد تحميل كل الـ scripts */
+        document.addEventListener('DOMContentLoaded', function() {
+            /* نحفظ دالة startGameWith الأصلية من questions.js */
+            if (typeof startGameWith === 'function') {
+                _origStartGameWith = startGameWith;
+                window._origStartGameWith = startGameWith;
+            }
+            _makeGameWrapper();
         });
+
+        /* تشغيل فوري أيضاً في حال questions.js تحمّل أولاً */
+        if (document.readyState !== 'loading') {
+            setTimeout(_makeGameWrapper, 100);
+        }
 
         /* ══════════════════════════════════════════
            endGame — مع تسجيل دوري كامل
