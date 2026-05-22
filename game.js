@@ -165,40 +165,44 @@
         }
 
         /* ══════════════════════════════════════════
-           startGameWith — wrapper يُصلح مشكلة عدم عمل الأزرار
-           يغلق الـ sheets أولاً ثم يستدعي النسخة الأصلية من questions.js
+           إصلاح مشكلة عدم عمل الألعاب
+           نحفظ مرجع startGameWith من questions.js ونستدعيها مباشرةً
         ══════════════════════════════════════════ */
-        var _origStartGameWith = null; /* يُضبط بعد تحميل questions.js */
-
-        function startGameWith(mode, op, customTable, hasTimer) {
-            /* إغلاق أي sheets/overlays مفتوحة */
-            document.querySelectorAll('.sheet.active, .bottom-sheet.active')
-                .forEach(s => s.classList.remove('active'));
-
-            /* إلغاء لعبة سابقة */
-            if (typeof clearGameTimer === 'function') clearGameTimer();
-            _clearUsedQuestions();
-
-            /* تطبيق الصعوبة التلقائية */
-            if (!st.difficulty || st.difficulty === 'auto') {
-                st.difficulty = getDifficultyByLevel();
-            }
-            st.lastMode = mode || 'classic';
-            st.lastOp   = op || 'mix';
-            currentOp   = st.lastOp;
-            saveSt();
-
-            /* استدعاء الدالة الأصلية من questions.js إن وُجدت */
-            if (typeof _origStartGameWith === 'function') {
-                _origStartGameWith(mode, op, customTable, hasTimer);
-            }
-        }
+        var _origStartGameWith = null;
 
         /* يُنفَّذ مرة بعد تحميل كل الـ scripts */
         document.addEventListener('DOMContentLoaded', function() {
-            /* questions.js تعرّف startGameWith قبلنا — احفظها */
-            /* في هذه اللعبة questions.js يحتوي المنطق الكامل لـ startGameWith
-               ونحن نستبدلها بالـ wrapper — لذا نستدعي المنطق مباشرة */
+            /* نحفظ دالة startGameWith الأصلية من questions.js */
+            if (typeof startGameWith === 'function') {
+                _origStartGameWith = startGameWith;
+            }
+
+            /* نستبدلها بالـ wrapper */
+            startGameWith = function(mode, op, customTable, hasTimer) {
+                /* إغلاق أي sheets مفتوحة */
+                ['modeSheet','opSheet','trainingOpSheet','gameSettingsSheet'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('active');
+                });
+
+                /* إلغاء لعبة سابقة */
+                if (typeof clearGameTimer === 'function') clearGameTimer();
+                _clearUsedQuestions();
+
+                /* تطبيق الصعوبة التلقائية */
+                if (!st.difficulty || st.difficulty === 'auto') {
+                    st.difficulty = getDifficultyByLevel();
+                }
+                st.lastMode = mode || 'classic';
+                st.lastOp   = op || 'mix';
+                currentOp   = st.lastOp;
+                saveSt();
+
+                /* استدعاء الدالة الأصلية */
+                if (typeof _origStartGameWith === 'function') {
+                    _origStartGameWith(mode, op, customTable, hasTimer);
+                }
+            };
         });
 
         /* ══════════════════════════════════════════
