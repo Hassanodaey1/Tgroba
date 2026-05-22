@@ -8,6 +8,10 @@
 ════════════════════════════════════════════════════ */
 var _usedQuestionsThisSession = new Set();
 
+/* ─── معرّف الجلسة — يمنع المؤقتات القديمة من التأثير على اللعبة الجديدة ─── */
+var _gameSessionId = 0;
+function _newSessionId() { return ++_gameSessionId; }
+
 function _markQuestionUsed(q) {
     if (!q) return;
     const key = typeof q === 'string' ? q : JSON.stringify(q);
@@ -55,7 +59,6 @@ function checkAnswer(btn) {
         if (G.streak >= 5) doConfetti();
         if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
         showFloatXP(10 + G.streak * 2);
-        if (!G.isTraining) st.correctTotal++;
     } else {
         btn.classList.add('wrong');
         document.querySelectorAll('.answer-btn').forEach(b => {
@@ -84,7 +87,8 @@ function checkAnswer(btn) {
                         updateHeartsDisplay();
                         showFeedback('🛡️ درع الحماية!');
                     } else {
-                        setTimeout(() => { if (!G.ended) endGame(); }, 700);
+                        const _sid2 = _gameSessionId;
+                        setTimeout(() => { if (_sid2 === _gameSessionId && !G.ended) endGame(); }, 700);
                         return;
                     }
                 }
@@ -98,7 +102,6 @@ function checkAnswer(btn) {
             st.stats[G.currentCatKey].att++;
             st.stats[G.currentCatKey].max += 3;
         }
-        if (!G.isTraining) st.wrongTotal++;
     }
     const ss = document.getElementById('statScore');
     if (ss) ss.textContent = G.score;
@@ -107,7 +110,9 @@ function checkAnswer(btn) {
     const sf = document.getElementById('streakFire');
     if (sf) sf.style.display = G.streak >= 3 ? 'inline' : 'none';
     updateGameCoinsDisplay();
+    const _sid = _gameSessionId;
     setTimeout(() => {
+        if (_sid !== _gameSessionId) return; // جلسة قديمة — تجاهل
         if (G.ended) return;
         const isTimedMode = ['speed', 'survival', 'frenzy'].includes(G.mode);
         if (!G.isTraining && !isTimedMode && G.currentQ >= G.totalQ) {
