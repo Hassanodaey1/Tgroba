@@ -263,9 +263,9 @@
         }
 
         function updateSerialNumberDisplay() {
-            ['serialNumberDisplay', 'settingsSerialDisplay'].forEach(id => {
+            ['serialNumberDisplay', 'settingsSerialDisplay', 'settingsPageSerialDisplay'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.textContent = st.serialNumber || 'احفظ الملف الشخصي أولاً';
+                if (el) el.textContent = st.serialNumber || '---';
             });
         }
 
