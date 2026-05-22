@@ -45,57 +45,36 @@ function resumeGameTimer() {
 function openMainSettings() {
     const overlay = document.getElementById('gameOverlay');
     if (overlay && overlay.classList.contains('active')) return;
-    try { initSettingsDateSelectors(); } catch(e) {}
-
-    const inName = document.getElementById('settingsInputName');
-    if (inName) inName.value = st.name || '';
-
-    if (st.birthDate) {
-        const parts = st.birthDate.split('-');
-        if (parts.length === 3) {
-            const sd = document.getElementById('settingsBirthDay');
-            const sm = document.getElementById('settingsBirthMonth');
-            const sy = document.getElementById('settingsBirthYear');
-            if (sy) sy.value = parseInt(parts[0]);
-            if (sm) sm.value = parseInt(parts[1]);
-            if (sd) sd.value = parseInt(parts[2]);
-        }
-    }
-    updateSettingsDarkToggle();
-    updateSettingsThemeDots();
-    updateSettingsSerialDisplay();
+    /* مزامنة حالة الصوت في الـ sheet */
+    _syncSoundSheet();
     openSheet('mainSettingsSheet');
     playSound('click');
+}
+
+/* مزامنة عناصر sheet الصوت */
+function _syncSoundSheet() {
+    const _s = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    _s('sheetSoundStatus',    st.soundOn     ? 'مفعّل'  : 'مطفأ');
+    _s('sheetBgMusicStatus',  st.bgOn        ? 'مفعّلة' : 'مطفأة');
+    _s('sheetVibrationStatus',st.vibrationOn ? 'مفعّل'  : 'مطفأ');
+    const ssv = document.getElementById('sheetSoundVolSlider');
+    if (ssv) { ssv.value = st.soundVolume || 80; }
+    const ssvv = document.getElementById('sheetSoundVolVal');
+    if (ssvv) ssvv.textContent = (st.soundVolume || 80) + '%';
+    const sbv = document.getElementById('sheetBgVolSlider');
+    if (sbv) { sbv.value = st.bgVolume || 60; }
+    const sbvv = document.getElementById('sheetBgVolVal');
+    if (sbvv) sbvv.textContent = (st.bgVolume || 60) + '%';
+    const svib = document.getElementById('sheetVibVolSlider');
+    if (svib) { svib.value = st.vibrationStrength || 30; }
+    const svibv = document.getElementById('sheetVibVolVal');
+    if (svibv) svibv.textContent = (st.vibrationStrength || 30) + 'ms';
 }
 
 function closeMainSettings() { closeSheet('mainSettingsSheet'); }
 
 function saveMainSettings() {
-    const inName = document.getElementById('settingsInputName');
-    let name = inName ? inName.value.trim().replace(/[^a-zA-Z0-9\u0600-\u06FF ]/g, '') : '';
-    if (!name) { showFeedback('الاسم لا يمكن أن يكون فارغاً'); return; }
-    if (name.length > 30) name = name.slice(0, 30);
-    st.name = name;
-
-    const sd = document.getElementById('settingsBirthDay');
-    const sm = document.getElementById('settingsBirthMonth');
-    const sy = document.getElementById('settingsBirthYear');
-    if (sd && sm && sy) {
-        const y  = sy.value;
-        const mo = String(sm.value).padStart(2, '0');
-        const d  = String(sd.value).padStart(2, '0');
-        st.birthDate = `${y}-${mo}-${d}`;
-        if (typeof calculateAgeFromBirthDate === 'function')
-            st.age = calculateAgeFromBirthDate(st.birthDate);
-    }
-    if (!st.serialNumber)
-        st.serialNumber = generateSerialNumber(st.birthDate, st.name);
-
-    saveSt();
-    updateUI();
-    loadProfileForm();
-    updateSerialNumberDisplay();
-    updateSettingsSerialDisplay();
+    /* هذه الدالة تُبقى للتوافق */
     closeMainSettings();
     showFeedback('✅ تم حفظ الإعدادات');
 }
@@ -156,7 +135,27 @@ function sheetBgAndResume(e, id) {
     if (e.target.id === id) { closeSheet(id); resumeGameTimer(); }
 }
 
-/* ═══ 4. تهيئة الألقاب ═══ */
+/* ═══ استعادة الحساب من صفحة الإعدادات ═══ */
+function showSettingsRestorePanel() {
+    const p = document.getElementById('settingsRestorePanel2');
+    if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function restoreFromSettingsPage() {
+    const inp    = document.getElementById('settingsRestoreInput2');
+    const serial = inp ? inp.value.trim() : '';
+    if (!serial) { showFeedback('أدخل الرقم التسلسلي'); return; }
+    const savedData = loadSerialBackup(serial);
+    if (!savedData) { showFeedback('⚠️ لم يُعثر على حساب بهذا الرقم'); return; }
+    Object.assign(st, sanitizeState(savedData));
+    saveSt(); updateUI(); loadProfileForm(); applyDarkMode();
+    applyProfilePhoto();
+    updateSerialNumberDisplay();
+    if (inp) inp.value = '';
+    const p = document.getElementById('settingsRestorePanel2');
+    if (p) p.style.display = 'none';
+    showFeedback('✅ تم استعادة الحساب بنجاح');
+}
 function initTitlesSystem() {
     try { checkSeasonReset();    } catch(e) {}
     try { renderProfileTitles(); } catch(e) {}
@@ -172,7 +171,7 @@ function toggleBgMusicInGame() {
 /* ═══ 6. الاهتزاز ═══ */
 function toggleVibration() {
     st.vibrationOn = !st.vibrationOn;
-    ['vibrationStatus','gVibrationStatus'].forEach(id => {
+    ['vibrationStatus','gVibrationStatus','sheetVibrationStatus'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
     });
