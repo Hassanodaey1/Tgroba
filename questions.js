@@ -147,6 +147,7 @@ function startGameWith(mode, op, customTable = null, forceTimer = false) {
     closeSheet('opSheet');
     closeSheet('trainingOpSheet');
     clearGameTimer();
+    _newSessionId(); // ← إلغاء كل المؤقتات المعلّقة من الجلسة السابقة
     st.lastMode = mode;
     st.lastOp = op;
     currentOp = op;
@@ -176,7 +177,7 @@ function startGameWith(mode, op, customTable = null, forceTimer = false) {
         if (hasTimer) { G.maxTime = 60; G.timeLeft = 60; lives = 3; }
         else { G.maxTime = 0; G.timeLeft = 0; lives = 0; }
     } else if (mode === 'speed') { G.totalQ = 9999; hasTimer = true; G.maxTime = 60; G.timeLeft = 60; lives = 3; }
-    else if (mode === 'survival') { G.totalQ = 9999; hasTimer = false; lives = 0; }
+    else if (mode === 'survival') { G.totalQ = 9999; hasTimer = false; lives = 3; }
     else if (mode === 'frenzy') { G.totalQ = 9999; hasTimer = true; G.maxTime = 30; G.timeLeft = 30; lives = 3; }
     else if (mode === 'daily') { G.totalQ = 5; hasTimer = false; lives = 0; }
     G.livesLeft = lives;
@@ -228,6 +229,7 @@ function startGameWith(mode, op, customTable = null, forceTimer = false) {
 ════════════════════════════════════════════════════ */
 function startTrainingMode(op = 'mix') {
     clearGameTimer();
+    _newSessionId(); // ← إلغاء كل المؤقتات المعلّقة
     G.mode = 'classic';
     G.op = op;
     G.score = 0;
