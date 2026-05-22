@@ -1143,35 +1143,71 @@ select {
 
 /* زر المنافسة المميز */
 .nav-competition-btn {
-    flex: 1.3;
+    flex: 1;
     position: relative;
 }
 .nav-competition-glow {
     position: absolute;
-    top: -8px;
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 72px;
-    height: 72px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(240,185,11,0.45) 0%, transparent 70%);
-    animation: competitionPulse 2s ease-in-out infinite;
+    background: radial-gradient(circle, rgba(240,185,11,0.35) 0%, transparent 70%);
+    animation: competitionPulse 2.5s ease-in-out infinite;
     pointer-events: none;
     z-index: 0;
 }
 @keyframes competitionPulse {
-    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.6; }
-    50% { transform: translateX(-50%) scale(1.25); opacity: 1; }
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+    50% { transform: translateX(-50%) scale(1.3); opacity: 0.9; }
 }
 .nav-competition-btn > *:not(.nav-competition-glow) {
     position: relative;
     z-index: 1;
 }
-.nav-competition-btn .nav-item-label {
+/* قرص المنافسة — بنفس حجم nav-item-icon لكن بتصميم ذهبي */
+.nav-competition-disc {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.nav-competition-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold), #ffd54f, var(--gold2), #e0a80b, var(--gold));
+    animation: discSpin 4s linear infinite;
+    opacity: 0.85;
+}
+.nav-competition-inner {
+    position: relative;
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a0e00, #2e1b00);
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15em;
+    box-shadow: 0 4px 16px rgba(240,185,11,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.nav-competition-btn.active .nav-competition-inner {
+    background: linear-gradient(135deg, #2e1b00, #4a2d00);
+    box-shadow: 0 4px 22px rgba(240,185,11,0.7), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.nav-competition-label {
     color: var(--gold) !important;
     font-weight: 900 !important;
-    font-size: 0.62em !important;
-    text-shadow: 0 0 8px rgba(240,185,11,0.5);
+    font-size: 0.58em !important;
+    text-shadow: 0 0 8px rgba(240,185,11,0.4);
 }
 #nav-leaderboard .nav-item-icon {
     background: linear-gradient(135deg, rgba(240,185,11,0.18), rgba(240,185,11,0.08));
