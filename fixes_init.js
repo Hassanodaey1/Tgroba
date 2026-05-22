@@ -234,3 +234,27 @@ function applyCompetitionButtonTheme() {
         .getPropertyValue('--gold').trim() || '#f0b90b';
     navLB.style.setProperty('--nav-active-color', gold);
 }
+
+/* ─── تحديث عداد المهام في الرئيسية ─── */
+function updateHomeDailyCountdown() {
+    const el = document.getElementById('homeDailyCountdown');
+    if (!el) return;
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    const diff = midnight - now;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+setInterval(updateHomeDailyCountdown, 1000);
+
+/* ─── مزامنة صفحة المتجر عند تحميل الصفحة ─── */
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        /* تحديث عرض المتجر عند التهيئة */
+        const sc = document.getElementById('storeCoinsDisplay');
+        if (sc && typeof st !== 'undefined') sc.textContent = st.coins || 0;
+    }, 3000);
+});
