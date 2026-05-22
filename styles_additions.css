@@ -1,0 +1,1194 @@
+/* ═══════════════════════════════════════════════════
+   HO Math — DESIGN OVERHAUL v11
+   تحديث شامل للتصميم: توحيد الأزرار والبطاقات والصفحات
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════ */
+
+/* ═══ 1. متغيرات موحّدة إضافية ═══ */
+:root {
+  --radius-btn: 14px;
+  --radius-card: 18px;
+  --radius-lg: 22px;
+  --shadow-gold: 0 4px 20px rgba(240,185,11,0.35);
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  --transition: 0.22s cubic-bezier(0.22,1,0.36,1);
+  --btn-h: 48px;
+  --btn-h-sm: 40px;
+}
+
+/* ═══ 2. أزرار موحّدة — كل الأزرار بنفس الارتفاع والحواف ═══ */
+
+/* الزر الأساسي (ذهبي) */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--btn-h);
+  padding: 12px 20px;
+  border-radius: var(--radius-btn);
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #000 !important;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.93em;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-gold);
+}
+.btn-primary:active { transform: scale(0.97); box-shadow: none; }
+
+/* الزر الثانوي (خلفية داكنة) */
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--btn-h);
+  padding: 12px 20px;
+  border-radius: var(--radius-btn);
+  background: var(--surface3);
+  color: var(--text2);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.88em;
+  font-weight: 700;
+  border: 1.5px solid var(--border2);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-secondary:active { transform: scale(0.97); background: var(--surface2); }
+
+/* زر الخطر (أحمر) */
+.btn-danger {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: var(--btn-h); padding: 12px 20px;
+  border-radius: var(--radius-btn);
+  background: rgba(239,68,68,0.1);
+  color: var(--red);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.88em; font-weight: 800;
+  border: 1.5px solid rgba(239,68,68,0.3);
+  cursor: pointer; transition: var(--transition);
+}
+.btn-danger:active { background: rgba(239,68,68,0.2); transform: scale(0.97); }
+
+/* ═══ 3. توحيد بطاقات الألعاب ═══ */
+.game-cat-card {
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.game-cat-card:active { transform: scale(0.97); border-color: var(--gold); }
+.game-cat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(240,185,11,0.06), transparent);
+  opacity: 0;
+  transition: var(--transition);
+  pointer-events: none;
+}
+.game-cat-card:hover::after { opacity: 1; }
+
+/* ═══ 4. توحيد بطاقات الوضع ═══ */
+.mode-card {
+  background: var(--surface3);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-card);
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.mode-card:active { transform: scale(0.96); border-color: var(--gold); background: rgba(240,185,11,0.07); }
+
+/* ═══ 5. توحيد بطاقات الإحصائيات ═══ */
+.adv-stat {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-card);
+  padding: 12px 8px;
+  text-align: center;
+  transition: var(--transition);
+}
+.stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-card);
+  padding: 14px 8px;
+  text-align: center;
+}
+
+/* ═══ 6. زر المنافسة المميز — إعادة تصميم كامل ═══ */
+#nav-leaderboard {
+  flex: 1;
+  position: relative;
+}
+#nav-leaderboard > * { position: relative; z-index: 1; }
+
+/* قرص المنافسة المرفوع */
+.nav-competition-disc {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  margin: -22px auto 0;
+}
+.nav-competition-disc::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(var(--gold), #ffd54f, var(--gold2), #f0b90b, var(--gold));
+  animation: discSpin 4s linear infinite;
+  opacity: 0.8;
+}
+@keyframes discSpin { to { transform: rotate(360deg); } }
+.nav-competition-disc-inner {
+  position: relative;
+  z-index: 2;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a0f00, #2d1a00);
+  border: 2.5px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.65em;
+  box-shadow: 0 6px 24px rgba(240,185,11,0.55), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.nav-competition-label {
+  font-size: 0.6em;
+  font-weight: 900;
+  color: var(--gold);
+  margin-top: 4px;
+  text-shadow: 0 0 10px rgba(240,185,11,0.5);
+  letter-spacing: 0.5px;
+}
+
+/* إشعاع المنافسة */
+.nav-competition-glow {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(240,185,11,0.5) 0%, transparent 70%);
+  animation: competitionPulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes competitionPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+  50% { transform: translateX(-50%) scale(1.3); opacity: 1; }
+}
+
+/* الشريط السفلي المحسّن */
+.bottom-nav {
+  flex-shrink: 0;
+  z-index: 100;
+  background: rgba(8, 11, 20, 0.97);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-top: 1px solid rgba(240,185,11,0.12);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  padding-top: 4px;
+  padding-bottom: var(--safe-bottom);
+  min-height: calc(var(--nav-h) + var(--safe-bottom));
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  cursor: pointer;
+  padding: 6px 2px;
+  transition: var(--transition);
+  position: relative;
+}
+.nav-item-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15em;
+  transition: var(--transition);
+  background: transparent;
+}
+.nav-item.active .nav-item-icon {
+  background: linear-gradient(135deg, rgba(240,185,11,0.18), rgba(240,185,11,0.06));
+  border: 1px solid rgba(240,185,11,0.22);
+  box-shadow: 0 0 14px rgba(240,185,11,0.2);
+}
+.nav-item-label {
+  font-size: 0.55em;
+  font-weight: 700;
+  color: var(--text3);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.nav-item.active .nav-item-label { color: var(--gold); }
+.nav-active-dot {
+  position: absolute;
+  top: 0px;
+  width: 20px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  box-shadow: 0 0 8px var(--gold);
+  opacity: 0;
+  transition: var(--transition);
+}
+.nav-item.active .nav-active-dot { opacity: 1; }
+:active > .nav-item-icon { transform: scale(0.9); }
+
+/* ═══ 7. توحيد بطاقات الفئات ═══ */
+.cat-card {
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-card);
+  padding: 16px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.cat-card:active { transform: scale(0.96); border-color: var(--chip-color, var(--accent)); }
+
+/* ═══ 8. توحيد أزرار الإجابة ═══ */
+.answer-btn {
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 2px solid var(--border2);
+  border-radius: var(--radius-card);
+  padding: 16px 10px;
+  font-family: 'Tajawal', sans-serif;
+  font-size: clamp(0.9em, 3.8vw, 1.32em);
+  font-weight: 900;
+  color: var(--text);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.answer-btn:active { transform: scale(0.94); border-color: var(--gold); }
+.answer-btn:not(:disabled):hover { border-color: rgba(240,185,11,0.4); background: rgba(240,185,11,0.04); }
+.answer-btn.correct {
+  background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1));
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 20px rgba(16,185,129,0.3);
+  animation: correctPop 0.36s cubic-bezier(0.34,1.56,0.64,1);
+}
+.answer-btn.wrong {
+  background: rgba(239,68,68,0.15);
+  border-color: var(--red);
+  color: var(--red);
+  animation: wrongShake 0.36s ease;
+}
+
+/* ═══ 9. توحيد hero-card ═══ */
+.hero-card {
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(240,185,11,0.1), transparent 70%);
+  pointer-events: none;
+}
+
+/* ═══ 10. توحيد بطاقات المتجر ═══ */
+.store-item-card {
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 10px;
+}
+.store-item-card:active { transform: scale(0.97); border-color: var(--gold); }
+.store-item-card.featured {
+  background: linear-gradient(135deg, rgba(240,185,11,0.12), rgba(124,58,237,0.08));
+  border-color: rgba(240,185,11,0.35);
+}
+.store-item-icon { font-size: 2.2em; flex-shrink: 0; }
+.store-item-info { flex: 1; min-width: 0; }
+.store-item-name { font-size: 0.88em; font-weight: 900; color: var(--text); }
+.store-item-desc { font-size: 0.64em; color: var(--text2); margin-top: 2px; }
+.store-item-price {
+  background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(240,185,11,0.1));
+  border: 1px solid rgba(240,185,11,0.35);
+  border-radius: 10px;
+  padding: 6px 11px;
+  font-size: 0.75em;
+  font-weight: 900;
+  color: var(--gold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.store-item-price.free {
+  background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1));
+  border-color: rgba(16,185,129,0.35);
+  color: var(--green);
+}
+.store-item-price.owned {
+  background: var(--surface3);
+  border-color: var(--border2);
+  color: var(--text3);
+}
+.store-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 6px;
+}
+.store-section-icon { font-size: 1.5em; }
+.store-section-name { font-size: 0.88em; font-weight: 900; color: var(--text); }
+.store-section-badge {
+  margin-right: auto;
+  background: rgba(240,185,11,0.12);
+  border: 1px solid rgba(240,185,11,0.25);
+  border-radius: 20px;
+  padding: 2px 9px;
+  font-size: 0.58em;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+/* ═══ 11. بطاقات المساعدات الموحّدة ═══ */
+.helper-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-btn);
+  padding: 10px 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  box-shadow: var(--shadow-card);
+  min-height: 65px;
+  justify-content: center;
+}
+.helper-btn:active { transform: scale(0.93); border-color: var(--gold); box-shadow: 0 0 12px rgba(240,185,11,0.25); }
+
+/* ═══ 12. توحيد settings rows ═══ */
+.settings-row {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-btn);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-card);
+}
+.settings-row:active { background: var(--surface3); transform: scale(0.98); }
+
+/* ═══ 13. توحيد profile sections ═══ */
+.profile-section {
+  margin-top: 4px;
+}
+.profile-section-title {
+  font-size: 0.65em;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+/* ═══ 14. توحيد نافذة النتائج ═══ */
+.res-btn {
+  width: 100%;
+  min-height: var(--btn-h);
+  padding: 14px;
+  border-radius: var(--radius-btn);
+  border: none;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.92em;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 8px;
+}
+.res-btn.primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #000;
+  box-shadow: var(--shadow-gold);
+}
+.res-btn.primary:active { transform: scale(0.97); box-shadow: none; }
+.res-btn.secondary {
+  background: var(--surface3);
+  color: var(--text2);
+  border: 1.5px solid var(--border2);
+}
+.res-btn.secondary:active { transform: scale(0.97); }
+
+/* ═══ 15. توحيد أزرار الحفظ والإلغاء ═══ */
+.save-btn {
+  width: 100%;
+  min-height: var(--btn-h);
+  padding: 14px;
+  border-radius: var(--radius-btn);
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #000;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.93em;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-gold);
+  transition: var(--transition);
+}
+.save-btn:active { transform: scale(0.97); box-shadow: none; }
+.sheet-cancel {
+  margin-top: 12px;
+  width: 100%;
+  min-height: var(--btn-h-sm);
+  padding: 12px 14px;
+  border-radius: var(--radius-btn);
+  border: 1.5px solid var(--border2);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.87em;
+  font-weight: 700;
+  background: var(--surface3);
+  color: var(--text2);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.sheet-cancel:active { background: var(--surface2); transform: scale(0.98); }
+
+/* ═══ 16. توحيد نافذة التأكيد ═══ */
+.confirm-btn-yes {
+  min-height: var(--btn-h-sm);
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #000;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 25px;
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 800;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 90px;
+  box-shadow: 0 2px 10px rgba(240,185,11,0.35);
+}
+.confirm-btn-yes:active { transform: scale(0.95); box-shadow: none; }
+.confirm-btn-no {
+  min-height: var(--btn-h-sm);
+  background: var(--surface3);
+  color: var(--text2);
+  border: 1.5px solid var(--border2);
+  padding: 10px 24px;
+  border-radius: 25px;
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 700;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 90px;
+}
+.confirm-btn-no:active { transform: scale(0.95); }
+
+/* ═══ 17. تحسين بطاقة التحدي ═══ */
+#nav-leaderboard.active .nav-item-icon {
+  background: linear-gradient(135deg, rgba(240,185,11,0.3), rgba(240,185,11,0.12)) !important;
+  box-shadow: 0 0 18px rgba(240,185,11,0.45) !important;
+  border-color: var(--gold) !important;
+}
+#nav-leaderboard.active .nav-item-label {
+  color: var(--gold) !important;
+  font-weight: 900 !important;
+  text-shadow: 0 0 8px rgba(240,185,11,0.5);
+}
+#nav-leaderboard.active .nav-active-dot {
+  background: var(--gold) !important;
+  box-shadow: 0 0 12px var(--gold) !important;
+}
+
+/* ═══ 18. توحيد task items ═══ */
+.task-item {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-btn);
+  padding: 13px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: var(--transition);
+  box-shadow: var(--shadow-card);
+}
+.task-item.done {
+  border-color: rgba(16,185,129,0.3);
+  background: rgba(16,185,129,0.05);
+}
+
+/* ═══ 19. توحيد bطاقات الإنجازات ═══ */
+.achieve-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82em;
+  transition: var(--transition);
+}
+.achieve-item:last-child { border-bottom: none; }
+
+/* ═══ 20. شريط التقدم الموحّد ═══ */
+.progress-bar-track {
+  height: 6px;
+  background: var(--surface3);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  transition: width 0.8s ease;
+}
+
+/* ═══ 21. تحسين diff chips ═══ */
+.diff-chip {
+  flex: 1;
+  min-height: var(--btn-h-sm);
+  padding: 10px 6px;
+  border-radius: var(--radius-btn);
+  text-align: center;
+  border: 1.5px solid var(--border2);
+  background: var(--surface2);
+  font-size: clamp(0.62em, 2.5vw, 0.75em);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.diff-chip.active {
+  border-color: var(--gold);
+  background: rgba(240,185,11,0.1);
+  color: var(--gold);
+  box-shadow: 0 0 14px rgba(240,185,11,0.2);
+}
+.diff-chip.locked { opacity: 0.32; pointer-events: none; }
+
+/* ═══ 22. تحسين mode cards ═══ */
+.mode-card-name { font-size: clamp(0.7em, 3vw, 0.84em); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mode-card-desc { font-size: clamp(0.56em, 2.5vw, 0.65em); }
+
+/* ═══ 23. نافذة الإعدادات الموحّدة ═══ */
+.settings-page-section {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-card);
+}
+.settings-page-section .settings-row {
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+.settings-page-section .settings-row:last-child { border-bottom: none; }
+
+/* ═══ 24. المتجر — قسم المشتريات الجديدة ═══ */
+.store-powerup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+.store-powerup-card {
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-card);
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.store-powerup-card:active { transform: scale(0.96); border-color: var(--gold); }
+.store-powerup-card.featured {
+  background: linear-gradient(135deg, rgba(240,185,11,0.12), rgba(124,58,237,0.08));
+  border-color: rgba(240,185,11,0.4);
+}
+.store-powerup-icon { font-size: 2.2em; line-height: 1; }
+.store-powerup-name { font-size: 0.78em; font-weight: 800; color: var(--text); }
+.store-powerup-desc { font-size: 0.6em; color: var(--text2); line-height: 1.4; }
+.store-powerup-price {
+  background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(240,185,11,0.1));
+  border: 1px solid rgba(240,185,11,0.35);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.7em;
+  font-weight: 900;
+  color: var(--gold);
+  margin-top: 2px;
+}
+.store-powerup-badge {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.48em;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+.store-powerup-badge.hot { background: var(--gold); color: #000; }
+.store-powerup-badge.new { background: var(--green); color: #fff; }
+
+/* ═══ 25. قسم الباقات في المتجر ═══ */
+.store-bundle-card {
+  background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(6,182,212,0.1));
+  border: 2px solid rgba(124,58,237,0.4);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.store-bundle-card:active { transform: scale(0.97); }
+.store-bundle-card.gold-bundle {
+  background: linear-gradient(135deg, rgba(240,185,11,0.18), rgba(255,213,79,0.08));
+  border-color: rgba(240,185,11,0.5);
+}
+.store-bundle-icon { font-size: 2.8em; flex-shrink: 0; }
+.store-bundle-info { flex: 1; }
+.store-bundle-name { font-size: 0.95em; font-weight: 900; color: var(--text); }
+.store-bundle-desc { font-size: 0.66em; color: var(--text2); margin-top: 3px; line-height: 1.5; }
+.store-bundle-price {
+  text-align: center;
+  flex-shrink: 0;
+}
+.store-bundle-price-num {
+  font-size: 1.4em;
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+}
+.store-bundle-price-label {
+  font-size: 0.55em;
+  color: var(--text2);
+  margin-top: 2px;
+}
+.store-bundle-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.55em;
+  font-weight: 900;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+/* ═══ 26. تحسين صفحة المتجر ═══ */
+.store-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.store-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: var(--radius-btn);
+  border: 1.5px solid var(--border2);
+  background: var(--surface2);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.72em;
+  font-weight: 700;
+  color: var(--text2);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+.store-tab.active {
+  background: rgba(240,185,11,0.12);
+  border-color: rgba(240,185,11,0.4);
+  color: var(--gold);
+  font-weight: 900;
+}
+.store-tab:active { transform: scale(0.97); }
+.store-tab-content { display: none; }
+.store-tab-content.active { display: block; animation: pageIn 0.25s ease; }
+
+/* ═══ 27. coins header في المتجر ═══ */
+.store-coins-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(240,185,11,0.1), rgba(240,185,11,0.05));
+  border: 1px solid rgba(240,185,11,0.25);
+  border-radius: var(--radius-card);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.store-coins-amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.4em;
+  font-weight: 900;
+  color: var(--gold);
+}
+.store-coins-label {
+  font-size: 0.62em;
+  color: var(--text2);
+  font-weight: 600;
+}
+.store-earn-btn {
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.7em;
+  font-weight: 800;
+  color: var(--green);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.store-earn-btn:active { transform: scale(0.95); }
+
+/* ═══ 28. تحسين نافذة اللعبة ═══ */
+.game-header {
+  padding: calc(var(--safe-top) + 12px) 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(10, 14, 25, 0.95);
+  backdrop-filter: blur(20px);
+}
+.game-back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1em;
+  flex-shrink: 0;
+  transition: var(--transition);
+  color: var(--text);
+}
+.game-back-btn:active { transform: scale(0.88); }
+.question-card {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 2px solid var(--border2);
+  border-radius: 26px;
+  padding: 26px 20px 22px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+.return-home-btn {
+  width: 100%;
+  max-width: 360px;
+  min-height: var(--btn-h-sm);
+  padding: 12px;
+  border-radius: var(--radius-btn);
+  border: 1.5px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.8em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.return-home-btn:active { background: var(--surface3); transform: scale(0.97); }
+
+/* ═══ 29. تحسين section labels ═══ */
+.section-label {
+  font-size: 0.67em;
+  font-weight: 800;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+/* ═══ 30. تحسين الـ sheet panels ═══ */
+.sheet-panel {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  border: 1px solid var(--border2);
+  border-bottom: none;
+  padding: 20px 18px calc(var(--safe-bottom) + 20px);
+  animation: sheetUp 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sheet-handle {
+  width: 38px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--border2);
+  margin: 0 auto 16px;
+}
+.sheet-title {
+  font-size: 1.05em;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+/* ═══ 31. تحسين قسم emoji shop ═══ */
+.emoji-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
+}
+.emoji-shop-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface3);
+  border-radius: var(--radius-btn);
+  padding: 9px 4px;
+  border: 2px solid var(--border2);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+.emoji-shop-item:active { transform: scale(0.94); }
+.emoji-shop-item.owned { border-color: var(--green); background: rgba(16,185,129,0.08); }
+.emoji-shop-item.selected { border-color: var(--gold); background: rgba(240,185,11,0.1); box-shadow: 0 0 12px rgba(240,185,11,0.25); }
+
+/* ═══ 32. تحسين نموذج الملف الشخصي ═══ */
+.form-input, .form-select, .date-select {
+  background: var(--surface3);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-btn);
+  padding: 12px 14px;
+  font-size: 0.88em;
+  font-weight: 600;
+  color: var(--text);
+  outline: none;
+  transition: var(--transition);
+  width: 100%;
+}
+.form-input:focus, .form-select:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(240,185,11,0.12);
+}
+.gender-btn {
+  flex: 1;
+  min-height: var(--btn-h-sm);
+  padding: 11px;
+  border-radius: var(--radius-btn);
+  border: 1.5px solid var(--border2);
+  background: var(--surface3);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.82em;
+  font-weight: 700;
+  color: var(--text2);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+.gender-btn.active {
+  border-color: var(--accent2);
+  color: var(--accent2);
+  background: rgba(6,182,212,0.1);
+}
+
+/* ═══ 33. reset buttons موحّدة ═══ */
+.reset-stats-btn {
+  width: 100%;
+  min-height: var(--btn-h);
+  padding: 13px;
+  border-radius: var(--radius-btn);
+  border: 1.5px solid rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.08);
+  color: var(--red);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.86em;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.reset-stats-btn:active { background: rgba(239,68,68,0.18); transform: scale(0.97); }
+.reset-complete-btn {
+  width: 100%;
+  min-height: var(--btn-h);
+  padding: 13px;
+  border-radius: var(--radius-btn);
+  border: 1.5px solid rgba(240,185,11,0.3);
+  background: rgba(240,185,11,0.08);
+  color: var(--gold);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.86em;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 8px;
+}
+.reset-complete-btn:active { background: rgba(240,185,11,0.18); transform: scale(0.97); }
+
+/* ═══ 34. تحسين challenge items ═══ */
+.challenge-task-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--surface3);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-btn);
+  padding: 12px 14px;
+  transition: var(--transition);
+  box-shadow: var(--shadow-card);
+}
+.challenge-task-item.done {
+  background: rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.3);
+}
+
+/* ═══ 35. تحسين لائحة الصدارة ═══ */
+.leaderboard-table {
+  background: var(--surface2);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border2);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.lb-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.84em;
+  font-weight: 500;
+  transition: var(--transition);
+}
+.lb-header {
+  background: linear-gradient(135deg, var(--surface3), var(--surface2));
+  font-weight: 900;
+  color: var(--gold);
+  font-size: 0.72em;
+  letter-spacing: 1px;
+}
+.lb-row-me {
+  background: linear-gradient(135deg, rgba(240,185,11,0.1), rgba(124,58,237,0.07));
+  border-right: 3px solid var(--gold);
+  font-weight: 900;
+}
+.lb-row-me span { color: var(--gold) !important; }
+
+/* ═══ 36. تحسين game stats row ═══ */
+.game-stat {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-btn);
+  padding: 10px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+}
+
+/* ═══ 37. تحسينات الشاشات الصغيرة ═══ */
+@media (max-width: 340px) {
+  .nav-item-label { font-size: 0.45em; }
+  .nav-item-icon { width: 32px; height: 32px; font-size: 0.95em; }
+  .answer-btn { font-size: 0.82em !important; padding: 12px 6px; }
+  .mode-card-name { font-size: 0.62em; }
+  .helper-btn { min-width: 56px; padding: 8px 4px; min-height: 58px; }
+  .diff-chip { padding: 8px 6px; font-size: 0.62em; }
+}
+@media (min-width: 341px) and (max-width: 390px) {
+  .answer-btn { font-size: 0.92em !important; }
+  .helper-btn-label { font-size: 0.53em; }
+  .mode-card-name { font-size: 0.72em; }
+}
+
+/* ═══ 38. page transitions موحّدة ═══ */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page.active { animation: pageIn 0.28s cubic-bezier(0.22,1,0.36,1); }
+
+/* ═══ 39. تصحيح مشكلة إخفاء صفحات جديدة ═══ */
+#page-stats, #page-store, #page-settings { display: none; }
+#page-stats.active, #page-store.active, #page-settings.active { display: flex; }
+#page-achieve { display: none !important; }
+
+/* ═══ 40. تصحيح بعض ID ازدواجية ═══ */
+/* إخفاء العناصر المكررة التي تضر بالأداء */
+#page-profile .stats-grid3 + .stats-grid3 { display: none; }
+
+/* ═══ 41. تحسين gcard-badge ═══ */
+.gcard-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.58em;
+  font-weight: 900;
+}
+.gcard-badge.hot {
+  background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(240,185,11,0.1));
+  color: var(--gold);
+  border: 1px solid rgba(240,185,11,0.3);
+}
+.gcard-badge.new {
+  background: rgba(16,185,129,0.15);
+  color: var(--green);
+  border: 1px solid rgba(16,185,129,0.3);
+}
+.gcard-badge.locked {
+  background: rgba(239,68,68,0.1);
+  color: var(--red);
+  border: 1px solid rgba(239,68,68,0.25);
+}
+
+/* ═══ 42. تحسين session timer card ═══ */
+.session-timer-card {
+  background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(6,182,212,0.08));
+  border: 1px solid rgba(124,58,237,0.25);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+/* ═══ 43. stars-big ═══ */
+.stars-big {
+  font-size: 1.1em;
+  margin-top: 7px;
+  letter-spacing: 2px;
+}
+
+/* ═══ 44. تحسين daily-banner ═══ */
+.daily-banner {
+  background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(6,182,212,0.12));
+  border: 1.5px solid rgba(124,58,237,0.32);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-card);
+}
+.daily-banner:active { transform: scale(0.97); }
+
+/* ═══ 45. game result overlay ═══ */
+.results-card {
+  width: 100%;
+  max-width: 370px;
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 2px solid var(--border2);
+  border-radius: 28px;
+  padding: 28px 22px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+
+/* ═══ تأكيد: الحفاظ على أنيميشن المنافسة ═══ */
+.nav-competition-glow {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(240,185,11,0.5) 0%, transparent 70%);
+  animation: competitionPulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
