@@ -8,49 +8,57 @@ function initVolumeSliders() {
     if (typeof st.soundVolume !== 'number') st.soundVolume = 80;
     if (typeof st.bgVolume    !== 'number') st.bgVolume    = 60;
 
-    ['soundVolSlider','gSoundVolSlider'].forEach(id => {
+    ['soundVolSlider','gSoundVolSlider','sheetSoundVolSlider'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = st.soundVolume;
     });
-    ['bgVolSlider','gBgVolSlider'].forEach(id => {
+    ['bgVolSlider','gBgVolSlider','sheetBgVolSlider'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = st.bgVolume;
     });
-    ['soundVolVal','gSoundVolVal'].forEach(id => {
+    ['soundVolVal','gSoundVolVal','sheetSoundVolVal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.soundVolume + '%';
     });
-    ['bgVolVal','gBgVolVal'].forEach(id => {
+    ['bgVolVal','gBgVolVal','sheetBgVolVal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.bgVolume + '%';
     });
     if (typeof st.vibrationStrength !== 'number') st.vibrationStrength = 30;
-    const vibSl = document.getElementById('vibVolSlider');
-    if (vibSl) vibSl.value = st.vibrationStrength;
-    const vibVl = document.getElementById('vibVolVal');
-    if (vibVl) vibVl.textContent = st.vibrationStrength + 'ms';
+    ['vibVolSlider','sheetVibVolSlider'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = st.vibrationStrength;
+    });
+    ['vibVolVal','sheetVibVolVal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.vibrationStrength + 'ms';
+    });
 }
 
 function setSoundVolume(val) {
     st.soundVolume = parseInt(val);
-    ['soundVolVal','gSoundVolVal'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = val + '%'; });
-    ['soundVolSlider','gSoundVolSlider'].forEach(id => { const el = document.getElementById(id); if (el) el.value = val; });
+    ['soundVolVal','gSoundVolVal','sheetSoundVolVal'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = val + '%'; });
+    ['soundVolSlider','gSoundVolSlider','sheetSoundVolSlider'].forEach(id => { const el = document.getElementById(id); if (el) el.value = val; });
     saveSt();
 }
 
 function setBgVolume(val) {
     st.bgVolume = parseInt(val);
-    ['bgVolVal','gBgVolVal'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = val + '%'; });
-    ['bgVolSlider','gBgVolSlider'].forEach(id => { const el = document.getElementById(id); if (el) el.value = val; });
+    ['bgVolVal','gBgVolVal','sheetBgVolVal'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = val + '%'; });
+    ['bgVolSlider','gBgVolSlider','sheetBgVolSlider'].forEach(id => { const el = document.getElementById(id); if (el) el.value = val; });
     saveSt();
 }
 
 function setVibrationStrength(val) {
     st.vibrationStrength = parseInt(val);
-    const el = document.getElementById('vibVolVal');
-    if (el) el.textContent = val + 'ms';
-    const sl = document.getElementById('vibVolSlider');
-    if (sl) sl.value = val;
+    ['vibVolVal','sheetVibVolVal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val + 'ms';
+    });
+    ['vibVolSlider','sheetVibVolSlider'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+    });
     saveSt();
     if (st.vibrationOn && navigator.vibrate) navigator.vibrate(parseInt(val));
 }
@@ -69,6 +77,18 @@ function generateAndShowSerial() {
     }
     updateSerialNumberDisplay();
     showFeedback('🔢 تم إنشاء الرقم التسلسلي');
+}
+
+/* توليد الرقم التسلسلي تلقائياً عند أول تشغيل */
+function _autoGenerateSerial() {
+    if (!st.serialNumber) {
+        st.serialNumber = generateSerialNumber(st.birthDate || '2000-01-01', st.name || 'Player');
+        saveSt();
+    }
+    ['serialNumberDisplay','settingsSerialDisplay','settingsPageSerialDisplay'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = st.serialNumber;
+    });
 }
 
 /* ─── إصلاح: ربط أزرار الإجابة بـ checkAnswer ─── */
@@ -172,6 +192,7 @@ function _fixPlayCards() {
     try { updSessionTimer();            } catch(e) {}
     try { updCountdown();               } catch(e) {}
     try { updateStreakBanner();         } catch(e) {}
+    try { _autoGenerateSerial();       } catch(e) {}
     try { updateSerialNumberDisplay();  } catch(e) {}
     try { applyCompetitionButtonTheme(); } catch(e) {}
 
