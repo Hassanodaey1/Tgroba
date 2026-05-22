@@ -146,7 +146,7 @@ function toggleBgMusic() {
     /* تحديث جميع عناصر زر الموسيقى */
     const bgBtn = document.getElementById('bgBtn');
     if (bgBtn) bgBtn.textContent = st.bgOn ? '🎵' : '🔕';
-    ['bgMusicStatus', 'gbgMusicStatus'].forEach(id => {
+    ['bgMusicStatus', 'gbgMusicStatus', 'sheetBgMusicStatus'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
     });
@@ -159,7 +159,7 @@ function toggleSound() {
     st.soundOn = !st.soundOn;
     const soundBtn = document.getElementById('soundBtn');
     if (soundBtn) soundBtn.textContent = st.soundOn ? '🔊' : '🔇';
-    ['soundStatus', 'gsoundStatus'].forEach(id => {
+    ['soundStatus', 'gsoundStatus', 'sheetSoundStatus'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
     });
