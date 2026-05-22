@@ -166,57 +166,35 @@
 
         /* ══════════════════════════════════════════
            إصلاح مشكلة عدم عمل الألعاب
-           نحفظ مرجع startGameWith من questions.js ونستدعيها مباشرةً
         ══════════════════════════════════════════ */
-        var _origStartGameWith = null;
 
-        /* wrapper آمن يعمل في أي وقت */
-        function _makeGameWrapper() {
-            if (typeof window._origStartGameWith !== 'function' && typeof startGameWith === 'function') {
-                window._origStartGameWith = startGameWith;
+        /* نحفظ الدالة الأصلية من questions.js فوراً قبل أي تعديل
+           لأن game.js يأتي بعد questions.js في ترتيب التحميل */
+        var _origStartGameWith = (typeof startGameWith === 'function') ? startGameWith : null;
+
+        /* الدالة الجديدة تُعيد توجيه الاستدعاء للأصل مع إضافات بسيطة */
+        window.startGameWith = function(mode, op, customTable, hasTimer) {
+            /* إغلاق أي sheets مفتوحة */
+            ['modeSheet','opSheet','trainingOpSheet','gameSettingsSheet'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
+
+            /* إلغاء لعبة سابقة */
+            if (typeof clearGameTimer === 'function') clearGameTimer();
+            if (typeof _clearUsedQuestions === 'function') _clearUsedQuestions();
+
+            /* تطبيق الصعوبة التلقائية */
+            if (!st.difficulty || st.difficulty === 'auto') {
+                if (typeof getDifficultyByLevel === 'function')
+                    st.difficulty = getDifficultyByLevel();
             }
-            window.startGameWith = function(mode, op, customTable, hasTimer) {
-                /* إغلاق أي sheets مفتوحة */
-                ['modeSheet','opSheet','trainingOpSheet','gameSettingsSheet'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.classList.remove('active');
-                });
 
-                /* إلغاء لعبة سابقة */
-                if (typeof clearGameTimer === 'function') clearGameTimer();
-                if (typeof _clearUsedQuestions === 'function') _clearUsedQuestions();
-
-                /* تطبيق الصعوبة التلقائية */
-                if (!st.difficulty || st.difficulty === 'auto') {
-                    if (typeof getDifficultyByLevel === 'function')
-                        st.difficulty = getDifficultyByLevel();
-                }
-                st.lastMode = mode || 'classic';
-                st.lastOp   = op || 'mix';
-                currentOp   = st.lastOp;
-                saveSt();
-
-                /* استدعاء الدالة الأصلية */
-                if (typeof window._origStartGameWith === 'function') {
-                    window._origStartGameWith(mode, op, customTable, hasTimer);
-                }
-            };
-        }
-
-        /* يُنفَّذ مرة بعد تحميل كل الـ scripts */
-        document.addEventListener('DOMContentLoaded', function() {
-            /* نحفظ دالة startGameWith الأصلية من questions.js */
-            if (typeof startGameWith === 'function') {
-                _origStartGameWith = startGameWith;
-                window._origStartGameWith = startGameWith;
+            /* استدعاء الدالة الأصلية من questions.js مباشرةً */
+            if (typeof _origStartGameWith === 'function') {
+                _origStartGameWith(mode, op, customTable, hasTimer);
             }
-            _makeGameWrapper();
-        });
-
-        /* تشغيل فوري أيضاً في حال questions.js تحمّل أولاً */
-        if (document.readyState !== 'loading') {
-            setTimeout(_makeGameWrapper, 100);
-        }
+        };
 
         /* ══════════════════════════════════════════
            endGame — مع تسجيل دوري كامل
