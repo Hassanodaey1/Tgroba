@@ -2,6 +2,7 @@
    HO Math — DESIGN OVERHAUL v11
    تحديث شامل للتصميم: توحيد الأزرار والبطاقات والصفحات
    © 2026 Hassan Odaey
+   (ملف الأنماط الإضافية - Complementary Styles)
 ═══════════════════════════════════════════════════ */
 
 /* ═══ 1. متغيرات موحّدة إضافية ═══ */
@@ -17,8 +18,6 @@
 }
 
 /* ═══ 2. أزرار موحّدة — كل الأزرار بنفس الارتفاع والحواف ═══ */
-
-/* الزر الأساسي (ذهبي) */
 .btn-primary {
   display: flex;
   align-items: center;
@@ -40,7 +39,6 @@
 }
 .btn-primary:active { transform: scale(0.97); box-shadow: none; }
 
-/* الزر الثانوي (خلفية داكنة) */
 .btn-secondary {
   display: flex;
   align-items: center;
@@ -61,7 +59,6 @@
 }
 .btn-secondary:active { transform: scale(0.97); background: var(--surface2); }
 
-/* زر الخطر (أحمر) */
 .btn-danger {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; min-height: var(--btn-h); padding: 12px 20px;
@@ -134,14 +131,13 @@
   text-align: center;
 }
 
-/* ═══ 6. زر المنافسة المميز — إعادة تصميم كامل ═══ */
+/* ═══ 6. زر المنافسة المميز — إعادة تصميم كامل (متوافق مع التنقل المحدث) ═══ */
 #nav-leaderboard {
   flex: 1;
   position: relative;
 }
 #nav-leaderboard > * { position: relative; z-index: 1; }
 
-/* قرص المنافسة المرفوع */
 .nav-competition-disc {
   position: relative;
   display: flex;
@@ -184,7 +180,6 @@
   letter-spacing: 0.5px;
 }
 
-/* إشعاع المنافسة */
 .nav-competition-glow {
   position: absolute;
   top: -18px;
@@ -202,71 +197,6 @@
   0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
   50% { transform: translateX(-50%) scale(1.3); opacity: 1; }
 }
-
-/* الشريط السفلي المحسّن */
-.bottom-nav {
-  flex-shrink: 0;
-  z-index: 100;
-  background: rgba(8, 11, 20, 0.97);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border-top: 1px solid rgba(240,185,11,0.12);
-  display: flex;
-  align-items: stretch;
-  justify-content: space-around;
-  padding-top: 4px;
-  padding-bottom: var(--safe-bottom);
-  min-height: calc(var(--nav-h) + var(--safe-bottom));
-}
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 3px;
-  cursor: pointer;
-  padding: 6px 2px;
-  transition: var(--transition);
-  position: relative;
-}
-.nav-item-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.15em;
-  transition: var(--transition);
-  background: transparent;
-}
-.nav-item.active .nav-item-icon {
-  background: linear-gradient(135deg, rgba(240,185,11,0.18), rgba(240,185,11,0.06));
-  border: 1px solid rgba(240,185,11,0.22);
-  box-shadow: 0 0 14px rgba(240,185,11,0.2);
-}
-.nav-item-label {
-  font-size: 0.55em;
-  font-weight: 700;
-  color: var(--text3);
-  transition: var(--transition);
-  white-space: nowrap;
-}
-.nav-item.active .nav-item-label { color: var(--gold); }
-.nav-active-dot {
-  position: absolute;
-  top: 0px;
-  width: 20px;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  box-shadow: 0 0 8px var(--gold);
-  opacity: 0;
-  transition: var(--transition);
-}
-.nav-item.active .nav-active-dot { opacity: 1; }
-:active > .nav-item-icon { transform: scale(0.9); }
 
 /* ═══ 7. توحيد بطاقات الفئات ═══ */
 .cat-card {
@@ -1104,7 +1034,6 @@
 #page-achieve { display: none !important; }
 
 /* ═══ 40. تصحيح بعض ID ازدواجية ═══ */
-/* إخفاء العناصر المكررة التي تضر بالأداء */
 #page-profile .stats-grid3 + .stats-grid3 { display: none; }
 
 /* ═══ 41. تحسين gcard-badge ═══ */
@@ -1191,4 +1120,3 @@
   pointer-events: none;
   z-index: 0;
 }
-
