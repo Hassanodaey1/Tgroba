@@ -662,7 +662,7 @@
                     <div>
                         <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
                             المهام اليومية
-                            <span style="font-size:0.68em;color:var(--text3);" id="tasksShowAllBtn" onclick="toggleAllTasks()" style="cursor:pointer;color:var(--accent2);">عرض الكل</span>
+                            <span style="font-size:0.68em;color:var(--accent2);cursor:pointer;" id="tasksShowAllBtn" onclick="toggleAllTasks()">عرض الكل</span>
                         </div>
                         <div class="tasks-summary">
                             <div class="task-stat">
@@ -1263,15 +1263,15 @@
                     <div class="nav-item-icon">🎮</div>
                     <div class="nav-item-label">ألعاب</div>
                 </div>
-                <!-- زر المنافسة المميز — تصميم قرص ذهبي دوّار -->
-                <div class="nav-item nav-competition-btn" id="nav-leaderboard" onclick="goTab('leaderboard')" style="position:relative;flex:1.4;">
+                <!-- زر المنافسة المميز -->
+                <div class="nav-item nav-competition-btn" id="nav-leaderboard" onclick="goTab('leaderboard')">
                     <div class="nav-competition-glow"></div>
                     <div class="nav-active-dot"></div>
-                    <div style="position:relative;display:flex;align-items:center;justify-content:center;width:58px;height:58px;margin:-20px auto 0;z-index:1;">
-                        <div style="position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(var(--gold),#ffd54f,var(--gold2),#e0a80b,var(--gold));animation:discSpin 4s linear infinite;opacity:0.85;"></div>
-                        <div style="position:relative;z-index:2;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#1a0e00,#2e1b00);border:2.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.65em;box-shadow:0 6px 22px rgba(240,185,11,0.6),inset 0 1px 0 rgba(255,255,255,0.15);">🏆</div>
+                    <div class="nav-competition-disc">
+                        <div class="nav-competition-ring"></div>
+                        <div class="nav-competition-inner">🏆</div>
                     </div>
-                    <div class="nav-competition-label">المنافسة</div>
+                    <div class="nav-item-label nav-competition-label">المنافسة</div>
                 </div>
                 <div class="nav-item" id="nav-stats" onclick="goTab('stats')">
                     <div class="nav-active-dot"></div>
