@@ -1,9 +1,11 @@
-/* ═══════════════════════════════════════════════════
-   HO Math — Audio Effects & Game State
+/* ═══════════════════════════════════════════════════════════════
+   HO Math v11 — Audio Effects & Game State
    © 2026 Hassan Odaey
-═══════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════ */
 
-/* ═══════════ GAME STATE ═══════════ */
+/* ═══════════════════════════════════════════════════
+   GLOBAL GAME STATE (G)
+════════════════════════════════════════════════════ */
 var G = {
     mode: 'classic', op: 'mix', score: 0, correct: 0, wrong: 0, streak: 0,
     bestStreak: 0, currentQ: 0, totalQ: 10, correctAnswer: 0, answered: false,
@@ -17,49 +19,44 @@ function clearGameTimer() {
     if (G.timer) { clearInterval(G.timer); G.timer = null; }
 }
 
-/* ═══════════ PARTICLES ═══════════ */
+/* ═══════════════════════════════════════════════════
+   PARTICLES & SPLASH SYMBOLS
+════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function () {
     const c = document.getElementById('particles');
-    if (!c) return;
-    const col = ['#f0b90b', '#7c3aed', '#06b6d4', '#10b981'];
-    for (let i = 0; i < 18; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        p.style.cssText = `left:${Math.random() * 100}%;background:${col[~~(Math.random() * 4)]};width:${2 + Math.random() * 3}px;height:${2 + Math.random() * 3}px;animation-delay:${Math.random() * 9}s;animation-duration:${6 + Math.random() * 7}s;`;
-        c.appendChild(p);
+    if (c) {
+        const col = ['#f0b90b', '#7c3aed', '#06b6d4', '#10b981'];
+        for (let i=0; i<18; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.cssText = `left:${Math.random()*100}%;background:${col[~~(Math.random()*4)]};width:${2+Math.random()*3}px;height:${2+Math.random()*3}px;animation-delay:${Math.random()*9}s;animation-duration:${6+Math.random()*7}s;`;
+            c.appendChild(p);
+        }
     }
-
-    /* ═══════════ SPLASH SYMBOLS ═══════════ */
-    const sym = ['∑', '∏', '√', '∞', 'π', 'Δ', '∫', '∂', '±', '×', '÷', '=', 'α', 'β', 'θ', 'λ', 'μ', 'σ', 'φ', 'ψ', 'Ω', '∈', '∀', '∃', '≅', '≈', '≠', '≤', '≥', '+', '-', '*', '/'];
-    let container = document.getElementById('splashSymbols');
-    if (!container) return;
-    container.innerHTML = '';
-    for (let i = 0; i < 55; i++) {
-        let span = document.createElement('span');
-        let s = sym[Math.floor(Math.random() * sym.length)];
-        span.textContent = s;
-        let size = Math.random() * 2 + 0.8;
-        span.style.position = 'absolute';
-        span.style.left = Math.random() * 100 + '%';
-        span.style.top = Math.random() * 100 + '%';
-        span.style.fontSize = size + 'em';
-        span.style.opacity = Math.random() * 0.3 + 0.05;
-        span.style.transform = `rotate(${Math.random() * 360}deg)`;
-        span.style.animation = `floatSymbol ${Math.random() * 10 + 8}s infinite alternate ease-in-out`;
-        span.style.animationDelay = `-${Math.random() * 5}s`;
-        span.classList.add('animated-symbol');
-        container.appendChild(span);
+    const container = document.getElementById('splashSymbols');
+    if (container) {
+        const sym = ['∑', '∏', '√', '∞', 'π', 'Δ', '∫', '∂', '±', '×', '÷', '=', 'α', 'β', 'θ', 'λ', 'μ', 'σ', 'φ', 'ψ', 'Ω', '∈', '∀', '∃', '≅', '≈', '≠', '≤', '≥', '+', '-', '*', '/'];
+        container.innerHTML = '';
+        for (let i=0; i<55; i++) {
+            let span = document.createElement('span');
+            let s = sym[Math.floor(Math.random() * sym.length)];
+            span.textContent = s;
+            let size = Math.random() * 2 + 0.8;
+            span.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*100}%;font-size:${size}em;opacity:${Math.random()*0.3+0.05};transform:rotate(${Math.random()*360}deg);animation:floatSymbol ${Math.random()*10+8}s infinite alternate ease-in-out;animation-delay:-${Math.random()*5}s;`;
+            span.classList.add('animated-symbol');
+            container.appendChild(span);
+        }
     }
 });
 
-/* ═══════════ AUDIO CONTEXT ═══════════ */
+/* ═══════════════════════════════════════════════════
+   AUDIO CONTEXT & SOUND EFFECTS
+════════════════════════════════════════════════════ */
 var aCtx = null;
 var bgInt = null;
 
 function gACtx() {
-    if (!aCtx) {
-        try { aCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
-    }
+    if (!aCtx) { try { aCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
     return aCtx;
 }
 
@@ -67,7 +64,6 @@ function tone(f, t = 'sine', d = 0.25, v = 0.12, delay = 0) {
     if (!st.soundOn) return;
     const ctx = gACtx();
     if (!ctx) return;
-    /* تطبيق مستوى الصوت */
     const vol = (typeof st.soundVolume === 'number' ? st.soundVolume : 80) / 100;
     const o = ctx.createOscillator(), g = ctx.createGain();
     o.connect(g);
@@ -83,34 +79,24 @@ function tone(f, t = 'sine', d = 0.25, v = 0.12, delay = 0) {
 
 function playSound(type) {
     if (!st.soundOn) return;
-    if (type === 'correct') {
-        tone(660, 'sine', 0.14, 0.11);
-        tone(880, 'sine', 0.14, 0.08, 0.12);
-    } else if (type === 'wrong') {
-        tone(200, 'sawtooth', 0.2, 0.1);
-    } else if (type === 'levelup') {
-        tone(523, 'sine', 0.1, 0.1);
-        tone(659, 'sine', 0.1, 0.1, 0.1);
-        tone(784, 'sine', 0.16, 0.1, 0.2);
-    } else if (type === 'click') {
-        tone(440, 'sine', 0.07, 0.06);
-    } else if (type === 'open') {
-        tone(392, 'sine', 0.1, 0.07);
-        tone(523, 'sine', 0.12, 0.07, 0.1);
-    } else if (type === 'tick') {
-        tone(1000, 'sine', 0.03, 0.02);
-    }
-    /* اهتزاز حسب نوع الصوت والشدة المحددة */
+    if (type === 'correct') { tone(660, 'sine', 0.14, 0.11); tone(880, 'sine', 0.14, 0.08, 0.12); }
+    else if (type === 'wrong') { tone(200, 'sawtooth', 0.2, 0.1); }
+    else if (type === 'levelup') { tone(523, 'sine', 0.1, 0.1); tone(659, 'sine', 0.1, 0.1, 0.1); tone(784, 'sine', 0.16, 0.1, 0.2); }
+    else if (type === 'click') { tone(440, 'sine', 0.07, 0.06); }
+    else if (type === 'open') { tone(392, 'sine', 0.1, 0.07); tone(523, 'sine', 0.12, 0.07, 0.1); }
+    else if (type === 'tick') { tone(1000, 'sine', 0.03, 0.02); }
     if (st.vibrationOn && navigator.vibrate) {
         const ms = st.vibrationStrength || 30;
-        if (type === 'click')   navigator.vibrate(Math.max(5, Math.round(ms * 0.5)));
+        if (type === 'click') navigator.vibrate(Math.max(5, Math.round(ms * 0.5)));
         else if (type === 'correct') navigator.vibrate(ms);
-        else if (type === 'wrong')   navigator.vibrate([ms, 40, ms]);
+        else if (type === 'wrong') navigator.vibrate([ms, 40, ms]);
         else if (type === 'levelup') navigator.vibrate([ms, 30, ms, 30, ms * 2]);
     }
 }
 
-/* ═══════════ BACKGROUND MUSIC ═══════════ */
+/* ═══════════════════════════════════════════════════
+   BACKGROUND MUSIC
+════════════════════════════════════════════════════ */
 const bgNotes = [261, 294, 329, 349, 392, 440, 494, 523, 392, 349];
 let bgIdx = 0;
 
@@ -131,38 +117,26 @@ function bgNote() {
     o.stop(ctx.currentTime + 2.1);
 }
 
-function startBg() {
-    if (!bgInt) { bgInt = setInterval(bgNote, 2400); }
-}
+function startBg() { if (!bgInt) { bgInt = setInterval(bgNote, 2400); } }
+function stopBg() { clearInterval(bgInt); bgInt = null; }
 
-function stopBg() {
-    clearInterval(bgInt);
-    bgInt = null;
-}
-
-/* ═══════════ TOGGLE FUNCTIONS ═══════════ */
+/* ═══════════════════════════════════════════════════
+   TOGGLE FUNCTIONS
+════════════════════════════════════════════════════ */
 function toggleBgMusic() {
     st.bgOn = !st.bgOn;
-    /* تحديث جميع عناصر زر الموسيقى */
     const bgBtn = document.getElementById('bgBtn');
     if (bgBtn) bgBtn.textContent = st.bgOn ? '🎵' : '🔕';
-    ['bgMusicStatus', 'gbgMusicStatus', 'sheetBgMusicStatus'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
-    });
+    ['bgMusicStatus','gbgMusicStatus','sheetBgMusicStatus'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة'; });
     st.bgOn ? startBg() : stopBg();
     playSound('click');
     saveSt();
 }
-
 function toggleSound() {
     st.soundOn = !st.soundOn;
     const soundBtn = document.getElementById('soundBtn');
     if (soundBtn) soundBtn.textContent = st.soundOn ? '🔊' : '🔇';
-    ['soundStatus', 'gsoundStatus', 'sheetSoundStatus'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
-    });
+    ['soundStatus','gsoundStatus','sheetSoundStatus'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ'; });
     saveSt();
     if (st.soundOn) playSound('click');
 }
