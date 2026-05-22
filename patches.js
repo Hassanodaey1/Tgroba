@@ -59,10 +59,10 @@ function updateSettingsThemeDots() { document.querySelectorAll('.settings-theme-
 function applySettingsTheme(el, gold, accent, accent2) { document.querySelectorAll('.settings-theme-dot').forEach(d => d.classList.remove('active')); if (el) el.classList.add('active'); const dummy = { classList: { add:()=>{}, remove:()=>{}, toggle:()=>{} } }; setTheme(dummy, gold, accent, accent2); updateSettingsThemeDots(); }
 
 /* ═══ 3. إعدادات اللعبة السريعة (موجودة في navigation.js، نضمن هنا) ═══ */
-function openGameSettingsAndPause() { pauseGameTimer(); _syncGameSettingsUI(); openSheet('gameSettingsSheet'); }
+function openGameSettingsAndPause() { pauseGameTimer(); if(typeof _syncGameSettingsUI==='function') _syncGameSettingsUI(); openSheet('gameSettingsSheet'); }
 function closeGameSettingsAndResume() { closeSheet('gameSettingsSheet'); resumeGameTimer(); }
 function sheetBgAndResume(e, id) { if (e.target.id === id) { closeSheet(id); resumeGameTimer(); } }
-function _syncGameSettingsUI() { /* موجود في navigation.js */ }
+/* _syncGameSettingsUI معرّفة في navigation.js — لا نعيد تعريفها هنا */
 
 /* ═══ 4. استعادة الحساب من صفحة الإعدادات ═══ */
 function showSettingsRestorePanel() { const p = document.getElementById('settingsRestorePanel2'); if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none'; }
