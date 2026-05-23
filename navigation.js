@@ -24,6 +24,9 @@
                 if(pAcc) { const tot = st.correctTotal + st.wrongTotal; pAcc.textContent = tot > 0 ? Math.round((st.correctTotal/tot)*100)+'%' : '0%'; }
                 try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch(e) {}
             }
+            if (tab === 'settings') {
+                loadProfileForm();
+            }
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
         /* إظهار زر الإعدادات دائماً ما عدا صفحة الإعدادات نفسها */
