@@ -281,24 +281,7 @@
                         <div class="session-timer-label">⏱️ وقت اللعب اليوم</div>
                         <div class="session-timer-value" id="sessionTimerDisplay">00:00:00</div>
                     </div>
-                    <div>
-                        <div class="section-label">التقييم العام</div>
-                        <div class="rating-card">
-                            <div class="rating-inner">
-                                <div>
-                                    <div class="rating-num-big" id="ratingNum">0.0</div>
-                                    <div class="rating-num-sub">من 5.0</div>
-                                </div>
-                                <div class="rating-right">
-                                    <div class="rating-stars-disp" id="ratingStars">☆☆☆☆☆</div>
-                                    <div class="rating-bar-track">
-                                        <div class="rating-bar-fill" id="ratingBar" style="width:0%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div onclick="document.getElementById('statsOverlay').style.display='flex'" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(6,182,212,0.1));border:1px solid var(--gold-border);border-radius:18px;padding:16px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                    <div onclick="openStatsOverlay()" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(6,182,212,0.1));border:1px solid var(--gold-border);border-radius:18px;padding:16px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
                         <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;">📊</div>
                         <div style="flex:1;">
                             <div style="font-size:0.9em;font-weight:900;color:var(--text);">الإحصائيات المتقدمة</div>
@@ -344,14 +327,6 @@
                         </div>
                     </div>
                     <div id="weaknessArea" class="weakness-area"></div>
-                    <div>
-                        <div class="section-label">آخر 10 نتائج</div>
-                        <div class="history-card">
-                            <div class="history-scroll" id="historyScroll">
-                                <div style="font-size:0.74em;color:var(--text3);padding:6px;">لا توجد نتائج بعد — العب الآن!</div>
-                            </div>
-                        </div>
-                    </div>
                     <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.1));border:1px solid rgba(240,185,11,0.2);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTab('achieve')">
                         <div style="font-size:1.8em;">🔥</div>
                         <div style="flex:1;">
@@ -392,108 +367,43 @@
                             </div>
                         </div>
                     </div>
-                    <div class="game-cat-card" style="--gc:#f0b90b" id="playCardCounter" onclick="openCounterGame()">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">🧮</div>
-                                <div class="gcard-name">العمليات على الاعداد</div>
-                            </div>
-                            <div class="gcard-badge hot">متاح</div>
+                    <!-- بطاقات الألعاب بتصميم تفاصيل الفئات -->
+                    <div class="cat-grid">
+                        <div class="cat-card" style="--chip-color:#f0b90b" id="playCardCounter" onclick="openCounterGame()">
+                            <div class="cat-icon">🧮</div>
+                            <div class="cat-name">العمليات على الأعداد</div>
+                            <div class="cat-progress"><div class="cat-progress-fill" id="gcatProg0" style="width:0%"></div></div>
+                            <div class="cat-stats" id="gcatStats0">0 إجابة</div>
                         </div>
-                        <div class="gcard-desc">الجمع والطرح والضرب والقسمة — اختبر سرعتك في الحساب الذهني</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" id="gcatProg0" style="width:0%"></div>
+                        <div class="cat-card" style="--chip-color:#7c3aed" id="playCardChallenges" onclick="openOpSheet('challenges')">
+                            <div class="cat-icon">⚡</div>
+                            <div class="cat-name">التحديات</div>
+                            <div class="cat-progress"><div class="cat-progress-fill" id="gcatProg1" style="width:0%"></div></div>
+                            <div class="cat-stats" id="gcatStats1">0 جلسة</div>
                         </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats" id="gcatStats0">0 إجابة</div>
-                            <div class="gcard-arrow">›</div>
+                        <div class="cat-card locked" style="--chip-color:#06b6d4" id="gcardAdvanced">
+                            <div class="cat-icon">📐</div>
+                            <div class="cat-name">الرياضيات المتقدمة</div>
+                            <div class="cat-progress"><div class="cat-progress-fill" style="width:0%"></div></div>
+                            <div class="cat-stats" id="gcardAdvancedStats">🔒 Lv.7</div>
                         </div>
-                    </div>
-                    <div class="game-cat-card locked" style="--gc:#06b6d4" id="gcardAdvanced">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">📐</div>
-                                <div class="gcard-name">الرياضيات المتقدمة</div>
-                            </div>
-                            <div class="gcard-badge lck">🔒 Lv.7</div>
+                        <div class="cat-card locked" style="--chip-color:#10b981" id="gcardLaws">
+                            <div class="cat-icon">📜</div>
+                            <div class="cat-name">قوانين وألغاز</div>
+                            <div class="cat-progress"><div class="cat-progress-fill" style="width:0%"></div></div>
+                            <div class="cat-stats" id="gcardLawsStats">🔒 Lv.10</div>
                         </div>
-                        <div class="gcard-desc">كسور وعشريات ومعادلات — للمستويات المتقدمة</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" style="width:0%"></div>
+                        <div class="cat-card" style="--chip-color:#f97316" onclick="openTrainingOpSheet()">
+                            <div class="cat-icon">🎓</div>
+                            <div class="cat-name">وضع التدريب</div>
+                            <div class="cat-progress"><div class="cat-progress-fill" style="width:100%;background:linear-gradient(90deg,#f97316,#ffd54f);"></div></div>
+                            <div class="cat-stats">بلا حدود • مجاني</div>
                         </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats" id="gcardAdvancedStats">يفتح عند Lv.7</div>
-                            <div class="gcard-arrow">🔒</div>
-                        </div>
-                    </div>
-                    <div class="game-cat-card locked" style="--gc:#10b981" id="gcardLaws">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">📜</div>
-                                <div class="gcard-name">قوانين وألغاز</div>
-                            </div>
-                            <div class="gcard-badge lck">🔒 Lv.10</div>
-                        </div>
-                        <div class="gcard-desc">قوانين ومعادلات رياضية شاملة — بطاقات القوانين للمراجعة والتعلم</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" style="width:0%"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats" id="gcardLawsStats">يفتح عند Lv.10</div>
-                            <div class="gcard-arrow">🔒</div>
-                        </div>
-                    </div>
-                    <div class="game-cat-card" style="--gc:#7c3aed" id="playCardChallenges" onclick="openOpSheet('challenges')">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">⚡</div>
-                                <div class="gcard-name">التحديات</div>
-                            </div>
-                            <div class="gcard-badge hot">متاح</div>
-                        </div>
-                        <div class="gcard-desc">أوضاع مكثّفة — السرعة والتحمّل والاندفاع وتحدي اليوم</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" id="gcatProg1" style="width:0%"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats" id="gcatStats1">0 جلسة</div>
-                            <div class="gcard-arrow">›</div>
-                        </div>
-                    </div>
-                    <div class="game-cat-card" style="--gc:#f97316" onclick="openTrainingOpSheet()">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">🎓</div>
-                                <div class="gcard-name">وضع التدريب</div>
-                            </div>
-                            <div class="gcard-badge hot">مجاني</div>
-                        </div>
-                        <div class="gcard-desc">تدرب بدون عقوبة أو ضغط وقت — مثالي للتعلم</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" style="width:0%"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats">بلا حدود</div>
-                            <div class="gcard-arrow">›</div>
-                        </div>
-                    </div>
-
-                    <!-- بطاقة القوانين والبديهيات -->
-                    <div class="game-cat-card" style="--gc:#06b6d4" onclick="openLaws()" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
-                        <div class="gcard-top">
-                            <div class="gcard-name-icon-row">
-                                <div class="gcard-icon" style="font-size:1.8em;">📜</div>
-                                <div class="gcard-name">القوانين والبديهيات</div>
-                            </div>
-                            <div class="gcard-badge hot">مرجع</div>
-                        </div>
-                        <div class="gcard-desc">تصفح قوانين الجبر والهندسة والحساب — مرجع رياضي شامل</div>
-                        <div class="gcard-progress">
-                            <div class="gcard-prog-fill" style="width:100%;background:linear-gradient(90deg,#06b6d4,#7c3aed);"></div>
-                        </div>
-                        <div class="gcard-footer">
-                            <div class="gcard-stats">📚 متاح دائماً</div>
-                            <div class="gcard-arrow">›</div>
+                        <div class="cat-card" style="--chip-color:#06b6d4" onclick="openLaws()">
+                            <div class="cat-icon">📚</div>
+                            <div class="cat-name">القوانين والبديهيات</div>
+                            <div class="cat-progress"><div class="cat-progress-fill" style="width:100%;background:linear-gradient(90deg,#06b6d4,#7c3aed);"></div></div>
+                            <div class="cat-stats">مرجع • متاح دائماً</div>
                         </div>
                     </div>
                 </div>
@@ -1068,6 +978,20 @@
         <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(event)">
         <div id="profilePhotoOverlay"></div>
         <div id="profilePhotoActions"></div>
+        <!-- IDs مطلوبة من updateHomeStats في ui.js -->
+        <div id="homeCoins"></div>
+        <div id="homeCorrect"></div>
+        <div id="homeAccuracy"></div>
+        <div id="homeStreak"></div>
+        <div id="homeGames"></div>
+        <div id="homeLevel"></div>
+        <div id="homeBestScore"></div>
+        <!-- IDs مطلوبة من updateRating في ui.js -->
+        <div id="ratingNum"></div>
+        <div id="ratingBar" style="width:0%"></div>
+        <div id="ratingStars"></div>
+        <!-- سجل آخر 10 نتائج (يُملأ بـ ui.js ثم يُنسخ للـ overlay) -->
+        <div id="historyScroll" style="display:flex;gap:7px;overflow-x:auto;"></div>
     </div>
 
     <script>
@@ -1138,11 +1062,11 @@
                 <div style="font-size:1em;font-weight:900;color:var(--text);margin-bottom:4px;">الأداء العام</div>
                 <div style="display:flex;gap:10px;margin-top:12px;">
                     <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;">
-                        <div style="font-size:1.8em;font-weight:900;color:var(--green);" id="homeCorrect">0</div>
+                        <div style="font-size:1.8em;font-weight:900;color:var(--green);" id="stat_correct">0</div>
                         <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">إجابات صحيحة</div>
                     </div>
                     <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;">
-                        <div style="font-size:1.8em;font-weight:900;color:var(--accent2);" id="homeAccuracy">0%</div>
+                        <div style="font-size:1.8em;font-weight:900;color:var(--accent2);" id="stat_accuracy">0%</div>
                         <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">الدقة</div>
                     </div>
                 </div>
@@ -1151,19 +1075,19 @@
             <!-- شبكة الإحصائيات -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
-                    <div style="font-size:1.8em;font-weight:900;color:var(--red);" id="homeStreak">×0</div>
+                    <div style="font-size:1.8em;font-weight:900;color:var(--red);" id="stat_streak">×0</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى تتابع</div>
                 </div>
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
-                    <div style="font-size:1.8em;font-weight:900;color:var(--gold);" id="homeGames">0</div>
+                    <div style="font-size:1.8em;font-weight:900;color:var(--gold);" id="stat_games">0</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">إجمالي الجلسات</div>
                 </div>
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
-                    <div style="font-size:1.8em;font-weight:900;color:var(--accent);" id="homeLevel">1</div>
+                    <div style="font-size:1.8em;font-weight:900;color:var(--accent);" id="stat_level">1</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">المستوى الحالي</div>
                 </div>
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
-                    <div style="font-size:1.8em;font-weight:900;color:var(--gold2);" id="homeBestScore">0</div>
+                    <div style="font-size:1.8em;font-weight:900;color:var(--gold2);" id="stat_bestScore">0</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى نقاط</div>
                 </div>
             </div>
@@ -1196,55 +1120,54 @@
     </div>
 
     <script>
-        /* تبويبات صفحة المهام والإنجازات */
+        /* ═══ تبويبات صفحة المهام والإنجازات ═══ */
         function showAchieveTab(tab) {
             const slider = document.getElementById('achieveTabsSlider');
             const btnT   = document.getElementById('achTabTasks');
             const btnA   = document.getElementById('achTabAchieve');
             if (!slider) return;
-            const activeStyle   = 'background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;font-weight:900;';
-            const inactiveStyle = 'background:var(--surface3);color:var(--text2);border:1px solid var(--gold-border);font-weight:700;';
             if (tab === 'tasks') {
                 slider.style.transform = 'translateX(0)';
-                if(btnT) btnT.style.cssText += activeStyle;
-                if(btnA) btnA.style.cssText += inactiveStyle;
+                if(btnT){ btnT.style.background='linear-gradient(135deg,var(--gold),var(--gold2))'; btnT.style.color='#000'; btnT.style.fontWeight='900'; btnT.style.border='none'; }
+                if(btnA){ btnA.style.background='var(--surface3)'; btnA.style.color='var(--text2)'; btnA.style.fontWeight='700'; btnA.style.border='1px solid var(--gold-border)'; }
             } else {
                 slider.style.transform = 'translateX(-50%)';
-                if(btnA) btnA.style.cssText += activeStyle;
-                if(btnT) btnT.style.cssText += inactiveStyle;
+                if(btnA){ btnA.style.background='linear-gradient(135deg,var(--gold),var(--gold2))'; btnA.style.color='#000'; btnA.style.fontWeight='900'; btnA.style.border='none'; }
+                if(btnT){ btnT.style.background='var(--surface3)'; btnT.style.color='var(--text2)'; btnT.style.fontWeight='700'; btnT.style.border='1px solid var(--gold-border)'; }
             }
         }
 
-        /* مزامنة الإحصائيات عند فتح overlay الإحصائيات */
-        document.addEventListener('DOMContentLoaded', function() {
-            const statsBtn = document.querySelector('[onclick*="statsOverlay"]');
-            if (statsBtn) {
-                statsBtn.addEventListener('click', function() {
-                    /* نسخ قيم الإحصائيات من الصفحة الرئيسية */
-                    ['homeCorrect','homeAccuracy','homeStreak','homeGames','homeLevel','homeBestScore'].forEach(function(id) {
-                        const src = document.getElementById(id);
-                        if (src) {
-                            const dst = document.querySelector('#statsOverlay #' + id);
-                            if (dst) dst.textContent = src.textContent;
-                        }
-                    });
-                    /* مزامنة التقييم */
-                    const rn = document.getElementById('ratingNum');
-                    const rs = document.getElementById('ratingStars');
-                    const rb = document.getElementById('ratingBar');
-                    const rns = document.getElementById('ratingNumStat');
-                    const rss = document.getElementById('ratingStatStars');
-                    const rbs = document.getElementById('ratingStatBar');
-                    if(rn && rns) rns.textContent = rn.textContent;
-                    if(rs && rss) rss.textContent = rs.textContent;
-                    if(rb && rbs) rbs.style.width = rb.style.width;
-                    /* مزامنة السجل */
-                    const hist = document.getElementById('historyScroll');
-                    const histStat = document.getElementById('historyScrollStat');
-                    if(hist && histStat) histStat.innerHTML = hist.innerHTML;
-                });
-            }
-        });
+        function openStatsOverlay() {
+            document.getElementById('statsOverlay').style.display = 'flex';
+            /* قراءة من العناصر المخفية (يملأها ui.js) وكتابتها في statsOverlay */
+            var map = {
+                'homeCorrect':  'stat_correct',
+                'homeAccuracy': 'stat_accuracy',
+                'homeStreak':   'stat_streak',
+                'homeGames':    'stat_games',
+                'homeLevel':    'stat_level',
+                'homeBestScore':'stat_bestScore'
+            };
+            Object.keys(map).forEach(function(srcId) {
+                var src = document.getElementById(srcId);
+                var dst = document.getElementById(map[srcId]);
+                if (src && dst) dst.textContent = src.textContent;
+            });
+            /* التقييم */
+            var rn  = document.getElementById('ratingNum');
+            var rns = document.getElementById('ratingNumStat');
+            if (rn && rns) rns.textContent = rn.textContent;
+            var rs  = document.getElementById('ratingStars');
+            var rss = document.getElementById('ratingStatStars');
+            if (rs && rss) rss.textContent = rs.textContent;
+            var rb  = document.getElementById('ratingBar');
+            var rbs = document.getElementById('ratingStatBar');
+            if (rb && rbs) rbs.style.width = rb.style.width;
+            /* سجل آخر 10 نتائج */
+            var hist     = document.getElementById('historyScroll');
+            var histStat = document.getElementById('historyScrollStat');
+            if (hist && histStat) histStat.innerHTML = hist.innerHTML;
+        }
     </script>
     <!-- JavaScript Modules -->
     <script src="firebase.js"></script>
