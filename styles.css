@@ -110,25 +110,25 @@
             border-color: var(--gold-border) !important;
         }
 
-        /* ═══ إطار ذهبي خفيف شامل ═══ */
-        .page .profile-section,
-        .page .stat-card,
-        .page .adv-stat,
-        .page .cat-card,
-        .page .game-cat-card,
-        .page .rating-card,
-        .page .session-timer-card,
-        .page .settings-list,
-        .page .hero-card {
+        /* ═══ إطار ذهبي خفيف شامل — ما عدا المتجر ═══ */
+        .page:not(#page-shop) .profile-section,
+        .page:not(#page-shop) .stat-card,
+        .page:not(#page-shop) .adv-stat,
+        .page:not(#page-shop) .cat-card,
+        .page:not(#page-shop) .game-cat-card,
+        .page:not(#page-shop) .rating-card,
+        .page:not(#page-shop) .session-timer-card,
+        .page:not(#page-shop) .settings-list,
+        .page:not(#page-shop) .hero-card {
             border: 1px solid var(--gold-border) !important;
         }
 
         /* الأزرار الرئيسية — إطار ذهبي */
-        .page button.save-btn,
-        .page button.reset-stats-btn,
-        .page button.reset-complete-btn,
-        .page .gender-btn,
-        .page .diff-chip {
+        .page:not(#page-shop) button.save-btn,
+        .page:not(#page-shop) button.reset-stats-btn,
+        .page:not(#page-shop) button.reset-complete-btn,
+        .page:not(#page-shop) .gender-btn,
+        .page:not(#page-shop) .diff-chip {
             border: 1px solid var(--gold-border) !important;
         }
 
