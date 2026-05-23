@@ -405,6 +405,8 @@ function updateUI() {
 
 function updateHomeStats() {
     document.getElementById('homeCoins').textContent = st.coins;
+    const homeCoinsHero = document.getElementById('homeCoinsHero');
+    if (homeCoinsHero) homeCoinsHero.querySelector('span').textContent = st.coins;
     document.getElementById('homeCorrect').textContent = st.correctTotal;
     const total = st.correctTotal + st.wrongTotal;
     const acc = total > 0 ? Math.round((st.correctTotal / total) * 100) : 0;
