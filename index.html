@@ -503,6 +503,25 @@
                             <div class="gcard-arrow">›</div>
                         </div>
                     </div>
+
+                    <!-- بطاقة القوانين والبديهيات -->
+                    <div class="game-cat-card" style="--gc:#06b6d4" onclick="openLaws()" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                        <div class="gcard-top">
+                            <div class="gcard-name-icon-row">
+                                <div class="gcard-icon" style="font-size:1.8em;">📜</div>
+                                <div class="gcard-name">القوانين والبديهيات</div>
+                            </div>
+                            <div class="gcard-badge hot">مرجع</div>
+                        </div>
+                        <div class="gcard-desc">تصفح قوانين الجبر والهندسة والحساب — مرجع رياضي شامل</div>
+                        <div class="gcard-progress">
+                            <div class="gcard-prog-fill" style="width:100%;background:linear-gradient(90deg,#06b6d4,#7c3aed);"></div>
+                        </div>
+                        <div class="gcard-footer">
+                            <div class="gcard-stats">📚 متاح دائماً</div>
+                            <div class="gcard-arrow">›</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ACHIEVEMENTS PAGE — المهام والإنجازات فقط (بدون تكرار في الملف الشخصي) -->
@@ -552,108 +571,49 @@
                     </div>
                 </div>
 
-                <!-- PROFILE PAGE -->
-                <div class="page" id="page-profile">
-                    <div class="profile-hero" style="position:relative;">
-                        <div class="profile-avatar-big" id="profileAvatarWrap" onclick="triggerPhotoUpload()" style="cursor:pointer;" title="تغيير الصورة الشخصية">
-                            <div class="profile-avatar-ring"></div>
-                            <div class="profile-avatar-img" id="profileAvatarImg">🧑</div>
-                            <div id="profilePhotoOverlay" class="profile-photo-overlay">📷</div>
-                        </div>
-                        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(event)">
-                        <div class="profile-details">
-                            <div class="profile-name-big" id="profileName">اللاعب</div>
-                            <div class="profile-level-big" id="profileLevel">المستوى 1 • مبتدئ</div>
-                            <div class="profile-xp-track">
-                                <div class="profile-xp-fill" id="profileXpFill" style="width:0%"></div>
-                            </div>
-                            <div class="profile-xp-label" id="profileXpLabel">0 / 1000 XP</div>
-                            <div id="profilePhotoActions" style="display:none;margin-top:6px;gap:5px;flex-wrap:wrap;">
-                                <button onclick="triggerPhotoUpload()" style="background:var(--gold);color:#000;border:none;border-radius:10px;padding:4px 10px;font-family:'Tajawal',sans-serif;font-size:0.62em;font-weight:800;cursor:pointer;">📷 تغيير</button>
-                                <button onclick="removeProfilePhoto()" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:4px 10px;font-family:'Tajawal',sans-serif;font-size:0.62em;font-weight:700;cursor:pointer;">🗑️ حذف</button>
-                            </div>
-                        </div>
+                <!-- SHOP PAGE -->
+                <div class="page" id="page-shop">
 
-                    </div>
-
-                    <!-- إحصائيات عامة -->
-                    <div class="stats-grid3">
-                        <div class="stat-card">
-                            <div class="stat-card-num" id="statCorrect">0</div>
-                            <div class="stat-card-label">إجابة صحيحة</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-num" id="statBestStreak">×0</div>
-                            <div class="stat-card-label">أعلى تتابع</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-num" id="statCoinsP">0</div>
-                            <div class="stat-card-label">💰 عملة</div>
+                    <!-- رأس المتجر -->
+                    <div class="hero-card">
+                        <div class="hero-row">
+                            <div>
+                                <div class="hero-greeting">🛍️ المتجر</div>
+                                <div class="hero-title">اشترِ <span>الرموز</span></div>
+                            </div>
+                            <div class="coins-badge">💰 <span id="shopCoinsDisplay">0</span></div>
                         </div>
                     </div>
 
-                    <!-- ساحة المنافسة -->
+                    <!-- الرمز الحالي -->
+                    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+                        <div id="currentAvatarDisplay" style="font-size:2.5em;line-height:1;">🧑</div>
+                        <div style="flex:1;">
+                            <div style="font-size:0.82em;font-weight:900;color:var(--text);">رمزك الحالي</div>
+                            <div style="font-size:0.65em;color:var(--text2);margin-top:3px;">اضغط على أي رمز أدناه لشرائه أو تفعيله</div>
+                        </div>
+                        <div style="font-size:0.72em;font-weight:900;color:var(--gold);">رصيدك<br><span id="shopCoinsDisplay2" style="font-size:1.4em;">0</span> 💰</div>
+                    </div>
+
+                    <!-- رموز تعبيرية — الأحرف والوجوه -->
                     <div class="profile-section">
-                        <div class="profile-section-title">🏆 ساحة المنافسة</div>
-                        <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.12));border:1.5px solid rgba(240,185,11,0.25);border-radius:18px;padding:16px;text-align:center;">
-                            <div style="font-size:1.8em;margin-bottom:6px;">⚔️</div>
-                            <div style="font-size:0.9em;font-weight:900;color:var(--text);margin-bottom:4px;">نداء التحدي</div>
-                            <div style="font-size:0.7em;color:var(--text2);margin-bottom:10px;">أفضل نتيجتك: <span style="color:var(--gold);font-weight:900;" id="profileChallengeBest">0</span> نقطة</div>
-                            <div style="display:flex;gap:8px;margin-bottom:12px;">
-                                <div style="flex:1;background:var(--surface3);border-radius:12px;padding:10px;">
-                                    <div style="font-size:1.2em;font-weight:900;color:var(--accent2);" id="profileTotalGames">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">إجمالي الجلسات</div>
-                                </div>
-                                <div style="flex:1;background:var(--surface3);border-radius:12px;padding:10px;">
-                                    <div style="font-size:1.2em;font-weight:900;color:var(--gold);" id="profileBestScore">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">أعلى نقاط</div>
-                                </div>
-                                <div style="flex:1;background:var(--surface3);border-radius:12px;padding:10px;">
-                                    <div style="font-size:1.2em;font-weight:900;color:var(--green);" id="profileAccuracy">0%</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">الدقة</div>
-                                </div>
-                            </div>
-                            <button onclick="goTab('leaderboard')" style="width:100%;padding:12px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.88em;font-weight:900;border:none;cursor:pointer;">🏆 انتقل للمنافسة</button>
+                        <div class="profile-section-title">😊 الوجوه والشخصيات</div>
+                        <div class="emoji-shop-grid" id="emojiShopGrid"></div>
+                    </div>
+
+                    <!-- مشتريات مميزة — إطارات -->
+                    <div class="profile-section">
+                        <div class="profile-section-title">🖼️ الإطارات المميزة</div>
+                        <div class="emoji-shop-grid" id="framesShopGrid">
+                            <div style="text-align:center;padding:20px;color:var(--text3);font-size:0.72em;width:100%;">🔜 قريباً</div>
                         </div>
                     </div>
 
-                    <!-- الألقاب والموسم — جديد -->
+                    <!-- مشتريات مميزة — ألقاب -->
                     <div class="profile-section">
-                        <div class="profile-section-title">🎖️ الألقاب والتقييم الموسمي</div>
-                        <div id="profileTitlesSection">
-                            <!-- يتم ملؤه بـ renderProfileTitles() -->
-                        </div>
-                    </div>
-
-                    <!-- القوانين الرياضية -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">📜 القوانين الرياضية</div>
-                        <div onclick="openLaws()" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(6,182,212,0.1),rgba(124,58,237,0.1));border:1.5px solid rgba(6,182,212,0.25);border-radius:16px;padding:16px;cursor:pointer;transition:0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-                            <div style="font-size:2em;">📜</div>
-                            <div style="flex:1;">
-                                <div style="font-size:0.88em;font-weight:900;color:var(--text);">تصفح القوانين والبديهيات</div>
-                                <div style="font-size:0.68em;color:var(--text2);margin-top:2px;">قوانين الجبر • الهندسة • الحساب</div>
-                            </div>
-                            <div style="font-size:1.2em;color:var(--accent2);">›</div>
-                        </div>
-                    </div>
-
-                    <!-- متجر الرموز التعبيرية -->
-                    <div class="profile-section">
-                        <div class="profile-section-title" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span>🛍️ المتجر</span>
-                            <span style="font-size:0.75em;font-weight:900;color:var(--gold);">رصيدك: <span id="shopCoinsDisplay">0</span> 💰</span>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:12px;background:var(--surface3);border-radius:14px;padding:12px 14px;margin-bottom:10px;">
-                            <div id="currentAvatarDisplay" style="font-size:2.2em;">🧑</div>
-                            <div style="flex:1;">
-                                <div style="font-size:0.75em;font-weight:700;color:var(--text);">الرمز الحالي</div>
-                                <div style="font-size:0.63em;color:var(--text2);margin-top:2px;">اضغط لتغيير أو شراء رموز جديدة</div>
-                            </div>
-                            <button onclick="toggleEmojiShop()" id="shopToggleBtn" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;border-radius:12px;padding:8px 14px;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:900;cursor:pointer;">🛍️ المتجر</button>
-                        </div>
-                        <div id="emojiShopContainer" style="display:none;">
-                            <div class="emoji-shop-grid" id="emojiShopGrid"></div>
+                        <div class="profile-section-title">🎖️ ألقاب خاصة</div>
+                        <div id="titlesShopGrid" style="display:flex;flex-direction:column;gap:8px;">
+                            <div style="text-align:center;padding:20px;color:var(--text3);font-size:0.72em;">🔜 قريباً</div>
                         </div>
                     </div>
 
@@ -864,10 +824,10 @@
                     <div class="nav-item-icon">📋</div>
                     <div class="nav-item-label">مهام</div>
                 </div>
-                <div class="nav-item" id="nav-profile" onclick="goTab('profile')">
+                <div class="nav-item" id="nav-shop" onclick="goTab('shop')">
                     <div class="nav-active-dot"></div>
-                    <div class="nav-item-icon">👤</div>
-                    <div class="nav-item-label">ملفي</div>
+                    <div class="nav-item-icon">🛍️</div>
+                    <div class="nav-item-label">المتجر</div>
                 </div>
             </div>
         </div>
@@ -1127,6 +1087,26 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- عناصر مخفية للحفاظ على IDs الملف الشخصي التي يستخدمها ui.js -->
+    <div style="display:none;" aria-hidden="true">
+        <div id="profileName"></div>
+        <div id="profileLevel"></div>
+        <div id="profileXpFill"></div>
+        <div id="profileXpLabel"></div>
+        <div id="profileAvatarImg"></div>
+        <div id="statCorrect"></div>
+        <div id="statBestStreak"></div>
+        <div id="statCoinsP"></div>
+        <div id="profileChallengeBest"></div>
+        <div id="profileTotalGames"></div>
+        <div id="profileBestScore"></div>
+        <div id="profileAccuracy"></div>
+        <div id="profileTitlesSection"></div>
+        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(event)">
+        <div id="profilePhotoOverlay"></div>
+        <div id="profilePhotoActions"></div>
     </div>
 
     <script>
