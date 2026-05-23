@@ -30,19 +30,22 @@
             --radius: 16px;
             --radius-lg: 20px;
             --radius-xl: 24px;
-        }
+        /* ═══ إطار ذهبي خفيف عالمي ═══ */
+        --gold-border: rgba(240, 185, 11, 0.22);
+    }
         /* الوضع الفاتح */
         html.light-mode {
             --bg: #f5f7fa;
             --surface: #eef2f6;
             --surface2: #ffffff;
             --surface3: #e2e8f0;
-            --text: #1e293b;
-            --text2: #475569;
+            --text: #0f172a;
+            --text2: #334155;
             --text3: #64748b;
             --border: rgba(0, 0, 0, 0.08);
             --border2: rgba(0, 0, 0, 0.12);
             --glow-gold: 0 0 18px rgba(240, 185, 11, 0.35);
+            --gold-border: rgba(180, 130, 0, 0.28);
         }
         html.light-mode .bottom-nav {
             background: rgba(255, 255, 255, 0.96);
@@ -77,6 +80,66 @@
             border: none;
             background: none;
             cursor: pointer;
+        }
+
+        /* ═══ عنوان الصفحة الموحد ═══ */
+        .page-title-header {
+            text-align: center;
+            padding: 18px 0 20px;
+            font-size: 1.6em;
+            font-weight: 900;
+            color: var(--text);
+        }
+
+        /* ═══ إطار ذهبي خفيف على جميع المستطيلات والأزرار ما عدا شريط التنقل ═══ */
+        .page div[style*="background"],
+        .page .profile-section,
+        .page .stat-card,
+        .page .adv-stat,
+        .page .cat-card,
+        .page .game-cat-card,
+        .page .diff-chip,
+        .page .settings-row,
+        .page .hero-card,
+        .page .rating-card,
+        .page .session-timer-card,
+        .page .emoji-shop-grid > div,
+        .page button:not(.nav-item):not(.game-back-btn):not(.return-home-btn),
+        .game-overlay div[style*="background"],
+        .game-overlay button:not(.game-back-btn):not(.return-home-btn) {
+            border-color: var(--gold-border) !important;
+        }
+
+        /* ═══ إطار ذهبي خفيف شامل ═══ */
+        .page .profile-section,
+        .page .stat-card,
+        .page .adv-stat,
+        .page .cat-card,
+        .page .game-cat-card,
+        .page .rating-card,
+        .page .session-timer-card,
+        .page .settings-list,
+        .page .hero-card {
+            border: 1px solid var(--gold-border) !important;
+        }
+
+        /* الأزرار الرئيسية — إطار ذهبي */
+        .page button.save-btn,
+        .page button.reset-stats-btn,
+        .page button.reset-complete-btn,
+        .page .gender-btn,
+        .page .diff-chip {
+            border: 1px solid var(--gold-border) !important;
+        }
+
+        /* بطاقات الإعدادات الثلاث */
+        #page-settings > div > div[onclick] {
+            border: 1px solid var(--gold-border) !important;
+        }
+
+        /* تأكيد تباين الخط العالي */
+        body, .page, .game-overlay {
+            color: var(--text);
         }
         input,
         select {
