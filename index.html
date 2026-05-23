@@ -264,6 +264,9 @@
                     </div>
                     <span class="xp-pill-lv" id="headerXp">⚡ 0 XP</span>
                 </div>
+                <div style="display:flex;align-items:center;gap:4px;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:20px;padding:5px 10px;font-size:0.78em;font-weight:900;color:var(--gold);white-space:nowrap;">
+                    💰 <span id="headerCoins">0</span>
+                </div>
                 <div class="th-right">
                     <!-- زر الإعدادات — ينقل إلى صفحة الإعدادات -->
                     <div class="icon-pill" id="mainSettingsBtn" onclick="goTab('settings')" title="الإعدادات">⚙️</div>
@@ -276,11 +279,8 @@
                     <div class="hero-card">
                         <div class="hero-row">
                             <div>
-                                <div class="hero-greeting">💰 رصيدك الحالي</div>
-                                <div class="hero-title" id="homeCoinsHero" style="display:flex;align-items:center;gap:8px;"><span style="color:var(--gold);">0</span> <span style="font-size:0.6em;color:var(--text2);font-weight:600;">عملة</span></div>
                                 <div class="stars-big" id="homeStars">☆☆☆☆☆</div>
                             </div>
-                            <div class="coins-badge">💰 <span id="homeCoins">0</span></div>
                         </div>
                     </div>
                     <div class="session-timer-card">
@@ -526,11 +526,8 @@
 
                 <!-- ACHIEVEMENTS PAGE — المهام والإنجازات فقط (بدون تكرار في الملف الشخصي) -->
                 <div class="page" id="page-achieve">
-                    <div class="hero-card">
-                        <div style="text-align:center;padding:4px 0;">
-                            <div class="hero-greeting">📋 المهام والإنجازات</div>
-                            <div class="hero-title">تفاصيل <span>التقدم</span></div>
-                        </div>
+                    <div style="text-align:center;padding:18px 0 20px;">
+                        <div style="font-size:1.6em;font-weight:900;color:var(--text);">📋 المهام والإنجازات</div>
                     </div>
                     <div class="tasks-summary">
                         <div class="task-stat">
@@ -573,21 +570,8 @@
                 <div class="page" id="page-shop">
 
                     <!-- رأس المتجر -->
-                    <div class="hero-card">
-                        <div style="text-align:center;padding:4px 0;">
-                            <div class="hero-greeting">🛍️ المتجر</div>
-                            <div class="hero-title">اشترِ <span>الرموز</span></div>
-                        </div>
-                    </div>
-
-                    <!-- الرمز الحالي -->
-                    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-                        <div id="currentAvatarDisplay" style="font-size:2.5em;line-height:1;">🧑</div>
-                        <div style="flex:1;">
-                            <div style="font-size:0.82em;font-weight:900;color:var(--text);">رمزك الحالي</div>
-                            <div style="font-size:0.65em;color:var(--text2);margin-top:3px;">اضغط على أي رمز أدناه لشرائه أو تفعيله</div>
-                        </div>
-                        <div style="font-size:0.72em;font-weight:900;color:var(--gold);">رصيدك<br><span id="shopCoinsDisplay2" style="font-size:1.4em;">0</span> 💰</div>
+                    <div style="text-align:center;padding:18px 0 20px;">
+                        <div style="font-size:1.6em;font-weight:900;color:var(--text);">🛍️ المتجر</div>
                     </div>
 
                     <!-- رموز تعبيرية — الأحرف والوجوه -->
