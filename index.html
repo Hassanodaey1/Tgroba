@@ -276,13 +276,7 @@
             <div class="pages">
                 <!-- HOME PAGE -->
                 <div class="page active" id="page-home">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="stars-big" id="homeStars">☆☆☆☆☆</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="page-title-header">🏠 الواجهة الرئيسية</div>
                     <div class="session-timer-card">
                         <div class="session-timer-label">⏱️ وقت اللعب اليوم</div>
                         <div class="session-timer-value" id="sessionTimerDisplay">00:00:00</div>
@@ -334,7 +328,6 @@
                         </div>
                     </div>
                     <div>
-                        <div class="section-label">تفاصيل الفئات</div>
                         <div class="cat-grid">
                             <div class="cat-card" style="--chip-color:#f0b90b" id="homeCatCounter" onclick="openOpSheet('counter')">
                                 <div class="cat-icon">🧮</div>
@@ -402,6 +395,7 @@
 
                 <!-- PLAY PAGE -->
                 <div class="page" id="page-play">
+                    <div class="page-title-header">🎮 الألعاب</div>
                     <!-- مستوى الصعوبة -->
                     <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;margin-bottom:4px;">
                         <div class="section-label" style="margin-bottom:10px;">مستوى الصعوبة</div>
@@ -656,15 +650,7 @@
 
                 <!-- LEADERBOARD PAGE -->
                 <div class="page" id="page-leaderboard">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="hero-greeting">🏆 ساحة المنافسة</div>
-                                <div class="hero-title">نداء <span>التحدي</span></div>
-                            </div>
-                            <div class="coins-badge" style="cursor:pointer;" onclick="loadCombinedLeaderboard();">🔄 تحديث</div>
-                        </div>
-                    </div>
+                    <div class="page-title-header">🏆 المنافسة</div>
 
                     <!-- واجهة الترحيب بلعبة التحدي -->
                     <div id="challengeWelcome" style="display:flex;flex-direction:column;gap:12px;">
