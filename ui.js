@@ -408,6 +408,7 @@ function updateUI() {
     updateWeaknessArea();
     initVolumeSliders();
     var sc = document.getElementById('shopCoinsDisplay'); if (sc) sc.textContent = st.coins;
+    var sc2 = document.getElementById('shopCoinsDisplay2'); if (sc2) sc2.textContent = st.coins;
     var ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
     try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch (e) {}
     /* تحديث لون زر المنافسة */
