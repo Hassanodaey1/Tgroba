@@ -154,6 +154,7 @@ function loadProfileForm() {
     renderProfileAchievements();
     updateBadgeIcon();
     const cd = document.getElementById('shopCoinsDisplay'); if (cd) cd.textContent = st.coins;
+    const hc3 = document.getElementById('headerCoins'); if (hc3) hc3.textContent = st.coins;
     const ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
 }
 
@@ -409,6 +410,7 @@ function updateUI() {
     initVolumeSliders();
     var sc = document.getElementById('shopCoinsDisplay'); if (sc) sc.textContent = st.coins;
     var sc2 = document.getElementById('shopCoinsDisplay2'); if (sc2) sc2.textContent = st.coins;
+    var hc = document.getElementById('headerCoins'); if (hc) hc.textContent = st.coins;
     var ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
     try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch (e) {}
     /* تحديث لون زر المنافسة */
@@ -418,9 +420,8 @@ function updateUI() {
 }
 
 function updateHomeStats() {
-    document.getElementById('homeCoins').textContent = st.coins;
-    const homeCoinsHero = document.getElementById('homeCoinsHero');
-    if (homeCoinsHero) homeCoinsHero.querySelector('span').textContent = st.coins;
+    const hc = document.getElementById('headerCoins'); if (hc) hc.textContent = st.coins;
+    const homeCoins = document.getElementById('homeCoins'); if (homeCoins) homeCoins.textContent = st.coins;
     document.getElementById('homeCorrect').textContent = st.correctTotal;
     const total = st.correctTotal + st.wrongTotal;
     const acc = total > 0 ? Math.round((st.correctTotal / total) * 100) : 0;
