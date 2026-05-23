@@ -1,6 +1,6 @@
 /* NAVIGATION */
         /* ═══════════ NAVIGATION ═══════════ */
-        const TABS = ['home', 'play', 'achieve', 'profile', 'leaderboard', 'settings'];
+        const TABS = ['home', 'play', 'achieve', 'profile', 'leaderboard', 'settings', 'shop'];
 
         function goTab(tab) {
             TABS.forEach(t => {
@@ -26,6 +26,18 @@
             }
             if (tab === 'settings') {
                 loadProfileForm();
+            }
+            if (tab === 'shop') {
+                /* تحديث رصيد المتجر */
+                const sc = document.getElementById('shopCoinsDisplay'); if(sc) sc.textContent = (typeof st !== 'undefined') ? st.coins : 0;
+                const sc2 = document.getElementById('shopCoinsDisplay2'); if(sc2) sc2.textContent = (typeof st !== 'undefined') ? st.coins : 0;
+                const ca = document.getElementById('currentAvatarDisplay'); if(ca && typeof st !== 'undefined') ca.textContent = st.avatar || '🧑';
+                /* تشغيل renderEmojiShop إن وُجدت */
+                try { if (typeof renderEmojiShop === 'function') renderEmojiShop(); } catch(e) {}
+                try { if (typeof toggleEmojiShop === 'function') {
+                    const grid = document.getElementById('emojiShopGrid');
+                    if (grid && grid.children.length === 0) renderEmojiShop && renderEmojiShop();
+                } } catch(e) {}
             }
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
