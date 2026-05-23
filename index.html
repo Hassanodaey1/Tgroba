@@ -298,36 +298,16 @@
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="section-label">إحصائيات متقدمة</div>
-                        <div class="adv-stats-grid">
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeCorrect" style="color:var(--green)">0</div>
-                                <div class="adv-stat-label">إجابات صحيحة</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeAccuracy" style="color:var(--accent2)">0%</div>
-                                <div class="adv-stat-label">الدقة</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeStreak" style="color:var(--red)">×0</div>
-                                <div class="adv-stat-label">أعلى تتابع</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeGames" style="color:var(--gold)">0</div>
-                                <div class="adv-stat-label">جلسات</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeLevel" style="color:var(--accent)">1</div>
-                                <div class="adv-stat-label">المستوى</div>
-                            </div>
-                            <div class="adv-stat">
-                                <div class="adv-stat-num" id="homeBestScore" style="color:var(--gold2)">0</div>
-                                <div class="adv-stat-label">أعلى نقاط</div>
-                            </div>
+                    <div onclick="document.getElementById('statsOverlay').style.display='flex'" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(6,182,212,0.1));border:1px solid var(--gold-border);border-radius:18px;padding:16px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                        <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;">📊</div>
+                        <div style="flex:1;">
+                            <div style="font-size:0.9em;font-weight:900;color:var(--text);">الإحصائيات المتقدمة</div>
+                            <div style="font-size:0.66em;color:var(--text2);margin-top:3px;">الدقة • التتابع • الجلسات • المستوى</div>
                         </div>
+                        <div style="font-size:1.3em;color:var(--text3);">›</div>
                     </div>
                     <div>
+                        <div class="section-label">تفاصيل الفئات</div>
                         <div class="cat-grid">
                             <div class="cat-card" style="--chip-color:#f0b90b" id="homeCatCounter" onclick="openOpSheet('counter')">
                                 <div class="cat-icon">🧮</div>
@@ -518,45 +498,62 @@
                     </div>
                 </div>
 
-                <!-- ACHIEVEMENTS PAGE — المهام والإنجازات فقط (بدون تكرار في الملف الشخصي) -->
+                <!-- ACHIEVEMENTS PAGE -->
                 <div class="page" id="page-achieve">
                     <div style="text-align:center;padding:18px 0 20px;">
                         <div style="font-size:1.6em;font-weight:900;color:var(--text);">📋 المهام والإنجازات</div>
                     </div>
-                    <div class="tasks-summary">
-                        <div class="task-stat">
-                            <div class="task-stat-num" id="tasksDone">0</div>
-                            <div class="task-stat-label">مكتملة</div>
+
+                    <!-- ملخص سريع -->
+                    <div style="display:flex;gap:8px;margin-bottom:4px;">
+                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:16px;padding:12px;text-align:center;">
+                            <div style="font-size:1.4em;font-weight:900;color:var(--gold);" id="tasksDone">0</div>
+                            <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">مكتملة</div>
                         </div>
-                        <div class="task-divider"></div>
-                        <div class="task-stat">
-                            <div class="task-stat-num" id="tasksTotal">0</div>
-                            <div class="task-stat-label">اليوم</div>
+                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:16px;padding:12px;text-align:center;">
+                            <div style="font-size:1.4em;font-weight:900;color:var(--accent2);" id="tasksTotal">0</div>
+                            <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">مهام اليوم</div>
                         </div>
-                        <div class="task-divider"></div>
-                        <div class="task-stat">
-                            <div class="task-stat-num" id="tasksCoins">0💰</div>
-                            <div class="task-stat-label">المكافآت</div>
+                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:16px;padding:12px;text-align:center;">
+                            <div style="font-size:1.4em;font-weight:900;color:var(--green);" id="tasksCoins">0💰</div>
+                            <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">المكافآت</div>
                         </div>
                     </div>
-                    <div class="tasks-progress-card">
-                        <div class="tasks-prog-label"><span>تقدّم اليوم</span><span id="tasksPct">0%</span></div>
-                        <div class="tasks-bar-track">
+
+                    <!-- شريط التقدم + العداد التنازلي -->
+                    <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:16px;padding:14px 16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <span style="font-size:0.75em;font-weight:700;color:var(--text);">تقدّم اليوم</span>
+                            <span style="font-size:0.75em;font-weight:900;color:var(--gold);" id="tasksPct">0%</span>
+                        </div>
+                        <div class="tasks-bar-track" style="margin-bottom:10px;">
                             <div class="tasks-bar-fill" id="tasksBarFill" style="width:0%"></div>
                         </div>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                            <span style="font-size:0.65em;color:var(--text2);">⏰ تجديد في</span>
+                            <span style="font-size:0.78em;font-weight:900;color:var(--accent2);" id="dailyCountdown">--:--:--</span>
+                        </div>
                     </div>
-                    <div class="daily-timer">
-                        <div class="daily-timer-label">⏰ تجديد المهام في</div>
-                        <div class="daily-timer-val" id="dailyCountdown">--:--:--</div>
+
+                    <!-- تبويبان: المهام / الإنجازات -->
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="showAchieveTab('tasks')" id="achTabTasks" style="flex:1;padding:10px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.82em;font-weight:900;border:none;cursor:pointer;">📝 المهام اليومية</button>
+                        <button onclick="showAchieveTab('achieve')" id="achTabAchieve" style="flex:1;padding:10px;border-radius:14px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.82em;font-weight:700;border:1px solid var(--gold-border);cursor:pointer;">🏆 الإنجازات <span id="achievePct" style="color:var(--accent2);">0/18</span></button>
                     </div>
-                    <div>
-                        <div class="section-label">المهام اليومية</div>
-                        <div id="tasksList"></div>
-                    </div>
-                    <div style="margin-top:12px;">
-                        <div class="section-label" style="display:flex;justify-content:space-between;">🏆 الإنجازات <span id="achievePct" style="color:var(--accent2);">0/18</span></div>
-                        <div id="achieveList"></div>
-                        <div id="achieveCompleteReward" style="display:none;text-align:center;margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
+
+                    <!-- حاوية التمرير المتحرك -->
+                    <div style="overflow:hidden;position:relative;">
+                        <div id="achieveTabsSlider" style="display:flex;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);width:200%;">
+                            <!-- تبويب المهام -->
+                            <div style="width:50%;flex-shrink:0;">
+                                <div id="tasksList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                            </div>
+                            <!-- تبويب الإنجازات -->
+                            <div style="width:50%;flex-shrink:0;">
+                                <div id="achieveList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                                <div id="achieveCompleteReward" style="display:none;text-align:center;margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1125,6 +1122,129 @@
             if (el) el.style.display = 'none';
             playSound && playSound('click');
         }
+    </script>
+    <!-- ═══════ OVERLAY: الإحصائيات المتقدمة ═══════ -->
+    <div id="statsOverlay" class="game-overlay" style="display:none;overflow-y:auto;">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="document.getElementById('statsOverlay').style.display='none'" aria-label="رجوع">‹</button>
+            <div class="game-title">📊 الإحصائيات المتقدمة</div>
+            <div></div>
+        </div>
+        <div style="padding:14px 16px 90px;display:flex;flex-direction:column;gap:14px;">
+
+            <!-- بطاقة الأداء العام -->
+            <div style="background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(6,182,212,0.1));border:1px solid var(--gold-border);border-radius:22px;padding:20px;text-align:center;">
+                <div style="font-size:2em;margin-bottom:6px;">🎯</div>
+                <div style="font-size:1em;font-weight:900;color:var(--text);margin-bottom:4px;">الأداء العام</div>
+                <div style="display:flex;gap:10px;margin-top:12px;">
+                    <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;">
+                        <div style="font-size:1.8em;font-weight:900;color:var(--green);" id="homeCorrect">0</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">إجابات صحيحة</div>
+                    </div>
+                    <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;">
+                        <div style="font-size:1.8em;font-weight:900;color:var(--accent2);" id="homeAccuracy">0%</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">الدقة</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- شبكة الإحصائيات -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
+                    <div style="font-size:1.8em;font-weight:900;color:var(--red);" id="homeStreak">×0</div>
+                    <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى تتابع</div>
+                </div>
+                <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
+                    <div style="font-size:1.8em;font-weight:900;color:var(--gold);" id="homeGames">0</div>
+                    <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">إجمالي الجلسات</div>
+                </div>
+                <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
+                    <div style="font-size:1.8em;font-weight:900;color:var(--accent);" id="homeLevel">1</div>
+                    <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">المستوى الحالي</div>
+                </div>
+                <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
+                    <div style="font-size:1.8em;font-weight:900;color:var(--gold2);" id="homeBestScore">0</div>
+                    <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى نقاط</div>
+                </div>
+            </div>
+
+            <!-- التقييم العام -->
+            <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;">
+                <div style="font-size:0.82em;font-weight:900;color:var(--text);margin-bottom:12px;">⭐ التقييم العام</div>
+                <div class="rating-inner">
+                    <div>
+                        <div class="rating-num-big" id="ratingNumStat">0.0</div>
+                        <div class="rating-num-sub">من 5.0</div>
+                    </div>
+                    <div class="rating-right">
+                        <div class="rating-stars-disp" id="ratingStatStars">☆☆☆☆☆</div>
+                        <div class="rating-bar-track">
+                            <div class="rating-bar-fill" id="ratingStatBar" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- آخر 10 نتائج -->
+            <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;overflow:hidden;">
+                <div style="padding:12px 16px;font-size:0.82em;font-weight:900;color:var(--text);border-bottom:1px solid var(--gold-border);">📈 آخر 10 نتائج</div>
+                <div class="history-scroll" id="historyScrollStat" style="max-height:240px;overflow-y:auto;padding:8px 12px;">
+                    <div style="font-size:0.74em;color:var(--text3);padding:6px;">لا توجد نتائج بعد — العب الآن!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* تبويبات صفحة المهام والإنجازات */
+        function showAchieveTab(tab) {
+            const slider = document.getElementById('achieveTabsSlider');
+            const btnT   = document.getElementById('achTabTasks');
+            const btnA   = document.getElementById('achTabAchieve');
+            if (!slider) return;
+            const activeStyle   = 'background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;font-weight:900;';
+            const inactiveStyle = 'background:var(--surface3);color:var(--text2);border:1px solid var(--gold-border);font-weight:700;';
+            if (tab === 'tasks') {
+                slider.style.transform = 'translateX(0)';
+                if(btnT) btnT.style.cssText += activeStyle;
+                if(btnA) btnA.style.cssText += inactiveStyle;
+            } else {
+                slider.style.transform = 'translateX(-50%)';
+                if(btnA) btnA.style.cssText += activeStyle;
+                if(btnT) btnT.style.cssText += inactiveStyle;
+            }
+        }
+
+        /* مزامنة الإحصائيات عند فتح overlay الإحصائيات */
+        document.addEventListener('DOMContentLoaded', function() {
+            const statsBtn = document.querySelector('[onclick*="statsOverlay"]');
+            if (statsBtn) {
+                statsBtn.addEventListener('click', function() {
+                    /* نسخ قيم الإحصائيات من الصفحة الرئيسية */
+                    ['homeCorrect','homeAccuracy','homeStreak','homeGames','homeLevel','homeBestScore'].forEach(function(id) {
+                        const src = document.getElementById(id);
+                        if (src) {
+                            const dst = document.querySelector('#statsOverlay #' + id);
+                            if (dst) dst.textContent = src.textContent;
+                        }
+                    });
+                    /* مزامنة التقييم */
+                    const rn = document.getElementById('ratingNum');
+                    const rs = document.getElementById('ratingStars');
+                    const rb = document.getElementById('ratingBar');
+                    const rns = document.getElementById('ratingNumStat');
+                    const rss = document.getElementById('ratingStatStars');
+                    const rbs = document.getElementById('ratingStatBar');
+                    if(rn && rns) rns.textContent = rn.textContent;
+                    if(rs && rss) rss.textContent = rs.textContent;
+                    if(rb && rbs) rbs.style.width = rb.style.width;
+                    /* مزامنة السجل */
+                    const hist = document.getElementById('historyScroll');
+                    const histStat = document.getElementById('historyScrollStat');
+                    if(hist && histStat) histStat.innerHTML = hist.innerHTML;
+                });
+            }
+        });
     </script>
     <!-- JavaScript Modules -->
     <script src="firebase.js"></script>
