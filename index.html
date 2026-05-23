@@ -370,21 +370,6 @@
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="section-label">مستوى الصعوبة</div>
-                        <div class="diff-row">
-                            <div class="diff-chip active" onclick="selectDiff(this,'easy')"><span class="diff-chip-icon">🟢</span>سهل</div>
-                            <div class="diff-chip" id="diffMedium" onclick="selectDiff(this,'medium')"><span class="diff-chip-icon">🟡</span>متوسط
-                                <div class="lock-tag" id="lockMedium" style="display:block">🔒 Lv.3</div>
-                            </div>
-                            <div class="diff-chip" id="diffHard" onclick="selectDiff(this,'hard')"><span class="diff-chip-icon">🟠</span>صعب
-                                <div class="lock-tag" id="lockHard" style="display:block">🔒 Lv.5</div>
-                            </div>
-                            <div class="diff-chip" id="diffGenius" onclick="selectDiff(this,'genius')"><span class="diff-chip-icon">🔴</span>عبقري
-                                <div class="lock-tag" id="lockGenius" style="display:block">🔒 Lv.8</div>
-                            </div>
-                        </div>
-                    </div>
                     <div id="weaknessArea" class="weakness-area"></div>
                     <div>
                         <div class="section-label">آخر 10 نتائج</div>
@@ -417,6 +402,22 @@
 
                 <!-- PLAY PAGE -->
                 <div class="page" id="page-play">
+                    <!-- مستوى الصعوبة -->
+                    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;margin-bottom:4px;">
+                        <div class="section-label" style="margin-bottom:10px;">مستوى الصعوبة</div>
+                        <div class="diff-row">
+                            <div class="diff-chip active" onclick="selectDiff(this,'easy')"><span class="diff-chip-icon">🟢</span>سهل</div>
+                            <div class="diff-chip" id="diffMedium" onclick="selectDiff(this,'medium')"><span class="diff-chip-icon">🟡</span>متوسط
+                                <div class="lock-tag" id="lockMedium" style="display:block">🔒 Lv.3</div>
+                            </div>
+                            <div class="diff-chip" id="diffHard" onclick="selectDiff(this,'hard')"><span class="diff-chip-icon">🟠</span>صعب
+                                <div class="lock-tag" id="lockHard" style="display:block">🔒 Lv.5</div>
+                            </div>
+                            <div class="diff-chip" id="diffGenius" onclick="selectDiff(this,'genius')"><span class="diff-chip-icon">🔴</span>عبقري
+                                <div class="lock-tag" id="lockGenius" style="display:block">🔒 Lv.8</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="game-cat-card" style="--gc:#f0b90b" id="playCardCounter" onclick="openCounterGame()">
                         <div class="gcard-top">
                             <div class="gcard-name-icon-row">
@@ -661,132 +662,58 @@
 
                 <!-- SETTINGS PAGE -->
                 <div class="page" id="page-settings">
-                    <div class="hero-card">
-                        <div class="hero-row">
-                            <div>
-                                <div class="hero-greeting">⚙️ الإعدادات</div>
-                                <div class="hero-title">تخصيص <span>التجربة</span></div>
-                            </div>
-                        </div>
+                    <!-- عنوان الصفحة مُوسَّط -->
+                    <div style="text-align:center;padding:18px 0 20px;">
+                        <div style="font-size:1.6em;font-weight:900;color:var(--text);">⚙️ الإعدادات</div>
+                        <div style="font-size:0.72em;color:var(--text2);margin-top:4px;">تخصيص تجربة اللعب</div>
                     </div>
 
-                    <!-- الصوت والموسيقى والاهتزاز -->
-                    <div class="profile-section" style="margin-top:12px;">
-                        <div class="profile-section-title">🔊 الصوت والموسيقى والاهتزاز</div>
-                        <div class="settings-list">
+                    <!-- بطاقات الإعدادات الثلاث -->
+                    <div style="display:flex;flex-direction:column;gap:12px;">
 
-                            <!-- أصوات اللعبة -->
-                            <div class="settings-row" onclick="toggleSound()">
-                                <span class="settings-row-icon">🔊</span>
-                                <span class="settings-row-label">أصوات اللعبة</span>
-                                <span class="settings-row-val" id="soundStatus">مفعّل</span>
-                                <span id="soundBtn" style="display:none"></span>
+                        <!-- زر الملف الشخصي -->
+                        <div onclick="openSettingsSubPage('profile-sub')" style="display:flex;align-items:center;gap:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:18px 20px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                            <div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;">👤</div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.92em;font-weight:900;color:var(--text);">الملف الشخصي</div>
+                                <div style="font-size:0.68em;color:var(--text2);margin-top:3px;">البيانات الشخصية • الإنجازات • الألقاب</div>
                             </div>
-                            <div class="volume-slider-row">
-                                <span class="vol-icon">🔈</span>
-                                <input type="range" class="vol-slider" id="soundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
-                                <span class="vol-val" id="soundVolVal">80%</span>
-                            </div>
-
-                            <!-- موسيقى الخلفية -->
-                            <div class="settings-row" onclick="toggleBgMusic()">
-                                <span class="settings-row-icon">🎵</span>
-                                <span class="settings-row-label">موسيقى الخلفية</span>
-                                <span class="settings-row-val" id="bgMusicStatus">مفعّلة</span>
-                                <span id="bgBtn" style="display:none"></span>
-                            </div>
-                            <div class="volume-slider-row">
-                                <span class="vol-icon">🎶</span>
-                                <input type="range" class="vol-slider" id="bgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
-                                <span class="vol-val" id="bgVolVal">60%</span>
-                            </div>
-
-                            <!-- الاهتزاز -->
-                            <div class="settings-row" onclick="toggleVibration()">
-                                <span class="settings-row-icon">📳</span>
-                                <span class="settings-row-label">الاهتزاز عند النقر</span>
-                                <span class="settings-row-val" id="vibrationStatus">مفعّل</span>
-                            </div>
-                            <div class="volume-slider-row">
-                                <span class="vol-icon">📳</span>
-                                <input type="range" class="vol-slider" id="vibVolSlider" min="10" max="200" value="30" oninput="setVibrationStrength(this.value)">
-                                <span class="vol-val" id="vibVolVal">30ms</span>
-                            </div>
-
+                            <div style="font-size:1.3em;color:var(--text3);">›</div>
                         </div>
-                    </div>
 
-                    <!-- تعديل الملف الشخصي -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">✏️ تعديل الملف الشخصي</div>
-                        <div class="profile-form">
-                            <div class="form-field">
-                                <div class="form-label">الاسم (إنجليزي فقط)</div>
-                                <input class="form-input" type="text" id="inputName" placeholder="English Name (A-Z, 0-9)" maxlength="30">
+                        <!-- زر الصوتيات -->
+                        <div onclick="openSettingsSubPage('audio-sub')" style="display:flex;align-items:center;gap:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:18px 20px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                            <div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#06b6d4,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;">🔊</div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.92em;font-weight:900;color:var(--text);">الصوتيات</div>
+                                <div style="font-size:0.68em;color:var(--text2);margin-top:3px;">الصوت • الموسيقى • الاهتزاز</div>
                             </div>
-                            <div class="form-field">
-                                <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
-                                <div class="date-row">
-                                    <select id="birthDay" class="date-select"></select>
-                                    <select id="birthMonth" class="date-select"></select>
-                                    <select id="birthYear" class="date-select"></select>
-                                </div>
-                            </div>
-                            <div class="form-field">
-                                <div class="form-label">الجنس</div>
-                                <div class="gender-row">
-                                    <div class="gender-btn" id="gBtnM" onclick="selectGender('m')">👦 ذكر</div>
-                                    <div class="gender-btn" id="gBtnF" onclick="selectGender('f')">👧 أنثى</div>
-                                </div>
-                            </div>
-                            <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
+                            <div style="font-size:1.3em;color:var(--text3);">›</div>
                         </div>
-                    </div>
 
-                    <!-- الثيمات -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🎨 الثيمات والمظهر</div>
-                        <div class="themes-row">
-                            <div class="dark-light-toggle" onclick="toggleDarkMode()">
-                                <span id="darkLightIcon">🌙</span>
-                                <span id="darkLightLabel">داكن</span>
+                        <!-- زر المظهر والثيمات -->
+                        <div onclick="openSettingsSubPage('theme-sub')" style="display:flex;align-items:center;gap:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:18px 20px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                            <div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#f97316,#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;">🎨</div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.92em;font-weight:900;color:var(--text);">المظهر والثيمات</div>
+                                <div style="font-size:0.68em;color:var(--text2);margin-top:3px;">الوضع الداكن • ألوان التطبيق</div>
                             </div>
-                            <div class="theme-dot active" style="background:#f0b90b" onclick="setTheme(this,'#f0b90b','#7c3aed','#06b6d4')"></div>
-                            <div class="theme-dot" style="background:#38bdf8" onclick="setTheme(this,'#38bdf8','#0ea5e9','#7c3aed')"></div>
-                            <div class="theme-dot" style="background:#4ade80" onclick="setTheme(this,'#4ade80','#16a34a','#06b6d4')"></div>
-                            <div class="theme-dot" style="background:#f97316" onclick="setTheme(this,'#f97316','#ea580c','#a855f7')"></div>
-                            <div class="theme-dot" style="background:#c084fc" onclick="setTheme(this,'#c084fc','#a855f7','#06b6d4')"></div>
-                            <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
+                            <div style="font-size:1.3em;color:var(--text3);">›</div>
                         </div>
-                    </div>
 
-                    <!-- إدارة الحساب -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🔢 إدارة الحساب</div>
-                        <div style="background:var(--surface3);border-radius:14px;padding:14px;">
-                            <div style="font-size:0.7em;color:var(--text2);margin-bottom:8px;">الرقم التسلسلي يتيح استعادة حسابك على أي جهاز</div>
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                                <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:0.68em;font-weight:700;color:var(--gold);word-break:break-all;" id="serialNumberDisplay">احفظ الملف الشخصي أولاً</div>
-                                <button onclick="copySerialNumber()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;font-size:0.9em;cursor:pointer;color:var(--text2);">📋</button>
-                            </div>
-                            <button onclick="showRestoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;margin-bottom:8px;">📥 استعادة حساب بالرقم التسلسلي</button>
-                            <div id="restorePanel" style="display:none;margin-top:8px;">
-                                <input id="restoreSerialInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;">
-                                <button onclick="restoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة</button>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- منطقة الخطر -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">⚠️ منطقة الخطر</div>
-                        <div style="font-size:0.72em;color:var(--text2);margin-bottom:10px;">هذه الإجراءات لا يمكن التراجع عنها</div>
+                    <div style="margin-top:20px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:18px;padding:16px;">
+                        <div style="font-size:0.8em;font-weight:900;color:var(--red);margin-bottom:6px;">⚠️ منطقة الخطر</div>
+                        <div style="font-size:0.68em;color:var(--text2);margin-bottom:12px;">هذه الإجراءات لا يمكن التراجع عنها</div>
                         <div style="display:flex;flex-direction:column;gap:8px;">
                             <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات فقط</button>
                             <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد (حذف كل شيء)</button>
                         </div>
                     </div>
-                    <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
+
+                    <div style="text-align:center;padding:16px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
                 </div>
 
                 <!-- LEADERBOARD PAGE -->
@@ -1023,6 +950,238 @@
         </div>
     </div>
 
+    <!-- ═══════ SUB-PAGE: الملف الشخصي ═══════ -->
+    <div class="game-overlay" id="subPageProfileOverlay" style="display:none;overflow-y:auto;">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="closeSettingsSubPage('subPageProfileOverlay')" aria-label="رجوع">‹</button>
+            <div class="game-title">👤 الملف الشخصي</div>
+            <div></div>
+        </div>
+        <div style="padding:14px 16px 90px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;">
+
+            <!-- بطاقة الملف الشخصي الكاملة -->
+            <div style="background:linear-gradient(135deg,var(--surface2),var(--surface3));border:1px solid var(--border2);border-radius:22px;padding:20px;text-align:center;">
+                <div class="profile-avatar-big" id="spProfileAvatarWrap" onclick="triggerPhotoUpload()" style="cursor:pointer;margin:0 auto 12px;" title="تغيير الصورة الشخصية">
+                    <div class="profile-avatar-ring"></div>
+                    <div class="profile-avatar-img" id="spProfileAvatarImg">🧑</div>
+                    <div class="profile-photo-overlay">📷</div>
+                </div>
+                <div style="font-size:1.1em;font-weight:900;color:var(--text);" id="spProfileName">اللاعب</div>
+                <div style="font-size:0.72em;color:var(--text2);margin-top:2px;" id="spProfileLevel">المستوى 1 • مبتدئ</div>
+                <div class="profile-xp-track" style="margin:10px auto;max-width:200px;">
+                    <div class="profile-xp-fill" id="spProfileXpFill" style="width:0%"></div>
+                </div>
+                <div style="font-size:0.65em;color:var(--text3);" id="spProfileXpLabel">0 / 1000 XP</div>
+            </div>
+
+            <!-- الإحصائيات -->
+            <div class="stats-grid3">
+                <div class="stat-card">
+                    <div class="stat-card-num" id="spStatCorrect">0</div>
+                    <div class="stat-card-label">إجابة صحيحة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-num" id="spStatStreak">×0</div>
+                    <div class="stat-card-label">أعلى تتابع</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-num" id="spStatCoins">0</div>
+                    <div class="stat-card-label">💰 عملة</div>
+                </div>
+            </div>
+
+            <!-- تعديل البيانات الشخصية -->
+            <div class="profile-section">
+                <div class="profile-section-title">✏️ تعديل البيانات</div>
+                <div class="profile-form">
+                    <div class="form-field">
+                        <div class="form-label">الاسم (إنجليزي فقط)</div>
+                        <input class="form-input" type="text" id="inputName" placeholder="English Name (A-Z, 0-9)" maxlength="30">
+                    </div>
+                    <div class="form-field">
+                        <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
+                        <div class="date-row">
+                            <select id="birthDay" class="date-select"></select>
+                            <select id="birthMonth" class="date-select"></select>
+                            <select id="birthYear" class="date-select"></select>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <div class="form-label">الجنس</div>
+                        <div class="gender-row">
+                            <div class="gender-btn" id="gBtnM" onclick="selectGender('m')">👦 ذكر</div>
+                            <div class="gender-btn" id="gBtnF" onclick="selectGender('f')">👧 أنثى</div>
+                        </div>
+                    </div>
+                    <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 حفظ التغييرات</button>
+                </div>
+            </div>
+
+            <!-- الألقاب -->
+            <div class="profile-section">
+                <div class="profile-section-title">🎖️ الألقاب والتقييم الموسمي</div>
+                <div id="spProfileTitlesSection"></div>
+            </div>
+
+            <!-- إدارة الحساب -->
+            <div class="profile-section">
+                <div class="profile-section-title">🔢 إدارة الحساب</div>
+                <div style="background:var(--surface3);border-radius:14px;padding:14px;">
+                    <div style="font-size:0.7em;color:var(--text2);margin-bottom:8px;">الرقم التسلسلي يتيح استعادة حسابك على أي جهاز</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:0.68em;font-weight:700;color:var(--gold);word-break:break-all;" id="serialNumberDisplay">احفظ الملف الشخصي أولاً</div>
+                        <button onclick="copySerialNumber()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;font-size:0.9em;cursor:pointer;color:var(--text2);">📋</button>
+                    </div>
+                    <button onclick="showRestoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;margin-bottom:8px;">📥 استعادة حساب بالرقم التسلسلي</button>
+                    <div id="restorePanel" style="display:none;margin-top:8px;">
+                        <input id="restoreSerialInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;">
+                        <button onclick="restoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════ SUB-PAGE: الصوتيات ═══════ -->
+    <div class="game-overlay" id="subPageAudioOverlay" style="display:none;overflow-y:auto;">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="closeSettingsSubPage('subPageAudioOverlay')" aria-label="رجوع">‹</button>
+            <div class="game-title">🔊 الصوتيات</div>
+            <div></div>
+        </div>
+        <div style="padding:14px 16px 90px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;">
+            <div class="profile-section" style="margin-top:0;">
+                <div class="profile-section-title">🔊 الصوت والموسيقى والاهتزاز</div>
+                <div class="settings-list">
+                    <!-- أصوات اللعبة -->
+                    <div class="settings-row" onclick="toggleSound()">
+                        <span class="settings-row-icon">🔊</span>
+                        <span class="settings-row-label">أصوات اللعبة</span>
+                        <span class="settings-row-val" id="soundStatus">مفعّل</span>
+                        <span id="soundBtn" style="display:none"></span>
+                    </div>
+                    <div class="volume-slider-row">
+                        <span class="vol-icon">🔈</span>
+                        <input type="range" class="vol-slider" id="soundVolSlider" min="0" max="100" value="80" oninput="setSoundVolume(this.value)">
+                        <span class="vol-val" id="soundVolVal">80%</span>
+                    </div>
+                    <!-- موسيقى الخلفية -->
+                    <div class="settings-row" onclick="toggleBgMusic()">
+                        <span class="settings-row-icon">🎵</span>
+                        <span class="settings-row-label">موسيقى الخلفية</span>
+                        <span class="settings-row-val" id="bgMusicStatus">مفعّلة</span>
+                        <span id="bgBtn" style="display:none"></span>
+                    </div>
+                    <div class="volume-slider-row">
+                        <span class="vol-icon">🎶</span>
+                        <input type="range" class="vol-slider" id="bgVolSlider" min="0" max="100" value="60" oninput="setBgVolume(this.value)">
+                        <span class="vol-val" id="bgVolVal">60%</span>
+                    </div>
+                    <!-- الاهتزاز -->
+                    <div class="settings-row" onclick="toggleVibration()">
+                        <span class="settings-row-icon">📳</span>
+                        <span class="settings-row-label">الاهتزاز عند النقر</span>
+                        <span class="settings-row-val" id="vibrationStatus">مفعّل</span>
+                    </div>
+                    <div class="volume-slider-row">
+                        <span class="vol-icon">📳</span>
+                        <input type="range" class="vol-slider" id="vibVolSlider" min="10" max="200" value="30" oninput="setVibrationStrength(this.value)">
+                        <span class="vol-val" id="vibVolVal">30ms</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ SUB-PAGE: المظهر والثيمات ═══════ -->
+    <div class="game-overlay" id="subPageThemeOverlay" style="display:none;overflow-y:auto;">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="closeSettingsSubPage('subPageThemeOverlay')" aria-label="رجوع">‹</button>
+            <div class="game-title">🎨 المظهر والثيمات</div>
+            <div></div>
+        </div>
+        <div style="padding:14px 16px 90px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;">
+            <div class="profile-section" style="margin-top:0;">
+                <div class="profile-section-title">🌙 الوضع الداكن / الفاتح</div>
+                <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;" onclick="toggleDarkMode()">
+                    <div style="font-size:1.8em;" id="spDarkLightIcon">🌙</div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.88em;font-weight:900;color:var(--text);" id="spDarkLightLabel">الوضع الداكن</div>
+                        <div style="font-size:0.65em;color:var(--text2);margin-top:2px;">اضغط للتبديل</div>
+                    </div>
+                    <div style="font-size:1.2em;color:var(--text3);">↔</div>
+                </div>
+            </div>
+            <div class="profile-section">
+                <div class="profile-section-title">🎨 ألوان الثيم</div>
+                <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:16px;padding:16px;">
+                    <div class="themes-row" style="justify-content:center;gap:14px;flex-wrap:wrap;">
+                        <div class="theme-dot active" style="background:#f0b90b;width:40px;height:40px;" onclick="setTheme(this,'#f0b90b','#7c3aed','#06b6d4')"></div>
+                        <div class="theme-dot" style="background:#38bdf8;width:40px;height:40px;" onclick="setTheme(this,'#38bdf8','#0ea5e9','#7c3aed')"></div>
+                        <div class="theme-dot" style="background:#4ade80;width:40px;height:40px;" onclick="setTheme(this,'#4ade80','#16a34a','#06b6d4')"></div>
+                        <div class="theme-dot" style="background:#f97316;width:40px;height:40px;" onclick="setTheme(this,'#f97316','#ea580c','#a855f7')"></div>
+                        <div class="theme-dot" style="background:#c084fc;width:40px;height:40px;" onclick="setTheme(this,'#c084fc','#a855f7','#06b6d4')"></div>
+                        <div class="theme-dot" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8);width:40px;height:40px;" onclick="setTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openSettingsSubPage(id) {
+            const map = { 'profile-sub': 'subPageProfileOverlay', 'audio-sub': 'subPageAudioOverlay', 'theme-sub': 'subPageThemeOverlay' };
+            const overlayId = map[id] || id;
+            const el = document.getElementById(overlayId);
+            if (!el) return;
+            el.style.display = 'flex';
+            el.style.flexDirection = 'column';
+            // sync profile sub-page data
+            if (overlayId === 'subPageProfileOverlay') {
+                const sp = document.getElementById('spProfileName');
+                const pn = document.getElementById('profileName');
+                if (sp && pn) sp.textContent = pn.textContent;
+                const sl = document.getElementById('spProfileLevel');
+                const pl = document.getElementById('profileLevel');
+                if (sl && pl) sl.textContent = pl.textContent;
+                const sf = document.getElementById('spProfileXpFill');
+                const pf = document.getElementById('profileXpFill');
+                if (sf && pf) sf.style.width = pf.style.width;
+                const sx = document.getElementById('spProfileXpLabel');
+                const px = document.getElementById('profileXpLabel');
+                if (sx && px) sx.textContent = px.textContent;
+                const sc = document.getElementById('spStatCorrect');
+                const sc2 = document.getElementById('statCorrect');
+                if (sc && sc2) sc.textContent = sc2.textContent;
+                const ss = document.getElementById('spStatStreak');
+                const ss2 = document.getElementById('statBestStreak');
+                if (ss && ss2) ss.textContent = ss2.textContent;
+                const sco = document.getElementById('spStatCoins');
+                const sco2 = document.getElementById('statCoinsP');
+                if (sco && sco2) sco.textContent = sco2.textContent;
+                const simg = document.getElementById('spProfileAvatarImg');
+                const pimg = document.getElementById('profileAvatarImg');
+                if (simg && pimg) { simg.textContent = pimg.textContent; simg.style.backgroundImage = pimg.style.backgroundImage; simg.style.backgroundSize = pimg.style.backgroundSize; }
+                try { if (typeof renderProfileTitles === 'function') { const old = document.getElementById('profileTitlesSection'); const nw = document.getElementById('spProfileTitlesSection'); if (nw && old) nw.innerHTML = old.innerHTML; } } catch(e) {}
+            }
+            // sync theme dark/light label
+            if (overlayId === 'subPageThemeOverlay') {
+                const di = document.getElementById('darkLightIcon');
+                const dl = document.getElementById('darkLightLabel');
+                const sdi = document.getElementById('spDarkLightIcon');
+                const sdl = document.getElementById('spDarkLightLabel');
+                if (di && sdi) sdi.textContent = di.textContent;
+                if (dl && sdl) sdl.textContent = dl.textContent;
+            }
+            playSound && playSound('click');
+        }
+        function closeSettingsSubPage(overlayId) {
+            const el = document.getElementById(overlayId);
+            if (el) el.style.display = 'none';
+            playSound && playSound('click');
+        }
+    </script>
     <!-- JavaScript Modules -->
     <script src="firebase.js"></script>
     <script src="state.js"></script>
