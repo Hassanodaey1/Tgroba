@@ -265,8 +265,8 @@
                     <span class="xp-pill-lv" id="headerXp">⚡ 0 XP</span>
                 </div>
                 <div class="th-right">
-                    <!-- زر الإعدادات — يعمل من الرئيسية والملف الشخصي فقط -->
-                    <div class="icon-pill" id="mainSettingsBtn" onclick="openMainSettings()" title="الإعدادات">⚙️</div>
+                    <!-- زر الإعدادات — ينقل إلى صفحة الإعدادات -->
+                    <div class="icon-pill" id="mainSettingsBtn" onclick="goTab('settings')" title="الإعدادات">⚙️</div>
                 </div>
             </div>
 
@@ -276,8 +276,8 @@
                     <div class="hero-card">
                         <div class="hero-row">
                             <div>
-                                <div class="hero-greeting">مرحباً مجدداً 👋</div>
-                                <div class="hero-title">تحديات <span>الرياضيات</span></div>
+                                <div class="hero-greeting">💰 رصيدك الحالي</div>
+                                <div class="hero-title" id="homeCoinsHero" style="display:flex;align-items:center;gap:8px;"><span style="color:var(--gold);">0</span> <span style="font-size:0.6em;color:var(--text2);font-weight:600;">عملة</span></div>
                                 <div class="stars-big" id="homeStars">☆☆☆☆☆</div>
                             </div>
                             <div class="coins-badge">💰 <span id="homeCoins">0</span></div>
@@ -572,7 +572,7 @@
                                 <button onclick="removeProfilePhoto()" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:4px 10px;font-family:'Tajawal',sans-serif;font-size:0.62em;font-weight:700;cursor:pointer;">🗑️ حذف</button>
                             </div>
                         </div>
-                        <button onclick="openGlobalSettings()" style="position:absolute;top:0;left:0;background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:8px 10px;font-size:1em;cursor:pointer;color:var(--text2);" title="الإعدادات">⚙️</button>
+
                     </div>
 
                     <!-- إحصائيات عامة -->
