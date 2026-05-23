@@ -281,10 +281,14 @@ function applyDarkMode() {
         document.documentElement.classList.remove('light-mode');
         document.getElementById('darkLightIcon').textContent = '🌙';
         document.getElementById('darkLightLabel').textContent = 'داكن';
+        const sdi = document.getElementById('spDarkLightIcon'); if(sdi) sdi.textContent = '🌙';
+        const sdl = document.getElementById('spDarkLightLabel'); if(sdl) sdl.textContent = 'الوضع الداكن';
     } else {
         document.documentElement.classList.add('light-mode');
         document.getElementById('darkLightIcon').textContent = '☀️';
         document.getElementById('darkLightLabel').textContent = 'فاتح';
+        const sdi = document.getElementById('spDarkLightIcon'); if(sdi) sdi.textContent = '☀️';
+        const sdl = document.getElementById('spDarkLightLabel'); if(sdl) sdl.textContent = 'الوضع الفاتح';
     }
 }
 
@@ -370,6 +374,15 @@ function updateUI() {
     document.getElementById('statCorrect').textContent = st.correctTotal;
     document.getElementById('statBestStreak').textContent = '×' + st.bestStreak;
     document.getElementById('statCoinsP').textContent = st.coins;
+    // sync sub-page profile stats
+    const spSC = document.getElementById('spStatCorrect'); if(spSC) spSC.textContent = st.correctTotal;
+    const spSS = document.getElementById('spStatStreak'); if(spSS) spSS.textContent = '×' + st.bestStreak;
+    const spSCo = document.getElementById('spStatCoins'); if(spSCo) spSCo.textContent = st.coins;
+    const spPN = document.getElementById('spProfileName'); if(spPN) spPN.textContent = st.name;
+    const spPL = document.getElementById('spProfileLevel'); if(spPL) spPL.textContent = `المستوى ${st.level} • ${ttl}`;
+    const spPXF = document.getElementById('spProfileXpFill'); if(spPXF) spPXF.style.width = xpPct + '%';
+    const spPXL = document.getElementById('spProfileXpLabel'); if(spPXL) spPXL.textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
+    const spPAI = document.getElementById('spProfileAvatarImg'); if(spPAI) spPAI.textContent = av;
     const soundStatusEl = document.getElementById('soundStatus');
     if (soundStatusEl) soundStatusEl.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
     const bgMusicStatusEl = document.getElementById('bgMusicStatus');
