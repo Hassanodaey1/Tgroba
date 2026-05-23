@@ -26,10 +26,10 @@
             }
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
-        /* إظهار زر الإعدادات فقط في الرئيسية والملف الشخصي */
+        /* إظهار زر الإعدادات دائماً ما عدا صفحة الإعدادات نفسها */
         const settingsBtn = document.getElementById('mainSettingsBtn');
         if (settingsBtn) {
-            settingsBtn.style.display = (tab === 'home' || tab === 'profile') ? 'flex' : 'none';
+            settingsBtn.style.display = (tab === 'settings') ? 'none' : 'flex';
         }
             if (tab === 'leaderboard') {
                 loadCombinedLeaderboard();
