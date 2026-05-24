@@ -170,6 +170,39 @@
                 document.getElementById('resultsXP').textContent = `+${xpGained} XP • +${earnedCoins} 💰`;
                 document.getElementById('gameOverlay').classList.remove('active');
                 document.getElementById('resultsOverlay').classList.add('active');
+                // تحديد رسالة الفوز/الخسارة
+                const winLoseEl = document.getElementById('winLoseMessage');
+                if (winLoseEl) {
+                    if (pct >= 70) {
+                        winLoseEl.innerHTML = '<div style="font-size:1.4em;font-weight:900;color:var(--green);text-align:center;padding:10px 0 2px;">🎉 مبروك لقد فزت!</div>';
+                    } else {
+                        winLoseEl.innerHTML = '<div style="font-size:1.4em;font-weight:900;color:var(--red);text-align:center;padding:10px 0 2px;">😔 حظاً أوفر في المرة القادمة!</div>';
+                    }
+                }
+                // تحديث زر الرجوع بناءً على مصدر اللعبة
+                const backBtnEl = document.getElementById('resultsBackBtn');
+                if (backBtnEl) {
+                    const src = window._gameSource || 'home';
+                    if (src === 'play') {
+                        backBtnEl.textContent = '🎮 العودة للألعاب';
+                        backBtnEl.onclick = function() {
+                            document.getElementById('resultsOverlay').classList.remove('active');
+                            goTab('play');
+                        };
+                    } else if (src === 'leaderboard') {
+                        backBtnEl.textContent = '🏆 العودة للمنافسة';
+                        backBtnEl.onclick = function() {
+                            document.getElementById('resultsOverlay').classList.remove('active');
+                            goTab('leaderboard');
+                        };
+                    } else {
+                        backBtnEl.textContent = '🏠 الصفحة الرئيسية';
+                        backBtnEl.onclick = function() {
+                            document.getElementById('resultsOverlay').classList.remove('active');
+                            goTab('home');
+                        };
+                    }
+                }
                 if (pct >= 70) doConfetti();
             } else {
                 document.getElementById('gameOverlay').classList.remove('active');
