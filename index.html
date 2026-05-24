@@ -205,6 +205,19 @@
         </div>
     </div>
 
+    <!-- MEMORY GAME SHEET — اختيار العملية للذاكرة الرياضية -->
+    <div class="sheet-overlay" id="memoryOpSheet" onclick="sheetBg(event,'memoryOpSheet')">
+        <div class="sheet-panel">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">🧠 الذاكرة الرياضية</div>
+            <div style="font-size:0.74em;color:var(--text2);text-align:center;padding:4px 8px 10px;line-height:1.5;">
+                السؤال يظهر لثانيتين ثم يختفي 👁️<br>أجب صحيح من ذاكرتك!
+            </div>
+            <div class="mode-grid" id="memoryOpGrid"></div>
+            <button class="sheet-cancel" onclick="closeSheet('memoryOpSheet')">إلغاء</button>
+        </div>
+    </div>
+
     <!-- GAME SETTINGS SHEET — يعمل في أثناء اللعب ويوقف المؤقت، ويعمل من أي صفحة -->
     <div class="sheet-overlay" id="gameSettingsSheet" onclick="sheetBgAndResume(event,'gameSettingsSheet')">
         <div class="sheet-panel">
@@ -405,6 +418,19 @@
                             <div class="cat-name">القوانين والبديهيات</div>
                             <div class="cat-progress"><div class="cat-progress-fill" style="width:100%;background:linear-gradient(90deg,#06b6d4,#7c3aed);"></div></div>
                             <div class="cat-stats">مرجع • متاح دائماً</div>
+                        </div>
+                        <!-- بطاقة لعبة الذاكرة الرياضية -->
+                        <div class="cat-card" style="--chip-color:#a855f7;grid-column:1/-1;" onclick="openMemoryGameSheet()">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="font-size:2.2em;">🧠</div>
+                                <div style="flex:1;">
+                                    <div class="cat-name" style="font-size:0.95em;margin-bottom:3px;">الذاكرة الرياضية</div>
+                                    <div style="font-size:0.68em;color:var(--text2);">السؤال يظهر لثانيتين ثم يختفي — أجب من ذاكرتك!</div>
+                                </div>
+                                <div style="background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;font-size:0.62em;font-weight:800;padding:4px 10px;border-radius:20px;">جديد 🆕</div>
+                            </div>
+                            <div class="cat-progress" style="margin-top:10px;"><div class="cat-progress-fill" id="memoryProg" style="width:0%;background:linear-gradient(90deg,#a855f7,#06b6d4);"></div></div>
+                            <div class="cat-stats" id="memoryStats">10 أسئلة • 3 قلوب • اختبر ذاكرتك</div>
                         </div>
                     </div>
                 </div>
