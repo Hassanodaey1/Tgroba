@@ -135,8 +135,14 @@ function generateAndShowSerial() {
         const tid = diffMap[st.difficulty];
         if (tid) {
             const dc = document.getElementById(tid);
-            if (dc && !dc.classList.contains('locked')) { dc.classList.add('active'); return; }
+            /* لا نُفعّل إذا كانت مقفلة (locked أو diff-locked) */
+            if (dc && !dc.classList.contains('locked') && !dc.classList.contains('diff-locked')) {
+                dc.classList.add('active');
+                return;
+            }
         }
+        /* افتراضي: سهل دائماً */
+        st.difficulty = 'easy';
         if (chips[0]) chips[0].classList.add('active');
     })();
 
