@@ -122,10 +122,10 @@
     </div>
 
     <!-- RESULTS OVERLAY -->
-    <div class="results-overlay" id="resultsOverlay">
-        <div class="results-card">
-            <div id="winLoseMessage"></div>
+    <div class="results-overlay" id="resultsOverlay" style="overflow-y:auto;align-items:flex-start;padding:16px;">
+        <div class="results-card" style="max-height:none;overflow:visible;margin:auto;margin-top:8px;margin-bottom:8px;">
             <div class="results-emoji" id="resultsEmoji">🏆</div>
+            <div id="winLoseMessage" style="margin-bottom:6px;"></div>
             <div class="results-title" id="resultsTitle">رائع!</div>
             <div class="results-sub" id="resultsSub"></div>
             <div class="results-stats">
@@ -988,57 +988,55 @@
     </div>
 
 
-    <!-- ═══════ OVERLAY: اختيار الأفاتار ═══════ -->
+    <!-- ═══════ OVERLAY: اختيار الأفاتار الرئيسي ═══════ -->
     <div id="avatarPickerOverlay" class="game-overlay" style="display:none;overflow-y:auto;z-index:9999;">
         <div class="game-header">
             <button class="game-back-btn" onclick="closeAvatarPickerOverlay()" aria-label="رجوع">‹</button>
             <div class="game-title">🎨 تغيير الصورة الشخصية</div>
             <div></div>
         </div>
-        <div style="padding:20px 16px 90px;display:flex;flex-direction:column;gap:16px;">
+        <div style="padding:20px 16px 90px;display:flex;flex-direction:column;gap:14px;">
 
-            <!-- خيار 1: رمز تعبيري -->
-            <div onclick="openEmojiPickerFromAvatar()" style="background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(124,58,237,0.05));border:2px solid rgba(124,58,237,0.3);border-radius:20px;padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;">
-                <div style="font-size:2.8em;width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:rgba(124,58,237,0.1);border-radius:16px;">🎭</div>
-                <div style="flex:1;">
-                    <div style="font-size:0.95em;font-weight:900;color:var(--text);margin-bottom:4px;">رمز تعبيري</div>
-                    <div style="font-size:0.72em;color:var(--text2);">اختر من مجموعة الرموز المتاحة</div>
-                    <div style="font-size:0.68em;color:var(--accent);margin-top:4px;">20+ رمز متاح للشراء</div>
+            <!-- ─── قسم الرمز التعبيري ─── -->
+            <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:20px;overflow:hidden;">
+                <div style="padding:14px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+                    <div style="font-size:1.5em;">🎭</div>
+                    <div>
+                        <div style="font-size:0.88em;font-weight:900;color:var(--text);">الرمز التعبيري</div>
+                        <div style="font-size:0.65em;color:var(--text2);">اختر من رموزك المشتراة</div>
+                    </div>
                 </div>
-                <div style="font-size:1.4em;color:var(--text3);">›</div>
-            </div>
-
-            <!-- خيار 2: صورة شخصية -->
-            <div onclick="openPhotoPicker()" style="background:linear-gradient(135deg,rgba(6,182,212,0.15),rgba(6,182,212,0.05));border:2px solid rgba(6,182,212,0.3);border-radius:20px;padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;">
-                <div style="font-size:2.8em;width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:rgba(6,182,212,0.1);border-radius:16px;">📷</div>
-                <div style="flex:1;">
-                    <div style="font-size:0.95em;font-weight:900;color:var(--text);margin-bottom:4px;">صورة شخصية</div>
-                    <div style="font-size:0.72em;color:var(--text2);">التقط صورة أو اختر من معرض الصور</div>
-                    <div style="font-size:0.68em;color:var(--accent2);margin-top:4px;">كاميرا • معرض الصور</div>
+                <div id="ownedEmojiGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px;"></div>
+                <div style="padding:0 14px 14px;">
+                    <button onclick="goToEmojiShop()" style="width:100%;padding:10px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:800;border:none;cursor:pointer;">🛍️ تصفح المتجر لشراء المزيد</button>
                 </div>
-                <div style="font-size:1.4em;color:var(--text3);">›</div>
             </div>
 
-            <!-- زر حذف الصورة الحالية إذا كانت صورة -->
-            <div id="removePhotoOption" style="display:none;">
-                <button onclick="removeProfilePhotoFromPicker()" style="width:100%;padding:12px;border-radius:14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red,#ef4444);font-family:'Tajawal',sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;">🗑️ حذف الصورة الحالية والعودة للرمز التعبيري</button>
+            <!-- ─── قسم الصورة الشخصية ─── -->
+            <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:20px;overflow:hidden;">
+                <div style="padding:14px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+                    <div style="font-size:1.5em;">📷</div>
+                    <div>
+                        <div style="font-size:0.88em;font-weight:900;color:var(--text);">صورة شخصية</div>
+                        <div style="font-size:0.65em;color:var(--text2);">التقط أو اختر من المعرض</div>
+                    </div>
+                </div>
+                <div style="padding:14px;display:flex;gap:10px;">
+                    <button onclick="pickPhotoSource('camera')" style="flex:1;padding:14px 8px;border-radius:14px;background:var(--surface3);border:2px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                        <span style="font-size:1.8em;">📷</span>
+                        <span>كاميرا</span>
+                    </button>
+                    <button onclick="pickPhotoSource('gallery')" style="flex:1;padding:14px 8px;border-radius:14px;background:var(--surface3);border:2px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                        <span style="font-size:1.8em;">🖼️</span>
+                        <span>معرض الصور</span>
+                    </button>
+                </div>
+                <!-- زر حذف الصورة — يظهر فقط عند وجود صورة -->
+                <div id="removePhotoOption" style="display:none;padding:0 14px 14px;">
+                    <button onclick="removeProfilePhotoFromPicker()" style="width:100%;padding:10px;border-radius:12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;cursor:pointer;">🗑️ حذف الصورة الحالية</button>
+                </div>
             </div>
 
-        </div>
-    </div>
-
-    <!-- ═══════ OVERLAY: اختيار الرمز التعبيري ═══════ -->
-    <div id="emojiPickerOverlay" class="game-overlay" style="display:none;overflow-y:auto;z-index:10000;">
-        <div class="game-header">
-            <button class="game-back-btn" onclick="closeEmojiPickerOverlay()" aria-label="رجوع">‹</button>
-            <div class="game-title">🎭 اختر رمزاً تعبيرياً</div>
-            <div style="font-size:0.75em;color:var(--gold);" id="emojiPickerCoins">💰 0</div>
-        </div>
-        <div style="padding:14px 16px 90px;display:flex;flex-direction:column;gap:14px;">
-            <div style="font-size:0.75em;color:var(--text2);text-align:center;padding:8px;background:var(--surface2);border-radius:12px;">
-                اضغط على الرمز لتفعيله مجاناً أو شرائه بالعملات
-            </div>
-            <div id="emojiPickerGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
         </div>
     </div>
 
