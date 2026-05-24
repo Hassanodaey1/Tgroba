@@ -491,17 +491,21 @@ function startTrainingOn(cat) { startTrainingMode(cat); }
 ═══════════════════════════════════════════════════ */
 
 function triggerPhotoUpload() {
-    /* يفتح الـ overlay الجديد لاختيار نوع الأفاتار */
     openAvatarPickerOverlay();
 }
 
-/* ─── Avatar Picker Overlay ─── */
+/* ═══════════════════════════════════════════════════
+   AVATAR PICKER — نظام اختيار الصورة الشخصية
+═══════════════════════════════════════════════════ */
+
 function openAvatarPickerOverlay() {
     const overlay = document.getElementById('avatarPickerOverlay');
     if (!overlay) return;
-    /* إظهار زر الحذف فقط إذا كانت هناك صورة شخصية */
+    /* إظهار/إخفاء زر الحذف */
     const removeOpt = document.getElementById('removePhotoOption');
     if (removeOpt) removeOpt.style.display = st.profilePhoto ? 'block' : 'none';
+    /* رسم الرموز المملوكة فقط */
+    renderOwnedEmojiGrid();
     overlay.style.display = 'flex';
     playSound && playSound('click');
 }
@@ -512,115 +516,102 @@ function closeAvatarPickerOverlay() {
     playSound && playSound('click');
 }
 
-function openPhotoPicker() {
-    /* إغلاق الـ overlay ثم فتح خيار الكاميرا/المعرض */
-    showConfirm(
-        '📷 الصورة الشخصية',
-        'اختر مصدر الصورة',
-        '📷 كاميرا',
-        '🖼️ معرض الصور',
-        function(useCamera) {
-            const inp = document.getElementById('profilePhotoInput');
-            if (!inp) return;
-            if (useCamera) inp.setAttribute('capture', 'user');
-            else           inp.removeAttribute('capture');
-            inp.click();
-        }
-    );
+/* رسم شبكة الرموز المملوكة فقط (داخل avatar picker) */
+function renderOwnedEmojiGrid() {
+    const grid = document.getElementById('ownedEmojiGrid');
+    if (!grid) return;
+    if (!st.ownedEmojis || st.ownedEmojis.length === 0) {
+        st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
+    }
+    const owned = st.ownedEmojis.filter(e => {
+        // تصفية الرموز حسب الجنس للرموز الافتراضية
+        if (e === '👦' && st.gender === 'f') return false;
+        if (e === '👧' && st.gender === 'm') return false;
+        return true;
+    });
+    if (owned.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:0.72em;color:var(--text2);padding:10px;">لا توجد رموز — اضغط المتجر للشراء</div>';
+        return;
+    }
+    grid.innerHTML = owned.map(emoji => {
+        const selected = st.avatar === emoji && !st.profilePhoto;
+        return `<div onclick="selectEmojiFromPicker('${emoji}')" style="
+            background:${selected ? 'linear-gradient(135deg,var(--gold),var(--gold2,#e5a800))' : 'var(--surface3)'};
+            border:2px solid ${selected ? 'var(--gold)' : 'var(--border2)'};
+            border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;transition:0.2s;">
+            <div style="font-size:1.9em;">${emoji}</div>
+            <div style="font-size:0.52em;color:${selected ? '#000' : 'var(--text2)'};font-weight:700;margin-top:3px;">${selected ? '✅' : ''}</div>
+        </div>`;
+    }).join('');
 }
 
+/* اختيار رمز تعبيري — يحذف الصورة الشخصية أولاً */
+function selectEmojiFromPicker(emoji) {
+    /* حذف الصورة الشخصية أولاً */
+    if (st.profilePhoto) {
+        st.profilePhoto = null;
+    }
+    st.avatar = emoji;
+    saveSt();
+    /* تحديث الواجهة كاملاً */
+    applyProfilePhoto();
+    updateUI();
+    renderOwnedEmojiGrid();
+    playSound && playSound('click');
+    showFeedback('✅ تم تفعيل الرمز');
+    /* إغلاق بعد لحظة */
+    setTimeout(() => closeAvatarPickerOverlay(), 600);
+}
+
+/* الذهاب للمتجر لشراء المزيد */
+function goToEmojiShop() {
+    closeAvatarPickerOverlay();
+    goTab('shop');
+    setTimeout(() => {
+        const shopContainer = document.getElementById('emojiShopContainer');
+        if (shopContainer) {
+            shopContainer.style.display = 'block';
+            renderEmojiShop && renderEmojiShop();
+        }
+    }, 200);
+}
+
+/* اختيار مصدر الصورة الشخصية مباشرة من الأزرار في الواجهة */
+function pickPhotoSource(source) {
+    const inp = document.getElementById('profilePhotoInput');
+    if (!inp) return;
+    if (source === 'camera') {
+        inp.setAttribute('capture', 'user');
+    } else {
+        inp.removeAttribute('capture');
+    }
+    inp.click();
+}
+
+/* حذف الصورة والعودة للرمز */
 function removeProfilePhotoFromPicker() {
     showConfirm('حذف الصورة', 'هل تريد حذف الصورة الشخصية والعودة للرمز التعبيري؟', 'نعم', 'إلغاء', function(ok) {
         if (!ok) return;
         st.profilePhoto = null;
         saveSt();
         applyProfilePhoto();
-        closeAvatarPickerOverlay();
+        /* إخفاء زر الحذف */
+        const removeOpt = document.getElementById('removePhotoOption');
+        if (removeOpt) removeOpt.style.display = 'none';
+        renderOwnedEmojiGrid();
         showFeedback('🗑️ تم حذف الصورة الشخصية');
+        playSound && playSound('click');
     });
 }
 
-/* ─── Emoji Picker Overlay ─── */
-function openEmojiPickerFromAvatar() {
-    closeAvatarPickerOverlay();
-    const overlay = document.getElementById('emojiPickerOverlay');
-    if (!overlay) return;
-    /* تحديث رصيد العملات */
-    const coinsEl = document.getElementById('emojiPickerCoins');
-    if (coinsEl) coinsEl.textContent = '💰 ' + (st.coins || 0);
-    /* رسم شبكة الرموز */
-    renderEmojiPickerGrid();
-    overlay.style.display = 'flex';
-    playSound && playSound('click');
-}
-
-function closeEmojiPickerOverlay() {
-    const overlay = document.getElementById('emojiPickerOverlay');
-    if (overlay) overlay.style.display = 'none';
-    /* إعادة فتح الـ avatar picker */
-    openAvatarPickerOverlay();
-}
-
-function renderEmojiPickerGrid() {
-    const grid = document.getElementById('emojiPickerGrid');
-    if (!grid) return;
-    if (!st.ownedEmojis || st.ownedEmojis.length === 0) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
-    grid.innerHTML = EMOJI_CATALOG.map(item => {
-        if (item.price === 0 && item.gender && item.gender !== st.gender) return '';
-        const owned = st.ownedEmojis.includes(item.emoji);
-        const selected = st.avatar === item.emoji;
-        if (owned) {
-            return `<div onclick="selectEmojiFromPicker('${item.emoji}')" style="
-                background:${selected ? 'linear-gradient(135deg,var(--gold),var(--gold2,#f0b90b))' : 'var(--surface2)'};
-                border:2px solid ${selected ? 'var(--gold)' : 'var(--border2)'};
-                border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;position:relative;">
-                <div style="font-size:2em;">${item.emoji}</div>
-                <div style="font-size:0.55em;color:${selected ? '#000' : 'var(--green)'};font-weight:700;margin-top:4px;">${selected ? '✅ مفعّل' : 'اختر'}</div>
-            </div>`;
-        } else {
-            return `<div onclick="buyEmojiFromPicker('${item.emoji}',${item.price},'${item.label}')" style="
-                background:var(--surface3);border:2px solid var(--border2);border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;position:relative;opacity:0.85;">
-                <div style="font-size:2em;filter:grayscale(0.3);">${item.emoji}</div>
-                <div style="font-size:0.55em;color:var(--gold);font-weight:700;margin-top:4px;">${item.price > 0 ? item.price + ' 💰' : 'مجاني'}</div>
-                <div style="position:absolute;top:6px;right:6px;font-size:0.7em;">🔒</div>
-            </div>`;
-        }
-    }).join('');
-}
-
-function selectEmojiFromPicker(emoji) {
-    st.avatar = emoji;
-    /* إزالة الصورة الشخصية إذا كانت موجودة */
-    if (st.profilePhoto) {
-        st.profilePhoto = null;
-    }
-    saveSt();
-    playSound && playSound('click');
-    /* تحديث الواجهة */
-    const spImg = document.getElementById('spProfileAvatarImg');
-    if (spImg) {
-        spImg.style.backgroundImage = '';
-        spImg.style.backgroundSize = '';
-        spImg.textContent = emoji;
-    }
-    updateUI();
-    renderEmojiPickerGrid();
-    showFeedback('✅ تم تفعيل الرمز');
-    /* إغلاق الـ overlay بعد الاختيار */
-    setTimeout(() => {
-        const overlay = document.getElementById('emojiPickerOverlay');
-        if (overlay) overlay.style.display = 'none';
-    }, 700);
-}
-
+/* دوال قديمة للتوافق مع كود المتجر */
+function openPhotoPicker() { pickPhotoSource('gallery'); }
+function openEmojiPickerFromAvatar() { openAvatarPickerOverlay(); }
+function closeEmojiPickerOverlay() { closeAvatarPickerOverlay(); }
 function buyEmojiFromPicker(emoji, price, label) {
     if (!st.ownedEmojis) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
     if (st.ownedEmojis.includes(emoji)) { selectEmojiFromPicker(emoji); return; }
-    if (price === 0) {
-        st.ownedEmojis.push(emoji);
-        selectEmojiFromPicker(emoji);
-        return;
-    }
+    if (price === 0) { st.ownedEmojis.push(emoji); selectEmojiFromPicker(emoji); return; }
     if (st.coins < price) { showFeedback('💸 لا يكفي!'); return; }
     showConfirm('شراء رمز', 'هل تريد شراء ' + label + ' بـ ' + price + ' عملة؟', 'نعم اشتري', 'إلغاء', function(ok) {
         if (ok) {
@@ -628,16 +619,12 @@ function buyEmojiFromPicker(emoji, price, label) {
             st.ownedEmojis.push(emoji);
             saveSt();
             playSound && playSound('levelup');
-            /* تحديث رصيد العملات في الـ overlay */
-            const coinsEl = document.getElementById('emojiPickerCoins');
-            if (coinsEl) coinsEl.textContent = '💰 ' + st.coins;
             updateUI();
-            renderEmojiPickerGrid();
+            renderEmojiShop && renderEmojiShop();
             showFeedback('🎉 تم الشراء!');
         }
     });
 }
-
 function handleProfilePhotoUpload(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
@@ -654,17 +641,11 @@ function handleProfilePhotoUpload(event) {
             else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
             canvas.width = w; canvas.height = h;
             canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            /* عند رفع صورة: الصورة تحل محل الرمز التعبيري */
             st.profilePhoto = canvas.toDataURL('image/jpeg', 0.80);
+            /* لا نحذف st.avatar لأنه يُستخدم كاحتياطي — فقط الصورة تأخذ الأولوية في applyProfilePhoto */
             saveSt();
             applyProfilePhoto();
-            /* تحديث spProfileAvatarImg في صفحة الملف الشخصي الفرعية */
-            const spImg = document.getElementById('spProfileAvatarImg');
-            if (spImg) {
-                spImg.style.backgroundImage = 'url("' + st.profilePhoto + '")';
-                spImg.style.backgroundSize = 'cover';
-                spImg.style.backgroundPosition = 'center';
-                spImg.textContent = '';
-            }
             /* إغلاق الـ avatar picker overlay */
             const ap = document.getElementById('avatarPickerOverlay');
             if (ap) ap.style.display = 'none';
