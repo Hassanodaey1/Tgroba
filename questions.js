@@ -398,6 +398,8 @@
             G.isTraining = false;
             G.customTable = customTable || null;
             G.askedQuestions = [];
+            G.memoryMode = false; /* يُضبط على true فقط في وضع الذاكرة */
+            G._memCleanup = null;
             let hasTimer = false;
             let lives = 3;
             if (mode === 'classic') {
@@ -420,12 +422,17 @@
                 G.timeLeft = 30;
                 lives = 3; } else if (mode === 'daily') { G.totalQ = 5;
                 hasTimer = false;
-                lives = 0; }
+                lives = 0; } else if (mode === 'memory') {
+                G.totalQ = 10;
+                hasTimer = false;
+                lives = 3;
+                G.memoryMode = true;
+            }
             G.livesLeft = lives;
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false };
             const titles = { classic: '🧮 كلاسيك', speed: '⚡ سرعة 60ث', survival: '🔥 التحمّل', frenzy: '💥 اندفاع',
-                daily: '🌟 تحدي اليوم' };
+                daily: '🌟 تحدي اليوم', memory: '🧠 الذاكرة الرياضية' };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
             document.getElementById('streakNum').textContent = 0;
@@ -609,6 +616,75 @@
             const grid = document.getElementById('answersGrid');
             grid.innerHTML = '';
             const choices = q.choices || shuffle([q.answer, q.answer + 1, q.answer - 1, q.answer + 2]);
+
+            /* ══════════════════════════════════════════════
+               وضع الذاكرة الرياضية 🧠
+               السؤال يظهر لثانيتين ثم يختفي ← الإجابة من الذاكرة
+            ══════════════════════════════════════════════ */
+            if (G.memoryMode && !G.isTraining) {
+                /* إخفاء الأزرار في البداية */
+                grid.style.visibility = 'hidden';
+                grid.style.opacity = '0';
+
+                /* عداد تنازلي يظهر فوق السؤال */
+                const qCard = document.querySelector('.question-card');
+                let memTimerEl = document.getElementById('memoryCountdown');
+                if (!memTimerEl) {
+                    memTimerEl = document.createElement('div');
+                    memTimerEl.id = 'memoryCountdown';
+                    memTimerEl.style.cssText = `
+                        position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+                        background:var(--gold);color:#000;font-weight:900;font-size:0.75em;
+                        padding:3px 12px;border-radius:20px;z-index:10;pointer-events:none;
+                        font-family:'Tajawal',sans-serif;letter-spacing:0.5px;
+                    `;
+                    if (qCard) { qCard.style.position = 'relative'; qCard.appendChild(memTimerEl); }
+                }
+                let countdown = 2;
+                memTimerEl.textContent = '👁️ احفظ السؤال... ' + countdown + 'ث';
+                memTimerEl.style.display = 'block';
+
+                const ticker = setInterval(() => {
+                    if (G.ended) { clearInterval(ticker); return; }
+                    countdown--;
+                    if (countdown > 0) {
+                        memTimerEl.textContent = '👁️ احفظ السؤال... ' + countdown + 'ث';
+                    } else {
+                        clearInterval(ticker);
+                        /* إخفاء نص السؤال */
+                        const qtEl = document.getElementById('questionText');
+                        const qhEl = document.getElementById('questionHint');
+                        if (qtEl) { qtEl.style.filter = 'blur(8px)'; qtEl.style.userSelect = 'none'; }
+                        if (qhEl) { qhEl.style.filter = 'blur(8px)'; }
+                        if (memTimerEl) memTimerEl.textContent = '🧠 الإجابة من الذاكرة!';
+                        /* إظهار الأزرار */
+                        grid.style.visibility = 'visible';
+                        grid.style.transition = 'opacity 0.35s ease';
+                        grid.style.opacity = '1';
+                        /* وميض تنبيه */
+                        if (typeof playSound === 'function') playSound('tick');
+                    }
+                }, 1000);
+
+                /* تنظيف عند الإجابة — إعادة السؤال للظهور بعد الإجابة */
+                G._memCleanup = () => {
+                    const qtEl = document.getElementById('questionText');
+                    const qhEl = document.getElementById('questionHint');
+                    if (qtEl) { qtEl.style.filter = ''; qtEl.style.userSelect = ''; }
+                    if (qhEl) { qhEl.style.filter = ''; }
+                    if (memTimerEl) memTimerEl.style.display = 'none';
+                    grid.style.opacity = '';
+                    grid.style.visibility = '';
+                    grid.style.transition = '';
+                };
+            } else {
+                /* وضع عادي — الأزرار تظهر فوراً */
+                grid.style.visibility = '';
+                grid.style.opacity = '';
+                const memTimerEl = document.getElementById('memoryCountdown');
+                if (memTimerEl) memTimerEl.style.display = 'none';
+            }
+
             choices.forEach(c => { const btn = document.createElement('button');
                 btn.className = 'answer-btn';
                 btn.textContent = c;
