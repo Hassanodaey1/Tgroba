@@ -3,6 +3,8 @@
         function checkAnswer(btn) {
             if (G.answered || G.ended) return;
             G.answered = true;
+            /* وضع الذاكرة: استعادة السؤال للظهور بعد الإجابة */
+            if (G.memoryMode && typeof G._memCleanup === 'function') G._memCleanup();
             const val = parseInt(btn.getAttribute('data-val'));
             document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
             if (val === G.correctAnswer) {
@@ -131,6 +133,17 @@
         function endGame() {
             if (G.ended) return;
             G.ended = true;
+            /* تنظيف وضع الذاكرة */
+            if (G.memoryMode) {
+                const qtEl = document.getElementById('questionText');
+                const qhEl = document.getElementById('questionHint');
+                if (qtEl) { qtEl.style.filter = ''; qtEl.style.userSelect = ''; }
+                if (qhEl) { qhEl.style.filter = ''; }
+                const mc = document.getElementById('memoryCountdown');
+                if (mc) mc.style.display = 'none';
+                const grid = document.getElementById('answersGrid');
+                if (grid) { grid.style.visibility = ''; grid.style.opacity = ''; }
+            }
             clearGameTimer();
             if (!G.isTraining) {
                 const earnedCoins = Math.floor(G.coinsEarned);
