@@ -3164,3 +3164,51 @@ html {
     min-width: 0;
     flex: 1 1 0;
 }
+
+        /* ══════════════════════════════════════════════
+           وضع الذاكرة الرياضية 🧠
+        ══════════════════════════════════════════════ */
+        #memoryCountdown {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gold);
+            color: #000;
+            font-weight: 900;
+            font-size: 0.74em;
+            padding: 4px 14px;
+            border-radius: 20px;
+            z-index: 10;
+            pointer-events: none;
+            font-family: 'Tajawal', sans-serif;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            animation: memPulse 0.7s ease-in-out infinite alternate;
+        }
+        @keyframes memPulse {
+            from { box-shadow: 0 0 6px var(--gold); }
+            to   { box-shadow: 0 0 18px var(--gold), 0 0 4px #fff6; }
+        }
+
+        /* تأثير ضبابي على السؤال أثناء وضع الذاكرة */
+        .question-text.memory-hidden {
+            filter: blur(8px);
+            user-select: none;
+            transition: filter 0.4s ease;
+        }
+
+        /* عنوان لعبة الذاكرة في الـ stat row */
+        .memory-mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: #fff;
+            font-size: 0.62em;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-right: 6px;
+        }
+
