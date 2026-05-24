@@ -170,16 +170,16 @@
                 document.getElementById('resultsXP').textContent = `+${xpGained} XP • +${earnedCoins} 💰`;
                 document.getElementById('gameOverlay').classList.remove('active');
                 document.getElementById('resultsOverlay').classList.add('active');
-                // تحديد رسالة الفوز/الخسارة
+                /* ── رسالة الفوز / الخسارة ── */
                 const winLoseEl = document.getElementById('winLoseMessage');
                 if (winLoseEl) {
                     if (pct >= 70) {
-                        winLoseEl.innerHTML = '<div style="font-size:1.4em;font-weight:900;color:var(--green);text-align:center;padding:10px 0 2px;">🎉 مبروك لقد فزت!</div>';
+                        winLoseEl.innerHTML = '<div style="background:rgba(16,185,129,0.15);border:1.5px solid rgba(16,185,129,0.4);border-radius:14px;padding:10px 14px;font-size:1.05em;font-weight:900;color:#10b981;text-align:center;">🎉 مبروك! لقد فزت</div>';
                     } else {
-                        winLoseEl.innerHTML = '<div style="font-size:1.4em;font-weight:900;color:var(--red);text-align:center;padding:10px 0 2px;">😔 حظاً أوفر في المرة القادمة!</div>';
+                        winLoseEl.innerHTML = '<div style="background:rgba(239,68,68,0.12);border:1.5px solid rgba(239,68,68,0.35);border-radius:14px;padding:10px 14px;font-size:1.05em;font-weight:900;color:#ef4444;text-align:center;">😔 حظاً أوفر في المرة القادمة</div>';
                     }
                 }
-                // تحديث زر الرجوع بناءً على مصدر اللعبة
+                /* ── زر الرجوع حسب مصدر اللعبة ── */
                 const backBtnEl = document.getElementById('resultsBackBtn');
                 if (backBtnEl) {
                     const src = window._gameSource || 'home';
