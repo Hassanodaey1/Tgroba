@@ -1770,7 +1770,7 @@
         .confirm-overlay {
             position: fixed;
             inset: 0;
-            z-index: 500;
+            z-index: 99999;
             background: rgba(7, 9, 15, 0.85);
             backdrop-filter: blur(10px);
             display: none;
@@ -2171,7 +2171,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0);
-            z-index: 300;
+            z-index: 99998;
             pointer-events: none;
             font-size: 2.7em;
             font-weight: 900;
