@@ -571,7 +571,11 @@
                 const qKey = q.text + '|' + q.answer;
                 if (!G.askedQuestions.includes(qKey) || G.isTraining) break;
                 attempts++;
-                if (attempts > maxAttempts) break;
+                /* إذا استُنفدت المحاولات، امسح السجل وابدأ من جديد لتجنب التوقف */
+                if (attempts > maxAttempts) {
+                    G.askedQuestions = [];
+                    break;
+                }
             } while (true);
             if (!G.isTraining) {
                 const qKey = q.text + '|' + q.answer;
