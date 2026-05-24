@@ -43,15 +43,16 @@ function renderEmojiShop() {
     if (!st.ownedEmojis || st.ownedEmojis.length === 0) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
     grid.innerHTML = EMOJI_CATALOG.map(item => {
         const owned = st.ownedEmojis.includes(item.emoji);
-        const selected = st.avatar === item.emoji;
         if (item.price === 0 && item.gender && item.gender !== st.gender) return '';
         if (owned) {
-            return `<div class="emoji-shop-item owned ${selected ? 'selected' : ''}" onclick="buyOrSelectEmoji('${item.emoji}',0)" title="${item.label}">
+            /* ✅ مملوك — عرض فقط، لا يمكن التفعيل من المتجر */
+            return `<div class="emoji-shop-item owned" title="${item.label}" style="cursor:default;opacity:0.85;">
                 <div class="emoji-shop-item-icon">${item.emoji}</div>
-                ${selected ? `<div class="emoji-shop-item-owned">✅ مفعّل</div>` : `<div class="emoji-shop-item-owned">اختر</div>`}
+                <div class="emoji-shop-item-owned" style="color:var(--green);font-size:0.58em;font-weight:800;">✅ مملوك</div>
             </div>`;
         } else {
-            return `<div class="emoji-shop-item locked-shop" onclick="buyOrSelectEmoji('${item.emoji}',${item.price})" title="${item.label}">
+            /* 🔒 غير مملوك — اضغط للشراء */
+            return `<div class="emoji-shop-item locked-shop" onclick="buyEmojiShopOnly('${item.emoji}',${item.price},'${item.label}')" title="${item.label}">
                 <div class="emoji-shop-item-icon">${item.emoji}</div>
                 <div class="emoji-shop-item-price">${item.price > 0 ? item.price + '💰' : 'مجاني'}</div>
                 <div class="emoji-shop-lock">🔒</div>
@@ -73,31 +74,45 @@ function toggleEmojiShop() {
     playSound('click');
 }
 
+/* buyOrSelectEmoji — للتوافق مع كود قديم، يوجّه للشراء فقط */
 function buyOrSelectEmoji(emoji, price) {
+    buyEmojiShopOnly(emoji, price, '');
+}
+
+/* buyEmojiShopOnly — الشراء من المتجر فقط، بدون تفعيل */
+function buyEmojiShopOnly(emoji, price, label) {
     if (!st.ownedEmojis) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
     if (st.ownedEmojis.includes(emoji)) {
-        st.avatar = emoji;
-        saveSt();
-        playSound('click');
-        document.getElementById('headerAvatar').textContent = emoji;
-        document.getElementById('profileAvatarImg').textContent = emoji;
-        renderEmojiShop();
-        updateBadgeIcon();
+        showFeedback('✅ هذا الرمز مملوك — فعّله من الملف الشخصي');
         return;
     }
-    if (st.coins < price) { showFeedback('💸 لا يكفي!'); return; }
-    showConfirm('شراء رمز', 'هل تريد شراء هذا الرمز بـ ' + price + ' عملة؟', 'نعم', 'إلغاء', ok => {
-        if (ok) {
+    if (price === 0) {
+        st.ownedEmojis.push(emoji);
+        saveSt();
+        playSound('levelup');
+        renderEmojiShop();
+        updateUI();
+        showFeedback('🎉 أُضيف للمكتبة! فعّله من الملف الشخصي');
+        return;
+    }
+    if (st.coins < price) { showFeedback('💸 عملاتك لا تكفي!'); return; }
+    const displayLabel = label || emoji;
+    showConfirm(
+        '🛍️ شراء رمز',
+        'شراء ' + displayLabel + ' بـ ' + price + ' عملة؟ سيُضاف لمكتبتك ويمكنك تفعيله من الملف الشخصي.',
+        'نعم اشتري', 'إلغاء',
+        ok => {
+            if (!ok) return;
             st.coins -= price;
             st.ownedEmojis.push(emoji);
-            st.avatar = emoji;
+            /* لا نغيّر st.avatar — الاختيار من الملف الشخصي فقط */
             saveSt();
             playSound('levelup');
-            updateUI();
             renderEmojiShop();
-            showFeedback('🎉 تم الشراء!');
+            updateUI();
+            showFeedback('🎉 تم الشراء! فعّله من الملف الشخصي');
         }
-    });
+    );
 }
 
 function updateOwnedEmojisForGender() {
@@ -536,31 +551,47 @@ function renderOwnedEmojiGrid() {
     grid.innerHTML = owned.map(emoji => {
         const selected = st.avatar === emoji && !st.profilePhoto;
         return `<div onclick="selectEmojiFromPicker('${emoji}')" style="
-            background:${selected ? 'linear-gradient(135deg,var(--gold),var(--gold2,#e5a800))' : 'var(--surface3)'};
-            border:2px solid ${selected ? 'var(--gold)' : 'var(--border2)'};
-            border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;transition:0.2s;">
+            background:${selected ? 'linear-gradient(135deg,var(--gold),#e5a800)' : 'var(--surface3)'};
+            border:2.5px solid ${selected ? 'var(--gold)' : 'var(--border2)'};
+            border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;
+            transition:all 0.18s ease;transform:${selected ? 'scale(1.08)' : 'scale(1)'};
+            box-shadow:${selected ? '0 4px 16px rgba(240,185,11,0.4)' : 'none'};">
             <div style="font-size:1.9em;">${emoji}</div>
-            <div style="font-size:0.52em;color:${selected ? '#000' : 'var(--text2)'};font-weight:700;margin-top:3px;">${selected ? '✅' : ''}</div>
+            <div style="font-size:0.58em;color:${selected ? '#000' : 'var(--text3)'};font-weight:800;margin-top:3px;min-height:12px;">
+                ${selected ? '✅ مفعّل' : ''}
+            </div>
         </div>`;
     }).join('');
 }
 
-/* اختيار رمز تعبيري — يحذف الصورة الشخصية أولاً */
+/* اختيار رمز تعبيري — تحديث فوري في الواجهة */
 function selectEmojiFromPicker(emoji) {
     /* حذف الصورة الشخصية أولاً */
-    if (st.profilePhoto) {
-        st.profilePhoto = null;
-    }
+    if (st.profilePhoto) st.profilePhoto = null;
     st.avatar = emoji;
     saveSt();
-    /* تحديث الواجهة كاملاً */
-    applyProfilePhoto();
-    updateUI();
+
+    /* ── تحديث فوري لكل عناصر الأفاتار ── */
+    const els = [
+        document.getElementById('headerAvatar'),
+        document.getElementById('profileAvatarImg'),
+        document.getElementById('spProfileAvatarImg'),
+        document.getElementById('currentAvatarDisplay'),
+    ];
+    els.forEach(el => {
+        if (!el) return;
+        el.style.backgroundImage = '';
+        el.style.backgroundSize  = '';
+        el.textContent = emoji;
+    });
+
+    /* إعادة رسم الشبكة فوراً لإظهار ✅ على الرمز المختار */
     renderOwnedEmojiGrid();
+    /* تحديث شامل للواجهة */
+    updateUI();
     playSound && playSound('click');
-    showFeedback('✅ تم تفعيل الرمز');
-    /* إغلاق بعد لحظة */
-    setTimeout(() => closeAvatarPickerOverlay(), 600);
+    showFeedback('✅ تم تفعيل ' + emoji);
+    /* لا نغلق الـ overlay — اللاعب يرى التغيير مباشرة */
 }
 
 /* الذهاب للمتجر لشراء المزيد */
