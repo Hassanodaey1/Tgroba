@@ -43,15 +43,16 @@ function renderEmojiShop() {
     if (!st.ownedEmojis || st.ownedEmojis.length === 0) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
     grid.innerHTML = EMOJI_CATALOG.map(item => {
         const owned = st.ownedEmojis.includes(item.emoji);
-        const selected = st.avatar === item.emoji;
         if (item.price === 0 && item.gender && item.gender !== st.gender) return '';
         if (owned) {
-            return `<div class="emoji-shop-item owned ${selected ? 'selected' : ''}" onclick="buyOrSelectEmoji('${item.emoji}',0)" title="${item.label}">
+            /* مملوك — يُعرض فقط بدون إمكانية التفعيل من المتجر */
+            return `<div class="emoji-shop-item owned" title="${item.label}" style="cursor:default;">
                 <div class="emoji-shop-item-icon">${item.emoji}</div>
-                ${selected ? `<div class="emoji-shop-item-owned">✅ مفعّل</div>` : `<div class="emoji-shop-item-owned">اختر</div>`}
+                <div class="emoji-shop-item-owned" style="color:var(--green);font-size:0.6em;font-weight:700;">✅ مملوك</div>
             </div>`;
         } else {
-            return `<div class="emoji-shop-item locked-shop" onclick="buyOrSelectEmoji('${item.emoji}',${item.price})" title="${item.label}">
+            /* غير مملوك — قابل للشراء فقط */
+            return `<div class="emoji-shop-item locked-shop" onclick="buyEmojiInShop('${item.emoji}',${item.price},'${item.label}')" title="${item.label}">
                 <div class="emoji-shop-item-icon">${item.emoji}</div>
                 <div class="emoji-shop-item-price">${item.price > 0 ? item.price + '💰' : 'مجاني'}</div>
                 <div class="emoji-shop-lock">🔒</div>
@@ -73,29 +74,43 @@ function toggleEmojiShop() {
     playSound('click');
 }
 
+/* buyOrSelectEmoji — للتوافق مع الكود القديم فقط، يوجّه للشراء */
 function buyOrSelectEmoji(emoji, price) {
     if (!st.ownedEmojis) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
+    if (!st.ownedEmojis.includes(emoji)) {
+        buyEmojiInShop(emoji, price, '');
+    }
+    /* إذا كان مملوكاً — لا شيء، التفعيل يكون من صفحة الملف الشخصي فقط */
+}
+
+/* buyEmojiInShop — الشراء فقط من المتجر */
+function buyEmojiInShop(emoji, price, label) {
+    if (!st.ownedEmojis) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
     if (st.ownedEmojis.includes(emoji)) {
-        st.avatar = emoji;
-        saveSt();
-        playSound('click');
-        document.getElementById('headerAvatar').textContent = emoji;
-        document.getElementById('profileAvatarImg').textContent = emoji;
-        renderEmojiShop();
-        updateBadgeIcon();
+        showFeedback('✅ هذا الرمز مملوك بالفعل');
         return;
     }
-    if (st.coins < price) { showFeedback('💸 لا يكفي!'); return; }
-    showConfirm('شراء رمز', 'هل تريد شراء هذا الرمز بـ ' + price + ' عملة؟', 'نعم', 'إلغاء', ok => {
+    if (price === 0) {
+        st.ownedEmojis.push(emoji);
+        saveSt();
+        playSound('levelup');
+        renderEmojiShop();
+        updateUI();
+        showFeedback('🎉 تمت الإضافة للمكتبة!');
+        return;
+    }
+    if (st.coins < price) { showFeedback('💸 عملاتك لا تكفي!'); return; }
+    showConfirm('شراء رمز', 'هل تريد شراء هذا الرمز بـ ' + price + ' عملة؟
+سيُضاف للمكتبة ويمكنك تفعيله من الملف الشخصي.', 'نعم اشتري', 'إلغاء', ok => {
         if (ok) {
             st.coins -= price;
             st.ownedEmojis.push(emoji);
-            st.avatar = emoji;
+            /* لا نغيّر st.avatar هنا — الاختيار من الملف الشخصي */
             saveSt();
             playSound('levelup');
-            updateUI();
             renderEmojiShop();
-            showFeedback('🎉 تم الشراء!');
+            updateUI();
+            showFeedback('🎉 تم الشراء! فعّله من الملف الشخصي');
         }
     });
 }
