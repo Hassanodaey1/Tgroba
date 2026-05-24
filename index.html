@@ -356,14 +356,14 @@
                         <div class="section-label" style="margin-bottom:10px;">مستوى الصعوبة</div>
                         <div class="diff-row">
                             <div class="diff-chip active" onclick="selectDiff(this,'easy')"><span class="diff-chip-icon">🟢</span>سهل</div>
-                            <div class="diff-chip" id="diffMedium" onclick="selectDiff(this,'medium')"><span class="diff-chip-icon">🟡</span>متوسط
-                                <div class="lock-tag" id="lockMedium" style="display:block">🔒 Lv.3</div>
+                            <div class="diff-chip diff-locked" id="diffMedium"><span class="diff-chip-icon">🟡</span>متوسط
+                                <div class="lock-tag" id="lockMedium">🔒 Lv.3</div>
                             </div>
-                            <div class="diff-chip" id="diffHard" onclick="selectDiff(this,'hard')"><span class="diff-chip-icon">🟠</span>صعب
-                                <div class="lock-tag" id="lockHard" style="display:block">🔒 Lv.5</div>
+                            <div class="diff-chip diff-locked" id="diffHard"><span class="diff-chip-icon">🟠</span>صعب
+                                <div class="lock-tag" id="lockHard">🔒 Lv.5</div>
                             </div>
-                            <div class="diff-chip" id="diffGenius" onclick="selectDiff(this,'genius')"><span class="diff-chip-icon">🔴</span>عبقري
-                                <div class="lock-tag" id="lockGenius" style="display:block">🔒 Lv.8</div>
+                            <div class="diff-chip diff-locked" id="diffGenius"><span class="diff-chip-icon">🔴</span>عبقري
+                                <div class="lock-tag" id="lockGenius">🔒 Lv.8</div>
                             </div>
                         </div>
                     </div>
@@ -410,7 +410,7 @@
 
                 <!-- ACHIEVEMENTS PAGE -->
                 <div class="page" id="page-achieve">
-                    <div style="text-align:center;padding:18px 0 14px;">
+                    <div style="text-align:center;padding:18px 0 14px;flex-shrink:0;">
                         <div style="font-size:1.6em;font-weight:900;color:var(--text);">📋 المهام والإنجازات</div>
                     </div>
 
@@ -445,25 +445,27 @@
                         </div>
                     </div>
 
-                    <!-- تبويبان: المهام / الإنجازات -->
-                    <div style="display:flex;gap:8px;flex-shrink:0;">
-                        <button onclick="showAchieveTab('tasks')" id="achTabTasks" style="flex:1;padding:10px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.82em;font-weight:900;border:none;cursor:pointer;">📝 المهام اليومية</button>
-                        <button onclick="showAchieveTab('achieve')" id="achTabAchieve" style="flex:1;padding:10px;border-radius:14px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.82em;font-weight:700;border:1px solid var(--gold-border);cursor:pointer;">🏆 الإنجازات <span id="achievePct" style="color:var(--accent2);">0/18</span></button>
+                    <!-- قسم المهام اليومية — زر + قائمة قابلة للتمرير -->
+                    <div style="flex-shrink:0;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:14px;padding:11px 16px;cursor:pointer;user-select:none;" onclick="toggleSection('tasksSection','tasksChevron')">
+                            <span style="font-size:0.88em;font-weight:900;color:#000;">📝 المهام اليومية</span>
+                            <span id="tasksChevron" style="font-size:1em;color:#000;transition:transform 0.3s;">▲</span>
+                        </div>
+                    </div>
+                    <div id="tasksSection" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:8px;padding:2px 1px 4px;">
+                        <div id="tasksList" style="display:flex;flex-direction:column;gap:8px;"></div>
                     </div>
 
-                    <!-- منطقة التمرير — تملأ ما تبقى من الصفحة -->
-                    <div style="flex:1;overflow:hidden;position:relative;min-height:0;">
-                        <div id="achieveTabsSlider" style="display:flex;height:100%;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);width:200%;">
-                            <!-- تبويب المهام -->
-                            <div style="width:50%;flex-shrink:0;height:100%;overflow-y:auto;padding:2px 2px 8px;">
-                                <div id="tasksList" style="display:flex;flex-direction:column;gap:8px;"></div>
-                            </div>
-                            <!-- تبويب الإنجازات -->
-                            <div style="width:50%;flex-shrink:0;height:100%;overflow-y:auto;padding:2px 2px 8px;">
-                                <div id="achieveList" style="display:flex;flex-direction:column;gap:8px;"></div>
-                                <div id="achieveCompleteReward" style="display:none;text-align:center;margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
-                            </div>
+                    <!-- قسم الإنجازات — زر + قائمة قابلة للتمرير -->
+                    <div style="flex-shrink:0;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:11px 16px;cursor:pointer;user-select:none;" onclick="toggleSection('achieveSection','achieveChevron')">
+                            <span style="font-size:0.88em;font-weight:900;color:var(--text);">🏆 الإنجازات <span id="achievePct" style="color:var(--accent2);font-size:0.85em;">0/18</span></span>
+                            <span id="achieveChevron" style="font-size:1em;color:var(--text3);transition:transform 0.3s;">▼</span>
                         </div>
+                    </div>
+                    <div id="achieveSection" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;display:flex;flex-direction:column;gap:8px;padding:0 1px;">
+                        <div id="achieveList" style="display:flex;flex-direction:column;gap:8px;padding-top:4px;"></div>
+                        <div id="achieveCompleteReward" style="display:none;text-align:center;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
                     </div>
                 </div>
 
@@ -580,26 +582,42 @@
                             </button>
                         </div>
 
-                        <!-- لائحة الصدارة الموحدة والمتحركة -->
+                        <!-- مهام التحدي اليومية -->
+                        <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;overflow:hidden;flex-shrink:0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.1));cursor:pointer;" onclick="toggleSection('challengeTasksBody','challengeTasksChevron')">
+                                <div>
+                                    <div style="font-size:0.85em;font-weight:900;color:var(--text);">⚔️ مهام التحدي اليومية</div>
+                                    <div style="font-size:0.62em;color:var(--text2);margin-top:2px;">5 مهام تتجدد يومياً • تزداد صعوبةً تدريجياً</div>
+                                </div>
+                                <span id="challengeTasksChevron" style="font-size:1em;color:var(--gold);transition:transform 0.3s;">▼</span>
+                            </div>
+                            <div id="challengeTasksBody" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
+                                <div style="padding:10px 12px;display:flex;flex-direction:column;gap:8px;" id="challengeDailyTasksList">
+                                    <!-- تُملأ بـ JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- لائحة الصدارة -->
                         <div class="section-label" style="margin-top:4px;">🏆 لائحة الصدارة الموحدة</div>
                         <div style="display:flex;gap:8px;margin-bottom:6px;">
                             <button onclick="showLbTab('challenge')" id="lbTabChallenge" style="flex:1;padding:8px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:900;border:none;cursor:pointer;">⚔️ التحدي</button>
                             <button onclick="showLbTab('general')" id="lbTabGeneral" style="flex:1;padding:8px;border-radius:12px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">📊 النقاط العامة</button>
                         </div>
-                        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;overflow:hidden;">
+                        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;">
                             <!-- رأس الجدول -->
-                            <div class="lb-row lb-header">
+                            <div class="lb-row lb-header" style="flex-shrink:0;">
                                 <span>المرتبة</span>
                                 <span>اللاعب</span>
                                 <span>Lv.</span>
                                 <span id="lbScoreHeader">نقاط التحدي</span>
                             </div>
                             <!-- المحتوى المتمرير -->
-                            <div id="combinedLeaderboardList" style="max-height:45vh;overflow-y:auto;padding:4px 0;-webkit-overflow-scrolling:touch;">
+                            <div id="combinedLeaderboardList" style="max-height:40vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;">
                                 <div style="text-align:center;padding:20px;color:var(--text2);">جاري التحميل...</div>
                             </div>
                         </div>
-                        <p style="font-size:0.65em;color:var(--text2);text-align:center;">✨ مرّر لأسفل لعرض المزيد من اللاعبين ✨</p>
+                        <p style="font-size:0.65em;color:var(--text2);text-align:center;flex-shrink:0;">✨ مرّر لأسفل لعرض المزيد من اللاعبين ✨</p>
                     </div>
 
                     <!-- منطقة اللعب (تظهر عند بدء التحدي) -->
@@ -1120,54 +1138,77 @@
     </div>
 
     <script>
-        /* ═══ تبويبات صفحة المهام والإنجازات ═══ */
-        function showAchieveTab(tab) {
-            const slider = document.getElementById('achieveTabsSlider');
-            const btnT   = document.getElementById('achTabTasks');
-            const btnA   = document.getElementById('achTabAchieve');
-            if (!slider) return;
-            if (tab === 'tasks') {
-                slider.style.transform = 'translateX(0)';
-                if(btnT){ btnT.style.background='linear-gradient(135deg,var(--gold),var(--gold2))'; btnT.style.color='#000'; btnT.style.fontWeight='900'; btnT.style.border='none'; }
-                if(btnA){ btnA.style.background='var(--surface3)'; btnA.style.color='var(--text2)'; btnA.style.fontWeight='700'; btnA.style.border='1px solid var(--gold-border)'; }
+        /* ═══ فتح/إغلاق الأقسام القابلة للطي ═══ */
+        function toggleSection(sectionId, chevronId) {
+            var section = document.getElementById(sectionId);
+            var chevron = document.getElementById(chevronId);
+            if (!section) return;
+            var isOpen = section.style.maxHeight && section.style.maxHeight !== '0px' && section.style.maxHeight !== '0';
+            if (isOpen) {
+                section.style.maxHeight = '0';
+                section.style.overflow = 'hidden';
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
             } else {
-                slider.style.transform = 'translateX(-50%)';
-                if(btnA){ btnA.style.background='linear-gradient(135deg,var(--gold),var(--gold2))'; btnA.style.color='#000'; btnA.style.fontWeight='900'; btnA.style.border='none'; }
-                if(btnT){ btnT.style.background='var(--surface3)'; btnT.style.color='var(--text2)'; btnT.style.fontWeight='700'; btnT.style.border='1px solid var(--gold-border)'; }
+                section.style.maxHeight = (section.scrollHeight + 400) + 'px';
+                section.style.overflow = 'auto';
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
             }
         }
 
+        /* ═══ مهام التحدي اليومية ═══ */
+        var CHALLENGE_TASKS = [
+            { icon:'⚡', name:'المبتدئ',   desc:'اجمع 5 نقاط في التحدي',  target:5,  reward:2  },
+            { icon:'🔥', name:'المتحمس',   desc:'اجمع 15 نقطة في التحدي', target:15, reward:4  },
+            { icon:'💪', name:'المقاتل',   desc:'اجمع 30 نقطة في التحدي', target:30, reward:6  },
+            { icon:'🏅', name:'المحترف',   desc:'اجمع 50 نقطة في التحدي', target:50, reward:10 },
+            { icon:'👑', name:'الأسطورة',  desc:'اجمع 80 نقطة في التحدي', target:80, reward:20 }
+        ];
+
+        function renderChallengeDailyTasks() {
+            var list = document.getElementById('challengeDailyTasksList');
+            if (!list) return;
+            var score = (typeof st !== 'undefined') ? (st.challengeBestScore || 0) : 0;
+            list.innerHTML = CHALLENGE_TASKS.map(function(t) {
+                var prog = Math.min(100, Math.round((score / t.target) * 100));
+                var done = score >= t.target;
+                return '<div class="task-item' + (done ? ' done' : '') + '">' +
+                    '<div class="task-item-icon">' + t.icon + '</div>' +
+                    '<div class="task-item-info">' +
+                        '<div class="task-item-name">' + t.name + '</div>' +
+                        '<div class="task-item-desc">' + t.desc + '</div>' +
+                        '<div class="task-prog-bar"><div class="task-prog-fill" style="width:' + prog + '%"></div></div>' +
+                    '</div>' +
+                    '<div class="task-right">' +
+                        '<div class="task-reward">+' + t.reward + '💰</div>' +
+                        '<div class="task-prog-txt">' + Math.min(score, t.target) + '/' + t.target + '</div>' +
+                        (done ? '<div style="font-size:0.7em;color:var(--green);">✅</div>' : '') +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        /* ═══ فتح overlay الإحصائيات ═══ */
         function openStatsOverlay() {
             document.getElementById('statsOverlay').style.display = 'flex';
-            /* قراءة من العناصر المخفية (يملأها ui.js) وكتابتها في statsOverlay */
-            var map = {
-                'homeCorrect':  'stat_correct',
-                'homeAccuracy': 'stat_accuracy',
-                'homeStreak':   'stat_streak',
-                'homeGames':    'stat_games',
-                'homeLevel':    'stat_level',
-                'homeBestScore':'stat_bestScore'
-            };
-            Object.keys(map).forEach(function(srcId) {
-                var src = document.getElementById(srcId);
-                var dst = document.getElementById(map[srcId]);
-                if (src && dst) dst.textContent = src.textContent;
-            });
-            /* التقييم */
-            var rn  = document.getElementById('ratingNum');
-            var rns = document.getElementById('ratingNumStat');
-            if (rn && rns) rns.textContent = rn.textContent;
-            var rs  = document.getElementById('ratingStars');
-            var rss = document.getElementById('ratingStatStars');
-            if (rs && rss) rss.textContent = rs.textContent;
-            var rb  = document.getElementById('ratingBar');
-            var rbs = document.getElementById('ratingStatBar');
-            if (rb && rbs) rbs.style.width = rb.style.width;
-            /* سجل آخر 10 نتائج */
-            var hist     = document.getElementById('historyScroll');
-            var histStat = document.getElementById('historyScrollStat');
-            if (hist && histStat) histStat.innerHTML = hist.innerHTML;
+            var map = { 'homeCorrect':'stat_correct','homeAccuracy':'stat_accuracy','homeStreak':'stat_streak','homeGames':'stat_games','homeLevel':'stat_level','homeBestScore':'stat_bestScore' };
+            Object.keys(map).forEach(function(s) { var a=document.getElementById(s),b=document.getElementById(map[s]); if(a&&b) b.textContent=a.textContent; });
+            var rn=document.getElementById('ratingNum'),rns=document.getElementById('ratingNumStat');
+            var rs=document.getElementById('ratingStars'),rss=document.getElementById('ratingStatStars');
+            var rb=document.getElementById('ratingBar'),rbs=document.getElementById('ratingStatBar');
+            if(rn&&rns) rns.textContent=rn.textContent;
+            if(rs&&rss) rss.textContent=rs.textContent;
+            if(rb&&rbs) rbs.style.width=rb.style.width;
+            var h=document.getElementById('historyScroll'),hs=document.getElementById('historyScrollStat');
+            if(h&&hs) hs.innerHTML=h.innerHTML;
         }
+
+        /* تهيئة عند التحميل */
+        document.addEventListener('DOMContentLoaded', function() {
+            var ts=document.getElementById('tasksSection'), tc=document.getElementById('tasksChevron');
+            if(ts){ ts.style.maxHeight='280px'; ts.style.overflow='auto'; }
+            if(tc) tc.style.transform='rotate(180deg)';
+            setTimeout(renderChallengeDailyTasks, 700);
+        });
     </script>
     <!-- JavaScript Modules -->
     <script src="firebase.js"></script>
