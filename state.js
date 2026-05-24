@@ -4,7 +4,7 @@
 
         function todayStr() {
             const d = new Date();
-            return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; /* ✅ إصلاح: +1 للشهر */
         }
 
         function weekStr() {
@@ -71,8 +71,11 @@
 
         function sanitizeState(s) {
             if (typeof s.coins !== 'number' || s.coins < 0) s.coins = 0;
+            if (s.coins > 999999) s.coins = 999999;                          /* ✅ حد أعلى للعملات */
             if (typeof s.level !== 'number' || s.level < 1) s.level = 1;
+            if (s.level > 100) s.level = 100;                                /* ✅ حد أعلى للمستوى */
             if (typeof s.xp !== 'number' || s.xp < 0) s.xp = 0;
+            if (s.xp > 9999999) s.xp = 9999999;                             /* ✅ حد أعلى للـ XP */
             if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 1000;
             if (!s.ownedEmojis || !Array.isArray(s.ownedEmojis)) s.ownedEmojis = ['👦'];
             if (!s.stats || typeof s.stats !== 'object') s.stats = {};
