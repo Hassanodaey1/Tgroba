@@ -208,6 +208,35 @@
             openSheet('trainingOpSheet');
         }
 
+        /* ══════════════════════════════════════════════
+           وضع الذاكرة الرياضية 🧠
+        ══════════════════════════════════════════════ */
+        function openMemoryGameSheet() {
+            window._gameSource = 'play';
+            const grid = document.getElementById('memoryOpGrid');
+            if (!grid) return;
+            const ops = [
+                { icon: '➕', label: 'الجمع',   op: 'add' },
+                { icon: '➖', label: 'الطرح',   op: 'sub' },
+                { icon: '✖️', label: 'الضرب',  op: 'mul' },
+                { icon: '➗', label: 'القسمة', op: 'div' },
+                { icon: '🔀', label: 'مزيج',   op: 'mix' },
+            ];
+            grid.innerHTML = ops.map(o =>
+                `<div class="mode-card" onclick="closeSheet('memoryOpSheet'); startMemoryGame('${o.op}')">
+                    <span class="mode-card-icon">${o.icon}</span>
+                    <div class="mode-card-name">${o.label}</div>
+                </div>`
+            ).join('');
+            openSheet('memoryOpSheet');
+            playSound('click');
+        }
+
+        function startMemoryGame(op) {
+            G.memoryMode = true;
+            startGameWith('memory', op, null, false);
+        }
+
         function openOpSheet(cat, forceTimerForCounter = false) {
             /* تحديد مصدر اللعبة بناءً على الصفحة النشطة */
             const activePage = document.querySelector('.page.active');
