@@ -491,7 +491,29 @@ function startTrainingOn(cat) { startTrainingMode(cat); }
 ═══════════════════════════════════════════════════ */
 
 function triggerPhotoUpload() {
-    /* خيار: كاميرا أم معرض الصور */
+    /* يفتح الـ overlay الجديد لاختيار نوع الأفاتار */
+    openAvatarPickerOverlay();
+}
+
+/* ─── Avatar Picker Overlay ─── */
+function openAvatarPickerOverlay() {
+    const overlay = document.getElementById('avatarPickerOverlay');
+    if (!overlay) return;
+    /* إظهار زر الحذف فقط إذا كانت هناك صورة شخصية */
+    const removeOpt = document.getElementById('removePhotoOption');
+    if (removeOpt) removeOpt.style.display = st.profilePhoto ? 'block' : 'none';
+    overlay.style.display = 'flex';
+    playSound && playSound('click');
+}
+
+function closeAvatarPickerOverlay() {
+    const overlay = document.getElementById('avatarPickerOverlay');
+    if (overlay) overlay.style.display = 'none';
+    playSound && playSound('click');
+}
+
+function openPhotoPicker() {
+    /* إغلاق الـ overlay ثم فتح خيار الكاميرا/المعرض */
     showConfirm(
         '📷 الصورة الشخصية',
         'اختر مصدر الصورة',
@@ -505,6 +527,115 @@ function triggerPhotoUpload() {
             inp.click();
         }
     );
+}
+
+function removeProfilePhotoFromPicker() {
+    showConfirm('حذف الصورة', 'هل تريد حذف الصورة الشخصية والعودة للرمز التعبيري؟', 'نعم', 'إلغاء', function(ok) {
+        if (!ok) return;
+        st.profilePhoto = null;
+        saveSt();
+        applyProfilePhoto();
+        closeAvatarPickerOverlay();
+        showFeedback('🗑️ تم حذف الصورة الشخصية');
+    });
+}
+
+/* ─── Emoji Picker Overlay ─── */
+function openEmojiPickerFromAvatar() {
+    closeAvatarPickerOverlay();
+    const overlay = document.getElementById('emojiPickerOverlay');
+    if (!overlay) return;
+    /* تحديث رصيد العملات */
+    const coinsEl = document.getElementById('emojiPickerCoins');
+    if (coinsEl) coinsEl.textContent = '💰 ' + (st.coins || 0);
+    /* رسم شبكة الرموز */
+    renderEmojiPickerGrid();
+    overlay.style.display = 'flex';
+    playSound && playSound('click');
+}
+
+function closeEmojiPickerOverlay() {
+    const overlay = document.getElementById('emojiPickerOverlay');
+    if (overlay) overlay.style.display = 'none';
+    /* إعادة فتح الـ avatar picker */
+    openAvatarPickerOverlay();
+}
+
+function renderEmojiPickerGrid() {
+    const grid = document.getElementById('emojiPickerGrid');
+    if (!grid) return;
+    if (!st.ownedEmojis || st.ownedEmojis.length === 0) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
+    grid.innerHTML = EMOJI_CATALOG.map(item => {
+        if (item.price === 0 && item.gender && item.gender !== st.gender) return '';
+        const owned = st.ownedEmojis.includes(item.emoji);
+        const selected = st.avatar === item.emoji;
+        if (owned) {
+            return `<div onclick="selectEmojiFromPicker('${item.emoji}')" style="
+                background:${selected ? 'linear-gradient(135deg,var(--gold),var(--gold2,#f0b90b))' : 'var(--surface2)'};
+                border:2px solid ${selected ? 'var(--gold)' : 'var(--border2)'};
+                border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;position:relative;">
+                <div style="font-size:2em;">${item.emoji}</div>
+                <div style="font-size:0.55em;color:${selected ? '#000' : 'var(--green)'};font-weight:700;margin-top:4px;">${selected ? '✅ مفعّل' : 'اختر'}</div>
+            </div>`;
+        } else {
+            return `<div onclick="buyEmojiFromPicker('${item.emoji}',${item.price},'${item.label}')" style="
+                background:var(--surface3);border:2px solid var(--border2);border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;position:relative;opacity:0.85;">
+                <div style="font-size:2em;filter:grayscale(0.3);">${item.emoji}</div>
+                <div style="font-size:0.55em;color:var(--gold);font-weight:700;margin-top:4px;">${item.price > 0 ? item.price + ' 💰' : 'مجاني'}</div>
+                <div style="position:absolute;top:6px;right:6px;font-size:0.7em;">🔒</div>
+            </div>`;
+        }
+    }).join('');
+}
+
+function selectEmojiFromPicker(emoji) {
+    st.avatar = emoji;
+    /* إزالة الصورة الشخصية إذا كانت موجودة */
+    if (st.profilePhoto) {
+        st.profilePhoto = null;
+    }
+    saveSt();
+    playSound && playSound('click');
+    /* تحديث الواجهة */
+    const spImg = document.getElementById('spProfileAvatarImg');
+    if (spImg) {
+        spImg.style.backgroundImage = '';
+        spImg.style.backgroundSize = '';
+        spImg.textContent = emoji;
+    }
+    updateUI();
+    renderEmojiPickerGrid();
+    showFeedback('✅ تم تفعيل الرمز');
+    /* إغلاق الـ overlay بعد الاختيار */
+    setTimeout(() => {
+        const overlay = document.getElementById('emojiPickerOverlay');
+        if (overlay) overlay.style.display = 'none';
+    }, 700);
+}
+
+function buyEmojiFromPicker(emoji, price, label) {
+    if (!st.ownedEmojis) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
+    if (st.ownedEmojis.includes(emoji)) { selectEmojiFromPicker(emoji); return; }
+    if (price === 0) {
+        st.ownedEmojis.push(emoji);
+        selectEmojiFromPicker(emoji);
+        return;
+    }
+    if (st.coins < price) { showFeedback('💸 لا يكفي!'); return; }
+    showConfirm('شراء رمز', 'هل تريد شراء ' + label + ' بـ ' + price + ' عملة؟', 'نعم اشتري', 'إلغاء', function(ok) {
+        if (ok) {
+            st.coins -= price;
+            st.ownedEmojis.push(emoji);
+            saveSt();
+            playSound && playSound('levelup');
+            /* تحديث رصيد العملات في الـ overlay */
+            const coinsEl = document.getElementById('emojiPickerCoins');
+            if (coinsEl) coinsEl.textContent = '💰 ' + st.coins;
+            updateUI();
+            renderEmojiPickerGrid();
+            showFeedback('🎉 تم الشراء!');
+        }
+    });
 }
 
 function handleProfilePhotoUpload(event) {
@@ -526,6 +657,17 @@ function handleProfilePhotoUpload(event) {
             st.profilePhoto = canvas.toDataURL('image/jpeg', 0.80);
             saveSt();
             applyProfilePhoto();
+            /* تحديث spProfileAvatarImg في صفحة الملف الشخصي الفرعية */
+            const spImg = document.getElementById('spProfileAvatarImg');
+            if (spImg) {
+                spImg.style.backgroundImage = 'url("' + st.profilePhoto + '")';
+                spImg.style.backgroundSize = 'cover';
+                spImg.style.backgroundPosition = 'center';
+                spImg.textContent = '';
+            }
+            /* إغلاق الـ avatar picker overlay */
+            const ap = document.getElementById('avatarPickerOverlay');
+            if (ap) ap.style.display = 'none';
             showFeedback('✅ تم تحديث الصورة الشخصية');
             playSound('levelup');
         };
@@ -538,30 +680,34 @@ function handleProfilePhotoUpload(event) {
 function applyProfilePhoto() {
     const bigEl    = document.getElementById('profileAvatarImg');
     const headerEl = document.getElementById('headerAvatar');
+    const spEl     = document.getElementById('spProfileAvatarImg');
     const overlay  = document.getElementById('profilePhotoOverlay');
     const actions  = document.getElementById('profilePhotoActions');
 
     if (st.profilePhoto) {
-        /* تطبيق الصورة على الأفاتار الكبير */
-        if (bigEl) {
-            bigEl.style.backgroundImage  = 'url("' + st.profilePhoto + '")';
-            bigEl.style.backgroundSize   = 'cover';
-            bigEl.style.backgroundPosition = 'center';
-            bigEl.textContent = '';
-        }
-        /* تطبيق الصورة على الهيدر */
-        if (headerEl) {
-            headerEl.style.backgroundImage  = 'url("' + st.profilePhoto + '")';
-            headerEl.style.backgroundSize   = 'cover';
-            headerEl.style.backgroundPosition = 'center';
-            headerEl.textContent = '';
-        }
+        const applyPhoto = (el) => {
+            if (!el) return;
+            el.style.backgroundImage  = 'url("' + st.profilePhoto + '")';
+            el.style.backgroundSize   = 'cover';
+            el.style.backgroundPosition = 'center';
+            el.textContent = '';
+        };
+        applyPhoto(bigEl);
+        applyPhoto(headerEl);
+        applyPhoto(spEl);
         if (overlay) overlay.style.display = 'flex';
         if (actions) actions.style.display = 'flex';
     } else {
         const av = st.avatar || getDefaultAvatarForGender(st.gender);
-        if (bigEl)    { bigEl.style.backgroundImage = ''; bigEl.style.backgroundSize = ''; bigEl.textContent = av; }
-        if (headerEl) { headerEl.style.backgroundImage = ''; headerEl.style.backgroundSize = ''; headerEl.textContent = av; }
+        const clearEl = (el) => {
+            if (!el) return;
+            el.style.backgroundImage = '';
+            el.style.backgroundSize = '';
+            el.textContent = av;
+        };
+        clearEl(bigEl);
+        clearEl(headerEl);
+        clearEl(spEl);
         if (overlay)  overlay.style.display = 'none';
         if (actions)  actions.style.display = 'none';
     }
