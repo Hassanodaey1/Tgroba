@@ -844,10 +844,12 @@
             color: var(--gold);
             box-shadow: var(--glow-gold);
         }
-        .diff-chip.locked {
+        .diff-chip.locked,
+        .diff-chip.diff-locked {
             opacity: 0.32;
             pointer-events: none;
             filter: grayscale(0.2);
+            cursor: not-allowed;
         }
         .diff-chip .lock-tag {
             position: absolute;
