@@ -124,6 +124,7 @@
     <!-- RESULTS OVERLAY -->
     <div class="results-overlay" id="resultsOverlay">
         <div class="results-card">
+            <div id="winLoseMessage"></div>
             <div class="results-emoji" id="resultsEmoji">🏆</div>
             <div class="results-title" id="resultsTitle">رائع!</div>
             <div class="results-sub" id="resultsSub"></div>
@@ -142,8 +143,8 @@
                 </div>
             </div>
             <div class="results-xp" id="resultsXP">+0 XP • +0 💰</div>
-            <button class="res-btn primary" onclick="playAgain()">🔄 العب مجدداً</button>
-            <button class="res-btn secondary" onclick="goHome()">🏠 الرئيسية</button>
+            <button class="res-btn primary" onclick="playAgain()">🔄 إعادة اللعب</button>
+            <button class="res-btn secondary" id="resultsBackBtn" onclick="goHome()">🏠 الصفحة الرئيسية</button>
         </div>
     </div>
 
@@ -338,7 +339,7 @@
                             <div style="font-size:0.55em;color:var(--text2);">يوم</div>
                         </div>
                     </div>
-                    <div class="daily-banner" onclick="startGameWith('daily','mix', null, false)">
+                    <div class="daily-banner" onclick="window._gameSource='home'; startGameWith('daily','mix', null, false);">
                         <div class="daily-icon">🌟</div>
                         <div>
                             <div class="daily-title">تحدي اليوم</div>
@@ -889,6 +890,8 @@
                 </div>
             </div>
 
+            <!-- زر العودة إلى الإعدادات -->
+            <button onclick="closeSettingsSubPage('subPageProfileOverlay'); goTab('settings');" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.9em;font-weight:900;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 العودة إلى الإعدادات</button>
         </div>
     </div>
 
@@ -940,6 +943,9 @@
                     </div>
                 </div>
             </div>
+
+            <!-- زر العودة إلى الإعدادات -->
+            <button onclick="closeSettingsSubPage('subPageAudioOverlay'); goTab('settings');" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.9em;font-weight:900;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 العودة إلى الإعدادات</button>
         </div>
     </div>
 
@@ -975,6 +981,9 @@
                     </div>
                 </div>
             </div>
+
+            <!-- زر العودة إلى الإعدادات -->
+            <button onclick="closeSettingsSubPage('subPageThemeOverlay'); goTab('settings');" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.9em;font-weight:900;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 العودة إلى الإعدادات</button>
         </div>
     </div>
 
@@ -1134,6 +1143,9 @@
                     <div style="font-size:0.74em;color:var(--text3);padding:6px;">لا توجد نتائج بعد — العب الآن!</div>
                 </div>
             </div>
+
+            <!-- زر العودة إلى الصفحة الرئيسية -->
+            <button onclick="document.getElementById('statsOverlay').style.display='none'; goTab('home');" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.9em;font-weight:900;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 العودة إلى الصفحة الرئيسية</button>
         </div>
     </div>
 
