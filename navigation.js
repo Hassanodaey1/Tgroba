@@ -209,6 +209,13 @@
         }
 
         function openOpSheet(cat, forceTimerForCounter = false) {
+            /* تحديد مصدر اللعبة بناءً على الصفحة النشطة */
+            const activePage = document.querySelector('.page.active');
+            if (activePage) {
+                if (activePage.id === 'page-play') window._gameSource = 'play';
+                else if (activePage.id === 'page-leaderboard') window._gameSource = 'leaderboard';
+                else window._gameSource = 'home';
+            }
             const grid = document.getElementById('opModeGrid'),
                 title = document.getElementById('opSheetTitle');
             if (cat === 'counter') {
