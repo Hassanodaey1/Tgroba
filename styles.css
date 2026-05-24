@@ -279,23 +279,27 @@
                 opacity: 0.15;
             }
         }
-        .splash-logo {
-            font-size: 6em;
-            font-weight: 900;
-            letter-spacing: 15px;
-            background: linear-gradient(135deg, var(--gold), var(--accent), var(--accent2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: logoGlow 2s infinite alternate;
+        /* ══ HO Interlocked Monogram ══ */
+        .splash-logo-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 1;
+            animation: logoEntrance 0.9s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
-        @keyframes logoGlow {
-            0% {
-                filter: drop-shadow(0 0 15px var(--gold))
-            }
-            100% {
-                filter: drop-shadow(0 0 35px var(--accent))
-            }
+        @keyframes logoEntrance {
+            0%   { opacity:0; transform: scale(0.6); }
+            100% { opacity:1; transform: scale(1); }
+        }
+        .ho-monogram {
+            width: 260px;
+            height: 208px;
+            animation: hoGlowPulse 2.8s ease-in-out infinite alternate;
+        }
+        @keyframes hoGlowPulse {
+            0%   { filter: drop-shadow(0 0 14px rgba(240,185,11,0.6)) drop-shadow(0 0 30px rgba(240,185,11,0.2)); }
+            100% { filter: drop-shadow(0 0 28px rgba(240,185,11,1.0)) drop-shadow(0 0 60px rgba(240,185,11,0.4)); }
         }
         .splash-subtitle {
             color: var(--text2);
@@ -3164,51 +3168,3 @@ html {
     min-width: 0;
     flex: 1 1 0;
 }
-
-        /* ══════════════════════════════════════════════
-           وضع الذاكرة الرياضية 🧠
-        ══════════════════════════════════════════════ */
-        #memoryCountdown {
-            position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--gold);
-            color: #000;
-            font-weight: 900;
-            font-size: 0.74em;
-            padding: 4px 14px;
-            border-radius: 20px;
-            z-index: 10;
-            pointer-events: none;
-            font-family: 'Tajawal', sans-serif;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-            animation: memPulse 0.7s ease-in-out infinite alternate;
-        }
-        @keyframes memPulse {
-            from { box-shadow: 0 0 6px var(--gold); }
-            to   { box-shadow: 0 0 18px var(--gold), 0 0 4px #fff6; }
-        }
-
-        /* تأثير ضبابي على السؤال أثناء وضع الذاكرة */
-        .question-text.memory-hidden {
-            filter: blur(8px);
-            user-select: none;
-            transition: filter 0.4s ease;
-        }
-
-        /* عنوان لعبة الذاكرة في الـ stat row */
-        .memory-mode-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: linear-gradient(135deg, #a855f7, #7c3aed);
-            color: #fff;
-            font-size: 0.62em;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 20px;
-            margin-right: 6px;
-        }
-
