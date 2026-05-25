@@ -768,8 +768,16 @@
             askedQuestions: [],
             consecutiveWrong: 0  /* عداد الأخطاء المتتالية */
         };
+        /* ✅ ANTI-CHEAT: مصدر داخلي للنقاط — يمنع التلاعب عبر Console */
+        var _cgScoreInternal = 0;
+        function _cgAddScore(delta) {
+            _cgScoreInternal = Math.max(0, _cgScoreInternal + delta);
+            CG.score = _cgScoreInternal;
+        }
+        function _cgResetScore() { _cgScoreInternal = 0; CG.score = 0; }
 
         function startChallengeGame() {
+            _cgResetScore();
             CG = {
                 active: true,
                 score: 0,
@@ -882,7 +890,7 @@
             CG.active = false;
             if (CG.timer) clearInterval(CG.timer);
             /* ✅ FIX-V5b: تحقق منطقي من نتيجة التحدي قبل الحفظ */
-            CG.score = Math.max(0, Math.min(Math.floor(CG.score || 0), 9999));
+            CG.score = Math.max(0, Math.min(Math.floor(_cgScoreInternal || 0), 9999)); _cgScoreInternal = CG.score;
             // حفظ النتيجة في الـ state
             if (CG.score > (st.challengeBestScore || 0)) {
                 st.challengeBestScore = CG.score;
@@ -959,7 +967,7 @@
             if (val === CG.correctAnswer) {
                 btn.classList.add('correct');
                 /* +1 نقطة لكل إجابة صحيحة */
-                CG.score++;
+                _cgAddScore(1);
                 CG.questionIndex++;
                 CG.consecutiveWrong = 0; /* إعادة عداد الأخطاء */
                 document.getElementById('challengeScoreDisplay').textContent = CG.score;
@@ -978,7 +986,7 @@
                 /* عداد الأخطاء المتتالية: كل خطأين يخصمان نقطة واحدة */
                 CG.consecutiveWrong = (CG.consecutiveWrong || 0) + 1;
                 if (CG.consecutiveWrong >= 2) {
-                    CG.score = Math.max(0, CG.score - 1);
+                    _cgAddScore(-1);
                     CG.consecutiveWrong = 0;
                     document.getElementById('challengeScoreDisplay').textContent = CG.score;
                     showFeedback('❌ ×2 → -1 نقطة');
