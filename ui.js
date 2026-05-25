@@ -761,16 +761,28 @@ document.addEventListener('keydown', e => {
  */
 function syncWithLeaderboard() {
     if (!database) return;
+    /* ✅ FIX-V3+V10: استخدام serialNumber كـ key ثابت وفريد لمنع انتحال الهوية */
+    if (!st.serialNumber) return; /* لا مزامنة قبل تسجيل الملف الشخصي */
     try {
-        const playerKey = (st.name + '_' + (st.playerUID || (st.playerUID = Date.now().toString(36)))).replace(/[^a-zA-Z0-9_]/g, '_');
+        /* ✅ FIX-V3: لا تُرفع النتيجة إذا كانت أعلى من حد معقول */
+        const safeBestScore = Math.min(st.bestScore || 0, 9999999);
+        const safeLevel     = Math.min(st.level || 1,     200);
+        const playerKey     = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
         saveSt();
-        database.ref('leaderboard/' + playerKey).set({
-            name: st.name,
-            avatar: st.avatar,
-            level: st.level,
-            bestScore: st.bestScore,
-            totalXp: st.xp,
-            lastUpdated: Date.now()
+        /* ✅ FIX-V3: نقرأ أولاً — لا نكتب إلا إذا كانت النتيجة الجديدة أعلى فعلاً */
+        database.ref('leaderboard/' + playerKey).once('value', snap => {
+            const existing = snap.val();
+            if (!existing || safeBestScore > (existing.bestScore || 0)) {
+                database.ref('leaderboard/' + playerKey).set({
+                    name:          st.name,
+                    avatar:        st.avatar,
+                    level:         safeLevel,
+                    bestScore:     safeBestScore,
+                    totalXp:       Math.min(st.xp || 0, 99999999),
+                    serialNumber:  st.serialNumber,
+                    lastUpdated:   Date.now()
+                }).catch(() => {});
+            }
         }).catch(() => {});
     } catch (e) {}
 }
