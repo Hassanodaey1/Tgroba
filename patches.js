@@ -43,71 +43,26 @@ function resumeGameTimer() {
     }, 1000);
 }
 
-/* ═══ 2. الإعدادات الرئيسية — تعمل فقط من الرئيسية والملف الشخصي ═══ */
-function openMainSettings() {
-    const overlay = document.getElementById('gameOverlay');
-    if (overlay && overlay.classList.contains('active')) return;
+/* ═══ 2. إعدادات رئيسية — stub للتوافق مع كود قديم ═══ */
+/* openMainSettings و closeMainSettings و saveMainSettings
+   لم تعد تفتح sheet منفصل — الإعدادات الآن في page-settings مباشرة.
+   هذه الدوال stub لمنع أي أخطاء إن استُدعيت من مكان قديم. */
+function openMainSettings()  { goTab && goTab('settings'); }
+function closeMainSettings() { /* لا شيء */ }
+function saveMainSettings()  { /* لا شيء — الحفظ يتم عبر saveProfile */ }
 
-    try { initSettingsDateSelectors(); } catch(e) {}
-
-    const inName = document.getElementById('settingsInputName');
-    if (inName) inName.value = st.name || '';
-
-    if (st.birthDate) {
-        const parts = st.birthDate.split('-');
-        if (parts.length === 3) {
-            const sd = document.getElementById('settingsBirthDay');
-            const sm = document.getElementById('settingsBirthMonth');
-            const sy = document.getElementById('settingsBirthYear');
-            if (sy) sy.value = parseInt(parts[0]);
-            if (sm) sm.value = parseInt(parts[1]);
-            if (sd) sd.value = parseInt(parts[2]);
-        }
-    }
-
-    updateSettingsDarkToggle();
-    updateSettingsThemeDots();
-    openSheet('mainSettingsSheet');
-    playSound('click');
-}
-
-function closeMainSettings() {
-    closeSheet('mainSettingsSheet');
-}
-
-function saveMainSettings() {
-    const inName = document.getElementById('settingsInputName');
-    let name = inName ? inName.value.trim().replace(/[^a-zA-Z0-9 ]/g, '') : '';
-    if (!name) { showFeedback('الاسم لا يمكن أن يكون فارغاً'); return; }
-    if (name.length > 30) name = name.slice(0, 30);
-    st.name = name;
-
-    const sd = document.getElementById('settingsBirthDay');
-    const sm = document.getElementById('settingsBirthMonth');
-    const sy = document.getElementById('settingsBirthYear');
-    if (sd && sm && sy) {
-        const y = sy.value, mo = String(sm.value).padStart(2,'0'), d = String(sd.value).padStart(2,'0');
-        st.birthDate = `${y}-${mo}-${d}`;
-        st.age = calculateAgeFromBirthDate(st.birthDate);
-    }
-
-    if (!st.serialNumber) {
-        st.serialNumber = generateSerialNumber(st.birthDate, st.name);
-    }
-
-    saveSt();
-    updateUI();
-    loadProfileForm();
-    updateSerialNumberDisplay();
-    closeMainSettings();
-    showFeedback('تم حفظ الإعدادات');
-}
-
+/* دوال الثيمات — تُستخدم من subPageThemeOverlay */
 function updateSettingsDarkToggle() {
-    const icon = document.getElementById('settingsDarkIcon');
-    const label = document.getElementById('settingsDarkLabel');
-    if (icon) icon.textContent = st.darkMode ? '🌙' : '☀️';
-    if (label) label.textContent = st.darkMode ? 'داكن' : 'فاتح';
+    /* يُحدّث أيقونات الداكن/الفاتح في كل مكان */
+    const isDark = st.darkMode;
+    ['settingsDarkIcon','darkLightIcon','spDarkLightIcon'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = isDark ? '🌙' : '☀️';
+    });
+    ['settingsDarkLabel','darkLightLabel','spDarkLightLabel'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = isDark ? 'داكن' : 'فاتح';
+    });
 }
 
 function toggleSettingsDarkMode() {
@@ -115,50 +70,38 @@ function toggleSettingsDarkMode() {
     saveSt();
     applyDarkMode();
     updateSettingsDarkToggle();
-    const icon2 = document.getElementById('darkLightIcon');
-    const label2 = document.getElementById('darkLightLabel');
-    if (icon2) icon2.textContent = st.darkMode ? '🌙' : '☀️';
-    if (label2) label2.textContent = st.darkMode ? 'داكن' : 'فاتح';
     playSound('click');
 }
 
 function updateSettingsThemeDots() {
-    const dots = document.querySelectorAll('.settings-theme-dot');
-    dots.forEach(d => {
+    document.querySelectorAll('.settings-theme-dot,.theme-dot').forEach(d => {
         d.classList.toggle('active', d.dataset.gold === st.tGold);
     });
 }
 
 function applySettingsTheme(el, gold, accent, accent2) {
-    document.querySelectorAll('.settings-theme-dot').forEach(d => d.classList.remove('active'));
-    if (el) el.classList.add('active');
-    /* setTheme يتوقع عنصر DOM كأول معامل أو null */
     const dummy = { classList: { add: () => {}, remove: () => {}, toggle: () => {} } };
     setTheme(dummy, gold, accent, accent2);
     updateSettingsThemeDots();
 }
 
+/* syncGameSheet — يُحدّث IDs الـ gameSettingsSheet من st مباشرة */
+function syncGameSheet() {
+    if (typeof st === 'undefined') return;
+    const q = id => document.getElementById(id);
+    if (q('gsoundStatus'))    q('gsoundStatus').textContent    = st.soundOn    ? 'مفعّل'  : 'مطفأ';
+    if (q('gbgMusicStatus'))  q('gbgMusicStatus').textContent  = st.bgOn       ? 'مفعّلة' : 'مطفأة';
+    if (q('gVibrationStatus')) q('gVibrationStatus').textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+    if (q('gSoundVolSlider')) q('gSoundVolSlider').value       = st.soundVolume || 80;
+    if (q('gSoundVolVal'))    q('gSoundVolVal').textContent    = (st.soundVolume || 80) + '%';
+    if (q('gBgVolSlider'))    q('gBgVolSlider').value          = st.bgVolume || 60;
+    if (q('gBgVolVal'))       q('gBgVolVal').textContent       = (st.bgVolume || 60) + '%';
+}
+
 /* ═══ 3. إعدادات اللعبة السريعة (داخل اللعبة فقط) ═══ */
 function openGameSettingsAndPause() {
     pauseGameTimer();
-    ['gsoundStatus'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
-    });
-    ['gbgMusicStatus'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
-    });
-    const gSV = document.getElementById('gSoundVolSlider');
-    if (gSV) gSV.value = st.soundVolume || 80;
-    const gSVV = document.getElementById('gSoundVolVal');
-    if (gSVV) gSVV.textContent = (st.soundVolume || 80) + '%';
-    const gBV = document.getElementById('gBgVolSlider');
-    if (gBV) gBV.value = st.bgVolume || 60;
-    const gBVV = document.getElementById('gBgVolVal');
-    if (gBVV) gBVV.textContent = (st.bgVolume || 60) + '%';
-    const vibStat = document.getElementById('gVibrationStatus');
-    if (vibStat) vibStat.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+    syncGameSheet();            /* مزامنة واحدة من st — لا تكرار */
     openSheet('gameSettingsSheet');
 }
 
@@ -182,14 +125,13 @@ function initTitlesSystem() {
 
 /* ═══ 5. toggleBgMusicInGame ═══ */
 function toggleBgMusicInGame() {
-    toggleBgMusic();
-    const el = document.getElementById('gbgMusicStatus');
-    if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
+    toggleBgMusic(); /* toggleBgMusic تُحدّث gbgMusicStatus تلقائياً */
 }
 
 /* ═══ 6. toggleVibration ═══ */
 function toggleVibration() {
     st.vibrationOn = !st.vibrationOn;
+    /* تحديث كل IDs الاهتزاز دفعة واحدة */
     ['vibrationStatus', 'gVibrationStatus'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
@@ -265,16 +207,3 @@ function restoreFromSettings() {
     showFeedback('✅ تم استعادة الحساب');
 }
 
-/* تحديث عرض الرقم التسلسلي عند فتح الإعدادات */
-const _origOpenMainSettings = openMainSettings;
-openMainSettings = function() {
-    _origOpenMainSettings();
-    updateSettingsSerialDisplay();
-};
-
-/* تحديث عرض الرقم بعد الحفظ */
-const _origSaveMainSettings = saveMainSettings;
-saveMainSettings = function() {
-    _origSaveMainSettings();
-    updateSettingsSerialDisplay();
-};
