@@ -280,30 +280,35 @@
             }
         }
         .splash-logo {
-            font-size: 5.5em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+            animation: logoGlow 2s infinite alternate;
+            line-height: 1;
+        }
+        .splash-logo-ho {
+            font-size: 6em;
             font-weight: 900;
-            letter-spacing: -4px;
+            letter-spacing: -2px;
             background: linear-gradient(135deg, var(--gold), var(--accent), var(--accent2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: logoGlow 2s infinite alternate;
-            z-index: 1;
             line-height: 1;
-            position: relative;
         }
-        .splash-logo::after {
-            content: 'Math';
-            display: block;
-            font-size: 0.28em;
-            letter-spacing: 10px;
-            text-align: center;
-            -webkit-text-fill-color: transparent;
+        .splash-logo-math {
+            font-size: 1.45em;
+            font-weight: 800;
+            letter-spacing: 0.55em;
+            text-indent: 0.55em; /* compensate for last letter-spacing */
             background: linear-gradient(90deg, var(--accent2), var(--gold));
             -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-top: -6px;
-            font-weight: 700;
+            width: 100%;
+            text-align: center;
+            margin-top: 2px;
         }
         @keyframes logoGlow {
             0% {
@@ -318,23 +323,6 @@
             font-size: 1.3em;
             letter-spacing: 3px;
             z-index: 1;
-        }
-        .splash-tagline {
-            color: var(--text2);
-            font-size: 1em;
-            letter-spacing: 5px;
-            z-index: 1;
-            text-transform: uppercase;
-            margin-top: -10px;
-            opacity: 0.75;
-        }
-        .splash-divider {
-            width: 60px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            border-radius: 2px;
-            z-index: 1;
-            margin: 4px 0;
         }
         .splash-dots {
             display: flex;
@@ -423,6 +411,15 @@
             display: flex;
             align-items: center;
             gap: 9px;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
         }
         .avatar-wrap {
             position: relative;
@@ -464,16 +461,14 @@
             pointer-events: none;
             z-index: 2;
         }
-        .player-info {
-            display: flex;
-            flex-direction: column;
-        }
         .player-name {
             font-size: 0.9em;
             font-weight: 800;
             color: var(--text);
             line-height: 1.2;
-            word-break: break-word;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .player-sub {
             font-size: 0.66em;
