@@ -263,12 +263,6 @@
                         <div class="player-sub" id="headerSub">Lv.1 • مبتدئ</div>
                     </div>
                 </div>
-                <div class="xp-pill">
-                    <div class="xp-pill-bar">
-                        <div class="xp-pill-fill" id="headerXpBar" style="width:0%"></div>
-                    </div>
-                    <span class="xp-pill-lv" id="headerXp">⚡ 0 XP</span>
-                </div>
                 <div style="display:flex;align-items:center;gap:4px;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:20px;padding:5px 10px;font-size:0.78em;font-weight:900;color:var(--gold);white-space:nowrap;">
                     💰 <span id="headerCoins">0</span>
                 </div>
@@ -281,7 +275,22 @@
             <div class="pages">
                 <!-- HOME PAGE -->
                 <div class="page active" id="page-home">
-                    <div class="page-title-header">🏠 الواجهة الرئيسية</div>
+                    <!-- بطاقة اللاعب + شريط XP في أعلى الصفحة الرئيسية -->
+                    <div class="home-player-xp-card">
+                        <div class="home-player-identity">
+                            <div class="home-player-name-full" id="homePlayerName">اللاعب</div>
+                            <div class="home-player-level-tag" id="homePlayerLevel">Lv.1 • مبتدئ</div>
+                        </div>
+                        <div class="home-xp-section">
+                            <div class="home-xp-bar-wrap">
+                                <div class="home-xp-bar-fill" id="homeXpBarFill" style="width:0%"></div>
+                            </div>
+                            <div class="home-xp-labels">
+                                <span class="home-xp-text" id="homeXpText">⚡ 0 XP</span>
+                                <span class="home-xp-next" id="homeXpNext">0 / 1000</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="session-timer-card">
                         <div class="session-timer-label">⏱️ وقت اللعب اليوم</div>
                         <div class="session-timer-value" id="sessionTimerDisplay">00:00:00</div>
@@ -1089,6 +1098,8 @@
     <!-- عناصر مخفية للحفاظ على IDs الملف الشخصي التي يستخدمها ui.js -->
     <div style="display:none;" aria-hidden="true">
         <!-- stubs للتوافق مع كود قديم — mainSettingsSheet محذوف -->
+        <div id="headerXpBar" style="width:0%"></div>
+        <div id="headerXp"></div>
         <input type="text" id="settingsInputName">
         <select id="settingsBirthDay"></select>
         <select id="settingsBirthMonth"></select>
@@ -1172,7 +1183,7 @@
                     const simg = q('spProfileAvatarImg');
                     if (simg) {
                         if (st.profilePhoto) {
-                            simg.style.backgroundImage   = 'url( + st.profilePhoto + )';
+                            simg.style.backgroundImage   = 'url("' + st.profilePhoto + '")';
                             simg.style.backgroundSize    = 'cover';
                             simg.style.backgroundPosition = 'center';
                             simg.textContent = '';
