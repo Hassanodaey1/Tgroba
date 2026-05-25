@@ -81,13 +81,13 @@
                 if (!advancedUnlocked) {
                     gcardAdvanced.classList.add('locked');
                     gcardAdvanced.onclick = null;
-                    gcardAdvanced.querySelector('.gcard-badge').textContent = '🔒 Lv.7';
+                    const _ba = gcardAdvanced.querySelector('.gcard-badge'); if(_ba) _ba.textContent = '🔒 Lv.7';
                     if (document.getElementById('gcardAdvancedStats')) document.getElementById(
                         'gcardAdvancedStats').textContent = 'يفتح عند Lv.7';
                 } else {
                     gcardAdvanced.classList.remove('locked');
                     gcardAdvanced.onclick = () => startGameWith('classic', 'advanced', null, true);
-                    gcardAdvanced.querySelector('.gcard-badge').textContent = 'متاح';
+                    const _ba2 = gcardAdvanced.querySelector('.gcard-badge'); if(_ba2) _ba2.textContent = 'متاح';
                     if (document.getElementById('gcardAdvancedStats')) document.getElementById(
                         'gcardAdvancedStats').textContent = 'اضغط للعب';
                 }
@@ -110,13 +110,13 @@
                 if (!lawsUnlocked) {
                     gcardLaws.classList.add('locked');
                     gcardLaws.onclick = null;
-                    gcardLaws.querySelector('.gcard-badge').textContent = '🔒 Lv.10';
+                    const _bl = gcardLaws.querySelector('.gcard-badge'); if(_bl) _bl.textContent = '🔒 Lv.10';
                     if (document.getElementById('gcardLawsStats')) document.getElementById('gcardLawsStats').textContent =
                         'يفتح عند Lv.10';
                 } else {
                     gcardLaws.classList.remove('locked');
                     gcardLaws.onclick = () => startGameWith('classic', 'laws', null, true);
-                    gcardLaws.querySelector('.gcard-badge').textContent = 'متاح';
+                    const _bl2 = gcardLaws.querySelector('.gcard-badge'); if(_bl2) _bl2.textContent = 'متاح';
                     if (document.getElementById('gcardLawsStats')) document.getElementById('gcardLawsStats').textContent =
                         'اضغط للعب';
                 }
