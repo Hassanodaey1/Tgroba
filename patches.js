@@ -117,7 +117,71 @@ function sheetBgAndResume(e, id) {
     }
 }
 
-/* ═══ 4. تهيئة الألقاب بعد التحميل ═══ */
+/* ═══ 9. احتفال رفع المستوى ═══ */
+/* ✅ FIX-LEVELUP: عرض بطاقة احتفالية + كونفيتي عند رفع المستوى */
+function showLevelUpCelebration(newLevel) {
+    /* إنشاء overlay الاحتفال */
+    const overlay = document.createElement('div');
+    overlay.style.cssText = [
+        'position:fixed', 'inset:0', 'z-index:99999',
+        'display:flex', 'align-items:center', 'justify-content:center',
+        'background:rgba(0,0,0,0.55)', 'animation:fadeInBg 0.3s ease'
+    ].join(';');
+
+    const card = document.createElement('div');
+    card.style.cssText = [
+        'background:var(--surface,#1a1a2e)', 'border:2.5px solid var(--gold,#f0b90b)',
+        'border-radius:28px', 'padding:36px 40px', 'text-align:center',
+        'max-width:320px', 'width:88%',
+        'animation:levelUpPop 0.45s cubic-bezier(0.34,1.56,0.64,1)'
+    ].join(';');
+
+    card.innerHTML = `
+        <div style="font-size:3.2em;margin-bottom:8px;">🎉</div>
+        <div style="font-size:1.05em;color:var(--text2,#aaa);margin-bottom:6px;font-weight:700;">ارتقيت إلى</div>
+        <div style="font-size:2.8em;font-weight:900;color:var(--gold,#f0b90b);line-height:1;">
+            المستوى ${newLevel}
+        </div>
+        <div style="font-size:0.88em;color:var(--text2,#aaa);margin-top:10px;">
+            🚀 استمر، أنت في تقدم رائع!
+        </div>
+        <button onclick="this.closest('[data-levelup]').remove()" style="margin-top:22px;background:var(--gold,#f0b90b);color:#000;border:none;border-radius:14px;padding:10px 32px;font-size:1em;font-weight:900;cursor:pointer;">
+            رائع! 🏆
+        </button>
+    `;
+    overlay.setAttribute('data-levelup', '1');
+    overlay.appendChild(card);
+    /* إغلاق بالضغط خارج البطاقة */
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+    });
+    document.body.appendChild(overlay);
+
+    /* حقن أنيميشن إن لم يكن موجوداً */
+    if (!document.getElementById('levelUpKeyframes')) {
+        const style = document.createElement('style');
+        style.id = 'levelUpKeyframes';
+        style.textContent = `
+            @keyframes levelUpPop {
+                0%   { transform: scale(0.5) rotate(-6deg); opacity:0; }
+                70%  { transform: scale(1.08) rotate(1deg); opacity:1; }
+                100% { transform: scale(1) rotate(0deg); }
+            }
+            @keyframes fadeInBg {
+                from { opacity:0; } to { opacity:1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    /* كونفيتي احتفالي */
+    try { if (typeof doConfetti === 'function') doConfetti(); } catch(e) {}
+
+    /* إغلاق تلقائي بعد 4 ثواني */
+    setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 4000);
+}
+
+
 function initTitlesSystem() {
     try { checkSeasonReset(); } catch (e) {}
     try { renderProfileTitles(); } catch (e) {}
