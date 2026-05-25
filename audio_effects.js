@@ -143,9 +143,7 @@ function stopBg() {
 /* ═══════════ TOGGLE FUNCTIONS ═══════════ */
 function toggleBgMusic() {
     st.bgOn = !st.bgOn;
-    /* تحديث جميع عناصر زر الموسيقى */
-    const bgBtn = document.getElementById('bgBtn');
-    if (bgBtn) bgBtn.textContent = st.bgOn ? '🎵' : '🔕';
+    /* تحديث جميع IDs الموسيقى في كل الواجهات دفعة واحدة */
     ['bgMusicStatus', 'gbgMusicStatus'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
@@ -157,8 +155,7 @@ function toggleBgMusic() {
 
 function toggleSound() {
     st.soundOn = !st.soundOn;
-    const soundBtn = document.getElementById('soundBtn');
-    if (soundBtn) soundBtn.textContent = st.soundOn ? '🔊' : '🔇';
+    /* تحديث جميع IDs الصوت في كل الواجهات دفعة واحدة */
     ['soundStatus', 'gsoundStatus'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
