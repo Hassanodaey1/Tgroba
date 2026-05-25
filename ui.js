@@ -252,8 +252,14 @@ function saveProfile() {
         st.age = calculateAgeFromBirthDate(newBirthDate);
     }
     updateOwnedEmojisForGender();
+    /* ✅ FIX-SERIAL: توليد الرقم التسلسلي عند الحفظ إذا لم يكن موجوداً */
+    if (!st.serialNumber) {
+        st.serialNumber = generateSerialNumber(st.birthDate, st.name);
+    }
     saveSt();
     updateUI();
+    try { if (typeof updateSerialNumberDisplay === 'function') updateSerialNumberDisplay(); } catch(e) {}
+    try { if (typeof updateSettingsSerialDisplay === 'function') updateSettingsSerialDisplay(); } catch(e) {}
     playSound('levelup');
     renderEmojiShop();
     const btn = document.getElementById('saveBtn');
@@ -381,12 +387,19 @@ function updateUI() {
     document.getElementById('headerSub').textContent = `Lv.${st.level} • ${ttl}`;
     document.getElementById('headerXpBar').style.width = xpPct + '%';
     document.getElementById('headerXp').textContent = `⚡ ${st.xp} XP`;
-    document.getElementById('headerAvatar').textContent = av;
+    /* ✅ FIX-PHOTO: لا نمسح الصورة الشخصية عند updateUI — نستدعي applyProfilePhoto بعدها */
+    if (!st.profilePhoto) {
+        const hav = document.getElementById('headerAvatar');
+        if (hav) { hav.style.backgroundImage = ''; hav.textContent = av; }
+    }
     document.getElementById('profileName').textContent = st.name;
     document.getElementById('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
     document.getElementById('profileXpFill').style.width = xpPct + '%';
     document.getElementById('profileXpLabel').textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
-    document.getElementById('profileAvatarImg').textContent = av;
+    if (!st.profilePhoto) {
+        const pai = document.getElementById('profileAvatarImg');
+        if (pai) { pai.style.backgroundImage = ''; pai.textContent = av; }
+    }
     document.getElementById('statCorrect').textContent = st.correctTotal;
     document.getElementById('statBestStreak').textContent = '×' + st.bestStreak;
     document.getElementById('statCoinsP').textContent = st.coins;
@@ -398,7 +411,10 @@ function updateUI() {
     const spPL = document.getElementById('spProfileLevel'); if(spPL) spPL.textContent = `المستوى ${st.level} • ${ttl}`;
     const spPXF = document.getElementById('spProfileXpFill'); if(spPXF) spPXF.style.width = xpPct + '%';
     const spPXL = document.getElementById('spProfileXpLabel'); if(spPXL) spPXL.textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
-    const spPAI = document.getElementById('spProfileAvatarImg'); if(spPAI) spPAI.textContent = av;
+    if (!st.profilePhoto) {
+        const spPAI = document.getElementById('spProfileAvatarImg');
+        if (spPAI) { spPAI.style.backgroundImage = ''; spPAI.textContent = av; }
+    }
     const soundStatusEl = document.getElementById('soundStatus');
     if (soundStatusEl) soundStatusEl.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
     const bgMusicStatusEl = document.getElementById('bgMusicStatus');
