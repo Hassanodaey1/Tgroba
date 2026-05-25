@@ -310,6 +310,8 @@
             G.hasTimer = false;
             G.helpersUsed = { skip: false, remove: false };
             G.askedQuestions = [];
+            /* ✅ إعادة ضبط ذاكرة التكرار عند كل لعبة جديدة */
+            if (typeof clearSessionMemory === 'function') clearSessionMemory();
             document.getElementById('gameModeTitle').textContent = '🎓 تدريب';
             document.getElementById('statScore').textContent = '0';
             document.getElementById('streakNum').textContent = '0';
@@ -598,8 +600,12 @@
                     if (G.op === 'table' && G.customTable) {
                         q = genQ('table', st.difficulty, G.customTable);
                     } else {
-                        q = generateAgeAdaptiveQuestion(G.op, st.difficulty, age);
-                        if (!q.choices || q.choices.length < 4) q = genQ(G.op, st.difficulty);
+                        if (typeof getNextQuestion === 'function') {
+                            q = getNextQuestion(G.op, st.difficulty);
+                        } else {
+                            q = generateAgeAdaptiveQuestion(G.op, st.difficulty, age);
+                            if (!q.choices || q.choices.length < 4) q = genQ(G.op, st.difficulty);
+                        }
                     }
                 } else {
                     if (G.op === 'table' && G.customTable) {
@@ -615,7 +621,10 @@
                         } else {
                             let useDiff = st.difficulty;
                             if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
-                            if (age > 0 && age <= 13) {
+                            /* ✅ المحرك الذكي — يتكيف مع اللاعب ويضمن عدم التكرار */
+                            if (typeof getNextQuestion === 'function') {
+                                q = getNextQuestion(G.op, useDiff);
+                            } else if (age > 0 && age <= 13) {
                                 q = generateAgeAdaptiveQuestion(G.op, useDiff, age);
                                 if (!q || !q.choices || q.choices.length < 4) q = genQ(G.op, useDiff);
                             } else {
