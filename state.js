@@ -124,7 +124,12 @@
         function loadSt() {
             try {
                 const s = JSON.parse(localStorage.getItem(SK));
-                if (s && s.name !== undefined) return sanitizeState(s);
+                if (s && s.name !== undefined) {
+                    /* ✅ FIX-MERGE: دمج المفاتيح الناقصة من الحالة الافتراضية لتجنب أعطال الإصدارات القديمة */
+                    const def = defState();
+                    Object.keys(def).forEach(k => { if (s[k] === undefined) s[k] = def[k]; });
+                    return sanitizeState(s);
+                }
             } catch (e) {}
             return defState();
         }
@@ -222,10 +227,13 @@
                 'نعم، احذف الكل', 'إلغاء', (ok) => {
                     if (ok) {
                         localStorage.removeItem(SK);
+                        /* ✅ FIX: جمع المفاتيح أولاً ثم الحذف لتجنب مشكلة التغيير أثناء الحلقة */
+                        const keysToRemove = [];
                         for (let i = 0; i < localStorage.length; i++) {
                             let key = localStorage.key(i);
-                            if (key && key.startsWith('ho_math_backup_')) localStorage.removeItem(key);
+                            if (key && key.startsWith('ho_math_backup_')) keysToRemove.push(key);
                         }
+                        keysToRemove.forEach(k => localStorage.removeItem(k));
                         localStorage.removeItem('ho_math_user_count');
                         st = defState();
                         saveSt(); currentOp = st.lastOp || 'mix';
