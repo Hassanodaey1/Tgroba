@@ -280,35 +280,14 @@
             }
         }
         .splash-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 1;
-            animation: logoGlow 2s infinite alternate;
-            line-height: 1;
-        }
-        .splash-logo-ho {
             font-size: 6em;
             font-weight: 900;
-            letter-spacing: -2px;
+            letter-spacing: 15px;
             background: linear-gradient(135deg, var(--gold), var(--accent), var(--accent2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1;
-        }
-        .splash-logo-math {
-            font-size: 1.45em;
-            font-weight: 800;
-            letter-spacing: 0.55em;
-            text-indent: 0.55em; /* compensate for last letter-spacing */
-            background: linear-gradient(90deg, var(--accent2), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            width: 100%;
-            text-align: center;
-            margin-top: 2px;
+            animation: logoGlow 2s infinite alternate;
+            z-index: 1;
         }
         @keyframes logoGlow {
             0% {
@@ -411,15 +390,9 @@
             display: flex;
             align-items: center;
             gap: 9px;
-            flex: 1;
+            flex: 0 0 auto;
             min-width: 0;
-            overflow: hidden;
-        }
-        .player-info {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            flex: 1;
+            max-width: 38%;
         }
         .avatar-wrap {
             position: relative;
@@ -460,6 +433,12 @@
             font-size: 0.7em;
             pointer-events: none;
             z-index: 2;
+        }
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
         }
         .player-name {
             font-size: 0.9em;
@@ -3184,11 +3163,4 @@ html {
 .top-header {
     flex-wrap: nowrap;
     min-width: 0;
-}
-.player-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-    flex: 1 1 0;
 }
