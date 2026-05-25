@@ -6,58 +6,39 @@
 /* ─── مستوى الصوت ─── */
 function initVolumeSliders() {
     if (typeof st.soundVolume !== 'number') st.soundVolume = 80;
-    if (typeof st.bgVolume !== 'number') st.bgVolume = 60;
-    ['soundVolSlider', 'gSoundVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = st.soundVolume;
-    });
-    ['bgVolSlider', 'gBgVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = st.bgVolume;
-    });
-    ['soundVolVal', 'gSoundVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.soundVolume + '%';
-    });
-    ['bgVolVal', 'gBgVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.bgVolume + '%';
-    });
-    /* شريط شدة الاهتزاز */
+    if (typeof st.bgVolume    !== 'number') st.bgVolume    = 60;
     if (typeof st.vibrationStrength !== 'number') st.vibrationStrength = 30;
-    ['vibVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = st.vibrationStrength;
-    });
-    ['vibVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = st.vibrationStrength + 'ms';
-    });
+
+    /* subPageAudioOverlay sliders */
+    const q = id => document.getElementById(id);
+    if (q('soundVolSlider')) q('soundVolSlider').value       = st.soundVolume;
+    if (q('soundVolVal'))    q('soundVolVal').textContent    = st.soundVolume + '%';
+    if (q('bgVolSlider'))    q('bgVolSlider').value          = st.bgVolume;
+    if (q('bgVolVal'))       q('bgVolVal').textContent       = st.bgVolume + '%';
+    if (q('vibVolSlider'))   q('vibVolSlider').value         = st.vibrationStrength;
+    if (q('vibVolVal'))      q('vibVolVal').textContent      = st.vibrationStrength + 'ms';
+
+    /* gameSettingsSheet sliders — تُزامن دفعة واحدة عبر syncGameSheet */
+    try { if (typeof syncGameSheet === 'function') syncGameSheet(); } catch(e) {}
 }
 
 function setSoundVolume(val) {
     st.soundVolume = parseInt(val);
-    ['soundVolVal', 'gSoundVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val + '%';
-    });
-    ['soundVolSlider', 'gSoundVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-    });
+    const q = id => document.getElementById(id);
+    if (q('soundVolVal'))    q('soundVolVal').textContent    = val + '%';
+    if (q('soundVolSlider')) q('soundVolSlider').value       = val;
+    if (q('gSoundVolVal'))   q('gSoundVolVal').textContent   = val + '%';
+    if (q('gSoundVolSlider')) q('gSoundVolSlider').value     = val;
     saveSt();
 }
 
 function setBgVolume(val) {
     st.bgVolume = parseInt(val);
-    ['bgVolVal', 'gBgVolVal'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val + '%';
-    });
-    ['bgVolSlider', 'gBgVolSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-    });
+    const q = id => document.getElementById(id);
+    if (q('bgVolVal'))    q('bgVolVal').textContent    = val + '%';
+    if (q('bgVolSlider')) q('bgVolSlider').value       = val;
+    if (q('gBgVolVal'))   q('gBgVolVal').textContent   = val + '%';
+    if (q('gBgVolSlider')) q('gBgVolSlider').value     = val;
     saveSt();
 }
 
@@ -112,7 +93,6 @@ function generateAndShowSerial() {
 ═══════════════════════════════════════════════════ */
 (function initApp() {
     try { initDateSelectors(); } catch (e) { console.warn('initDateSelectors', e); }
-    try { initSettingsDateSelectors(); } catch (e) {}
     /* إظهار زر الإعدادات فقط في الصفحات المسموح بها */
     try {
         const settingsBtn = document.getElementById('mainSettingsBtn');
