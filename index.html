@@ -544,6 +544,16 @@
                             <div style="font-size:1.3em;color:var(--text3);">›</div>
                         </div>
 
+                        <!-- زر وضع الوالدين -->
+                        <div onclick="openSettingsSubPage('parent-sub')" style="display:flex;align-items:center;gap:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:18px 20px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                            <div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#10b981,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;">👨‍👩‍👧</div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.92em;font-weight:900;color:var(--text);">وضع الوالدين</div>
+                                <div style="font-size:0.68em;color:var(--text2);margin-top:3px;">وقت اللعب • الإجابات • التقدم اليومي</div>
+                            </div>
+                            <div style="font-size:1.3em;color:var(--text3);">›</div>
+                        </div>
+
                     </div>
 
                     <!-- منطقة الخطر -->
@@ -928,6 +938,99 @@
     </div>
 
 
+    <!-- ═══════ SUB-PAGE: وضع الوالدين ═══════ -->
+    <div class="game-overlay" id="subPageParentOverlay" style="display:none;overflow-y:auto;">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="closeSettingsSubPage('subPageParentOverlay')" aria-label="رجوع">‹</button>
+            <div class="game-title">👨‍👩‍👧 وضع الوالدين</div>
+            <div></div>
+        </div>
+        <div style="padding:14px 16px 90px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;">
+
+            <!-- بطاقة اللاعب -->
+            <div style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(6,182,212,0.1));border:1.5px solid rgba(16,185,129,0.3);border-radius:20px;padding:18px;display:flex;align-items:center;gap:14px;">
+                <div style="font-size:2.8em;" id="parentAvatar">🧑</div>
+                <div>
+                    <div style="font-size:1em;font-weight:900;color:var(--text);" id="parentName">اللاعب</div>
+                    <div style="font-size:0.7em;color:var(--text2);margin-top:3px;" id="parentAgeLevel">المستوى ١ • العمر غير محدد</div>
+                </div>
+            </div>
+
+            <!-- وقت اللعب -->
+            <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px;">
+                <div style="font-size:0.8em;font-weight:900;color:var(--text);margin-bottom:12px;">⏱️ وقت اللعب</div>
+                <div style="display:flex;gap:10px;">
+                    <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.4em;font-weight:900;color:var(--accent2);" id="parentTimeToday">00:00</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">اليوم</div>
+                    </div>
+                    <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.4em;font-weight:900;color:var(--accent);" id="parentTimeWeek">00:00</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">هذا الأسبوع</div>
+                    </div>
+                    <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.4em;font-weight:900;color:var(--gold);" id="parentStreak">0</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">يوم متتالي</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- أداء اليوم -->
+            <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px;">
+                <div style="font-size:0.8em;font-weight:900;color:var(--text);margin-bottom:12px;">📊 أداء اليوم</div>
+                <div style="display:flex;gap:10px;margin-bottom:12px;">
+                    <div style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.6em;font-weight:900;color:#10b981;" id="parentDailyCorrect">0</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">✅ صحيح</div>
+                    </div>
+                    <div style="flex:1;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.6em;font-weight:900;color:#ef4444;" id="parentDailyWrong">0</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">❌ خطأ</div>
+                    </div>
+                    <div style="flex:1;background:rgba(240,185,11,0.1);border:1px solid rgba(240,185,11,0.25);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.6em;font-weight:900;color:var(--gold);" id="parentDailyAcc">0%</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">🎯 دقة</div>
+                    </div>
+                </div>
+                <!-- شريط الدقة -->
+                <div style="background:var(--surface3);border-radius:8px;height:8px;overflow:hidden;">
+                    <div id="parentAccBar" style="height:100%;border-radius:8px;background:linear-gradient(90deg,#10b981,#06b6d4);transition:width 0.6s ease;width:0%;"></div>
+                </div>
+                <div style="font-size:0.62em;color:var(--text2);margin-top:6px;text-align:center;" id="parentDailyGames">0 جلسة اليوم</div>
+            </div>
+
+            <!-- الإجمالي الكلي -->
+            <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px;">
+                <div style="font-size:0.8em;font-weight:900;color:var(--text);margin-bottom:12px;">🏆 الإجمالي الكلي</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div style="background:var(--surface3);border-radius:13px;padding:12px;text-align:center;">
+                        <div style="font-size:1.3em;font-weight:900;color:var(--text);" id="parentTotalCorrect">0</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:3px;">إجابة صحيحة</div>
+                    </div>
+                    <div style="background:var(--surface3);border-radius:13px;padding:12px;text-align:center;">
+                        <div style="font-size:1.3em;font-weight:900;color:var(--text);" id="parentTotalGames">0</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:3px;">جلسة كاملة</div>
+                    </div>
+                    <div style="background:var(--surface3);border-radius:13px;padding:12px;text-align:center;">
+                        <div style="font-size:1.3em;font-weight:900;color:var(--gold);" id="parentTotalAcc">0%</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:3px;">الدقة الإجمالية</div>
+                    </div>
+                    <div style="background:var(--surface3);border-radius:13px;padding:12px;text-align:center;">
+                        <div style="font-size:1.3em;font-weight:900;color:var(--accent2);" id="parentBestStreak">0</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:3px;">أعلى تتابع</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تقييم الأداء -->
+            <div id="parentFeedbackCard" style="border-radius:18px;padding:16px;text-align:center;"></div>
+
+            <!-- زر العودة -->
+            <button onclick="closeSettingsSubPage('subPageParentOverlay'); goTab('settings');" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.9em;font-weight:900;border:none;cursor:pointer;">🏠 العودة إلى الإعدادات</button>
+        </div>
+    </div>
+
+
     <!-- ═══════ OVERLAY: اختيار الأفاتار الرئيسي ═══════ -->
     <div id="avatarPickerOverlay" class="game-overlay" style="display:none;overflow-y:auto;z-index:9999;">
         <div class="game-header">
@@ -1033,7 +1136,7 @@
            كل sub-page تقرأ من st مباشرة عند الفتح
         ═══════════════════════════════════════════════════ */
         function openSettingsSubPage(id) {
-            const map = { 'profile-sub': 'subPageProfileOverlay', 'audio-sub': 'subPageAudioOverlay', 'theme-sub': 'subPageThemeOverlay' };
+            const map = { 'profile-sub': 'subPageProfileOverlay', 'audio-sub': 'subPageAudioOverlay', 'theme-sub': 'subPageThemeOverlay', 'parent-sub': 'subPageParentOverlay' };
             const overlayId = map[id] || id;
             const el = document.getElementById(overlayId);
             if (!el) return;
@@ -1104,6 +1207,11 @@
                     if (q('spDarkLightIcon'))  q('spDarkLightIcon').textContent  = st.darkMode ? '🌙' : '☀️';
                     if (q('spDarkLightLabel')) q('spDarkLightLabel').textContent = st.darkMode ? 'الوضع الداكن' : 'الوضع الفاتح';
                 }
+            }
+
+            /* ── وضع الوالدين: تحديث كل الإحصائيات ── */
+            if (overlayId === 'subPageParentOverlay') {
+                try { if (typeof renderParentStats === 'function') renderParentStats(); } catch(e) {}
             }
 
             playSound && playSound('click');
