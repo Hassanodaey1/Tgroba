@@ -37,7 +37,7 @@
                 if (G.streak >= 5) doConfetti();
                 if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
                 showFloatXP(10 + G.streak * 2);
-                if (!G.isTraining) st.correctTotal++;
+                /* ✅ FIX-B2: correctTotal يُجمع في endGame فقط لتفادي المضاعفة */
             } else {
                 btn.classList.add('wrong');
                 document.querySelectorAll('.answer-btn').forEach(b => { if (parseInt(b.getAttribute('data-val')) ===
@@ -80,7 +80,7 @@
                 }
                 if (G.currentCatKey && st.stats[G.currentCatKey]) { st.stats[G.currentCatKey].att++;
                     st.stats[G.currentCatKey].max += 3; }
-                if (!G.isTraining) st.wrongTotal++;
+                /* ✅ FIX-B2: wrongTotal يُجمع في endGame فقط لتفادي المضاعفة */
             }
             document.getElementById('statScore').textContent = G.score;
             document.getElementById('streakNum').textContent = G.streak;
@@ -133,6 +133,15 @@
             G.ended = true;
             clearGameTimer();
             if (!G.isTraining) {
+                /* ✅ FIX-V5: تحقق منطقي من النتائج لمنع تعديل كائن G من Console */
+                const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
+                const _maxScore = _maxQ * 60;          /* أقصى نقطة ممكنة نظريًا */
+                const _maxCoins = _maxQ * 0.4 + 10;   /* أقصى عملة ممكنة نظريًا */
+                G.correct     = Math.max(0, Math.min(Math.floor(G.correct),     _maxQ));
+                G.wrong       = Math.max(0, Math.min(Math.floor(G.wrong),       _maxQ));
+                G.score       = Math.max(0, Math.min(Math.floor(G.score),       _maxScore));
+                G.coinsEarned = Math.max(0, Math.min(G.coinsEarned,             _maxCoins));
+                G.bestStreak  = Math.max(0, Math.min(Math.floor(G.bestStreak),  _maxQ));
                 const earnedCoins = Math.floor(G.coinsEarned);
                 st.correctTotal += G.correct;
                 st.wrongTotal += G.wrong;
@@ -149,7 +158,14 @@
                 if (['classic', 'speed', 'survival', 'frenzy'].includes(G.mode)) { st.catCounter.correct += G.correct;
                     st.catCounter.total += G.correct + G.wrong; }
                 if (['speed', 'survival', 'frenzy', 'daily'].includes(G.mode)) st.catChallenges.games++;
-                updTask('game'); if (G.mode === 'daily') updTask('daily');
+                updTask('game');
+                if (G.mode === 'daily') {
+                    /* ✅ FIX-V11: تحدي اليوم مرة واحدة فقط يوميًا */
+                    if (typeof hasDailyBeenPlayed === 'function' && !hasDailyBeenPlayed()) {
+                        updTask('daily');
+                        if (typeof markDailyPlayed === 'function') markDailyPlayed();
+                    }
+                }
                 const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
                 st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
                 if (st.history.length > 10) st.history.pop();
@@ -245,6 +261,13 @@
         function updateDailyShield() {
             const today = todayStr();
             if (st.lastDailyDate !== today) {
+                /* ✅ FIX-V8: منع تغيير التاريخ للرجوع للوراء واستعادة الدرع */
+                /* إذا كان التاريخ المخزّن في المستقبل (تلاعب) → نُعيد التهيئة بدون منح درع جديد */
+                if (st.lastDailyDate && st.lastDailyDate > today) {
+                    st.lastDailyDate = today;
+                    saveSt();
+                    return;
+                }
                 let yesterday = new Date(Date.now() - 86400000).toDateString();
                 st.dailyStreak = st.lastDailyDate === yesterday ? st.dailyStreak + 1 : 1;
                 st.lastDailyDate = today;
