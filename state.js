@@ -4,7 +4,7 @@
 
         function todayStr() {
             const d = new Date();
-            return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            return `${d.getFullYear()}-${(d.getMonth()+1)}-${d.getDate()}`; /* ✅ FIX-B1: getMonth()+1 */
         }
 
         function weekStr() {
@@ -70,9 +70,13 @@
         }
 
         function sanitizeState(s) {
-            if (typeof s.coins !== 'number' || s.coins < 0) s.coins = 0;
-            if (typeof s.level !== 'number' || s.level < 1) s.level = 1;
-            if (typeof s.xp !== 'number' || s.xp < 0) s.xp = 0;
+            /* ✅ FIX-V2: حدود عليا لمنع التلاعب بـ localStorage */
+            if (typeof s.coins !== 'number'  || s.coins < 0)   s.coins = 0;
+            if (s.coins  > 999999)  s.coins  = 999999;
+            if (typeof s.level !== 'number'  || s.level < 1)   s.level = 1;
+            if (s.level  > 200)     s.level  = 200;
+            if (typeof s.xp !== 'number'     || s.xp < 0)      s.xp = 0;
+            if (s.xp     > 99999999) s.xp    = 99999999;
             if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 1000;
             if (!s.ownedEmojis || !Array.isArray(s.ownedEmojis)) s.ownedEmojis = ['👦'];
             if (!s.stats || typeof s.stats !== 'object') s.stats = {};
@@ -90,6 +94,15 @@
             if (s.vibrationOn === undefined) s.vibrationOn = false;
             if (typeof s.vibrationStrength !== 'number') s.vibrationStrength = 30;
             if (s.profilePhoto === undefined) s.profilePhoto = null;
+            /* ✅ FIX-V2b: حدود عليا للإحصائيات */
+            if (typeof s.bestScore    !== 'number' || s.bestScore < 0)    s.bestScore = 0;
+            if (s.bestScore    > 9999999)  s.bestScore    = 9999999;
+            if (typeof s.correctTotal !== 'number' || s.correctTotal < 0) s.correctTotal = 0;
+            if (s.correctTotal > 9999999)  s.correctTotal = 9999999;
+            if (typeof s.totalGames   !== 'number' || s.totalGames < 0)   s.totalGames = 0;
+            if (s.totalGames   > 9999999)  s.totalGames   = 9999999;
+            if (typeof s.challengeBestScore !== 'number' || s.challengeBestScore < 0) s.challengeBestScore = 0;
+            if (s.challengeBestScore > 9999999) s.challengeBestScore = 9999999;
             if (!s.dailyStats || s.dailyStats.date !== todayStr()) {
                 s.dailyStats = { correct: 0, wrong: 0, games: 0, date: todayStr() };
             }
@@ -97,6 +110,15 @@
                 s.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
             }
             return s;
+        }
+
+        /* ✅ FIX-V4: مجموع عملات الإنجازات المستحقة — يُحسب ولا يمكن التزوير عليه */
+        function calcMaxAchievementCoins() {
+            /* يُعيد المجموع الأقصى الممكن من مكافآت الإنجازات */
+            try {
+                if (typeof ACHIEVEMENTS_DEF === 'undefined') return 999999;
+                return ACHIEVEMENTS_DEF.reduce(function(s,a){ return s + (a.reward||0); }, 0) + 5;
+            } catch(e) { return 999999; }
         }
 
         function loadSt() {
