@@ -13,6 +13,8 @@
                 G.score += 10 + G.streak * 2;
                 G.coinsEarned += 0.4;
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
+                /* ✅ AI Adaptive: تسجيل إجابة صحيحة */
+                if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
                 playSound('correct');
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive) {
@@ -135,9 +137,13 @@
         }
 
         function showExplanation() {
-            if (!G.currentExplanation) return;
-            document.getElementById('explanationArea').innerHTML =
-                `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${G.correctAnswer}</strong><br>الشرح: ${G.currentExplanation}</div>`;
+            if (typeof showSmartExplanation === 'function') {
+                showSmartExplanation(G.currentExplanation, G.correctAnswer);
+            } else {
+                if (!G.currentExplanation) return;
+                document.getElementById('explanationArea').innerHTML =
+                    `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${G.correctAnswer}</strong><br>الشرح: ${G.currentExplanation}</div>`;
+            }
         }
 
         /* ═══════════ END GAME ═══════════ */
