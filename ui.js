@@ -252,20 +252,26 @@ function saveProfile() {
         st.age = calculateAgeFromBirthDate(newBirthDate);
     }
     updateOwnedEmojisForGender();
-    /* ✅ FIX-SERIAL: توليد الرقم التسلسلي عند الحفظ إذا لم يكن موجوداً */
+    /* ✅ FIX-SERIAL: توليد الرقم التسلسلي تلقائياً عند أول حفظ */
     if (!st.serialNumber) {
         st.serialNumber = generateSerialNumber(st.birthDate, st.name);
     }
     saveSt();
     updateUI();
+    /* تحديث عرض الرقم التسلسلي */
     try { if (typeof updateSerialNumberDisplay === 'function') updateSerialNumberDisplay(); } catch(e) {}
     try { if (typeof updateSettingsSerialDisplay === 'function') updateSettingsSerialDisplay(); } catch(e) {}
     playSound('levelup');
     renderEmojiShop();
+    /* ✅ FIX-SAVE-BTN: تأكيد الحفظ بوضوح */
     const btn = document.getElementById('saveBtn');
-    const orig = btn.textContent;
-    btn.textContent = '✅ تم الحفظ!';
-    setTimeout(() => btn.textContent = orig, 1500);
+    if (btn) {
+        const orig = btn.textContent;
+        btn.textContent = '✅ تم الحفظ!';
+        btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2000);
+    }
+    showFeedback('✅ تم حفظ الملف الشخصي');
 }
 
 /* ═══════════ THEMES ═══════════ */
@@ -299,19 +305,25 @@ function toggleDarkMode() {
 }
 
 function applyDarkMode() {
+    /* ✅ FIX-DARKMODE: تطبيق فوري من أول ضغطة */
     if (st.darkMode) {
         document.documentElement.classList.remove('light-mode');
-        document.getElementById('darkLightIcon').textContent = '🌙';
-        document.getElementById('darkLightLabel').textContent = 'داكن';
-        const sdi = document.getElementById('spDarkLightIcon'); if(sdi) sdi.textContent = '🌙';
-        const sdl = document.getElementById('spDarkLightLabel'); if(sdl) sdl.textContent = 'الوضع الداكن';
+        document.body && document.body.classList.remove('light-mode');
     } else {
         document.documentElement.classList.add('light-mode');
-        document.getElementById('darkLightIcon').textContent = '☀️';
-        document.getElementById('darkLightLabel').textContent = 'فاتح';
-        const sdi = document.getElementById('spDarkLightIcon'); if(sdi) sdi.textContent = '☀️';
-        const sdl = document.getElementById('spDarkLightLabel'); if(sdl) sdl.textContent = 'الوضع الفاتح';
+        document.body && document.body.classList.add('light-mode');
     }
+    const icon  = st.darkMode ? '🌙' : '☀️';
+    const label = st.darkMode ? 'داكن' : 'فاتح';
+    const spLabel = st.darkMode ? 'الوضع الداكن' : 'الوضع الفاتح';
+    ['darkLightIcon','settingsDarkIcon'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = icon;
+    });
+    ['darkLightLabel','settingsDarkLabel'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = label;
+    });
+    const sdi = document.getElementById('spDarkLightIcon');  if (sdi) sdi.textContent = icon;
+    const sdl = document.getElementById('spDarkLightLabel'); if (sdl) sdl.textContent = spLabel;
 }
 
 function confirmResetStats() {
@@ -387,19 +399,12 @@ function updateUI() {
     document.getElementById('headerSub').textContent = `Lv.${st.level} • ${ttl}`;
     document.getElementById('headerXpBar').style.width = xpPct + '%';
     document.getElementById('headerXp').textContent = `⚡ ${st.xp} XP`;
-    /* ✅ FIX-PHOTO: لا نمسح الصورة الشخصية عند updateUI — نستدعي applyProfilePhoto بعدها */
-    if (!st.profilePhoto) {
-        const hav = document.getElementById('headerAvatar');
-        if (hav) { hav.style.backgroundImage = ''; hav.textContent = av; }
-    }
+    document.getElementById('headerAvatar').textContent = av;
     document.getElementById('profileName').textContent = st.name;
     document.getElementById('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
     document.getElementById('profileXpFill').style.width = xpPct + '%';
     document.getElementById('profileXpLabel').textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
-    if (!st.profilePhoto) {
-        const pai = document.getElementById('profileAvatarImg');
-        if (pai) { pai.style.backgroundImage = ''; pai.textContent = av; }
-    }
+    document.getElementById('profileAvatarImg').textContent = av;
     document.getElementById('statCorrect').textContent = st.correctTotal;
     document.getElementById('statBestStreak').textContent = '×' + st.bestStreak;
     document.getElementById('statCoinsP').textContent = st.coins;
@@ -411,10 +416,7 @@ function updateUI() {
     const spPL = document.getElementById('spProfileLevel'); if(spPL) spPL.textContent = `المستوى ${st.level} • ${ttl}`;
     const spPXF = document.getElementById('spProfileXpFill'); if(spPXF) spPXF.style.width = xpPct + '%';
     const spPXL = document.getElementById('spProfileXpLabel'); if(spPXL) spPXL.textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
-    if (!st.profilePhoto) {
-        const spPAI = document.getElementById('spProfileAvatarImg');
-        if (spPAI) { spPAI.style.backgroundImage = ''; spPAI.textContent = av; }
-    }
+    const spPAI = document.getElementById('spProfileAvatarImg'); if(spPAI) spPAI.textContent = av;
     const soundStatusEl = document.getElementById('soundStatus');
     if (soundStatusEl) soundStatusEl.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
     const bgMusicStatusEl = document.getElementById('bgMusicStatus');
