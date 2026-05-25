@@ -8,6 +8,7 @@ var G = {
     mode: 'classic', op: 'mix', score: 0, correct: 0, wrong: 0, streak: 0,
     bestStreak: 0, currentQ: 0, totalQ: 10, correctAnswer: 0, answered: false,
     timer: null, timeLeft: 0, maxTime: 0, coinsEarned: 0, livesLeft: 3,
+    maxLives: 3, /* ✅ FIX-LIVES: العدد الأقصى للقلوب يتغير حسب العمر */
     helpersUsed: { skip: false, remove: false }, ended: false, isTraining: false,
     customTable: null, hasTimer: false, askedQuestions: [], currentExplanation: '',
     currentCatKey: ''
