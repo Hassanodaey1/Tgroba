@@ -237,9 +237,10 @@ function selectGender(g, snd = true) {
 /* ═══════════ SAVE PROFILE ═══════════ */
 function saveProfile() {
     let n = document.getElementById('inputName').value.trim();
-    const nameRegex = /^[A-Za-z0-9\s]+$/;
+    /* ✅ FIX-NAME: قبول الأحرف العربية والإنجليزية والأرقام والمسافات */
+    const nameRegex = /^[\u0600-\u06FFa-zA-Z0-9\s]+$/;
     if (!nameRegex.test(n) || n === '') {
-        showFeedback('⚠️ الاسم يجب أن يحتوي على أحرف إنجليزية وأرقام فقط (بدون عربي)');
+        showFeedback('⚠️ الاسم يجب أن يحتوي على أحرف (عربية أو إنجليزية) وأرقام فقط');
         return;
     }
     const year = parseInt(document.getElementById('birthYear').value);
@@ -395,11 +396,12 @@ function updateUI() {
     const xpPct = Math.min(100, Math.round((st.xp / st.xpToNext) * 100));
     const ttl = getTitle();
     const av = st.avatar || getDefaultAvatarForGender(st.gender);
-    document.getElementById('headerName').textContent = st.name;
-    document.getElementById('headerSub').textContent = `Lv.${st.level} • ${ttl}`;
-    document.getElementById('headerXpBar').style.width = xpPct + '%';
-    document.getElementById('headerXp').textContent = `⚡ ${st.xp} XP`;
-    document.getElementById('headerAvatar').textContent = av;
+    const _q = id => document.getElementById(id);
+    if (_q('headerName')) _q('headerName').textContent = st.name;
+    if (_q('headerSub')) _q('headerSub').textContent = `Lv.${st.level} • ${ttl}`;
+    if (_q('headerXpBar')) _q('headerXpBar').style.width = xpPct + '%';
+    if (_q('headerXp')) _q('headerXp').textContent = `⚡ ${st.xp} XP`;
+    if (_q('headerAvatar')) _q('headerAvatar').textContent = av;
     /* ── بطاقة اللاعب + XP في الصفحة الرئيسية ── */
     const hnp = document.getElementById('homePlayerName'); if (hnp) hnp.textContent = st.name;
     const hnl = document.getElementById('homePlayerLevel'); if (hnl) hnl.textContent = `Lv.${st.level} • ${ttl}`;
@@ -407,14 +409,14 @@ function updateUI() {
     const hxt = document.getElementById('homeXpText'); if (hxt) hxt.textContent = `⚡ ${st.xp} XP`;
     const hxn = document.getElementById('homeXpNext'); if (hxn) hxn.textContent = `${st.xp} / ${st.xpToNext}`;
 
-    document.getElementById('profileName').textContent = st.name;
-    document.getElementById('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
-    document.getElementById('profileXpFill').style.width = xpPct + '%';
-    document.getElementById('profileXpLabel').textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
-    document.getElementById('profileAvatarImg').textContent = av;
-    document.getElementById('statCorrect').textContent = st.correctTotal;
-    document.getElementById('statBestStreak').textContent = '×' + st.bestStreak;
-    document.getElementById('statCoinsP').textContent = st.coins;
+    if (_q('profileName')) _q('profileName').textContent = st.name;
+    if (_q('profileLevel')) _q('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
+    if (_q('profileXpFill')) _q('profileXpFill').style.width = xpPct + '%';
+    if (_q('profileXpLabel')) _q('profileXpLabel').textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
+    if (_q('profileAvatarImg')) _q('profileAvatarImg').textContent = av;
+    if (_q('statCorrect')) _q('statCorrect').textContent = st.correctTotal;
+    if (_q('statBestStreak')) _q('statBestStreak').textContent = '×' + st.bestStreak;
+    if (_q('statCoinsP')) _q('statCoinsP').textContent = st.coins;
     // sync sub-page profile stats
     const spSC = document.getElementById('spStatCorrect'); if(spSC) spSC.textContent = st.correctTotal;
     const spSS = document.getElementById('spStatStreak'); if(spSS) spSS.textContent = '×' + st.bestStreak;
@@ -464,24 +466,24 @@ function updateUI() {
 function updateHomeStats() {
     const hc = document.getElementById('headerCoins'); if (hc) hc.textContent = st.coins;
     const homeCoins = document.getElementById('homeCoins'); if (homeCoins) homeCoins.textContent = st.coins;
-    document.getElementById('homeCorrect').textContent = st.correctTotal;
+    const hcr = document.getElementById('homeCorrect'); if (hcr) hcr.textContent = st.correctTotal;
     const total = st.correctTotal + st.wrongTotal;
     const acc = total > 0 ? Math.round((st.correctTotal / total) * 100) : 0;
-    document.getElementById('homeAccuracy').textContent = acc + '%';
-    document.getElementById('homeStreak').textContent = '×' + st.bestStreak;
-    document.getElementById('homeGames').textContent = st.totalGames;
-    document.getElementById('homeLevel').textContent = st.level;
-    document.getElementById('homeBestScore').textContent = st.bestScore;
+    const hac = document.getElementById('homeAccuracy'); if (hac) hac.textContent = acc + '%';
+    const hst = document.getElementById('homeStreak'); if (hst) hst.textContent = '×' + st.bestStreak;
+    const hgm = document.getElementById('homeGames'); if (hgm) hgm.textContent = st.totalGames;
+    const hlv = document.getElementById('homeLevel'); if (hlv) hlv.textContent = st.level;
+    const hbs = document.getElementById('homeBestScore'); if (hbs) hbs.textContent = st.bestScore;
     let r = 0;
     if (total > 0) r += (acc / 100) * 2.5;
     r += Math.min(1.5, st.level * 0.15);
     r += Math.min(1.0, st.bestStreak * 0.1);
     r = Math.min(5, r);
     const rr = Math.round(r * 10) / 10;
-    document.getElementById('ratingNum').textContent = rr.toFixed(1);
-    document.getElementById('ratingBar').style.width = (r / 5 * 100) + '%';
+    const rnum = document.getElementById('ratingNum'); if (rnum) rnum.textContent = rr.toFixed(1);
+    const rbar = document.getElementById('ratingBar'); if (rbar) rbar.style.width = (r / 5 * 100) + '%';
     const rs = starsStr(r);
-    document.getElementById('ratingStars').textContent = rs;
+    const rsta = document.getElementById('ratingStars'); if (rsta) rsta.textContent = rs;
     const hs = document.getElementById('homeStars'); if (hs) hs.textContent = rs;
     const cc = st.catCounter;
     const cpct = cc.total > 0 ? Math.round((cc.correct / cc.total) * 100) : 0;
@@ -835,10 +837,10 @@ function loadLeaderboard() {
                 return;
             }
             const medals = ['🥇', '🥈', '🥉'];
-            const myKey = (st.name + '_' + (st.playerUID || '')).replace(/[^a-zA-Z0-9_]/g, '_');
+            const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : '';
             let html = '';
             players.slice(0, 10).forEach((p, idx) => {
-                const isMe = p.id === myKey || p.name === st.name;
+                const isMe = myKey && p.id === myKey;
                 html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
                     <span>${medals[idx] || (idx + 1)}</span>
                     <span>${p.avatar || '🧑'} ${p.name}</span>
