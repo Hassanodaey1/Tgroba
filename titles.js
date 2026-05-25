@@ -75,8 +75,8 @@ function updateFirstPlaceTracking(leaderboardData) {
     if (!leaderboardData || leaderboardData.length === 0) return;
 
     const topPlayer = leaderboardData[0];
-    const myKey = (st.name + '_' + (st.playerUID || '')).replace(/[^a-zA-Z0-9_]/g, '_');
-    const isFirst = topPlayer.id === myKey || topPlayer.name === st.name;
+    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : '';
+    const isFirst = myKey ? topPlayer.id === myKey : topPlayer.name === st.name;
 
     const today = todayStr();
 
