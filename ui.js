@@ -939,3 +939,74 @@ function renderLeaderboardList(container, players, scoreKey) {
 /* استدعاء loadLeaderboard و loadChallengeLeaderboard معاً للتوافق مع الكود القديم */
 function loadLeaderboard() { if (_activeLbTab === 'general') loadCombinedLeaderboard(); }
 function loadChallengeLeaderboard() { if (_activeLbTab === 'challenge') loadCombinedLeaderboard(); }
+
+/* ═══════════════════════════════════════════════════
+   وضع الوالدين — renderParentStats
+   يملأ كل عناصر subPageParentOverlay من st مباشرة
+═══════════════════════════════════════════════════ */
+function renderParentStats() {
+    if (typeof st === 'undefined') return;
+    const q = id => document.getElementById(id);
+
+    /* ── بطاقة اللاعب ── */
+    if (q('parentAvatar')) q('parentAvatar').textContent = st.avatar || '🧑';
+    if (q('parentName'))   q('parentName').textContent   = st.name  || 'اللاعب';
+    const age = st.age || (typeof calculateAgeFromBirthDate === 'function' ? calculateAgeFromBirthDate(st.birthDate) : 0);
+    const ageStr  = age > 0 ? 'العمر: ' + age + ' سنة' : 'العمر غير محدد';
+    if (q('parentAgeLevel')) q('parentAgeLevel').textContent = 'المستوى ' + (st.level || 1) + ' • ' + ageStr;
+
+    /* ── وقت اللعب ── */
+    const todaySecs = typeof getSessionSecs === 'function' ? getSessionSecs() : (st.sessionTimeSecs || 0);
+    const fmtMin = s => {
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        return h > 0 ? h + 'س ' + m + 'د' : m + ' دقيقة';
+    };
+    if (q('parentTimeToday')) q('parentTimeToday').textContent = fmtMin(todaySecs);
+
+    /* وقت الأسبوع — نجمع sessionTimeSecs + الجلسة الحالية */
+    const weekSecs = (st.weeklyStats && st.weeklyStats.sessionSecs) ? st.weeklyStats.sessionSecs + todaySecs : todaySecs;
+    if (q('parentTimeWeek')) q('parentTimeWeek').textContent = fmtMin(weekSecs);
+
+    if (q('parentStreak')) q('parentStreak').textContent = st.dailyStreak || 0;
+
+    /* ── أداء اليوم ── */
+    const ds = st.dailyStats || { correct: 0, wrong: 0, games: 0 };
+    const dailyTotal = ds.correct + ds.wrong;
+    const dailyAcc   = dailyTotal > 0 ? Math.round((ds.correct / dailyTotal) * 100) : 0;
+    if (q('parentDailyCorrect')) q('parentDailyCorrect').textContent = ds.correct;
+    if (q('parentDailyWrong'))   q('parentDailyWrong').textContent   = ds.wrong;
+    if (q('parentDailyAcc'))     q('parentDailyAcc').textContent     = dailyAcc + '%';
+    if (q('parentAccBar'))       q('parentAccBar').style.width       = dailyAcc + '%';
+    if (q('parentDailyGames'))   q('parentDailyGames').textContent   = (ds.games || 0) + ' جلسة اليوم';
+
+    /* ── الإجمالي الكلي ── */
+    const totalAll  = (st.correctTotal || 0) + (st.wrongTotal || 0);
+    const totalAcc  = totalAll > 0 ? Math.round((st.correctTotal / totalAll) * 100) : 0;
+    if (q('parentTotalCorrect')) q('parentTotalCorrect').textContent = st.correctTotal || 0;
+    if (q('parentTotalGames'))   q('parentTotalGames').textContent   = st.totalGames   || 0;
+    if (q('parentTotalAcc'))     q('parentTotalAcc').textContent     = totalAcc + '%';
+    if (q('parentBestStreak'))   q('parentBestStreak').textContent   = st.bestStreak   || 0;
+
+    /* ── بطاقة التقييم ── */
+    const card = q('parentFeedbackCard');
+    if (card) {
+        let icon, msg, color, bg, border;
+        if (dailyTotal === 0) {
+            icon = '🌙'; msg = 'لم يلعب طفلك اليوم بعد'; color = 'var(--text2)';
+            bg = 'var(--surface2)'; border = 'var(--border2)';
+        } else if (dailyAcc >= 85) {
+            icon = '🏆'; msg = 'أداء ممتاز اليوم! ' + ds.correct + ' إجابة صحيحة'; color = '#10b981';
+            bg = 'rgba(16,185,129,0.1)'; border = 'rgba(16,185,129,0.3)';
+        } else if (dailyAcc >= 60) {
+            icon = '⭐'; msg = 'أداء جيد — ' + dailyAcc + '% دقة اليوم'; color = 'var(--gold)';
+            bg = 'rgba(240,185,11,0.1)'; border = 'rgba(240,185,11,0.3)';
+        } else {
+            icon = '💪'; msg = 'يحتاج المزيد من التدريب — دقة ' + dailyAcc + '%'; color = '#f97316';
+            bg = 'rgba(249,115,22,0.08)'; border = 'rgba(249,115,22,0.25)';
+        }
+        card.style.cssText = 'border-radius:18px;padding:16px;text-align:center;background:' + bg + ';border:1.5px solid ' + border + ';';
+        card.innerHTML = '<div style="font-size:2em;margin-bottom:6px;">' + icon + '</div>'
+            + '<div style="font-size:0.88em;font-weight:900;color:' + color + ';">' + msg + '</div>';
+    }
+}
