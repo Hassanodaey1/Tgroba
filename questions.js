@@ -418,9 +418,11 @@
                 hasTimer = true;
                 G.maxTime = 30;
                 G.timeLeft = 30;
-                lives = 3; } else if (mode === 'daily') { G.totalQ = 5;
+                lives = 3; } else if (mode === 'daily') {
+                G.totalQ = 10; /* ✅ FIX-DAILY: رُفع من 5 إلى 10 أسئلة */
                 hasTimer = false;
-                lives = 0; }
+                lives = 0;
+                G.dailyQIndex = 0; /* ✅ FIX-DAILY: عداد للصعوبة المتدرجة */ }
             G.livesLeft = lives;
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false };
@@ -535,6 +537,46 @@
             }
         }
 
+        /* ═══════════ مولّد أسئلة تحدي اليوم المتدرج ═══════════
+           السؤال ١-٣  → سهل   (عمليات أساسية بأرقام صغيرة)
+           السؤال ٤-٦  → متوسط (نسب مئوية، كسور، معادلات بسيطة)
+           السؤال ٧-٨  → صعب   (جذور، قوى، متتاليات)
+           السؤال ٩-١٠ → متقدم (جبر، قوانين، ألغاز)
+        ══════════════════════════════════════════════════════ */
+        function genDailyQ(qIndex) {
+            const age = (typeof st !== 'undefined')
+                ? (st.age || (typeof calculateAgeFromBirthDate === 'function' ? calculateAgeFromBirthDate(st.birthDate) : 0))
+                : 0;
+
+            /* تحديد المرحلة حسب رقم السؤال (0-indexed) */
+            let phase, diff;
+            if      (qIndex <= 2) { phase = 'easy';     diff = 'easy'; }
+            else if (qIndex <= 5) { phase = 'medium';   diff = 'medium'; }
+            else if (qIndex <= 7) { phase = 'hard';     diff = 'hard'; }
+            else                   { phase = 'advanced'; diff = 'hard'; }
+
+            /* للأطفال: لا نتجاوز المتوسط أياً كان رقم السؤال */
+            if (age > 0 && age <= 10 && diff !== 'easy') diff = 'easy';
+            if (age > 0 && age <= 13 && diff === 'hard') diff = 'medium';
+
+            if (phase === 'advanced' && age === 0 || (age >= 14)) {
+                /* أسئلة متقدمة للكبار */
+                const advPool = ['power', 'sqrt', 'sequence', 'equation_simple', 'fraction_add', 'percent'];
+                const ch = advPool[rnd(0, advPool.length - 1)];
+                return genQ(ch, 'hard');
+            }
+
+            /* باقي المراحل — استخدم genQ مع الصعوبة المحددة */
+            const poolByPhase = {
+                easy:   ['add', 'sub', 'mul', 'div'],
+                medium: ['add', 'sub', 'mul', 'div', 'percent', 'fraction_simple', 'word_add', 'word_mul'],
+                hard:   ['mul', 'div', 'percent', 'fraction_add', 'power', 'sqrt', 'sequence', 'equation_simple'],
+            };
+            const pool = poolByPhase[phase] || poolByPhase.easy;
+            const op   = pool[rnd(0, pool.length - 1)];
+            return genQ(op, diff);
+        }
+
         /* ═══════════ LOAD QUESTION ═══════════ */
         function loadQuestion() {
             if (G.ended) return;
@@ -563,10 +605,20 @@
                     } else {
                         if (G.op === 'advanced') q = genQ('advanced', st.difficulty);
                         else if (G.op === 'laws') q = genQ('laws', st.difficulty);
-                        else {
+                        else if (G.mode === 'daily') {
+                            /* ✅ FIX-DAILY: أسئلة متدرجة الصعوبة لتحدي اليوم */
+                            const dailyIdx = (G.dailyQIndex !== undefined) ? G.dailyQIndex : (G.currentQ - 1);
+                            q = genDailyQ(dailyIdx);
+                            G.dailyQIndex = (G.dailyQIndex || 0) + 1;
+                        } else {
                             let useDiff = st.difficulty;
                             if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
-                            q = genQ(G.op, useDiff);
+                            if (age > 0 && age <= 13) {
+                                q = generateAgeAdaptiveQuestion(G.op, useDiff, age);
+                                if (!q || !q.choices || q.choices.length < 4) q = genQ(G.op, useDiff);
+                            } else {
+                                q = genQ(G.op, useDiff);
+                            }
                         }
                     }
                 }
