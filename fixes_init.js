@@ -75,9 +75,14 @@ function setVibrationStrength(val) {
 /* ─── مكافأة يومية ─── */
 function checkDailyLoginBonus() {
     const today = todayStr();
+    /* ✅ FIX-V6: منع إعادة المكافأة بتغيير التاريخ — نتحقق أن اليوم الجديد أكبر من السابق */
     if (st._lastLoginBonus === today) return;
+    /* إذا كان التاريخ المخزّن في المستقبل (تلاعب بالساعة) → نتجاهل ونُحدّث فقط */
+    if (st._lastLoginBonus && st._lastLoginBonus > today) {
+        st._lastLoginBonus = today; saveSt(); return;
+    }
     st._lastLoginBonus = today;
-    const bonus = Math.min(10, 3 + Math.floor(st.dailyStreak / 3));
+    const bonus = Math.min(10, 3 + Math.floor((st.dailyStreak || 0) / 3));
     st.coins += bonus;
     saveSt();
     setTimeout(() => {
