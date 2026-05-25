@@ -90,9 +90,19 @@ function playSound(type) {
     } else if (type === 'wrong') {
         tone(200, 'sawtooth', 0.2, 0.1);
     } else if (type === 'levelup') {
-        tone(523, 'sine', 0.1, 0.1);
-        tone(659, 'sine', 0.1, 0.1, 0.1);
-        tone(784, 'sine', 0.16, 0.1, 0.2);
+        /* ✅ FIX-LEVELUP: موسيقى احتفالية كاملة عند رفع المستوى */
+        const melody = [
+            { f: 523, d: 0.12, delay: 0.00 },   // C5
+            { f: 659, d: 0.12, delay: 0.12 },   // E5
+            { f: 784, d: 0.12, delay: 0.24 },   // G5
+            { f: 1047, d: 0.20, delay: 0.36 },  // C6
+            { f: 784, d: 0.10, delay: 0.58 },   // G5
+            { f: 1047, d: 0.30, delay: 0.70 }   // C6 — النغمة الختامية
+        ];
+        melody.forEach(n => tone(n.f, 'sine', n.d, 0.13, n.delay));
+        /* نغمة هارمونية خلفية للعمق */
+        tone(261, 'triangle', 0.6, 0.04, 0.0);
+        tone(392, 'triangle', 0.5, 0.04, 0.2);
     } else if (type === 'click') {
         tone(440, 'sine', 0.07, 0.06);
     } else if (type === 'open') {
