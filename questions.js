@@ -483,6 +483,8 @@
 
         function useHelper(type) {
             if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي مساعدات'); return; }
+            /* ✅ FIX-V9: منع استخدام مساعدات بعملات سلبية أو محرَّفة */
+            if (typeof st.coins !== 'number' || st.coins < 0) { st.coins = 0; saveSt(); }
             if (type === 'skip') {
                 if (st.coins < 3) { showFeedback('💸 تحتاج 3💰'); return; }
                 if (G.helpersUsed.skip) { showFeedback('⏭️ استُخدم'); return; }
@@ -826,6 +828,8 @@
             CG.ended = true;
             CG.active = false;
             if (CG.timer) clearInterval(CG.timer);
+            /* ✅ FIX-V5b: تحقق منطقي من نتيجة التحدي قبل الحفظ */
+            CG.score = Math.max(0, Math.min(Math.floor(CG.score || 0), 9999));
             // حفظ النتيجة في الـ state
             if (CG.score > (st.challengeBestScore || 0)) {
                 st.challengeBestScore = CG.score;
@@ -961,20 +965,34 @@
         }
 
         /* ═══════════ مزامنة نتيجة التحدي مع Firebase ═══════════ */
+        /* ✅ FIX-V11: تتبع آخر مرة لُعب فيها تحدي اليوم */
+        function hasDailyBeenPlayed() {
+            return st._dailyGameDate === (typeof todayStr === 'function' ? todayStr() : '');
+        }
+        function markDailyPlayed() {
+            st._dailyGameDate = typeof todayStr === 'function' ? todayStr() : '';
+            saveSt();
+        }
+
         function syncChallengeScore(score) {
             if (!database) return;
+            /* ✅ FIX-V3b+V10: serialNumber كـ key + حد أقصى للنتيجة */
+            if (!st.serialNumber) return;
             try {
-                const playerKey = (st.name + '_' + (st.playerUID || '')).replace(/[^a-zA-Z0-9_]/g, '_');
+                const safeScore = Math.max(0, Math.min(Math.floor(score || 0), 9999));
+                const safeLevel = Math.min(st.level || 1, 200);
+                const playerKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
                 const ref = database.ref('challenge_leaderboard/' + playerKey);
                 ref.once('value', snap => {
                     const existing = snap.val();
-                    if (!existing || score > (existing.challengeScore || 0)) {
+                    if (!existing || safeScore > (existing.challengeScore || 0)) {
                         ref.set({
-                            name: st.name,
-                            avatar: st.avatar || '🧑',
-                            level: st.level,
-                            challengeScore: score,
-                            lastUpdated: Date.now()
+                            name:           st.name,
+                            avatar:         st.avatar || '🧑',
+                            level:          safeLevel,
+                            challengeScore: safeScore,
+                            serialNumber:   st.serialNumber,
+                            lastUpdated:    Date.now()
                         }).catch(() => {});
                     }
                 }).catch(() => {});
