@@ -301,13 +301,13 @@
                                 </div>
                                 <div class="cat-stats" id="catStats0">0% • 0 صح</div>
                             </div>
-                            <div class="cat-card" style="--chip-color:#7c3aed" id="homeCatChallenges" onclick="openOpSheet('challenges')">
+                            <div class="cat-card locked" style="--chip-color:#7c3aed" id="homeCatChallenges" onclick="showFeedback('⚔️ التحديات متاحة من قسم التحديات في القائمة السفلية')">
                                 <div class="cat-icon">⚡</div>
                                 <div class="cat-name">التحديات</div>
                                 <div class="cat-progress">
                                     <div class="cat-progress-fill" id="catProg1" style="width:0%"></div>
                                 </div>
-                                <div class="cat-stats" id="catStats1">0 جلسة</div>
+                                <div class="cat-stats" id="catStats1">⚔️ من القائمة السفلية</div>
                             </div>
                             <div class="cat-card locked" style="--chip-color:#06b6d4" id="catAdvanced">
                                 <div class="cat-icon">📐</div>
@@ -376,11 +376,11 @@
                             <div class="cat-progress"><div class="cat-progress-fill" id="gcatProg0" style="width:0%"></div></div>
                             <div class="cat-stats" id="gcatStats0">0 إجابة</div>
                         </div>
-                        <div class="cat-card" style="--chip-color:#7c3aed" id="playCardChallenges" onclick="openOpSheet('challenges')">
+                        <div class="cat-card locked" style="--chip-color:#7c3aed" id="playCardChallenges" onclick="showFeedback('⚔️ التحديات متاحة من قسم التحديات في القائمة السفلية')">
                             <div class="cat-icon">⚡</div>
                             <div class="cat-name">التحديات</div>
                             <div class="cat-progress"><div class="cat-progress-fill" id="gcatProg1" style="width:0%"></div></div>
-                            <div class="cat-stats" id="gcatStats1">0 جلسة</div>
+                            <div class="cat-stats" id="gcatStats1">⚔️ من القائمة السفلية</div>
                         </div>
                         <div class="cat-card locked" style="--chip-color:#06b6d4" id="gcardAdvanced">
                             <div class="cat-icon">📐</div>
@@ -450,10 +450,10 @@
                     <div style="flex-shrink:0;">
                         <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:14px;padding:11px 16px;cursor:pointer;user-select:none;" onclick="toggleSection('tasksSection','tasksChevron')">
                             <span style="font-size:0.88em;font-weight:900;color:#000;">📝 المهام اليومية</span>
-                            <span id="tasksChevron" style="font-size:1em;color:#000;transition:transform 0.3s;">▲</span>
+                            <span id="tasksChevron" style="font-size:1em;color:#000;transition:transform 0.3s;">▼</span>
                         </div>
                     </div>
-                    <div id="tasksSection" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:8px;padding:2px 1px 4px;">
+                    <div id="tasksSection" style="max-height:0;overflow:hidden;display:none;flex-direction:column;gap:8px;padding:2px 1px 4px;">
                         <div id="tasksList" style="display:flex;flex-direction:column;gap:8px;"></div>
                     </div>
 
@@ -1283,17 +1283,16 @@
 
         /* تهيئة عند التحميل */
         document.addEventListener('DOMContentLoaded', function() {
-            /* فتح قسم المهام تلقائياً */
+            /* قسم المهام مغلق افتراضياً */
             var ts = document.getElementById('tasksSection');
             var tc = document.getElementById('tasksChevron');
             if (ts) {
-                ts.style.display = 'flex';
-                ts.style.flexDirection = 'column';
-                ts.style.maxHeight = '280px';
-                ts.style.overflow = 'auto';
-                ts.setAttribute('data-open', '1');
+                ts.style.display = 'none';
+                ts.style.maxHeight = '0';
+                ts.style.overflow = 'hidden';
+                ts.setAttribute('data-open', '0');
             }
-            if (tc) tc.style.transform = 'rotate(180deg)';
+            if (tc) tc.style.transform = 'rotate(0deg)';
             /* قسم الإنجازات مغلق */
             var as2 = document.getElementById('achieveSection');
             if (as2) {
