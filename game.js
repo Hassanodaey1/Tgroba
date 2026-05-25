@@ -34,6 +34,7 @@
                     if (G.streak >= 3) s.first++;
                 }
                 updTask('correct'); if (G.streak >= 3) updTask('streak', G.streak);
+                if (!G.isTraining) recordDailyStat('correct');
                 if (G.streak >= 5) doConfetti();
                 if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
                 showFloatXP(10 + G.streak * 2);
@@ -72,6 +73,16 @@
                                 showFeedback('🛡️ درع الحماية!'); } else { setTimeout(() => { if (!G.ended)
                                         endGame(); }, 700); return; }
                         }
+                    } else if (G.mode === 'survival') {
+                        /* وضع التحمّل: 3 أخطاء = نهاية اللعبة */
+                        G._survivalWrong = (G._survivalWrong || 0) + 1;
+                        showFeedback('❌');
+                        playSound('wrong');
+                        showExplanation();
+                        if (G._survivalWrong >= 3) {
+                            setTimeout(() => { if (!G.ended) endGame(); }, 700);
+                            return;
+                        }
                     } else {
                         showFeedback('❌');
                         playSound('wrong');
@@ -89,9 +100,11 @@
             const delay = 350;
             setTimeout(() => {
                 if (G.ended) return;
-                if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G
-                    .currentQ >= G.totalQ) endGame();
-                else loadQuestion();
+                if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.currentQ >= G.totalQ) {
+                    endGame();
+                } else if (!G.ended) {
+                    loadQuestion();
+                }
             }, delay);
         }
 
@@ -147,6 +160,8 @@
                 st.wrongTotal += G.wrong;
                 st.coins += earnedCoins;
                 st.totalGames++;
+                /* تسجيل إحصائيات اليوم/الأسبوع للعبة */
+                recordDailyStat('game');
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
                 if (G.score > st.bestScore) st.bestScore = G.score;
                 const xpGained = G.score * 2 + G.correct * 5;
@@ -246,7 +261,7 @@
                         clearGameTimer();
                         document.getElementById('gameOverlay').classList.remove('active');
                         document.getElementById('resultsOverlay').classList.remove('active');
-                        if (G.correct > 0 || G.wrong > 0 && !G.ended && !G.isTraining) endGame();
+                        if (G.correct > 0 || (G.wrong > 0 && !G.ended && !G.isTraining)) endGame();
                         else { G.ended = true;
                             clearGameTimer();
                             goTab('home'); }
@@ -274,7 +289,8 @@
                     saveSt();
                     return;
                 }
-                let yesterday = new Date(Date.now() - 86400000).toDateString();
+                let yesterdayD = new Date(Date.now() - 86400000);
+                let yesterday = `${yesterdayD.getFullYear()}-${yesterdayD.getMonth()+1}-${yesterdayD.getDate()}`;
                 st.dailyStreak = st.lastDailyDate === yesterday ? st.dailyStreak + 1 : 1;
                 st.lastDailyDate = today;
                 st.dailyShieldUsed = false;
