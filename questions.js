@@ -425,6 +425,7 @@
                 G.dailyQIndex = 0; /* ✅ FIX-DAILY: عداد للصعوبة المتدرجة */ }
             G.livesLeft = lives;
             G.maxLives = lives; /* ✅ FIX-LIVES: ثابت — 3 قلوب دائماً لجميع الأعمار */
+            G._survivalWrong = 0; /* ✅ FIX-SURVIVAL: عداد أخطاء وضع التحمّل */
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false };
             const titles = { classic: '🧮 كلاسيك', speed: '⚡ سرعة 60ث', survival: '🔥 التحمّل', frenzy: '💥 اندفاع',
@@ -560,7 +561,7 @@
             if (age > 0 && age <= 10 && diff !== 'easy') diff = 'easy';
             if (age > 0 && age <= 13 && diff === 'hard') diff = 'medium';
 
-            if (phase === 'advanced' && age === 0 || (age >= 14)) {
+            if (phase === 'advanced' && (age === 0 || age >= 14)) {
                 /* أسئلة متقدمة للكبار */
                 const advPool = ['power', 'sqrt', 'sequence', 'equation_simple', 'fraction_add', 'percent'];
                 const ch = advPool[rnd(0, advPool.length - 1)];
@@ -778,21 +779,20 @@
 
         function startChallengeGame() {
             _cgResetScore();
-            CG = {
-                active: true,
-                score: 0,
-                questionIndex: 0,
-                answered: false,
-                ended: false,
-                correctAnswer: 0,
-                currentExplanation: '',
-                askedQuestions: [],
-                timeLeft: 60,
-                maxTime: 60,
-                timer: null,
-                helpersUsed: { skip: false, remove: false, time: false },
-                consecutiveWrong: 0  /* عداد الأخطاء المتتالية */
-            };
+            /* ✅ FIX: تحديث خصائص CG بدون إعادة التعيين الكاملة لحفظ مرجع الدوال */
+            CG.active = true;
+            CG.score = 0;
+            CG.questionIndex = 0;
+            CG.answered = false;
+            CG.ended = false;
+            CG.correctAnswer = 0;
+            CG.currentExplanation = '';
+            CG.askedQuestions = [];
+            CG.timeLeft = 60;
+            CG.maxTime = 60;
+            if (CG.timer) { clearInterval(CG.timer); CG.timer = null; }
+            CG.helpersUsed = { skip: false, remove: false, time: false };
+            CG.consecutiveWrong = 0;
             // إخفاء واجهة الترحيب وإظهار واجهة اللعبة
             document.getElementById('challengeWelcome').style.display = 'none';
             document.getElementById('challengeGameArea').style.display = 'flex';
