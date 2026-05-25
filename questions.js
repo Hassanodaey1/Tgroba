@@ -123,23 +123,35 @@
             const ops = ['add', 'sub', 'mul', 'div'];
             let ch = op;
             if (op === 'mix') {
-                /* 30% من الأسئلة تأتي من المولّد المتنوع */
-                if (typeof genAdvancedDiverseQ === 'function' && rnd(0, 9) < 3) {
+                /* ✅ FIX-MIX-LEVEL: فلترة تلقائية حسب المستوى — تمنع ظهور أسئلة متقدمة للمبتدئين */
+                const _playerLevel = (typeof st !== 'undefined' && st && typeof st.level === 'number') ? st.level : 1;
+                /* 30% من الأسئلة تأتي من المولّد المتنوع — فقط إذا كان المستوى >= 5 */
+                if (_playerLevel >= 5 && typeof genAdvancedDiverseQ === 'function' && rnd(0, 9) < 3) {
                     return genAdvancedDiverseQ(actualDiff);
                 }
-                if (actualDiff === 'easy') ch = ops[rnd(0, 3)];
-                else if (actualDiff === 'medium') { const pool = ['add', 'sub', 'mul', 'div', 'percent',
+                if (actualDiff === 'easy' || _playerLevel <= 2) {
+                    /* المبتدئون: عمليات أساسية فقط */
+                    ch = ops[rnd(0, 3)];
+                } else if (actualDiff === 'medium' || _playerLevel <= 4) {
+                    /* متوسط: بدون log/تطويل/جبر */
+                    const pool = ['add', 'sub', 'mul', 'div', 'percent',
                         'fraction_simple', 'word_add', 'word_mul', 'equation_simple'
                     ];
-                    ch = pool[rnd(0, pool.length - 1)]; } else if (actualDiff === 'hard') { const pool = ['add',
-                        'sub', 'mul', 'div', 'percent', 'fraction_add', 'power', 'sqrt', 'word_hard',
+                    ch = pool[rnd(0, pool.length - 1)];
+                } else if (actualDiff === 'hard' || _playerLevel <= 6) {
+                    /* صعب: بدون log/sin/معادلات تربيعية */
+                    const pool = ['add', 'sub', 'mul', 'div', 'percent', 'fraction_add', 'power', 'sqrt', 'word_hard',
                         'equation_simple', 'sequence'
                     ];
-                    ch = pool[rnd(0, pool.length - 1)]; } else { const pool = ['add', 'sub', 'mul', 'div',
+                    ch = pool[rnd(0, pool.length - 1)];
+                } else {
+                    /* عبقري: كل شيء متاح للمستوى 7+ */
+                    const pool = ['add', 'sub', 'mul', 'div',
                         'percent', 'fraction_mul', 'power', 'sqrt', 'word_genius', 'equation_quad', 'sequence',
                         'algebra', 'log_simple'
                     ];
-                    ch = pool[rnd(0, pool.length - 1)]; }
+                    ch = pool[rnd(0, pool.length - 1)];
+                }
             }
             let a, b, ans, text, hint, explanation = '';
             if (ch === 'add') { a = rnd(r.small[0], r.small[1]);
@@ -423,7 +435,12 @@
                 hasTimer = false;
                 lives = 0;
                 G.dailyQIndex = 0; /* ✅ FIX-DAILY: عداد للصعوبة المتدرجة */ }
+            /* ✅ FIX-LIVES: المستويات 1-3 تبدأ بـ 5 قلوب — أرحم للمبتدئين */
+            if (lives > 0 && typeof st !== 'undefined' && st.level <= 3) {
+                lives = 5;
+            }
             G.livesLeft = lives;
+            G.maxLives = lives;
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false };
             const titles = { classic: '🧮 كلاسيك', speed: '⚡ سرعة 60ث', survival: '🔥 التحمّل', frenzy: '💥 اندفاع',
