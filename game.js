@@ -154,7 +154,13 @@
                 while (st.xp >= st.xpToNext) { st.xp -= st.xpToNext;
                     st.level++;
                     st.xpToNext = Math.floor(st.xpToNext * 1.3);
-                    playSound('levelup'); }
+                    playSound('levelup');
+                    /* ✅ FIX-LEVELUP: عرض احتفال رفع المستوى */
+                    const _lvl = st.level;
+                    setTimeout(() => {
+                        try { if (typeof showLevelUpCelebration === 'function') showLevelUpCelebration(_lvl); } catch(e) {}
+                    }, 600);
+                }
                 if (['classic', 'speed', 'survival', 'frenzy'].includes(G.mode)) { st.catCounter.correct += G.correct;
                     st.catCounter.total += G.correct + G.wrong; }
                 if (['speed', 'survival', 'frenzy', 'daily'].includes(G.mode)) st.catChallenges.games++;
