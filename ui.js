@@ -400,6 +400,13 @@ function updateUI() {
     document.getElementById('headerXpBar').style.width = xpPct + '%';
     document.getElementById('headerXp').textContent = `⚡ ${st.xp} XP`;
     document.getElementById('headerAvatar').textContent = av;
+    /* ── بطاقة اللاعب + XP في الصفحة الرئيسية ── */
+    const hnp = document.getElementById('homePlayerName'); if (hnp) hnp.textContent = st.name;
+    const hnl = document.getElementById('homePlayerLevel'); if (hnl) hnl.textContent = `Lv.${st.level} • ${ttl}`;
+    const hxf = document.getElementById('homeXpBarFill'); if (hxf) hxf.style.width = xpPct + '%';
+    const hxt = document.getElementById('homeXpText'); if (hxt) hxt.textContent = `⚡ ${st.xp} XP`;
+    const hxn = document.getElementById('homeXpNext'); if (hxn) hxn.textContent = `${st.xp} / ${st.xpToNext}`;
+
     document.getElementById('profileName').textContent = st.name;
     document.getElementById('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
     document.getElementById('profileXpFill').style.width = xpPct + '%';
@@ -931,11 +938,11 @@ function renderLeaderboardList(container, players, scoreKey) {
     }
 
     const medals = ['🥇', '🥈', '🥉'];
-    const myKey = (st.name + '_' + (st.playerUID || '')).replace(/[^a-zA-Z0-9_]/g, '_');
+    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : '';
     let html = '';
 
     players.forEach((p, idx) => {
-        const isMe = p.id === myKey || p.name === st.name;
+        const isMe = myKey && (p.id === myKey);
         const score = p[scoreKey] || 0;
         html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
             <span>${medals[idx] || (idx + 1)}</span>
@@ -954,9 +961,9 @@ function renderLeaderboardList(container, players, scoreKey) {
     }
 }
 
-/* استدعاء loadLeaderboard و loadChallengeLeaderboard معاً للتوافق مع الكود القديم */
-function loadLeaderboard() { if (_activeLbTab === 'general') loadCombinedLeaderboard(); }
-function loadChallengeLeaderboard() { if (_activeLbTab === 'challenge') loadCombinedLeaderboard(); }
+/* استدعاء للتوافق مع الكود القديم — تُوجَّه إلى loadCombinedLeaderboard */
+function _legacyLoadLeaderboard() { if (_activeLbTab === 'general') loadCombinedLeaderboard(); }
+function _legacyLoadChallengeLeaderboard() { if (_activeLbTab === 'challenge') loadCombinedLeaderboard(); }
 
 /* ═══════════════════════════════════════════════════
    وضع الوالدين — renderParentStats
