@@ -248,26 +248,5 @@ function copySettingsSerial() {
     });
 }
 
-function toggleSettingsRestorePanel() {
-    const panel = document.getElementById('settingsRestorePanel');
-    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-}
-
-function restoreFromSettings() {
-    const input = document.getElementById('settingsRestoreInput');
-    const serial = input ? input.value.trim() : '';
-    if (!serial) { showFeedback('أدخل الرقم التسلسلي'); return; }
-    const savedData = loadSerialBackup(serial);
-    if (!savedData) { showFeedback('⚠️ لم يُعثر على حساب بهذا الرقم'); return; }
-    Object.assign(st, sanitizeState(savedData));
-    saveSt();
-    updateUI();
-    loadProfileForm();
-    applyDarkMode();
-    updateSettingsSerialDisplay();
-    if (input) input.value = '';
-    const panel = document.getElementById('settingsRestorePanel');
-    if (panel) panel.style.display = 'none';
-    showFeedback('✅ تم استعادة الحساب');
-}
+/* toggleSettingsRestorePanel و restoreFromSettings معرّفتان في state.js — لا تكرار */
 
