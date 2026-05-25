@@ -3376,4 +3376,257 @@ html {
 /* ── safe area support على iOS ── */
 @supports (padding: max(0px)) {
     .bottom-nav {
-        padding-bo
+        padding-bottom: max(var(--safe-bottom), 8px);
+    }
+    .shell {
+        padding-top: max(var(--safe-top), 0px);
+    }
+}
+
+/* ═══════════════════════════════════════════════════
+   إصلاح الوضع الأفقي (Landscape) + نتوء الكاميرا
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════ */
+
+/* ── متغيرات safe-area للوضع الأفقي ── */
+@supports (padding: env(safe-area-inset-left)) {
+    :root {
+        --safe-left: env(safe-area-inset-left, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+    }
+}
+
+/* ── الوضع الأفقي على الجوال (landscape mobile) ── */
+@media (orientation: landscape) and (max-height: 600px) {
+    /* التطبيق يملأ الشاشة بالكامل */
+    .app-wrapper {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* تجنب نتوء الكاميرا: padding جانبي آمن */
+    .shell {
+        padding-left: max(var(--safe-left), env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(var(--safe-right), env(safe-area-inset-right, 0px)) !important;
+        padding-top: max(var(--safe-top), env(safe-area-inset-top, 0px)) !important;
+    }
+
+    /* top-header: أصغر في الأفقي لتوفير مساحة */
+    .top-header {
+        min-height: 46px !important;
+        padding: 6px 12px !important;
+    }
+
+    .avatar-wrap {
+        width: 34px !important;
+        height: 34px !important;
+    }
+    .avatar-inner {
+        font-size: 1em !important;
+    }
+
+    /* nav سفلي: أخف في الأفقي */
+    .bottom-nav {
+        padding-top: 3px !important;
+        min-height: 52px !important;
+        padding-bottom: max(var(--safe-bottom), env(safe-area-inset-bottom, 4px)) !important;
+        padding-left: max(var(--safe-left), env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(var(--safe-right), env(safe-area-inset-right, 0px)) !important;
+    }
+
+    .nav-item-icon {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.95em !important;
+    }
+    .nav-item-label {
+        font-size: 0.52em !important;
+    }
+    --nav-h: 52px;
+
+    /* صفحات: padding أقل + تمرير عمودي */
+    .page {
+        padding: 6px 14px 8px !important;
+        padding-bottom: calc(52px + env(safe-area-inset-bottom, 4px) + 8px) !important;
+        gap: 8px !important;
+    }
+
+    /* بطاقات الفئات: عمودان في الأفقي */
+    .cat-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* شبكة الأوضاع: 3 أعمدة في الأفقي */
+    .mode-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    /* بطاقة اللاعب أصغر */
+    .home-player-xp-card {
+        padding: 10px 14px !important;
+    }
+
+    /* رأس اللعبة في الأفقي */
+    .game-overlay .game-header {
+        min-height: 46px !important;
+        padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+    }
+
+    /* شاشة اللعب: تخطيط أفقي */
+    .game-body {
+        padding: 6px 8px 4px !important;
+    }
+
+    .question-card {
+        padding: 12px 14px !important;
+    }
+
+    .question-text {
+        font-size: 1.4em !important;
+    }
+
+    /* شبكة الإجابات أفقية */
+    .answers-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* شريط المساعدين أصغر */
+    .helpers-bar {
+        gap: 8px !important;
+    }
+    .helper-btn {
+        padding: 6px 8px !important;
+    }
+
+    /* إحصائيات اللعبة */
+    .game-stats-row {
+        gap: 6px !important;
+    }
+
+    /* نتائج اللعبة */
+    .results-card {
+        padding: 14px !important;
+    }
+    .results-emoji {
+        font-size: 2.2em !important;
+    }
+
+    /* sheet panel في الأفقي */
+    .sheet-panel {
+        max-height: 85dvh !important;
+        padding-bottom: max(env(safe-area-inset-bottom, 4px), 8px) !important;
+        overflow-y: auto !important;
+    }
+
+    /* إخفاء بعض العناصر الترفيهية للتوفير */
+    .session-timer-card {
+        padding: 8px 12px !important;
+    }
+
+    /* overlay الإعدادات */
+    .game-overlay {
+        padding-left: max(var(--safe-left), env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(var(--safe-right), env(safe-area-inset-right, 0px)) !important;
+    }
+}
+
+/* ── الوضع الأفقي للتابلت (landscape tablet ≥600px) ── */
+@media (orientation: landscape) and (min-height: 600px) and (max-height: 900px) {
+    .app-wrapper {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+
+    .shell {
+        padding-left: max(var(--safe-left), env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(var(--safe-right), env(safe-area-inset-right, 0px)) !important;
+    }
+
+    .cat-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    .mode-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    .bottom-nav {
+        padding-left: max(var(--safe-left), env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(var(--safe-right), env(safe-area-inset-right, 0px)) !important;
+    }
+}
+
+/* ── نتوء الكاميرا (notch/dynamic island) — دعم كامل ── */
+@supports (padding: max(0px)) {
+    .top-header {
+        padding-left: max(12px, env(safe-area-inset-left, 0px));
+        padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+
+    .bottom-nav {
+        padding-bottom: max(var(--safe-bottom), env(safe-area-inset-bottom, 0px), 6px);
+        padding-left: max(0px, env(safe-area-inset-left, 0px));
+        padding-right: max(0px, env(safe-area-inset-right, 0px));
+    }
+
+    .game-overlay .game-header {
+        padding-top: max(8px, env(safe-area-inset-top, 0px));
+        padding-left: max(12px, env(safe-area-inset-left, 0px));
+        padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+
+    /* في الوضع الأفقي: الحماية من نتوء الكاميرا الجانبي */
+    @media (orientation: landscape) {
+        .shell {
+            padding-left: max(0px, env(safe-area-inset-left, 0px));
+            padding-right: max(0px, env(safe-area-inset-right, 0px));
+        }
+
+        .page {
+            padding-left: max(14px, calc(env(safe-area-inset-left, 0px) + 8px)) !important;
+            padding-right: max(14px, calc(env(safe-area-inset-right, 0px) + 8px)) !important;
+        }
+
+        .top-header {
+            padding-left: max(12px, env(safe-area-inset-left, 0px));
+            padding-right: max(12px, env(safe-area-inset-right, 0px));
+        }
+
+        .bottom-nav {
+            padding-left: max(8px, env(safe-area-inset-left, 0px));
+            padding-right: max(8px, env(safe-area-inset-right, 0px));
+        }
+    }
+}
+
+/* ── الوضع العمودي: ضمان عدم انكسار شيء ── */
+@media (orientation: portrait) {
+    .app-wrapper {
+        width: 100% !important;
+        max-width: 500px !important;
+    }
+
+    /* شاشات صغيرة جداً مثل iPhone SE */
+    @media (max-height: 680px) {
+        .home-player-xp-card {
+            padding: 10px 14px !important;
+        }
+        .session-timer-card {
+            padding: 8px 12px !important;
+        }
+        .cat-card {
+            padding: 10px 12px !important;
+        }
+        .top-header {
+            min-height: 52px !important;
+        }
+    }
+}
