@@ -838,32 +838,17 @@
             <!-- إدارة الحساب -->
             <div class="profile-section">
                 <div class="profile-section-title">🔢 إدارة الحساب</div>
-                <div style="background:var(--surface3);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;">
-
-                    <!-- الرقم التسلسلي -->
-                    <div style="font-size:0.7em;color:var(--text2);">الرقم التسلسلي يتيح استعادة حسابك على أي جهاز أو بعد مسح المتصفح</div>
-                    <div style="display:flex;align-items:center;gap:8px;">
+                <div style="background:var(--surface3);border-radius:14px;padding:14px;">
+                    <div style="font-size:0.7em;color:var(--text2);margin-bottom:8px;">الرقم التسلسلي يتيح استعادة حسابك على أي جهاز</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                         <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:0.68em;font-weight:700;color:var(--gold);word-break:break-all;" id="serialNumberDisplay">احفظ الملف الشخصي أولاً</div>
                         <button onclick="copySerialNumber()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;font-size:0.9em;cursor:pointer;color:var(--text2);">📋</button>
                     </div>
-
-                    <!-- استعادة بالرقم التسلسلي (محلي + سحابي) -->
-                    <button onclick="showRestoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">☁️ استعادة حساب بالرقم التسلسلي</button>
-                    <div id="restorePanel" style="display:none;">
-                        <input id="restoreSerialInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;box-sizing:border-box;">
-                        <button onclick="restoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة من السحابة أو الجهاز</button>
+                    <button onclick="showRestoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;margin-bottom:8px;">📥 استعادة حساب بالرقم التسلسلي</button>
+                    <div id="restorePanel" style="display:none;margin-top:8px;">
+                        <input id="restoreSerialInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;">
+                        <button onclick="restoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة</button>
                     </div>
-
-                    <!-- حفظ نسخة احتياطية JSON -->
-                    <div style="border-top:1px solid var(--border2);padding-top:10px;">
-                        <div style="font-size:0.7em;color:var(--text2);margin-bottom:8px;">💾 نسخة احتياطية يدوية — احفظ ملف على جهازك</div>
-                        <div style="display:flex;gap:8px;">
-                            <button onclick="exportProgress()" style="flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:none;cursor:pointer;">📤 تصدير ملف</button>
-                            <button onclick="document.getElementById('importFileInput').click()" style="flex:1;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">📥 استيراد ملف</button>
-                        </div>
-                        <input id="importFileInput" type="file" accept=".json" style="display:none;" onchange="importProgress(this.files[0]); this.value='';">
-                    </div>
-
                 </div>
             </div>
 
@@ -1447,6 +1432,7 @@
     <script src="game.js"></script>
     <script src="ui.js"></script>
     <script src="fixes_init.js"></script>
+    <script src="questions_engine.js"></script>
     <script src="patches.js"></script>
 </body>
 </html>
