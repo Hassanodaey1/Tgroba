@@ -206,15 +206,16 @@
     </div>
 
     <!-- GAME SETTINGS SHEET — يعمل في أثناء اللعب ويوقف المؤقت، ويعمل من أي صفحة -->
+    <!-- ═══ إعدادات اللعب السريعة — تعمل أثناء اللعبة فقط، IDs خاصة بها ═══ -->
     <div class="sheet-overlay" id="gameSettingsSheet" onclick="sheetBgAndResume(event,'gameSettingsSheet')">
         <div class="sheet-panel">
             <div class="sheet-handle"></div>
-            <div class="sheet-title">⚙️ الإعدادات السريعة</div>
+            <div class="sheet-title">⚙️ إعدادات سريعة</div>
             <div class="settings-list" style="margin-bottom:14px;">
                 <!-- الأصوات -->
-                <div class="settings-row" onclick="toggleSound()">
+                <div class="settings-row" onclick="toggleSound(); syncGameSheet();">
                     <span class="settings-row-icon">🔊</span>
-                    <span class="settings-row-label">الأصوات</span>
+                    <span class="settings-row-label">أصوات اللعبة</span>
                     <span class="settings-row-val" id="gsoundStatus">مفعّل</span>
                 </div>
                 <div class="volume-slider-row">
@@ -223,7 +224,7 @@
                     <span class="vol-val" id="gSoundVolVal">80%</span>
                 </div>
                 <!-- موسيقى الخلفية -->
-                <div class="settings-row" onclick="toggleBgMusicInGame()">
+                <div class="settings-row" onclick="toggleBgMusicInGame(); syncGameSheet();">
                     <span class="settings-row-icon">🎵</span>
                     <span class="settings-row-label">موسيقى الخلفية</span>
                     <span class="settings-row-val" id="gbgMusicStatus">مفعّلة</span>
@@ -234,7 +235,7 @@
                     <span class="vol-val" id="gBgVolVal">60%</span>
                 </div>
                 <!-- الاهتزاز -->
-                <div class="settings-row" onclick="toggleVibration()">
+                <div class="settings-row" onclick="toggleVibration(); syncGameSheet();">
                     <span class="settings-row-icon">📳</span>
                     <span class="settings-row-label">الاهتزاز</span>
                     <span class="settings-row-val" id="gVibrationStatus">مفعّل</span>
@@ -301,13 +302,13 @@
                                 </div>
                                 <div class="cat-stats" id="catStats0">0% • 0 صح</div>
                             </div>
-                            <div class="cat-card locked" style="--chip-color:#7c3aed" id="homeCatChallenges" onclick="showFeedback('⚔️ التحديات متاحة من قسم التحديات في القائمة السفلية')">
+                            <div class="cat-card" style="--chip-color:#7c3aed" id="homeCatChallenges" onclick="openOpSheet('challenges')">
                                 <div class="cat-icon">⚡</div>
                                 <div class="cat-name">التحديات</div>
                                 <div class="cat-progress">
                                     <div class="cat-progress-fill" id="catProg1" style="width:0%"></div>
                                 </div>
-                                <div class="cat-stats" id="catStats1">⚔️ من القائمة السفلية</div>
+                                <div class="cat-stats" id="catStats1">0 جلسة</div>
                             </div>
                             <div class="cat-card locked" style="--chip-color:#06b6d4" id="catAdvanced">
                                 <div class="cat-icon">📐</div>
@@ -376,11 +377,11 @@
                             <div class="cat-progress"><div class="cat-progress-fill" id="gcatProg0" style="width:0%"></div></div>
                             <div class="cat-stats" id="gcatStats0">0 إجابة</div>
                         </div>
-                        <div class="cat-card locked" style="--chip-color:#7c3aed" id="playCardChallenges" onclick="showFeedback('⚔️ التحديات متاحة من قسم التحديات في القائمة السفلية')">
+                        <div class="cat-card" style="--chip-color:#7c3aed" id="playCardChallenges" onclick="openOpSheet('challenges')">
                             <div class="cat-icon">⚡</div>
                             <div class="cat-name">التحديات</div>
                             <div class="cat-progress"><div class="cat-progress-fill" id="gcatProg1" style="width:0%"></div></div>
-                            <div class="cat-stats" id="gcatStats1">⚔️ من القائمة السفلية</div>
+                            <div class="cat-stats" id="gcatStats1">0 جلسة</div>
                         </div>
                         <div class="cat-card locked" style="--chip-color:#06b6d4" id="gcardAdvanced">
                             <div class="cat-icon">📐</div>
@@ -450,10 +451,10 @@
                     <div style="flex-shrink:0;">
                         <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:14px;padding:11px 16px;cursor:pointer;user-select:none;" onclick="toggleSection('tasksSection','tasksChevron')">
                             <span style="font-size:0.88em;font-weight:900;color:#000;">📝 المهام اليومية</span>
-                            <span id="tasksChevron" style="font-size:1em;color:#000;transition:transform 0.3s;">▼</span>
+                            <span id="tasksChevron" style="font-size:1em;color:#000;transition:transform 0.3s;">▲</span>
                         </div>
                     </div>
-                    <div id="tasksSection" style="max-height:0;overflow:hidden;display:none;flex-direction:column;gap:8px;padding:2px 1px 4px;">
+                    <div id="tasksSection" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:8px;padding:2px 1px 4px;">
                         <div id="tasksList" style="display:flex;flex-direction:column;gap:8px;"></div>
                     </div>
 
@@ -737,68 +738,7 @@
     </div>
 
 
-    <!-- MAIN SETTINGS SHEET — يعمل من الرئيسية والملف الشخصي فقط -->
-    <div class="sheet-overlay" id="mainSettingsSheet" onclick="sheetBg(event,'mainSettingsSheet')">
-        <div class="sheet-panel" style="max-height:90vh;overflow-y:auto;">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">⚙️ الإعدادات</div>
-
-            <!-- الاسم -->
-            <div class="profile-form" style="margin-bottom:14px;">
-                <div class="form-field">
-                    <div class="form-label">الاسم (إنجليزي)</div>
-                    <input class="form-input" type="text" id="settingsInputName" placeholder="English Name" maxlength="30">
-                </div>
-                <!-- تاريخ الميلاد -->
-                <div class="form-field">
-                    <div class="form-label">تاريخ الميلاد (يوم - شهر - سنة)</div>
-                    <div class="date-row">
-                        <select id="settingsBirthDay" class="date-select"></select>
-                        <select id="settingsBirthMonth" class="date-select"></select>
-                        <select id="settingsBirthYear" class="date-select"></select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- الوضع الداكن/الفاتح والثيمات -->
-            <div class="profile-section" style="margin-bottom:14px;">
-                <div class="profile-section-title">🎨 المظهر والثيمات</div>
-                <div class="themes-row" style="margin-bottom:10px;">
-                    <div class="dark-light-toggle" onclick="toggleSettingsDarkMode()">
-                        <span id="settingsDarkIcon">🌙</span>
-                        <span id="settingsDarkLabel">داكن</span>
-                    </div>
-                    <div class="settings-theme-dot theme-dot active" data-gold="#f0b90b" style="background:#f0b90b" onclick="applySettingsTheme(this,'#f0b90b','#7c3aed','#06b6d4')"></div>
-                    <div class="settings-theme-dot theme-dot" data-gold="#38bdf8" style="background:#38bdf8" onclick="applySettingsTheme(this,'#38bdf8','#0ea5e9','#7c3aed')"></div>
-                    <div class="settings-theme-dot theme-dot" data-gold="#4ade80" style="background:#4ade80" onclick="applySettingsTheme(this,'#4ade80','#16a34a','#06b6d4')"></div>
-                    <div class="settings-theme-dot theme-dot" data-gold="#f97316" style="background:#f97316" onclick="applySettingsTheme(this,'#f97316','#ea580c','#a855f7')"></div>
-                    <div class="settings-theme-dot theme-dot" data-gold="#c084fc" style="background:#c084fc" onclick="applySettingsTheme(this,'#c084fc','#a855f7','#06b6d4')"></div>
-                    <div class="settings-theme-dot theme-dot" data-gold="#e2e8f0" style="background:linear-gradient(135deg,#e2e8f0,#94a3b8)" onclick="applySettingsTheme(this,'#e2e8f0','#64748b','#38bdf8')"></div>
-                </div>
-            </div>
-
-            <!-- الرقم التسلسلي -->
-            <div class="profile-section" style="margin-bottom:14px;">
-                <div class="profile-section-title">🔢 الرقم التسلسلي</div>
-                <div style="background:var(--surface3);border-radius:14px;padding:14px;">
-                    <div style="font-size:0.68em;color:var(--text2);margin-bottom:8px;">يتيح استعادة حسابك على أي جهاز</div>
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                        <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:0.68em;font-weight:700;color:var(--gold);word-break:break-all;" id="settingsSerialDisplay">احفظ التغييرات أولاً</div>
-                        <button onclick="copySettingsSerial()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;font-size:0.9em;cursor:pointer;color:var(--text2);">📋</button>
-                    </div>
-                    <button onclick="toggleSettingsRestorePanel()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;margin-bottom:8px;">📥 استعادة حساب بالرقم التسلسلي</button>
-                    <div id="settingsRestorePanel" style="display:none;">
-                        <input id="settingsRestoreInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;box-sizing:border-box;">
-                        <button onclick="restoreFromSettings()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- أزرار الحفظ والإلغاء -->
-            <button class="save-btn" onclick="saveMainSettings()" style="width:100%;margin-bottom:8px;">💾 حفظ التغييرات</button>
-            <button class="sheet-cancel" onclick="closeMainSettings()">إلغاء</button>
-        </div>
-    </div>
+    <!-- mainSettingsSheet محذوف — الإعدادات الآن في page-settings فقط -->
 
     <!-- ═══════ SUB-PAGE: الملف الشخصي ═══════ -->
     <div class="game-overlay" id="subPageProfileOverlay" style="display:none;overflow-y:auto;">
@@ -1042,6 +982,19 @@
 
     <!-- عناصر مخفية للحفاظ على IDs الملف الشخصي التي يستخدمها ui.js -->
     <div style="display:none;" aria-hidden="true">
+        <!-- stubs للتوافق مع كود قديم — mainSettingsSheet محذوف -->
+        <input type="text" id="settingsInputName">
+        <select id="settingsBirthDay"></select>
+        <select id="settingsBirthMonth"></select>
+        <select id="settingsBirthYear"></select>
+        <div id="settingsSerialDisplay"></div>
+        <div id="settingsRestorePanel"></div>
+        <input type="text" id="settingsRestoreInput">
+        <div id="settingsDarkIcon"></div>
+        <div id="settingsDarkLabel"></div>
+        <div id="darkLightIcon"></div>
+        <div id="darkLightLabel"></div>
+        <!-- end stubs -->
         <div id="profileName"></div>
         <div id="profileLevel"></div>
         <div id="profileXpFill"></div>
@@ -1075,6 +1028,10 @@
     </div>
 
     <script>
+        /* ═══════════════════════════════════════════════════
+           نظام الإعدادات الموحد — مصدر واحد للحقيقة
+           كل sub-page تقرأ من st مباشرة عند الفتح
+        ═══════════════════════════════════════════════════ */
         function openSettingsSubPage(id) {
             const map = { 'profile-sub': 'subPageProfileOverlay', 'audio-sub': 'subPageAudioOverlay', 'theme-sub': 'subPageThemeOverlay' };
             const overlayId = map[id] || id;
@@ -1082,45 +1039,76 @@
             if (!el) return;
             el.style.display = 'flex';
             el.style.flexDirection = 'column';
-            // sync profile sub-page data
+
+            /* ── الملف الشخصي: مزامنة كاملة من st مباشرة ── */
             if (overlayId === 'subPageProfileOverlay') {
-                const sp = document.getElementById('spProfileName');
-                const pn = document.getElementById('profileName');
-                if (sp && pn) sp.textContent = pn.textContent;
-                const sl = document.getElementById('spProfileLevel');
-                const pl = document.getElementById('profileLevel');
-                if (sl && pl) sl.textContent = pl.textContent;
-                const sf = document.getElementById('spProfileXpFill');
-                const pf = document.getElementById('profileXpFill');
-                if (sf && pf) sf.style.width = pf.style.width;
-                const sx = document.getElementById('spProfileXpLabel');
-                const px = document.getElementById('profileXpLabel');
-                if (sx && px) sx.textContent = px.textContent;
-                const sc = document.getElementById('spStatCorrect');
-                const sc2 = document.getElementById('statCorrect');
-                if (sc && sc2) sc.textContent = sc2.textContent;
-                const ss = document.getElementById('spStatStreak');
-                const ss2 = document.getElementById('statBestStreak');
-                if (ss && ss2) ss.textContent = ss2.textContent;
-                const sco = document.getElementById('spStatCoins');
-                const sco2 = document.getElementById('statCoinsP');
-                if (sco && sco2) sco.textContent = sco2.textContent;
-                const simg = document.getElementById('spProfileAvatarImg');
-                const pimg = document.getElementById('profileAvatarImg');
-                if (simg && pimg) { simg.textContent = pimg.textContent; simg.style.backgroundImage = pimg.style.backgroundImage; simg.style.backgroundSize = pimg.style.backgroundSize; }
-                try { if (typeof renderProfileTitles === 'function') { const old = document.getElementById('profileTitlesSection'); const nw = document.getElementById('spProfileTitlesSection'); if (nw && old) nw.innerHTML = old.innerHTML; } } catch(e) {}
+                try { if (typeof loadProfileForm === 'function') loadProfileForm(); } catch(e) {}
+                try { if (typeof applyProfilePhoto === 'function') applyProfilePhoto(); } catch(e) {}
+                try { if (typeof renderProfileTitles === 'function') {
+                    const old = document.getElementById('profileTitlesSection');
+                    const nw  = document.getElementById('spProfileTitlesSection');
+                    if (nw && old) nw.innerHTML = old.innerHTML;
+                }} catch(e) {}
+                /* مزامنة الإحصائيات من st مباشرة */
+                if (typeof st !== 'undefined') {
+                    const xpPct = Math.min(100, Math.round((st.xp / st.xpToNext) * 100));
+                    const ttl   = typeof getTitle === 'function' ? getTitle() : '';
+                    const av    = st.avatar || (typeof getDefaultAvatarForGender === 'function' ? getDefaultAvatarForGender(st.gender) : '🧑');
+                    const q = id => document.getElementById(id);
+                    if (q('spProfileName'))   q('spProfileName').textContent  = st.name;
+                    if (q('spProfileLevel'))  q('spProfileLevel').textContent = 'المستوى ' + st.level + ' • ' + ttl;
+                    if (q('spProfileXpFill')) q('spProfileXpFill').style.width = xpPct + '%';
+                    if (q('spProfileXpLabel')) q('spProfileXpLabel').textContent = st.xp + ' / ' + st.xpToNext + ' XP';
+                    if (q('spStatCorrect'))   q('spStatCorrect').textContent  = st.correctTotal;
+                    if (q('spStatStreak'))    q('spStatStreak').textContent   = '×' + st.bestStreak;
+                    if (q('spStatCoins'))     q('spStatCoins').textContent    = st.coins;
+                    /* الصورة/الأفاتار */
+                    const simg = q('spProfileAvatarImg');
+                    if (simg) {
+                        if (st.profilePhoto) {
+                            simg.style.backgroundImage   = 'url( + st.profilePhoto + )';
+                            simg.style.backgroundSize    = 'cover';
+                            simg.style.backgroundPosition = 'center';
+                            simg.textContent = '';
+                        } else {
+                            simg.style.backgroundImage = '';
+                            simg.textContent = av;
+                        }
+                    }
+                    /* الرقم التسلسلي */
+                    const snd = q('serialNumberDisplay');
+                    if (snd) snd.textContent = st.serialNumber || 'احفظ الملف الشخصي أولاً';
+                }
             }
-            // sync theme dark/light label
+
+            /* ── الصوتيات: مزامنة القيم من st مباشرة ── */
+            if (overlayId === 'subPageAudioOverlay') {
+                if (typeof st !== 'undefined') {
+                    const q = id => document.getElementById(id);
+                    if (q('soundStatus'))    q('soundStatus').textContent    = st.soundOn ? 'مفعّل' : 'مطفأ';
+                    if (q('bgMusicStatus'))  q('bgMusicStatus').textContent  = st.bgOn    ? 'مفعّلة' : 'مطفأة';
+                    if (q('vibrationStatus')) q('vibrationStatus').textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+                    if (q('soundVolSlider')) q('soundVolSlider').value       = st.soundVolume || 80;
+                    if (q('soundVolVal'))    q('soundVolVal').textContent    = (st.soundVolume || 80) + '%';
+                    if (q('bgVolSlider'))    q('bgVolSlider').value          = st.bgVolume || 60;
+                    if (q('bgVolVal'))       q('bgVolVal').textContent       = (st.bgVolume || 60) + '%';
+                    if (q('vibVolSlider'))   q('vibVolSlider').value         = st.vibrationStrength || 30;
+                    if (q('vibVolVal'))      q('vibVolVal').textContent      = (st.vibrationStrength || 30) + 'ms';
+                }
+            }
+
+            /* ── المظهر: مزامنة حالة الداكن/الفاتح من st ── */
             if (overlayId === 'subPageThemeOverlay') {
-                const di = document.getElementById('darkLightIcon');
-                const dl = document.getElementById('darkLightLabel');
-                const sdi = document.getElementById('spDarkLightIcon');
-                const sdl = document.getElementById('spDarkLightLabel');
-                if (di && sdi) sdi.textContent = di.textContent;
-                if (dl && sdl) sdl.textContent = dl.textContent;
+                if (typeof st !== 'undefined') {
+                    const q = id => document.getElementById(id);
+                    if (q('spDarkLightIcon'))  q('spDarkLightIcon').textContent  = st.darkMode ? '🌙' : '☀️';
+                    if (q('spDarkLightLabel')) q('spDarkLightLabel').textContent = st.darkMode ? 'الوضع الداكن' : 'الوضع الفاتح';
+                }
             }
+
             playSound && playSound('click');
         }
+
         function closeSettingsSubPage(overlayId) {
             const el = document.getElementById(overlayId);
             if (el) el.style.display = 'none';
@@ -1283,16 +1271,17 @@
 
         /* تهيئة عند التحميل */
         document.addEventListener('DOMContentLoaded', function() {
-            /* قسم المهام مغلق افتراضياً */
+            /* فتح قسم المهام تلقائياً */
             var ts = document.getElementById('tasksSection');
             var tc = document.getElementById('tasksChevron');
             if (ts) {
-                ts.style.display = 'none';
-                ts.style.maxHeight = '0';
-                ts.style.overflow = 'hidden';
-                ts.setAttribute('data-open', '0');
+                ts.style.display = 'flex';
+                ts.style.flexDirection = 'column';
+                ts.style.maxHeight = '280px';
+                ts.style.overflow = 'auto';
+                ts.setAttribute('data-open', '1');
             }
-            if (tc) tc.style.transform = 'rotate(0deg)';
+            if (tc) tc.style.transform = 'rotate(180deg)';
             /* قسم الإنجازات مغلق */
             var as2 = document.getElementById('achieveSection');
             if (as2) {
