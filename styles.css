@@ -280,14 +280,30 @@
             }
         }
         .splash-logo {
-            font-size: 6em;
+            font-size: 5.5em;
             font-weight: 900;
-            letter-spacing: 15px;
+            letter-spacing: -4px;
             background: linear-gradient(135deg, var(--gold), var(--accent), var(--accent2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             animation: logoGlow 2s infinite alternate;
             z-index: 1;
+            line-height: 1;
+            position: relative;
+        }
+        .splash-logo::after {
+            content: 'Math';
+            display: block;
+            font-size: 0.28em;
+            letter-spacing: 10px;
+            text-align: center;
+            -webkit-text-fill-color: transparent;
+            background: linear-gradient(90deg, var(--accent2), var(--gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            margin-top: -6px;
+            font-weight: 700;
         }
         @keyframes logoGlow {
             0% {
@@ -302,6 +318,23 @@
             font-size: 1.3em;
             letter-spacing: 3px;
             z-index: 1;
+        }
+        .splash-tagline {
+            color: var(--text2);
+            font-size: 1em;
+            letter-spacing: 5px;
+            z-index: 1;
+            text-transform: uppercase;
+            margin-top: -10px;
+            opacity: 0.75;
+        }
+        .splash-divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 2px;
+            z-index: 1;
+            margin: 4px 0;
         }
         .splash-dots {
             display: flex;
