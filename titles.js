@@ -90,7 +90,7 @@ function updateFirstPlaceTracking(leaderboardData) {
         } else {
             const yesterday = (() => {
                 const d = new Date(); d.setDate(d.getDate() - 1);
-                return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+                return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
             })();
             if (st.firstPlaceData.lastDate === yesterday) {
                 st.firstPlaceData.streak = (st.firstPlaceData.streak || 0) + 1;
