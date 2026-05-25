@@ -381,12 +381,12 @@ function updateUI() {
     document.getElementById('headerSub').textContent = `Lv.${st.level} • ${ttl}`;
     document.getElementById('headerXpBar').style.width = xpPct + '%';
     document.getElementById('headerXp').textContent = `⚡ ${st.xp} XP`;
-    if (!st.profilePhoto) document.getElementById('headerAvatar').textContent = av;
+    document.getElementById('headerAvatar').textContent = av;
     document.getElementById('profileName').textContent = st.name;
     document.getElementById('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
     document.getElementById('profileXpFill').style.width = xpPct + '%';
     document.getElementById('profileXpLabel').textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
-    if (!st.profilePhoto) document.getElementById('profileAvatarImg').textContent = av;
+    document.getElementById('profileAvatarImg').textContent = av;
     document.getElementById('statCorrect').textContent = st.correctTotal;
     document.getElementById('statBestStreak').textContent = '×' + st.bestStreak;
     document.getElementById('statCoinsP').textContent = st.coins;
@@ -398,13 +398,15 @@ function updateUI() {
     const spPL = document.getElementById('spProfileLevel'); if(spPL) spPL.textContent = `المستوى ${st.level} • ${ttl}`;
     const spPXF = document.getElementById('spProfileXpFill'); if(spPXF) spPXF.style.width = xpPct + '%';
     const spPXL = document.getElementById('spProfileXpLabel'); if(spPXL) spPXL.textContent = `${st.xp} / ${st.xpToNext} XP للمستوى التالي`;
-    const spPAI = document.getElementById('spProfileAvatarImg'); if (spPAI && !st.profilePhoto) spPAI.textContent = av;
+    const spPAI = document.getElementById('spProfileAvatarImg'); if(spPAI) spPAI.textContent = av;
     const soundStatusEl = document.getElementById('soundStatus');
     if (soundStatusEl) soundStatusEl.textContent = st.soundOn ? 'مفعّل' : 'مطفأ';
     const bgMusicStatusEl = document.getElementById('bgMusicStatus');
     if (bgMusicStatusEl) bgMusicStatusEl.textContent = st.bgOn ? 'مفعّلة' : 'مطفأة';
     const vibEl = document.getElementById('vibrationStatus');
     if (vibEl) vibEl.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
+    /* مزامنة gameSettingsSheet من مصدر واحد */
+    try { if (typeof syncGameSheet === 'function') syncGameSheet(); } catch(e) {}
     const pTG = document.getElementById('profileTotalGames'); if (pTG) pTG.textContent = st.totalGames;
     const pBS = document.getElementById('profileBestScore'); if (pBS) pBS.textContent = st.bestScore;
     const pAcc = document.getElementById('profileAccuracy');
