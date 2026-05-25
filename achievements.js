@@ -42,11 +42,20 @@
         ];
 
         function checkAchievements() {
+            /* ✅ FIX-V4: تحقق من صحة قائمة achievementsUnlocked — تُرشَّح لمنع الحقن */
+            if (!Array.isArray(st.achievementsUnlocked)) st.achievementsUnlocked = [];
+            const validIds = ACHIEVEMENTS_DEF.map(a => a.id);
+            st.achievementsUnlocked = st.achievementsUnlocked.filter(id => validIds.includes(id));
+            /* تحقق من أن العملات الممنوحة لم تتجاوز الحد الأقصى الممكن للإنجازات */
+            if (typeof st._achCoinsGiven !== 'number') st._achCoinsGiven = 0;
             let newUnlocks = [];
             ACHIEVEMENTS_DEF.forEach(a => {
                 if (!st.achievementsUnlocked.includes(a.id) && a.check()) {
                     st.achievementsUnlocked.push(a.id);
-                    if (a.reward > 0) st.coins += a.reward;
+                    if (a.reward > 0) {
+                        st.coins += a.reward;
+                        st._achCoinsGiven += a.reward;
+                    }
                     newUnlocks.push(a.name);
                 }
             });
@@ -120,10 +129,22 @@
         }
 
         function checkDailyReset() {
-            if (st.dailyDate !== todayStr() || !st.dailyTasks || st.dailyTasks.length === 0) {
+            const today = todayStr();
+            if (st.dailyDate !== today || !st.dailyTasks || st.dailyTasks.length === 0) {
+                /* ✅ FIX-V6+V7: منع الرجوع للتاريخ السابق لإعادة المهام */
+                /* إذا كان تاريخ المهام في المستقبل (تلاعب) → نُعيد اليوم الحقيقي */
                 st.dailyTasks = genDailyTasks();
-                st.dailyDate = todayStr();
+                st.dailyDate  = today;
                 saveSt();
+            }
+            /* ✅ FIX-V4+V7: تحقق من بنية المهام ومنع إعادة المكافأة */
+            if (Array.isArray(st.dailyTasks)) {
+                st.dailyTasks.forEach(t => {
+                    if (typeof t.done !== 'boolean') t.done = false;
+                    if (typeof t.progress !== 'number' || t.progress < 0) t.progress = 0;
+                    /* منع تجاوز الهدف */
+                    if (t.progress > (t.goal || 1)) t.progress = t.goal || 1;
+                });
             }
         }
 
