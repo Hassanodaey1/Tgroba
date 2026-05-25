@@ -123,7 +123,7 @@
                     progress: 0, done: false },
                 { id: 't5', icon: '💎', name: '25 إجابة', desc: 'أجب على 25 سؤالاً صحيحاً', reward: 8, goal: 25,
                     progress: 0, done: false },
-                { id: 't6', icon: '🌟', name: 'تحدي اليوم', desc: 'العب تحدي اليوم الخاص مرة', reward: 2, goal: 1,
+                { id: 't6', icon: '🌟', name: 'تحدي اليوم', desc: 'العب تحدي اليوم (١٠ أسئلة متدرجة)', reward: 3, goal: 1,
                     progress: 0, done: false },
             ];
         }
