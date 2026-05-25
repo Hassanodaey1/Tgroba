@@ -137,7 +137,11 @@
         function saveSt() {
             try {
                 localStorage.setItem(SK, JSON.stringify(st));
-                if (st.serialNumber) saveSerialBackup(st.serialNumber, st);
+                if (st.serialNumber) {
+                    saveSerialBackup(st.serialNumber, st);
+                    /* ☁️ CLOUD: حفظ تلقائي في Firebase عند كل تغيير */
+                    saveToFirebase(st.serialNumber, st);
+                }
             } catch (e) {}
         }
 
@@ -151,6 +155,29 @@
                 if (d) return JSON.parse(d);
             } catch (e) {}
             return null;
+        }
+
+        /* ═══════════════════════════════════════════════
+           ☁️ FIREBASE CLOUD BACKUP — حفظ واستعادة سحابي
+           ═══════════════════════════════════════════════ */
+
+        function saveToFirebase(serial, data) {
+            if (!database || !serial) return;
+            try {
+                /* نحذف صورة الملف الشخصي: قد تكون كبيرة جداً لـ Firebase */
+                const toSave = Object.assign({}, data, { profilePhoto: null, _savedAt: Date.now() });
+                database.ref('players/' + serial).set(toSave)
+                    .catch(function(e) { console.warn('Firebase save failed:', e.message); });
+            } catch(e) { console.warn('saveToFirebase error:', e); }
+        }
+
+        function loadFromFirebase(serial, callback) {
+            if (!database || !serial) { callback(null); return; }
+            try {
+                database.ref('players/' + serial).once('value')
+                    .then(function(snap) { callback(snap.val()); })
+                    .catch(function(e) { console.warn('Firebase load failed:', e.message); callback(null); });
+            } catch(e) { console.warn('loadFromFirebase error:', e); callback(null); }
         }
 
         function generateSerialNumber(birthDate, name) {
@@ -180,19 +207,34 @@
             if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
 
+        /* ═══ مساعد مشترك لتطبيق البيانات المستعادة ═══ */
+        function _applyRestoredData(data, inputId, panelId) {
+            Object.assign(st, sanitizeState(data));
+            saveSt(); updateUI(); loadProfileForm(); applyDarkMode(); applyProfilePhoto();
+            updateSerialNumberDisplay();
+            showFeedback('✅ تم استعادة الحساب بنجاح ☁️');
+            const panel = document.getElementById(panelId);
+            if (panel) panel.style.display = 'none';
+            const inp = document.getElementById(inputId);
+            if (inp) inp.value = '';
+        }
+
         function restoreAccount() {
             const serial = document.getElementById('restoreSerialInput').value.trim();
             if (!serial) { showFeedback('الرجاء إدخال الرقم التسلسلي'); return; }
-            const savedData = loadSerialBackup(serial);
-            if (!savedData) { showFeedback('⚠️ لم يتم العثور على حساب بهذا الرقم'); return; }
-            Object.assign(st, sanitizeState(savedData));
-            saveSt(); updateUI(); loadProfileForm(); applyDarkMode();
-            applyProfilePhoto();
-            showFeedback('✅ تم استعادة الحساب بنجاح');
-            const panel = document.getElementById('restorePanel');
-            if (panel) panel.style.display = 'none';
-            const inp = document.getElementById('restoreSerialInput');
-            if (inp) inp.value = '';
+
+            /* ① محلياً أولاً */
+            const localData = loadSerialBackup(serial);
+            if (localData) {
+                _applyRestoredData(localData, 'restoreSerialInput', 'restorePanel');
+                return;
+            }
+            /* ② إذا ما وجد محلياً → ابحث في Firebase */
+            showFeedback('⏳ جاري البحث عن حسابك في السحابة...');
+            loadFromFirebase(serial, function(cloudData) {
+                if (!cloudData) { showFeedback('⚠️ لم يتم العثور على حساب بهذا الرقم'); return; }
+                _applyRestoredData(cloudData, 'restoreSerialInput', 'restorePanel');
+            });
         }
 
         /* استعادة من صفحة الإعدادات */
@@ -200,16 +242,19 @@
             const inp = document.getElementById('settingsRestoreInput');
             const serial = inp ? inp.value.trim() : '';
             if (!serial) { showFeedback('أدخل الرقم التسلسلي'); return; }
-            const savedData = loadSerialBackup(serial);
-            if (!savedData) { showFeedback('⚠️ لم يُعثر على حساب بهذا الرقم'); return; }
-            Object.assign(st, sanitizeState(savedData));
-            saveSt(); updateUI(); loadProfileForm(); applyDarkMode();
-            applyProfilePhoto();
-            updateSerialNumberDisplay();
-            if (inp) inp.value = '';
-            const panel = document.getElementById('settingsRestorePanel');
-            if (panel) panel.style.display = 'none';
-            showFeedback('✅ تم استعادة الحساب');
+
+            /* ① محلياً أولاً */
+            const localData = loadSerialBackup(serial);
+            if (localData) {
+                _applyRestoredData(localData, 'settingsRestoreInput', 'settingsRestorePanel');
+                return;
+            }
+            /* ② Firebase */
+            showFeedback('⏳ جاري البحث عن حسابك في السحابة...');
+            loadFromFirebase(serial, function(cloudData) {
+                if (!cloudData) { showFeedback('⚠️ لم يُعثر على حساب بهذا الرقم'); return; }
+                _applyRestoredData(cloudData, 'settingsRestoreInput', 'settingsRestorePanel');
+            });
         }
 
         function toggleSettingsRestorePanel() {
@@ -263,3 +308,74 @@
                 st.weeklyStats.bestStreak = st.bestStreak;
             }
         }
+
+        /* ═══════════════════════════════════════════════════════
+           💾 تصدير / استيراد ملف JSON — نسخة احتياطية يدوية
+           ═══════════════════════════════════════════════════════ */
+
+        function exportProgress() {
+            try {
+                const exportData = Object.assign({}, st, { profilePhoto: null });
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ho_math_' + (st.serialNumber || 'backup') + '_' + todayStr() + '.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showFeedback('📥 تم تحميل ملف النسخة الاحتياطية');
+            } catch(e) { showFeedback('❌ فشل التصدير'); }
+        }
+
+        function importProgress(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data || typeof data.name === 'undefined') { showFeedback('❌ الملف غير صحيح'); return; }
+                    showConfirm('استيراد بيانات',
+                        'سيتم استبدال بياناتك الحالية ببيانات الملف. هل أنت متأكد؟',
+                        'نعم، استيراد', 'إلغاء', function(ok) {
+                            if (!ok) return;
+                            Object.assign(st, sanitizeState(data));
+                            saveSt(); updateUI(); loadProfileForm(); applyDarkMode(); applyProfilePhoto();
+                            updateSerialNumberDisplay();
+                            showFeedback('✅ تم استيراد التقدم من الملف');
+                        });
+                } catch(e) { showFeedback('❌ الملف تالف أو غير صحيح'); }
+            };
+            reader.readAsText(file);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           🔄 مزامنة تلقائية عند تحميل الصفحة
+           إذا كان المتصفح يحمل بيانات قديمة أو فارغة،
+           يحاول استعادة أحدث نسخة من Firebase تلقائياً
+           ═══════════════════════════════════════════════════════ */
+
+        function autoSyncFromCloud() {
+            if (!st.serialNumber) return; /* لا رقم تسلسلي = لاعب جديد */
+            loadFromFirebase(st.serialNumber, function(cloudData) {
+                if (!cloudData) return;
+                /* نقارن: هل البيانات السحابية أحدث أو أفضل من المحلية؟ */
+                const cloudXP    = cloudData.xp    || 0;
+                const cloudLevel = cloudData.level || 1;
+                const localXP    = st.xp           || 0;
+                const localLevel = st.level        || 1;
+                if (cloudLevel > localLevel || (cloudLevel === localLevel && cloudXP > localXP)) {
+                    console.log('☁️ تم تحديث البيانات من السحابة');
+                    Object.assign(st, sanitizeState(cloudData));
+                    localStorage.setItem(SK, JSON.stringify(st));
+                    if (typeof updateUI === 'function') updateUI();
+                    if (typeof loadProfileForm === 'function') loadProfileForm();
+                }
+            });
+        }
+
+        /* تشغيل المزامنة التلقائية بعد تحميل كل شيء */
+        window.addEventListener('load', function() {
+            setTimeout(autoSyncFromCloud, 2000);
+        });
