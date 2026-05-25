@@ -65,25 +65,14 @@
             const challengesUnlocked = level >= 4;
             const playChallengesCard = document.getElementById('playCardChallenges');
             const homeChallengesCat = document.getElementById('homeCatChallenges');
+            /* بطاقتا التحديات في تفاصيل الفئات دائماً مغلقتان — الدخول فقط من القائمة السفلية */
             if (playChallengesCard) {
-                if (!challengesUnlocked) {
-                    playChallengesCard.classList.add('locked');
-                    playChallengesCard.onclick = null;
-                    playChallengesCard.querySelector('.gcard-badge').textContent = '🔒 Lv.4';
-                } else {
-                    playChallengesCard.classList.remove('locked');
-                    playChallengesCard.onclick = () => openOpSheet('challenges');
-                    playChallengesCard.querySelector('.gcard-badge').textContent = 'متاح';
-                }
+                playChallengesCard.classList.add('locked');
+                playChallengesCard.onclick = () => showFeedback('⚔️ التحديات متاحة من قسم التحديات في القائمة السفلية');
             }
             if (homeChallengesCat) {
-                if (!challengesUnlocked) {
-                    homeChallengesCat.classList.add('locked');
-                    homeChallengesCat.onclick = null;
-                } else {
-                    homeChallengesCat.classList.remove('locked');
-                    homeChallengesCat.onclick = () => openOpSheet('challenges');
-                }
+                homeChallengesCat.classList.add('locked');
+                homeChallengesCat.onclick = () => showFeedback('⚔️ التحديات متاحة من قسم التحديات في القائمة السفلية');
             }
             const advancedUnlocked = level >= 7;
             const gcardAdvanced = document.getElementById('gcardAdvanced');
