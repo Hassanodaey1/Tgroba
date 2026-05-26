@@ -277,22 +277,37 @@
                         clearGameTimer();
                         document.getElementById('gameOverlay').classList.remove('active');
                         document.getElementById('resultsOverlay').classList.remove('active');
-                        if (G.correct > 0 || (G.wrong > 0 && !G.ended && !G.isTraining)) endGame();
-                        else { G.ended = true;
+                        /* ✅ FIX-QUIT: نتجنب endGame إذا انتهت اللعبة لمنع مضاعفة الإحصائيات */
+                        if (!G.ended && !G.isTraining && (G.correct > 0 || G.wrong > 0)) {
+                            endGame();
+                        } else {
+                            G.ended = true;
                             clearGameTimer();
-                            goTab('home'); }
+                            goTab('home');
+                        }
                     }
                 });
         }
 
         function doConfetti() {
+            /* ✅ FIX-CONFETTI: نُعلّم كل قطعة بـ data-confetti لإمكانية تنظيفها لاحقاً */
             const c = ['#f0b90b', '#7c3aed', '#06b6d4', '#10b981', '#ef4444', '#ffd54f'];
             for (let i = 0; i < 45; i++) { const el = document.createElement('div');
                 el.className = 'confetti-piece';
+                el.setAttribute('data-confetti', '1');
                 el.style.cssText =
                     `left:${Math.random()*100}%;top:-10px;background:${c[rnd(0,5)]};width:${4+Math.random()*7}px;height:${4+Math.random()*7}px;border-radius:${Math.random()>0.5?'50%':'2px'};animation-delay:${Math.random()*0.9}s;animation-duration:${1.4+Math.random()*1.2}s;`;
                 document.body.appendChild(el);
-                setTimeout(() => el.remove(), 3200); }
+                const t = setTimeout(() => el.remove(), 3200);
+                el._cleanupTimer = t;
+            }
+        }
+
+        function clearConfetti() {
+            document.querySelectorAll('[data-confetti]').forEach(el => {
+                if (el._cleanupTimer) clearTimeout(el._cleanupTimer);
+                el.remove();
+            });
         }
 
         function updateDailyShield() {
