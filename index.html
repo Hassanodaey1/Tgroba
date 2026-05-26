@@ -844,10 +844,16 @@
                         <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:0.68em;font-weight:700;color:var(--gold);word-break:break-all;" id="serialNumberDisplay">احفظ الملف الشخصي أولاً</div>
                         <button onclick="copySerialNumber()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px;font-size:0.9em;cursor:pointer;color:var(--text2);">📋</button>
                     </div>
-                    <button onclick="showRestoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;margin-bottom:8px;">📥 استعادة حساب بالرقم التسلسلي</button>
-                    <div id="restorePanel" style="display:none;margin-top:8px;">
-                        <input id="restoreSerialInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;">
-                        <button onclick="restoreAccount()" style="width:100%;padding:10px;border-radius:12px;background:var(--green);color:#fff;font-family:'Tajawal',sans-serif;font-size:0.8em;font-weight:700;border:none;cursor:pointer;">✅ استعادة</button>
+                    <!-- ✅ استعادة الحساب — ظاهر دائماً -->
+                    <div style="background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.25);border-radius:14px;padding:14px;margin-top:4px;">
+                        <div style="font-size:0.72em;font-weight:900;color:var(--accent);margin-bottom:8px;">📥 استعادة حساب</div>
+                        <div style="font-size:0.65em;color:var(--text2);margin-bottom:10px;">أدخل رقمك التسلسلي لاستعادة بياناتك على هذا الجهاز</div>
+                        <input id="restoreSerialInput" type="text" placeholder="أدخل الرقم التسلسلي..." style="width:100%;padding:10px 12px;border-radius:10px;background:var(--surface2);border:1px solid rgba(124,58,237,0.35);color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.78em;margin-bottom:8px;outline:none;box-sizing:border-box;">
+                        <button onclick="restoreAccount()" style="width:100%;padding:11px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.82em;font-weight:800;border:none;cursor:pointer;">✅ استعادة الحساب</button>
+                    </div>
+                    <!-- حقل مخفي للتوافق مع الكود القديم -->
+                    <div id="restorePanel" style="display:none;">
+                        <input id="restoreSerialInputLegacy" type="text" style="display:none;">
                     </div>
                 </div>
             </div>
@@ -971,17 +977,21 @@
             <!-- وقت اللعب -->
             <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px;">
                 <div style="font-size:0.8em;font-weight:900;color:var(--text);margin-bottom:12px;">⏱️ وقت اللعب</div>
-                <div style="display:flex;gap:10px;">
-                    <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
-                        <div style="font-size:1.4em;font-weight:900;color:var(--accent2);" id="parentTimeToday">00:00</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div style="background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.3em;font-weight:900;color:var(--accent2);" id="parentTimeToday">—</div>
                         <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">اليوم</div>
                     </div>
-                    <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
-                        <div style="font-size:1.4em;font-weight:900;color:var(--accent);" id="parentTimeWeek">00:00</div>
+                    <div style="background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.3em;font-weight:900;color:var(--accent);" id="parentTimeWeek">—</div>
                         <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">هذا الأسبوع</div>
                     </div>
-                    <div style="flex:1;background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
-                        <div style="font-size:1.4em;font-weight:900;color:var(--gold);" id="parentStreak">0</div>
+                    <div style="background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.3em;font-weight:900;color:var(--green);" id="parentTimeTotal">—</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">إجمالي كلي</div>
+                    </div>
+                    <div style="background:var(--surface3);border-radius:14px;padding:14px;text-align:center;">
+                        <div style="font-size:1.3em;font-weight:900;color:var(--gold);" id="parentStreak">0</div>
                         <div style="font-size:0.6em;color:var(--text2);margin-top:4px;">يوم متتالي</div>
                     </div>
                 </div>
@@ -1424,6 +1434,7 @@
     <!-- JavaScript Modules -->
     <script src="firebase.js"></script>
     <script src="state.js"></script>
+    <script src="stats_engine.js"></script>
     <script src="achievements.js"></script>
     <script src="titles.js"></script>
     <script src="audio_effects.js"></script>
