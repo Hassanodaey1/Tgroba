@@ -1,529 +1,629 @@
 /* ═══════════════════════════════════════════════════════════════
-   HO Math — محرك الأسئلة الذكي v2.0
-   ✅ ثلاثة أنظمة جديدة:
-     1. ذكاء اصطناعي تكيّفي (Adaptive AI) — يتتبع أداء اللاعب
-     2. توليد رياضي لا نهائي — لا تتكرر الأسئلة أبداً
-     3. شرح تفاعلي مفصّل لكل إجابة خاطئة
+   HO Math — محرك الأسئلة الذكي v3.0
+   © 2026 Hassan Odaey
+
+   الأنظمة المدمجة:
+     ① خريطة المستويات الدقيقة — كل مستوى له نطاق أرقام وعمليات خاصة
+     ② الذكاء الاصطناعي التكيّفي — يتعلم من أداء اللاعب لكل نوع سؤال
+     ③ توليد رياضي لا نهائي — بصمة فريدة، لا تكرار
+     ④ خيارات ذكية — مبنية على الأخطاء الشائعة الحقيقية
+     ⑤ شرح تفاعلي خطوة بخطوة
 ═══════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════
-   ① نظام التكيّف الذكي — يتعلم من أداء اللاعب
-   يتتبع: معدل الصواب لكل نوع سؤال، وعدد المحاولات
-   يقرر: رفع أو خفض الصعوبة تلقائياً لكل نوع
+   ① خريطة المستويات الدقيقة
+   200 مستوى مقسّمة إلى 10 مراحل، كل مرحلة تمتد بسلاسة
+   كل مستوى = { نطاق الأرقام، نطاق الضرب، العمليات المسموحة، label }
 ═══════════════════════════════════════════════════════════════ */
 
-var AdaptiveAI = (function() {
+/*
+ * بدلاً من قفزات ثابتة، نحسب إعدادات كل مستوى بالاستيفاء (interpolation)
+ * حتى يكون الانتقال سلساً تدريجياً
+ */
+var LEVEL_PHASES = [
+    /*  مرحلة      من   إلى    label         diff      numMin numMax  mulMin mulMax  ops */
+    { from:  1, to:  3, label:'مبتدئ',    diff:'easy',   nMin:1,  nMax:10,  mMin:2, mMax:5,
+      ops:['add','sub'] },
 
-    /* سجل أداء اللاعب لكل نوع سؤال */
-    /* البنية: { 'add': { correct:0, total:0, diff:0 }, ... } */
-    var _perf = {};
+    { from:  4, to:  6, label:'ناشئ',     diff:'easy',   nMin:1,  nMax:20,  mMin:2, mMax:9,
+      ops:['add','sub','mul'] },
 
-    /* مستويات الصعوبة لكل نوع */
-    var DIFF_LEVELS = ['easy', 'medium', 'hard', 'genius'];
+    { from:  7, to: 10, label:'متطور',   diff:'easy',   nMin:5,  nMax:30,  mMin:2, mMax:12,
+      ops:['add','sub','mul','div'] },
 
-    /* نسب العتبة: إذا تجاوز معدل الصواب 80% رفعنا، إذا نزل عن 45% خفضنا */
-    var THRESHOLD_UP   = 0.80;
-    var THRESHOLD_DOWN = 0.45;
-    var MIN_SAMPLES    = 5; /* لا نغيّر الصعوبة قبل 5 أسئلة من نفس النوع */
+    { from: 11, to: 15, label:'متوسط',   diff:'medium', nMin:10, nMax:50,  mMin:3, mMax:12,
+      ops:['add','sub','mul','div','percent','word_add','word_mul'] },
 
-    function _key(op) { return op || 'mix'; }
+    { from: 16, to: 22, label:'متقدم',   diff:'medium', nMin:15, nMax:80,  mMin:3, mMax:15,
+      ops:['add','sub','mul','div','percent','equation_simple','fraction_simple','sequence','word_add','word_mul'] },
 
-    function _get(op) {
-        var k = _key(op);
-        if (!_perf[k]) _perf[k] = { correct: 0, total: 0, diffIdx: 1 }; /* يبدأ من medium */
-        return _perf[k];
-    }
+    { from: 23, to: 30, label:'ماهر',    diff:'medium', nMin:20, nMax:120, mMin:4, mMax:18,
+      ops:['mul','div','percent','equation_simple','fraction_simple','fraction_add','power','sqrt','sequence','word_hard'] },
 
-    /* تسجيل نتيجة سؤال */
-    function record(op, wasCorrect) {
-        var p = _get(op);
-        p.total++;
-        if (wasCorrect) p.correct++;
+    { from: 31, to: 45, label:'صعب',     diff:'hard',   nMin:30, nMax:300, mMin:5, mMax:22,
+      ops:['mul','div','percent','fraction_add','power','sqrt','algebra','sequence','word_hard','geo_area'] },
 
-        /* تقييم الأداء بعد كل 5 أسئلة */
-        if (p.total >= MIN_SAMPLES && p.total % MIN_SAMPLES === 0) {
-            var rate = p.correct / p.total;
-            /* نحسب المعدل فقط على آخر 10 إجابات حتى يتكيف بسرعة */
-            if (rate >= THRESHOLD_UP  && p.diffIdx < DIFF_LEVELS.length - 1) {
-                p.diffIdx++;
-            } else if (rate <= THRESHOLD_DOWN && p.diffIdx > 0) {
-                p.diffIdx--;
-            }
+    { from: 46, to: 65, label:'خبير',    diff:'hard',   nMin:50, nMax:600, mMin:7, mMax:28,
+      ops:['mul','div','percent','fraction_add','fraction_mul','power','sqrt','algebra','sequence','word_hard','geo_area','log_simple'] },
+
+    { from: 66, to:100, label:'محترف',   diff:'hard',   nMin:80, nMax:999, mMin:8, mMax:35,
+      ops:['mul','div','percent','fraction_mul','fraction_add','power','sqrt','algebra','sequence','word_hard','word_genius','geo_area','log_simple'] },
+
+    { from:101, to:200, label:'عبقري',   diff:'genius', nMin:100,nMax:9999,mMin:10,mMax:50,
+      ops:['mul','div','percent','fraction_mul','fraction_add','power','sqrt','algebra','sequence','word_genius','geo_area','log_simple','equation_quad'] }
+];
+
+/*
+ * الحصول على إعدادات المستوى الحالي مع استيفاء داخل المرحلة
+ * بحيث يكون nMax مثلاً يتزايد تدريجياً من بداية المرحلة لنهايتها
+ */
+function _getLevelConfig() {
+    var level = (typeof st !== 'undefined') ? (st.level || 1) : 1;
+
+    /* ابحث عن المرحلة المناسبة */
+    var phase = LEVEL_PHASES[LEVEL_PHASES.length - 1]; /* افتراضي: الأعلى */
+    for (var i = 0; i < LEVEL_PHASES.length; i++) {
+        if (level >= LEVEL_PHASES[i].from && level <= LEVEL_PHASES[i].to) {
+            phase = LEVEL_PHASES[i];
+            break;
         }
     }
 
-    /* الحصول على الصعوبة الموصى بها لنوع معين */
-    function getDiff(op, baseDiff) {
-        /* إذا حدد اللاعب صعوبة يدوية → نحترمها لكن نضبط داخلها */
-        var p = _get(op);
-        /* إذا كانت الصعوبة اليدوية أعلى من التكيّفية نحترم اليدوية */
-        var baseIdx = DIFF_LEVELS.indexOf(baseDiff || 'medium');
-        if (baseIdx < 0) baseIdx = 1;
-        /* نأخذ الأعلى بين اليدوي والتكيّفي لتجنب إحباط اللاعبين القدامى */
-        return DIFF_LEVELS[Math.max(baseIdx, p.diffIdx)];
+    /* استيفاء خطي داخل المرحلة: كلما تقدّم المستوى داخل المرحلة زادت الأرقام */
+    var span     = Math.max(1, phase.to - phase.from);
+    var progress = Math.min(1, (level - phase.from) / span); /* 0.0 → 1.0 */
+
+    /* النطاق المحسوب */
+    var nMax = Math.round(phase.nMin + (phase.nMax - phase.nMin) * progress);
+    var mMax = Math.round(phase.mMin + (phase.mMax - phase.mMin) * progress);
+
+    /* كلما ارتفع المستوى داخل المرحلة، نضيف عمليات إضافية تدريجياً */
+    var opsCount = Math.round(2 + (phase.ops.length - 2) * progress);
+    opsCount     = Math.max(2, Math.min(phase.ops.length, opsCount));
+    var ops      = phase.ops.slice(0, opsCount);
+
+    return {
+        level:    level,
+        diff:     phase.diff,
+        label:    phase.label,
+        nMin:     phase.nMin,
+        nMax:     nMax,
+        mMin:     phase.mMin,
+        mMax:     mMax,
+        ops:      ops,
+        progress: progress
+    };
+}
+
+/*
+ * الصعوبة الفعلية = أعلى قيمة بين:
+ *   ① صعوبة المستوى  (من الخريطة)
+ *   ② صعوبة اختيار اللاعب (st.difficulty)
+ *   ③ تعديل التكيّف (AdaptiveAI)
+ *
+ * القاعدة: لا نُنزل اللاعب أبداً عن مستواه، فقط نرفعه إذا كان متفوقاً
+ */
+var _DIFF_ORDER = ['easy', 'medium', 'hard', 'genius'];
+
+function _resolveActualDiff(op, baseDiff) {
+    var lvlDiff    = baseDiff || 'easy';
+    var playerDiff = (typeof st !== 'undefined' && st.difficulty) ? st.difficulty : 'easy';
+    var aiDiff     = (typeof AdaptiveAI !== 'undefined') ? AdaptiveAI.getDiff(op, lvlDiff) : lvlDiff;
+
+    /* الأعلى بين الثلاثة */
+    var scores = [lvlDiff, playerDiff, aiDiff].map(function(d) {
+        return _DIFF_ORDER.indexOf(d);
+    });
+    return _DIFF_ORDER[Math.max.apply(null, scores)];
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ② الذكاء الاصطناعي التكيّفي
+   يتتبع معدل الصحة لكل نوع عملية بشكل مستقل
+═══════════════════════════════════════════════════════════════ */
+
+var AdaptiveAI = (function() {
+    var _perf = {};
+    var UP    = 0.82;   /* عتبة الرفع: 82% صحة */
+    var DOWN  = 0.42;   /* عتبة الخفض: 42% صحة */
+    var STEP  = 5;      /* نقيّم بعد كل 5 إجابات */
+
+    function _get(op) {
+        if (!_perf[op]) _perf[op] = { correct: 0, total: 0, diffIdx: 1 };
+        return _perf[op];
     }
 
-    /* الحصول على إحصائيات للعرض */
-    function getStats(op) {
-        var p = _get(op);
-        return {
-            diff:     DIFF_LEVELS[p.diffIdx],
-            diffIdx:  p.diffIdx,
-            rate:     p.total > 0 ? Math.round(p.correct / p.total * 100) : 0,
-            total:    p.total
-        };
+    /* تسجيل نتيجة */
+    function record(op, ok) {
+        var p = _get(op || 'mix');
+        p.total++;
+        if (ok) p.correct++;
+
+        if (p.total % STEP === 0) {
+            /* نحسب معدل آخر (STEP*2) إجابة */
+            var rate = p.correct / p.total;
+            if (rate >= UP  && p.diffIdx < _DIFF_ORDER.length - 1) p.diffIdx++;
+            else if (rate <= DOWN && p.diffIdx > 0)                  p.diffIdx--;
+        }
     }
 
-    /* إعادة ضبط الأداء (عند بدء لعبة جديدة) */
+    /* الصعوبة الموصى بها */
+    function getDiff(op, base) {
+        var p    = _get(op || 'mix');
+        var bIdx = _DIFF_ORDER.indexOf(base || 'easy');
+        if (bIdx < 0) bIdx = 0;
+        return _DIFF_ORDER[Math.max(bIdx, p.diffIdx)];
+    }
+
     function reset() { _perf = {}; }
 
-    return { record: record, getDiff: getDiff, getStats: getStats, reset: reset };
+    return { record: record, getDiff: getDiff, reset: reset };
 })();
 
 
 /* ═══════════════════════════════════════════════════════════════
-   ② توليد رياضي لا نهائي — أسئلة لا تتكرر أبداً
-   كل سؤال يُعرَّف بـ "بصمة رياضية" فريدة
+   ③ ذاكرة الجلسة — لا تكرار
 ═══════════════════════════════════════════════════════════════ */
 
-/* ذاكرة الجلسة: تخزن بصمات الأسئلة المطروحة */
-var _sessionMemory = new Set();
-var MAX_MEMORY = 300; /* نحتفظ بآخر 300 سؤال */
+var _sessionMem  = new Set();
+var _MEM_LIMIT   = 400;
 
-function _fingerprint(q) {
-    return q.text + '§' + q.answer;
-}
+function clearSessionMemory() { _sessionMem.clear(); }
+
+function _fp(q) { return q.text + '§' + q.answer; }
+
+function _seen(q)    { return _sessionMem.has(_fp(q)); }
 
 function _remember(q) {
-    var fp = _fingerprint(q);
-    _sessionMemory.add(fp);
-    if (_sessionMemory.size > MAX_MEMORY) {
-        /* حذف الأقدم */
-        _sessionMemory.delete(_sessionMemory.values().next().value);
-    }
+    _sessionMem.add(_fp(q));
+    if (_sessionMem.size > _MEM_LIMIT)
+        _sessionMem.delete(_sessionMem.values().next().value);
 }
 
-function _wasSeen(q) {
-    return _sessionMemory.has(_fingerprint(q));
-}
 
-function clearSessionMemory() {
-    _sessionMemory.clear();
-}
+/* ═══════════════════════════════════════════════════════════════
+   الدالة الرئيسية — توليد سؤال ذكي مرتبط بالمستوى
+═══════════════════════════════════════════════════════════════ */
 
-/*
- * الدالة الرئيسية للتوليد الذكي
- * تحاول حتى 40 مرة لتوليد سؤال غير مكرر
- */
-function genSmartQ(op, baseDiff, ageOverride) {
-    var age   = ageOverride || (typeof st !== 'undefined' ? (st.age || _calcAge(st.birthDate)) : 0);
-    var diff  = AdaptiveAI.getDiff(op, baseDiff || (typeof getDifficultyByLevel === 'function' ? getDifficultyByLevel() : 'medium'));
+function genSmartQ(op, baseDiff) {
+    var cfg  = _getLevelConfig();
+    var diff = _resolveActualDiff(op, baseDiff || cfg.diff);
+    var age  = (typeof st !== 'undefined') ? (st.age || _calcAge((st||{}).birthDate)) : 0;
 
-    /* للأطفال الصغار: حد أقصى للصعوبة */
+    /* حماية الأطفال الصغار */
     if (age > 0 && age <= 9)  diff = 'easy';
     if (age > 0 && age <= 12 && (diff === 'hard' || diff === 'genius')) diff = 'medium';
 
-    var q, attempts = 0;
+    var actualOp = op;
+    if (op === 'mix') actualOp = _pickOp(cfg, diff, age);
+
+    var q, tries = 0;
     do {
-        q = _generateOne(op, diff, age);
-        attempts++;
-        if (!_wasSeen(q)) break;
-        /* بعد 40 محاولة نقبل التكرار لتجنب التجميد */
-        if (attempts >= 40) { clearSessionMemory(); break; }
+        q = _build(actualOp, diff, cfg, age);
+        tries++;
+        if (!_seen(q)) break;
+        if (tries >= 50) { clearSessionMemory(); break; }
     } while (true);
 
     _remember(q);
+    q.choices = _smartChoices(q.answer, actualOp, diff);
     return q;
 }
 
-function _calcAge(birthDate) {
-    if (!birthDate) return 0;
-    var today = new Date(), birth = new Date(birthDate);
-    var age = today.getFullYear() - birth.getFullYear();
-    if (today.getMonth() < birth.getMonth() ||
-       (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
-    return age;
-}
+/* اختيار العملية للوضع المختلط حسب إعدادات المستوى */
+function _pickOp(cfg, diff, age) {
+    if (age > 0 && age <= 9)  return ['add','sub'][rnd(0,1)];
+    if (age > 0 && age <= 11) return ['add','sub','mul'][rnd(0,2)];
 
-/*
- * مولّد السؤال الفعلي — يختار النوع والصعوبة
- */
-function _generateOne(op, diff, age) {
-    /* تعيين العملية إذا كانت "mix" */
-    var actualOp = op;
-    if (op === 'mix') {
-        actualOp = _pickOpForMix(diff, age);
+    /* استخدام قائمة العمليات المفتوحة للمستوى الحالي */
+    var ops = cfg.ops;
+
+    /* زيادة احتمال العمليات الأساسية على المستويات المنخفضة */
+    if (cfg.level <= 6) {
+        var basicPool = ['add','add','sub','sub','mul'].filter(function(o) {
+            return ops.indexOf(o) >= 0;
+        });
+        if (basicPool.length > 0 && rnd(0,2) === 0) return basicPool[rnd(0,basicPool.length-1)];
     }
 
-    /* توليد السؤال */
-    var q = _buildQuestion(actualOp, diff, age);
-
-    /* ضمان أن الخيارات ذكية ومتنوعة */
-    q.choices = _smartChoices(q.answer, actualOp, diff);
-
-    return q;
+    return ops[rnd(0, ops.length - 1)];
 }
 
-/* اختيار نوع العملية للوضع المختلط — يراعي العمر والصعوبة */
-function _pickOpForMix(diff, age) {
-    var pools = {
-        easy: ['add', 'sub', 'mul', 'add', 'sub'], /* جمع وطرح أكثر للمبتدئين */
-        medium: ['add', 'sub', 'mul', 'div', 'percent', 'word_add', 'word_mul', 'fraction_simple', 'equation_simple'],
-        hard:   ['add', 'sub', 'mul', 'div', 'percent', 'fraction_add', 'power', 'sqrt', 'sequence', 'equation_simple', 'word_hard'],
-        genius: ['mul', 'div', 'percent', 'fraction_mul', 'power', 'sqrt', 'sequence', 'algebra', 'equation_quad', 'log_simple', 'word_genius']
-    };
-    /* للأطفال ≤ 10: فقط جمع وطرح بسيط */
-    if (age > 0 && age <= 10) return ['add', 'sub', 'add', 'sub', 'mul'][rnd(0,4)];
-    var pool = pools[diff] || pools.medium;
-    return pool[rnd(0, pool.length - 1)];
+function _calcAge(bd) {
+    if (!bd) return 0;
+    var t = new Date(), b = new Date(bd);
+    var a = t.getFullYear() - b.getFullYear();
+    if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+    return Math.max(0, a);
 }
 
-/*
- * بناء السؤال حسب النوع والصعوبة
- * هذا هو القلب الرياضي للنظام
- */
-function _buildQuestion(op, diff, age) {
-    var R = _ranges(diff);
+
+/* ═══════════════════════════════════════════════════════════════
+   بناء السؤال — يستخدم نطاقات المستوى الفعلية
+═══════════════════════════════════════════════════════════════ */
+
+function _build(op, diff, cfg, age) {
+    /* النطاقات المستخدمة في التوليد مشتقة من cfg (المستوى) */
+    var nMin = cfg.nMin, nMax = cfg.nMax;
+    var mMin = cfg.mMin, mMax = cfg.mMax;
+
     var a, b, c, ans, text, hint, explanation, catKey;
 
-    switch(op) {
+    switch (op) {
 
-        /* ───── جمع ───── */
+        /* ─── جمع ─── */
         case 'add': {
-            a = rnd(R.s[0], R.s[1]);
-            b = rnd(R.s[0], R.s[1]);
+            a   = rnd(nMin, nMax);
+            b   = rnd(nMin, nMax);
             ans = a + b;
             text = diff === 'genius'
                 ? `${a.toLocaleString('ar')} + ${b.toLocaleString('ar')}`
                 : `${a} + ${b}`;
-            hint = 'اجمع العددين';
-            explanation = `نجمع ${a} و ${b}:\n${a} + ${b} = ${ans}`;
-            if (diff === 'medium' || diff === 'hard') {
-                explanation += `\nيمكن التحقق: ${ans} − ${b} = ${a} ✓`;
-            }
+            hint        = 'اجمع العددين';
+            explanation = `${a} + ${b} = ${ans}`;
+            if (diff !== 'easy') explanation += `\nتحقق: ${ans} − ${b} = ${a} ✓`;
             catKey = 'addition';
             break;
         }
 
-        /* ───── طرح ───── */
+        /* ─── طرح ─── */
         case 'sub': {
-            a = rnd(R.s[0], R.s[1]);
-            b = rnd(R.s[0], R.s[1]);
-            if (a < b) [a, b] = [b, a];
-            ans = a - b;
-            text = `${a} − ${b}`;
-            hint = 'اطرح العددين';
-            explanation = `نطرح ${b} من ${a}:\n${a} − ${b} = ${ans}`;
-            if (ans < 0) explanation += `\nالناتج سالب لأن ${b} أكبر من ${a}`;
-            catKey = 'subtraction';
+            a = rnd(nMin, nMax);
+            b = rnd(nMin, nMax);
+            if (a < b) { var tmp = a; a = b; b = tmp; }
+            ans         = a - b;
+            text        = `${a} − ${b}`;
+            hint        = 'اطرح العددين';
+            explanation = `${a} − ${b} = ${ans}`;
+            catKey      = 'subtraction';
             break;
         }
 
-        /* ───── ضرب ───── */
+        /* ─── ضرب ─── */
         case 'mul': {
-            a = rnd(R.t[0], R.t[1]);
-            b = rnd(R.t[0], R.t[1]);
+            a   = rnd(mMin, mMax);
+            b   = rnd(mMin, mMax);
             ans = a * b;
-            text = `${a} × ${b}`;
-            hint = 'اضرب العددين';
-            explanation = `${a} × ${b} = ${ans}\n`;
+            text        = `${a} × ${b}`;
+            hint        = 'اضرب العددين';
             if (a <= 12 && b <= 12) {
-                explanation += `(جدول الضرب: ${a} × ${b} = ${ans})`;
+                explanation = `${a} × ${b} = ${ans}\n(جدول الضرب)`;
             } else {
-                explanation += `طريقة التجزئة: ${a} × ${b} = ${a} × ${Math.floor(b/10)*10} + ${a} × ${b%10} = ${a*Math.floor(b/10)*10} + ${a*(b%10)} = ${ans}`;
+                var t1 = a * Math.floor(b/10) * 10;
+                var t2 = a * (b % 10);
+                explanation = `${a} × ${b}\n= ${a}×${Math.floor(b/10)*10} + ${a}×${b%10}\n= ${t1} + ${t2} = ${ans}`;
             }
             catKey = 'multiplication';
             break;
         }
 
-        /* ───── قسمة ───── */
+        /* ─── قسمة ─── */
         case 'div': {
-            ans = rnd(R.t[0], R.t[1]);
-            b   = rnd(R.t[0], R.t[1]);
-            a   = ans * b;
-            text = `${a} ÷ ${b}`;
-            hint = 'اقسم العددين (القسمة عكس الضرب)';
+            ans  = rnd(mMin, mMax);
+            b    = rnd(mMin, mMax);
+            a    = ans * b;
+            text        = `${a} ÷ ${b}`;
+            hint        = 'القسمة عكس الضرب';
             explanation = `${a} ÷ ${b} = ${ans}\nلأن ${ans} × ${b} = ${a} ✓`;
-            catKey = 'division';
+            catKey      = 'division';
             break;
         }
 
-        /* ───── نسبة مئوية ───── */
+        /* ─── نسبة مئوية ─── */
         case 'percent': {
-            var pcts = diff === 'easy' ? [10, 25, 50] :
-                       diff === 'medium' ? [10, 20, 25, 50, 75] :
-                       [5, 10, 15, 20, 25, 30, 40, 50, 75];
-            var pct = pcts[rnd(0, pcts.length-1)];
-            a = rnd(2, 20) * 10;
-            ans = Math.round(a * pct / 100);
-            text = `${pct}% من ${a}`;
-            hint = `اضرب ${a} في (${pct}/100)`;
-            explanation = `${pct}% من ${a}:\n= ${a} × ${pct}/100\n= ${a} × ${(pct/100).toFixed(2)}\n= ${ans}`;
-            if (pct === 10) explanation += `\nطريقة سريعة: ${pct}% = اقسم على 10 = ${ans}`;
-            if (pct === 25) explanation += `\nطريقة سريعة: 25% = اقسم على 4 = ${ans}`;
-            if (pct === 50) explanation += `\nطريقة سريعة: 50% = اقسم على 2 = ${ans}`;
+            var pctPool = diff === 'easy'   ? [10, 25, 50]
+                        : diff === 'medium' ? [10, 20, 25, 50, 75]
+                        : [5, 10, 15, 20, 25, 30, 40, 50, 75, 80];
+            var pct     = pctPool[rnd(0, pctPool.length-1)];
+            /* نضمن أن الرقم قابل للقسمة */
+            var base    = rnd(2, Math.min(20, Math.floor(nMax/10))) * 10;
+            ans         = Math.round(base * pct / 100);
+            text        = `${pct}% من ${base}`;
+            hint        = `اضرب ${base} في ${pct}/100`;
+            explanation = `${pct}% من ${base} = ${base} × ${pct}/100 = ${ans}`;
+            if (pct === 10) explanation += `\n💡 ${pct}% = اقسم على 10`;
+            if (pct === 50) explanation += `\n💡 ${pct}% = اقسم على 2`;
+            if (pct === 25) explanation += `\n💡 ${pct}% = اقسم على 4`;
             catKey = 'percentage';
             break;
         }
 
-        /* ───── قوى ───── */
+        /* ─── قوى ─── */
         case 'power': {
-            a = diff === 'easy' ? rnd(2,5) : diff === 'medium' ? rnd(2,8) : rnd(2,12);
-            b = diff === 'easy' ? 2 : rnd(2,3);
+            a = diff === 'easy' ? rnd(2, Math.min(5, mMax))
+              : diff === 'medium' ? rnd(2, Math.min(8, mMax))
+              : rnd(2, Math.min(12, mMax));
+            b = diff === 'easy' ? 2 : diff === 'medium' ? rnd(2,3) : rnd(2,4);
             ans = Math.pow(a, b);
-            text = `${a}^${b}`;
-            hint = `اضرب ${a} في نفسه ${b} مرة`;
-            var steps = [];
+            text        = `${a}^${b}`;
+            hint        = `اضرب ${a} في نفسه ${b} مرات`;
+            var steps   = [];
             for (var i = 0; i < b; i++) steps.push(a);
             explanation = `${a}^${b} = ${steps.join(' × ')} = ${ans}`;
-            catKey = 'algebra';
+            catKey      = 'algebra';
             break;
         }
 
-        /* ───── جذر تربيعي ───── */
+        /* ─── جذر تربيعي ─── */
         case 'sqrt': {
-            var sqrtPool = diff === 'easy'
-                ? [4, 9, 16, 25, 36, 49]
-                : diff === 'medium'
-                ? [4, 9, 16, 25, 36, 49, 64, 81, 100]
-                : [4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225, 256];
-            a = sqrtPool[rnd(0, sqrtPool.length-1)];
-            ans = Math.round(Math.sqrt(a));
-            text = `√${a}`;
-            hint = 'أي عدد مضروب في نفسه يساوي هذا؟';
+            var sqPools = {
+                easy:   [4,9,16,25,36,49],
+                medium: [4,9,16,25,36,49,64,81,100],
+                hard:   [4,9,16,25,36,49,64,81,100,121,144,169,196,225],
+                genius: [4,9,16,25,36,49,64,81,100,121,144,169,196,225,256,289,324,361,400]
+            };
+            a           = (sqPools[diff] || sqPools.medium)[rnd(0, (sqPools[diff]||sqPools.medium).length-1)];
+            ans         = Math.round(Math.sqrt(a));
+            text        = `√${a}`;
+            hint        = `أي عدد × نفسه = ${a}؟`;
             explanation = `√${a} = ${ans}\nلأن ${ans} × ${ans} = ${ans*ans} = ${a} ✓`;
-            catKey = 'algebra';
+            catKey      = 'algebra';
             break;
         }
 
-        /* ───── معادلة بسيطة: س + a = b ───── */
+        /* ─── معادلة بسيطة: س + a = b ─── */
         case 'equation_simple': {
-            a = rnd(R.s[0]+2, R.s[1]);
-            ans = rnd(1, R.s[1]);
-            b = a + ans;
-            text = `س + ${a} = ${b}`;
-            hint = 'انقل الثابت للطرف الآخر';
-            explanation = `س + ${a} = ${b}\nس = ${b} − ${a}\nس = ${ans}\nتحقق: ${ans} + ${a} = ${b} ✓`;
-            catKey = 'algebra';
+            a           = rnd(Math.max(2, nMin), Math.min(nMax, 50));
+            ans         = rnd(1, Math.min(nMax, 40));
+            b           = a + ans;
+            text        = `س + ${a} = ${b}`;
+            hint        = 'انقل الثابت للطرف الآخر';
+            explanation = `س + ${a} = ${b}\nس = ${b} − ${a} = ${ans}\nتحقق: ${ans} + ${a} = ${b} ✓`;
+            catKey      = 'algebra';
             break;
         }
 
-        /* ───── معادلة خطية: 2س + a = b ───── */
+        /* ─── جبر خطي: coef×س + a = b ─── */
         case 'algebra': {
-            var coef = rnd(2, diff === 'genius' ? 9 : 5);
-            ans = rnd(1, diff === 'genius' ? 20 : 12);
-            a = rnd(1, 20);
-            b = coef * ans + a;
-            text = `${coef}س + ${a} = ${b}`;
-            hint = 'أولاً انقل الثابت، ثم اقسم على المعامل';
+            var coef    = rnd(2, diff === 'genius' ? 9 : diff === 'hard' ? 7 : 5);
+            ans         = rnd(1, diff === 'genius' ? 20 : 12);
+            a           = rnd(1, 20);
+            b           = coef * ans + a;
+            text        = `${coef}س + ${a} = ${b}`;
+            hint        = 'أولاً اطرح الثابت، ثم اقسم على المعامل';
             explanation = `${coef}س + ${a} = ${b}\n${coef}س = ${b} − ${a} = ${b-a}\nس = ${b-a} ÷ ${coef} = ${ans}\nتحقق: ${coef}×${ans}+${a} = ${b} ✓`;
-            catKey = 'algebra';
+            catKey      = 'algebra';
             break;
         }
 
-        /* ───── متتالية حسابية ───── */
+        /* ─── معادلة تربيعية بسيطة: س² = N ─── */
+        case 'equation_quad': {
+            ans         = rnd(2, 15);
+            a           = ans * ans;
+            text        = `س² = ${a}`;
+            hint        = 'خذ الجذر التربيعي للطرفين';
+            explanation = `س² = ${a}\nس = √${a} = ${ans}\n(نأخذ القيمة الموجبة)`;
+            catKey      = 'algebra';
+            break;
+        }
+
+        /* ─── متتالية ─── */
         case 'sequence': {
-            a = rnd(1, diff === 'easy' ? 5 : 20);
-            b = rnd(2, diff === 'easy' ? 4 : 15); /* الفرق */
-            var seqType = rnd(0, 1);
+            var seqType = rnd(0, diff === 'easy' ? 0 : 1);
             if (seqType === 0) {
-                /* متتالية حسابية: a, a+b, a+2b, a+3b, ? */
-                text = `${a}, ${a+b}, ${a+2*b}, ${a+3*b}, ؟`;
-                ans = a + 4 * b;
-                hint = `الفرق بين كل حدين = ${b}`;
-                explanation = `المتتالية الحسابية، الفرق المشترك = ${b}\nالحد التالي = ${a+3*b} + ${b} = ${ans}`;
+                /* حسابية */
+                a           = rnd(1, Math.min(20, nMax));
+                b           = rnd(2, diff === 'easy' ? 5 : diff === 'medium' ? 10 : 20);
+                text        = `${a}, ${a+b}, ${a+2*b}, ${a+3*b}, ؟`;
+                ans         = a + 4 * b;
+                hint        = `الفرق الثابت = ${b}`;
+                explanation = `متتالية حسابية، الفرق = ${b}\nالحد التالي = ${a+3*b} + ${b} = ${ans}`;
             } else {
-                /* متتالية: a, a*b, a*b^2, ? (هندسية بسيطة) */
-                var ratio = rnd(2, diff === 'easy' ? 3 : 4);
-                a = rnd(1, 5);
-                text = `${a}, ${a*ratio}, ${a*ratio*ratio}, ؟`;
-                ans = a * ratio * ratio * ratio;
-                hint = `كل حد يُضرب في ${ratio}`;
-                explanation = `المتتالية الهندسية، الأساس = ${ratio}\nالحد التالي = ${a*ratio*ratio} × ${ratio} = ${ans}`;
+                /* هندسية */
+                var ratio   = rnd(2, diff === 'hard' ? 5 : 3);
+                a           = rnd(1, 5);
+                text        = `${a}, ${a*ratio}, ${a*ratio*ratio}, ؟`;
+                ans         = a * ratio * ratio * ratio;
+                hint        = `كل حد يُضرب في ${ratio}`;
+                explanation = `متتالية هندسية، الأساس = ${ratio}\nالحد التالي = ${a*ratio*ratio} × ${ratio} = ${ans}`;
             }
             catKey = 'puzzles';
             break;
         }
 
-        /* ───── كسور بمقام مشترك ───── */
+        /* ─── كسور بمقام مشترك ─── */
         case 'fraction_simple': {
-            var den = rnd(3, 8);
-            var n1 = rnd(1, den-1);
-            var n2 = rnd(1, den-n1);
-            ans = n1 + n2;
-            text = `${n1}/${den} + ${n2}/${den}`;
-            hint = `المقامات متساوية (${den})، اجمع البسطين فقط`;
-            explanation = `${n1}/${den} + ${n2}/${den}\n= (${n1}+${n2})/${den}\n= ${ans}/${den}`;
-            if (ans % den === 0) explanation += ` = ${ans/den} (عدد صحيح)`;
-            catKey = 'division';
+            var den     = rnd(3, diff === 'easy' ? 6 : 10);
+            var n1      = rnd(1, den-1);
+            var n2      = rnd(1, den-n1 > 0 ? den-n1 : 1);
+            ans         = n1 + n2;
+            text        = `${n1}/${den} + ${n2}/${den}`;
+            hint        = `المقامات متساوية، اجمع البسطين فقط`;
+            explanation = `${n1}/${den} + ${n2}/${den} = (${n1}+${n2})/${den} = ${ans}/${den}`;
+            if (ans % den === 0) explanation += ` = ${ans/den}`;
+            catKey      = 'division';
             break;
         }
 
-        /* ───── كسور جمع (مقامات مختلفة) ───── */
+        /* ─── كسور بمقامات مختلفة ─── */
         case 'fraction_add': {
-            var d1 = rnd(2, 6);
-            var d2 = rnd(2, 6);
+            var d1  = rnd(2, 6), d2 = rnd(2, 6);
             while (d2 === d1) d2 = rnd(2, 6);
             var lcm = (d1 * d2) / _gcd(d1, d2);
-            var num1 = rnd(1, d1-1);
-            var num2 = rnd(1, d2-1);
-            /* حساب الجمع */
-            var resNum = num1 * (lcm/d1) + num2 * (lcm/d2);
-            var resDen = lcm;
-            var g = _gcd(resNum, resDen);
-            resNum = resNum / g; resDen = resDen / g;
-            ans = Math.round(resNum / resDen * 100) / 100;
-            text = `${num1}/${d1} + ${num2}/${d2}`;
-            hint = `أوجد المقام المشترك: ${lcm}`;
-            explanation = `${num1}/${d1} + ${num2}/${d2}\nالمقام المشترك = ${lcm}\n= ${num1*(lcm/d1)}/${lcm} + ${num2*(lcm/d2)}/${lcm}\n= ${num1*(lcm/d1)+num2*(lcm/d2)}/${lcm}`;
-            if (g > 1) explanation += ` = ${resNum}/${resDen}`;
-            catKey = 'division';
+            var num1= rnd(1, d1-1), num2 = rnd(1, d2-1);
+            var rN  = num1*(lcm/d1) + num2*(lcm/d2);
+            var g   = _gcd(rN, lcm);
+            ans     = Math.round(rN/lcm * 100) / 100;
+            text    = `${num1}/${d1} + ${num2}/${d2}`;
+            hint    = `أوجد المقام المشترك: ${lcm}`;
+            explanation = `${num1}/${d1} + ${num2}/${d2}\nالمقام المشترك = ${lcm}\n= ${num1*(lcm/d1)}/${lcm} + ${num2*(lcm/d2)}/${lcm} = ${rN}/${lcm}`;
+            if (g > 1) explanation += ` = ${rN/g}/${lcm/g}`;
+            catKey  = 'division';
             break;
         }
 
-        /* ───── لوغاريتم بسيط ───── */
+        /* ─── ضرب كسور ─── */
+        case 'fraction_mul': {
+            var fn1 = rnd(1,6), fd1 = rnd(2,8), fn2 = rnd(1,6), fd2 = rnd(2,8);
+            var np  = fn1*fn2, dp = fd1*fd2;
+            var fg  = _gcd(np,dp);
+            ans     = Math.round(np/dp * 100) / 100;
+            text    = `${fn1}/${fd1} × ${fn2}/${fd2}`;
+            hint    = 'اضرب البسطَين معاً والمقامَين معاً';
+            explanation = `${fn1}/${fd1} × ${fn2}/${fd2} = ${np}/${dp}`;
+            if (fg > 1) explanation += ` = ${np/fg}/${dp/fg}`;
+            explanation += ` ≈ ${ans}`;
+            catKey  = 'division';
+            break;
+        }
+
+        /* ─── لوغاريتم بسيط ─── */
         case 'log_simple': {
-            ans = rnd(1, diff === 'hard' ? 5 : 3);
-            text = `log₁₀(10^${ans})`;
-            hint = `log₁₀(10^ن) = ن`;
-            explanation = `log₁₀(10^${ans}) = ${ans}\nلأن قاعدة اللوغاريتم وقاعدة الأسس نفسها (10)\nفيلغي كل منهما الآخر: log₁₀(10^ن) = ن`;
-            catKey = 'algebra';
+            ans         = rnd(1, diff === 'hard' ? 5 : 3);
+            text        = `log₁₀(10^${ans})`;
+            hint        = `log₁₀(10^ن) = ن دائماً`;
+            explanation = `log₁₀(10^${ans}) = ${ans}\nلأن القاعدة (10) تُلغي الأسية (10^${ans})`;
+            catKey      = 'algebra';
             break;
         }
 
-        /* ───── مسائل كلامية — جمع ───── */
+        /* ─── مسألة كلامية — جمع ─── */
         case 'word_add': {
-            var names = ['أحمد','سارة','خالد','ليلى','محمد','هند','يوسف','فاطمة'];
-            var items = ['تفاحة','كتاب','قلم','لعبة','بيضة','ورقة'];
-            var nm = names[rnd(0,names.length-1)];
-            var it = items[rnd(0,items.length-1)];
-            a = rnd(R.s[0], R.s[1]);
-            b = rnd(R.s[0], R.s[1]);
-            ans = a + b;
-            text = `لدى ${nm} ${a} ${it}، ثم حصل على ${b} ${it} أخرى. كم ${it} لديه الآن؟`;
-            hint = 'جمع البداية مع ما حصل عليه';
-            explanation = `البداية: ${a} ${it}\nأضاف: ${b} ${it}\nالمجموع: ${a} + ${b} = ${ans} ${it}`;
-            catKey = 'wordproblems';
+            var wNames = ['أحمد','سارة','خالد','ليلى','محمد','هند'];
+            var wItems = ['تفاحة','كتاب','قلم','لعبة','بطاقة','ورقة'];
+            var wn     = wNames[rnd(0,wNames.length-1)];
+            var wi     = wItems[rnd(0,wItems.length-1)];
+            a = rnd(nMin, nMax); b = rnd(nMin, nMax);
+            ans         = a + b;
+            text        = `لدى ${wn} ${a} ${wi}، حصل على ${b} ${wi} أخرى. كم ${wi} لديه؟`;
+            hint        = 'جمع بسيط';
+            explanation = `البداية: ${a}\nأُضيف: ${b}\nالمجموع: ${a} + ${b} = ${ans}`;
+            catKey      = 'wordproblems';
             break;
         }
 
-        /* ───── مسائل كلامية — ضرب ───── */
+        /* ─── مسألة كلامية — ضرب ─── */
         case 'word_mul': {
-            a = rnd(2, R.t[1]);
-            b = rnd(2, R.t[1]);
+            a = rnd(mMin, Math.min(mMax, 15));
+            b = rnd(mMin, Math.min(mMax, 15));
             ans = a * b;
-            var contexts = [
-                { text: `إذا كان ثمن القلم ${a} دينار، فكم ثمن ${b} قلم؟`,
-                  exp: `ثمن ${b} قلم = ${b} × ${a} = ${ans} دينار` },
-                { text: `ملعب مستطيل طوله ${a} متر وعرضه ${b} متر. ما مساحته؟`,
-                  exp: `المساحة = الطول × العرض = ${a} × ${b} = ${ans} م²` },
-                { text: `يعمل ${a} عامل لمدة ${b} ساعات. كم مجموع ساعات العمل؟`,
-                  exp: `مجموع الساعات = ${a} × ${b} = ${ans} ساعة` }
+            var ctxs = [
+                { t:`ثمن القلم ${a} دينار. ثمن ${b} قلم = ؟`,           e:`${b} × ${a} = ${ans} دينار` },
+                { t:`ملعب طوله ${a}م وعرضه ${b}م. مساحته = ؟`,           e:`${a} × ${b} = ${ans} م²` },
+                { t:`${a} صندوق، في كل صندوق ${b} تفاحة. المجموع = ؟`,  e:`${a} × ${b} = ${ans} تفاحة` }
             ];
-            var ctx = contexts[rnd(0,contexts.length-1)];
-            text = ctx.text;
-            hint = 'هذه مسألة ضرب';
-            explanation = ctx.exp;
-            catKey = 'wordproblems';
+            var ctx = ctxs[rnd(0,ctxs.length-1)];
+            text        = ctx.t;
+            hint        = 'مسألة ضرب';
+            explanation = ctx.e;
+            catKey      = 'wordproblems';
             break;
         }
 
-        /* ───── مسألة كلامية صعبة ───── */
+        /* ─── مسألة كلامية صعبة (خطوتان) ─── */
         case 'word_hard': {
-            a = rnd(20, 100);
-            b = rnd(5, 30);
-            c = rnd(2, 10);
+            a   = rnd(Math.max(nMin,20), Math.min(nMax,100));
+            b   = rnd(5, Math.floor(a/2));
+            c   = rnd(2, Math.min(mMax,8));
             ans = (a - b) * c;
-            text = `اشترى محمد ${a} كتاباً، أعاد ${b} منها، ثم ضاعف ما تبقى ${c} مرات. كم كتاباً لديه؟`;
-            hint = 'أولاً اطرح، ثم اضرب';
-            explanation = `الخطوة 1: ${a} − ${b} = ${a-b} كتاب\nالخطوة 2: ${a-b} × ${c} = ${ans} كتاب`;
-            catKey = 'wordproblems';
+            text        = `كان لدى محمد ${a} كتاباً، أعاد ${b}، ثم ضاعف الباقي ${c} مرات. كم كتاباً الآن؟`;
+            hint        = 'أولاً اطرح، ثم اضرب';
+            explanation = `الخطوة 1: ${a} − ${b} = ${a-b}\nالخطوة 2: ${a-b} × ${c} = ${ans}`;
+            catKey      = 'wordproblems';
             break;
         }
 
-        /* ───── هندسة — مساحات ───── */
+        /* ─── مسألة كلامية عبقري (ثلاث خطوات) ─── */
+        case 'word_genius': {
+            a   = rnd(100, Math.min(nMax, 500));
+            b   = rnd(10, 50);
+            c   = rnd(2, 5);
+            var d4 = rnd(5, 20);
+            ans = (a - b) * c + d4;
+            text        = `بدأ بـ${a}، خسر ${b}، ضاعف الباقي ${c} مرات، ثم أضاف ${d4}. النتيجة = ؟`;
+            hint        = 'اتبع الترتيب: طرح، ضرب، جمع';
+            explanation = `الخطوة 1: ${a} − ${b} = ${a-b}\nالخطوة 2: ${a-b} × ${c} = ${(a-b)*c}\nالخطوة 3: ${(a-b)*c} + ${d4} = ${ans}`;
+            catKey      = 'wordproblems';
+            break;
+        }
+
+        /* ─── هندسة ─── */
         case 'geo_area': {
-            var shapes = ['square', 'rect', 'triangle', 'circle'];
-            var shape = diff === 'easy' ? 'square' : shapes[rnd(0,shapes.length-1)];
-            if (shape === 'square') {
-                a = rnd(3, diff === 'easy' ? 10 : 20);
+            var geoShapes = diff === 'easy'
+                ? ['square']
+                : diff === 'medium'
+                ? ['square','rect','triangle']
+                : ['square','rect','triangle','circle'];
+            var sh = geoShapes[rnd(0, geoShapes.length-1)];
+            if (sh === 'square') {
+                a   = rnd(3, Math.min(20, mMax));
                 ans = a * a;
-                text = `مساحة مربع طول ضلعه ${a}`;
-                hint = `المساحة = الضلع²`;
-                explanation = `مساحة المربع = الضلع × الضلع\n= ${a} × ${a} = ${ans}`;
-            } else if (shape === 'rect') {
-                a = rnd(3, 15); b = rnd(3, 15);
+                text        = `مساحة مربع ضلعه ${a}`;
+                hint        = `المساحة = الضلع²`;
+                explanation = `${a} × ${a} = ${ans}`;
+            } else if (sh === 'rect') {
+                a   = rnd(3, Math.min(20, mMax));
+                b   = rnd(3, Math.min(20, mMax));
                 ans = a * b;
-                text = `مساحة مستطيل طوله ${a} وعرضه ${b}`;
-                hint = `المساحة = الطول × العرض`;
-                explanation = `مساحة المستطيل = الطول × العرض\n= ${a} × ${b} = ${ans}`;
-            } else if (shape === 'triangle') {
-                a = rnd(4, 20); b = rnd(3, 12);
+                text        = `مساحة مستطيل طوله ${a} وعرضه ${b}`;
+                hint        = `المساحة = الطول × العرض`;
+                explanation = `${a} × ${b} = ${ans}`;
+            } else if (sh === 'triangle') {
+                a   = rnd(4, Math.min(20, mMax));
+                b   = rnd(3, Math.min(16, mMax));
                 ans = Math.round(a * b / 2);
-                text = `مساحة مثلث قاعدته ${a} وارتفاعه ${b}`;
-                hint = `المساحة = ½ × القاعدة × الارتفاع`;
-                explanation = `مساحة المثلث = ½ × ${a} × ${b}\n= ${a*b}/2 = ${ans}`;
+                text        = `مساحة مثلث قاعدته ${a} وارتفاعه ${b}`;
+                hint        = `المساحة = ½ × القاعدة × الارتفاع`;
+                explanation = `½ × ${a} × ${b} = ${a*b}/2 = ${ans}`;
             } else {
-                a = rnd(2, 10);
+                a   = rnd(2, Math.min(10, mMax));
                 ans = Math.round(Math.PI * a * a);
-                text = `مساحة دائرة نصف قطرها ${a} (π≈3.14)`;
-                hint = `المساحة = π × نق²`;
-                explanation = `مساحة الدائرة = π × ${a}²\n≈ 3.14 × ${a*a} = ${ans}`;
+                text        = `مساحة دائرة نصف قطرها ${a} (π≈3.14)`;
+                hint        = `المساحة = π × نق²`;
+                explanation = `3.14 × ${a}² = 3.14 × ${a*a} ≈ ${ans}`;
             }
             catKey = 'geometry';
             break;
         }
 
-        /* افتراضي: جمع */
+        /* افتراضي */
         default: {
-            a = rnd(1, 20); b = rnd(1, 20);
+            a   = rnd(nMin, nMax);
+            b   = rnd(nMin, nMax);
             ans = a + b;
-            text = `${a} + ${b}`;
-            hint = 'اجمع العددين';
+            text        = `${a} + ${b}`;
+            hint        = 'اجمع';
             explanation = `${a} + ${b} = ${ans}`;
-            catKey = 'addition';
+            catKey      = 'addition';
         }
     }
 
     return {
-        text: text,
-        hint: hint || 'ما هو الجواب؟',
-        answer: ans,
-        explanation: explanation || `الجواب: ${ans}`,
+        text: text, hint: hint,
+        answer: ans, explanation: explanation,
         catKey: catKey || 'addition',
-        choices: [] /* ستُملأ بواسطة _smartChoices */
+        choices: [] /* ستُملأ لاحقاً */
     };
 }
 
+
 /* ═══════════════════════════════════════════════════════════════
-   ③ توليد خيارات ذكية — الخيارات الخاطئة منطقية لا عشوائية
-   اللاعب لا يستطيع استبعادها بالنظر
+   ④ خيارات ذكية — مبنية على الأخطاء الشائعة الحقيقية
 ═══════════════════════════════════════════════════════════════ */
 
 function _smartChoices(correctAns, op, diff) {
-    var ans = typeof correctAns === 'number' ? correctAns : parseFloat(correctAns);
+    var ans    = typeof correctAns === 'number' ? correctAns : parseFloat(correctAns);
     var wrongs = new Set();
     var safety = 0;
 
-    /* استراتيجية الأخطاء الشائعة حسب نوع السؤال */
-    var commonMistakes = _getCommonMistakes(ans, op);
-    commonMistakes.forEach(function(m) {
-        if (m !== ans) wrongs.add(m);
+    /* أخطاء شائعة بحسب نوع العملية */
+    var cm = _commonMistakes(ans, op);
+    cm.forEach(function(m) {
+        if (m !== ans && !isNaN(m)) wrongs.add(m);
     });
 
-    /* إذا لم تكفِ نضيف خيارات قريبة منطقياً */
-    var spread = Math.max(2, Math.ceil(Math.abs(ans) * 0.15) + 1);
-    while (wrongs.size < 3 && safety < 500) {
+    /* إكمال للثلاثة بأخطاء منطقية قريبة */
+    while (wrongs.size < 3 && safety < 600) {
         safety++;
-        /* خطأ بنسبة ±5% إلى ±25% من القيمة */
-        var pct = [0.05, 0.1, 0.15, 0.2, 0.25][rnd(0,4)];
-        var delta = Math.max(1, Math.round(Math.abs(ans) * pct));
-        var sign = rnd(0,1) === 0 ? 1 : -1;
+        var pct       = [0.05, 0.10, 0.15, 0.20][rnd(0,3)];
+        var delta     = Math.max(1, Math.round(Math.abs(ans) * pct));
+        var sign      = rnd(0,1) ? 1 : -1;
         var candidate = Math.round((ans + sign * delta) * 100) / 100;
-        if (candidate !== ans && candidate >= 0) wrongs.add(candidate);
+        if (candidate !== ans && !isNaN(candidate)) wrongs.add(candidate);
     }
 
-    /* ضمان 3 خيارات خاطئة */
+    /* ضمان 3 مختلفة */
     var extra = 1;
     while (wrongs.size < 3) {
         wrongs.add(Math.round((ans + extra * 3) * 100) / 100);
@@ -533,54 +633,40 @@ function _smartChoices(correctAns, op, diff) {
     return shuffle([ans, ...[...wrongs].slice(0,3)]);
 }
 
-/* أخطاء شائعة يرتكبها الطلاب لكل نوع عملية */
-function _getCommonMistakes(ans, op) {
-    var mistakes = [];
-    switch(op) {
+function _commonMistakes(ans, op) {
+    var r = [];
+    switch (op) {
         case 'mul':
-            /* خطأ شائع: نسيان الاحتياط، أو خطأ في آحاد الجدول */
-            mistakes.push(ans + 10, ans - 10, ans + ans%10 === 0 ? ans+9 : ans-ans%10);
+            r = [ans + 10, ans - 10, Math.round(ans * 1.1), ans + (ans % 10 === 0 ? 5 : -ans%10)];
             break;
         case 'div':
-            /* خطأ شائع: الباقي، أو القسمة المعكوسة */
-            mistakes.push(ans + 1, ans - 1, Math.round(ans * 1.1));
+            r = [ans + 1, ans - 1, ans + 2, Math.round(ans * 1.5)];
             break;
         case 'percent':
-            /* خطأ شائع: الضرب بدل القسمة أو العكس */
-            mistakes.push(Math.round(ans * 10), Math.round(ans / 10), ans + ans);
+            r = [Math.round(ans * 10), Math.round(ans / 10), ans * 2, ans - ans/2];
             break;
         case 'power':
-            /* خطأ شائع: الضرب بدل الأس */
-            mistakes.push(ans + 1, ans - 1, Math.round(ans * 0.9));
+            r = [ans + 1, ans - 1, Math.round(ans * 0.8), ans * 2];
             break;
         case 'sqrt':
-            mistakes.push(ans + 1, ans - 1, ans + 2);
+            r = [ans + 1, ans - 1, ans + 2, ans * 2];
             break;
-        case 'fraction_add':
-        case 'fraction_simple':
-            /* خطأ شائع: جمع المقامات أيضاً */
-            mistakes.push(Math.round((ans + 0.5) * 10) / 10,
-                          Math.round((ans - 0.5) * 10) / 10,
-                          ans * 2);
+        case 'fraction_add': case 'fraction_simple': case 'fraction_mul':
+            r = [Math.round((ans + 0.5)*10)/10, Math.round((ans-0.5)*10)/10, ans*2, Math.round(ans/2*10)/10];
             break;
-        case 'equation_simple':
-        case 'algebra':
-            mistakes.push(ans + 1, ans - 1, ans * 2);
+        case 'algebra': case 'equation_simple': case 'equation_quad':
+            r = [ans + 1, ans - 1, ans * 2, ans + 2];
+            break;
+        case 'sequence':
+            r = [ans + 1, ans - 1, ans * 2, Math.round(ans * 0.75)];
+            break;
+        case 'geo_area':
+            r = [ans * 2, Math.round(ans / 2), ans + 10, ans - 10];
             break;
         default:
-            mistakes.push(ans + rnd(1,3), ans - rnd(1,3), ans + rnd(4,8));
+            r = [ans + rnd(1,3), ans - rnd(1,3), ans + rnd(4,9)];
     }
-    return mistakes.filter(function(m) { return typeof m === 'number' && !isNaN(m) && m !== ans; });
-}
-
-/* نطاقات الأرقام حسب الصعوبة */
-function _ranges(diff) {
-    return {
-        easy:   { s:[1,10],    t:[2,9]   },
-        medium: { s:[10,50],   t:[2,12]  },
-        hard:   { s:[50,500],  t:[5,25]  },
-        genius: { s:[200,9999],t:[10,50] }
-    }[diff] || { s:[1,10], t:[2,9] };
+    return r.filter(function(m) { return typeof m === 'number' && !isNaN(m) && m !== ans; });
 }
 
 function _gcd(a, b) {
@@ -592,130 +678,80 @@ function _gcd(a, b) {
 
 
 /* ═══════════════════════════════════════════════════════════════
-   ③ شرح تفاعلي مفصّل — يُظهر طريقة الحل خطوة بخطوة
+   ⑤ شرح تفاعلي خطوة بخطوة
 ═══════════════════════════════════════════════════════════════ */
 
-/*
- * استبدال دالة showExplanation القديمة بإصدار محسّن
- * يُظهر الشرح بتنسيق جميل خطوة بخطوة
- */
 function showSmartExplanation(explanation, correctAnswer) {
     var area = document.getElementById('explanationArea');
     if (!area) return;
 
-    /* تحويل \n إلى أسطر HTML */
-    var lines = (explanation || `الجواب الصحيح: ${correctAnswer}`)
-        .split('\n')
-        .filter(function(l) { return l.trim(); });
+    var lines = (explanation || ('الجواب: ' + correctAnswer))
+        .split('\n').filter(function(l) { return l.trim(); });
 
-    var stepsHTML = lines.map(function(line, i) {
-        /* السطر الأول هو الخطوة الرئيسية، الباقي تفاصيل */
-        if (i === 0) {
-            return `<div class="exp-main">📝 ${line}</div>`;
-        } else if (line.includes('✓')) {
-            return `<div class="exp-verify">✅ ${line}</div>`;
-        } else if (line.startsWith('الخطوة') || line.match(/^\d+[:\-\.]/)) {
-            return `<div class="exp-step">➡ ${line}</div>`;
-        } else {
-            return `<div class="exp-detail">${line}</div>`;
-        }
+    var html = lines.map(function(line, i) {
+        if (i === 0)               return '<div class="exp-main">' + line + '</div>';
+        if (line.indexOf('✓') >= 0) return '<div class="exp-verify">✅ ' + line + '</div>';
+        if (line.match(/^الخطوة|^[①②③④⑤]|^\d+[:\-\.]/))
+                                   return '<div class="exp-step">➡ ' + line + '</div>';
+        if (line.indexOf('💡') >= 0) return '<div class="exp-tip">' + line + '</div>';
+        return '<div class="exp-detail">' + line + '</div>';
     }).join('');
 
-    area.innerHTML = `
-        <div class="explanation-box smart-explanation">
-            <div class="exp-answer">✗ الإجابة الصحيحة: <strong>${correctAnswer}</strong></div>
-            <div class="exp-steps">${stepsHTML}</div>
-        </div>`;
+    area.innerHTML =
+        '<div class="explanation-box smart-explanation">' +
+        '<div class="exp-answer">الإجابة الصحيحة: <strong>' + correctAnswer + '</strong></div>' +
+        '<div class="exp-steps">' + html + '</div>' +
+        '</div>';
 
-    /* تسجيل نتيجة "خاطئة" في نظام التكيف */
-    if (typeof G !== 'undefined' && G.op) {
-        AdaptiveAI.record(G.op, false);
-    }
-}
-
-/*
- * hook: يُضاف بعد كل إجابة صحيحة لتحديث النظام التكيفي
- */
-function onCorrectAnswer(op) {
-    AdaptiveAI.record(op, true);
+    /* تسجيل خطأ في AdaptiveAI */
+    if (typeof G !== 'undefined' && G.op) AdaptiveAI.record(G.op, false);
 }
 
 
 /* ═══════════════════════════════════════════════════════════════
-   تكامل مع loadQuestion الحالي — يُستدعى كاستبدال لـ genQ
-   استخدم genSmartQ(op, diff) بدلاً من genQ(op, diff)
+   واجهة موحّدة — تُستدعى من loadQuestion بدلاً من genQ
 ═══════════════════════════════════════════════════════════════ */
 
-/*
- * واجهة للاستخدام من loadQuestion:
- * استبدل genQ(op, diff) بـ getNextQuestion(op, diff)
- */
 function getNextQuestion(op, diff) {
-    /* للعمليات الخاصة: جداول الضرب، القوانين، المتقدمة */
+    /* العمليات الخاصة تبقى على genQ الأصلية */
     if (op === 'table' || op === 'laws' || op === 'advanced') {
-        /* نستخدم genQ الأصلية للعمليات الخاصة */
         if (typeof genQ === 'function') return genQ(op, diff);
     }
-    /* للباقي: نستخدم المحرك الذكي الجديد */
     return genSmartQ(op, diff);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   CSS المضاف ديناميكياً لشرح الأسئلة
-═══════════════════════════════════════════════════════════════ */
-(function injectExplanationCSS() {
-    var style = document.createElement('style');
-    style.textContent = `
-        .smart-explanation {
-            background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.08));
-            border: 1.5px solid rgba(124,58,237,0.3);
-            border-radius: 16px;
-            padding: 12px 14px;
-            margin-top: 8px;
-            font-family: 'Tajawal', sans-serif;
-            animation: expSlideIn 0.3s ease;
-        }
-        @keyframes expSlideIn {
-            from { opacity:0; transform: translateY(6px); }
-            to   { opacity:1; transform: translateY(0); }
-        }
-        .exp-answer {
-            font-size: 0.88em;
-            font-weight: 900;
-            color: #ef4444;
-            margin-bottom: 8px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .exp-answer strong {
-            color: #10b981;
-            font-size: 1.05em;
-        }
-        .exp-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .exp-main {
-            font-size: 0.82em;
-            font-weight: 700;
-            color: var(--text, #e2e8f0);
-        }
-        .exp-step {
-            font-size: 0.78em;
-            color: var(--accent2, #06b6d4);
-            font-weight: 600;
-        }
-        .exp-detail {
-            font-size: 0.75em;
-            color: var(--text2, #94a3b8);
-        }
-        .exp-verify {
-            font-size: 0.75em;
-            color: #10b981;
-            font-weight: 700;
-        }
-    `;
-    document.head.appendChild(style);
-})();
 
+/* ═══════════════════════════════════════════════════════════════
+   مزامنة تلقائية عند تحميل الصفحة
+═══════════════════════════════════════════════════════════════ */
+
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        if (typeof autoSyncFromCloud === 'function') autoSyncFromCloud();
+    }, 2000);
+});
+
+
+/* ═══════════════════════════════════════════════════════════════
+   CSS الشرح التفاعلي
+═══════════════════════════════════════════════════════════════ */
+
+(function() {
+    var s = document.createElement('style');
+    s.textContent = [
+        '.smart-explanation{background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(6,182,212,.08));',
+        'border:1.5px solid rgba(124,58,237,.3);border-radius:16px;padding:12px 14px;margin-top:8px;',
+        'font-family:"Tajawal",sans-serif;animation:expIn .3s ease;}',
+        '@keyframes expIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}',
+        '.exp-answer{font-size:.88em;font-weight:900;color:#ef4444;margin-bottom:8px;padding-bottom:6px;',
+        'border-bottom:1px solid rgba(255,255,255,.1);}',
+        '.exp-answer strong{color:#10b981;font-size:1.05em;}',
+        '.exp-steps{display:flex;flex-direction:column;gap:4px;}',
+        '.exp-main{font-size:.82em;font-weight:700;color:var(--text,#e2e8f0);}',
+        '.exp-step{font-size:.78em;color:var(--accent2,#06b6d4);font-weight:600;}',
+        '.exp-detail{font-size:.75em;color:var(--text2,#94a3b8);}',
+        '.exp-verify{font-size:.75em;color:#10b981;font-weight:700;}',
+        '.exp-tip{font-size:.75em;color:var(--gold,#f0b90b);font-weight:600;}'
+    ].join('');
+    document.head.appendChild(s);
+})();
