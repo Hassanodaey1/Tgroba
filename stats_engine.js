@@ -68,7 +68,13 @@ function saveSessionTime() {
     _sessionStartMs = Date.now();
     saveSt();
 }
-var _lastSavedSessionSecs = 0;
+/* ✅ FIX-SESSTIME: نبدأ من وقت الجلسة المحفوظة لمنع الإضافة المزدوجة عند إعادة التحميل */
+var _lastSavedSessionSecs = (function() {
+    try {
+        var s = JSON.parse(localStorage.getItem('ho_math_v7'));
+        return (s && typeof s.sessionTimeSecs === 'number') ? s.sessionTimeSecs : 0;
+    } catch(e) { return 0; }
+})();
 
 /* أرشفة إحصائيات الأسبوع المنتهي (للتاريخ) */
 function _archiveWeeklyStats() {
