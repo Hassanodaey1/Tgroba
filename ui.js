@@ -474,27 +474,51 @@ function updateHomeStats() {
     const hgm = document.getElementById('homeGames'); if (hgm) hgm.textContent = st.totalGames;
     const hlv = document.getElementById('homeLevel'); if (hlv) hlv.textContent = st.level;
     const hbs = document.getElementById('homeBestScore'); if (hbs) hbs.textContent = st.bestScore;
-    let r = 0;
-    if (total > 0) r += (acc / 100) * 2.5;
-    r += Math.min(1.5, st.level * 0.15);
-    r += Math.min(1.0, st.bestStreak * 0.1);
-    r = Math.min(5, r);
-    const rr = Math.round(r * 10) / 10;
+    /* ✅ STATS-V2: تقييم الأداء الحقيقي */
+    let rr, rs;
+    if (typeof calcPerformanceRating === 'function') {
+        const perf = calcPerformanceRating();
+        rr = perf.stars;
+        rs = starsStr(perf.stars);
+    } else {
+        let r = 0;
+        if (total > 0) r += (acc / 100) * 2.5;
+        r += Math.min(1.5, st.level * 0.15);
+        r += Math.min(1.0, st.bestStreak * 0.1);
+        rr = Math.min(5, Math.round(r * 10) / 10);
+        rs = starsStr(rr);
+    }
     const rnum = document.getElementById('ratingNum'); if (rnum) rnum.textContent = rr.toFixed(1);
-    const rbar = document.getElementById('ratingBar'); if (rbar) rbar.style.width = (r / 5 * 100) + '%';
-    const rs = starsStr(r);
+    const rbar = document.getElementById('ratingBar'); if (rbar) rbar.style.width = (rr / 5 * 100) + '%';
     const rsta = document.getElementById('ratingStars'); if (rsta) rsta.textContent = rs;
     const hs = document.getElementById('homeStars'); if (hs) hs.textContent = rs;
-    const cc = st.catCounter;
-    const cpct = cc.total > 0 ? Math.round((cc.correct / cc.total) * 100) : 0;
-    document.getElementById('catProg0').style.width = cpct + '%';
-    document.getElementById('catStats0').textContent = `${cpct}% • ${cc.correct} صح`;
-    const cg = st.catChallenges.games;
-    document.getElementById('catProg1').style.width = Math.min(100, cg * 10) + '%';
-    document.getElementById('catStats1').textContent = `${cg} جلسة`;
+
+    /* ✅ STATS-V2: شرائط التقدم بنسب حقيقية */
+    const cc = st.catCounter || { correct: 0, total: 0 };
+    /* نسبة الدقة الحقيقية — بدون نسب وهمية إذا كانت البيانات قليلة */
+    const cpct = cc.total >= 3
+        ? Math.round((cc.correct / cc.total) * 100)
+        : (cc.total > 0 ? Math.round((cc.correct / cc.total) * 100) : 0);
+    const catProg0 = document.getElementById('catProg0');
+    if (catProg0) catProg0.style.width = cpct + '%';
+    const catStats0 = document.getElementById('catStats0');
+    if (catStats0) catStats0.textContent = cc.total >= 3
+        ? `${cpct}% • ${cc.correct} صح`
+        : (cc.total > 0 ? `${cc.correct}/${cc.total} (بيانات قليلة)` : 'لم تبدأ بعد');
+
+    const cg = (st.catChallenges && st.catChallenges.games) || 0;
+    /* منحنى واقعي: √(cg/20)*100 بدلاً من cg*10 الوهمي */
+    const cpct1 = typeof calcChallengePct === 'function'
+        ? calcChallengePct(cg)
+        : Math.min(100, Math.round(Math.sqrt(cg / 20) * 100));
+    const catProg1 = document.getElementById('catProg1');
+    if (catProg1) catProg1.style.width = cpct1 + '%';
+    const catStats1 = document.getElementById('catStats1');
+    if (catStats1) catStats1.textContent = cg > 0 ? `${cg} جلسة تحدي` : 'لم تبدأ بعد';
+
     const g0 = document.getElementById('gcatProg0'), g1 = document.getElementById('gcatProg1');
     if (g0) g0.style.width = cpct + '%';
-    if (g1) g1.style.width = Math.min(100, cg * 10) + '%';
+    if (g1) g1.style.width = cpct1 + '%';
     const gs0 = document.getElementById('gcatStats0'), gs1 = document.getElementById('gcatStats1');
     if (gs0) gs0.textContent = `${cc.correct} / ${cc.total} إجابة`;
     if (gs1) gs1.textContent = `${cg} جلسة تحدي`;
@@ -982,18 +1006,26 @@ function renderParentStats() {
     const ageStr  = age > 0 ? 'العمر: ' + age + ' سنة' : 'العمر غير محدد';
     if (q('parentAgeLevel')) q('parentAgeLevel').textContent = 'المستوى ' + (st.level || 1) + ' • ' + ageStr;
 
-    /* ── وقت اللعب ── */
+    /* ── وقت اللعب — ✅ STATS-V2: بيانات حقيقية ── */
     const todaySecs = typeof getSessionSecs === 'function' ? getSessionSecs() : (st.sessionTimeSecs || 0);
-    const fmtMin = s => {
-        const h = Math.floor(s / 3600);
-        const m = Math.floor((s % 3600) / 60);
-        return h > 0 ? h + 'س ' + m + 'د' : m + ' دقيقة';
-    };
+    const fmtMin = typeof fmtTimeFriendly === 'function'
+        ? fmtTimeFriendly
+        : function(s) {
+            if (!s || s < 60) return 'أقل من دقيقة';
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            return h > 0 ? h + 'س ' + (m > 0 ? m + 'د' : '') : m + ' دقيقة';
+        };
     if (q('parentTimeToday')) q('parentTimeToday').textContent = fmtMin(todaySecs);
 
-    /* وقت الأسبوع — نجمع sessionTimeSecs + الجلسة الحالية */
-    const weekSecs = (st.weeklyStats && st.weeklyStats.sessionSecs) ? st.weeklyStats.sessionSecs + todaySecs : todaySecs;
+    /* ✅ وقت الأسبوع الحقيقي = أيام سابقة + اليوم */
+    const wsBase   = (st.weeklyStats && st.weeklyStats._baseSessionSecs) || 0;
+    const weekSecs = wsBase + todaySecs;
     if (q('parentTimeWeek')) q('parentTimeWeek').textContent = fmtMin(weekSecs);
+
+    /* ✅ الوقت الكلي التراكمي */
+    const totalSecs = (st.totalPlayTimeSecs || 0) + todaySecs;
+    if (q('parentTimeTotal')) q('parentTimeTotal').textContent = fmtMin(Math.max(0, totalSecs));
 
     if (q('parentStreak')) q('parentStreak').textContent = st.dailyStreak || 0;
 
