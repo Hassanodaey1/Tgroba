@@ -28,16 +28,8 @@
                 loadProfileForm();
             }
             if (tab === 'shop') {
-                /* تحديث رصيد المتجر */
-                const sc = document.getElementById('shopCoinsDisplay'); if(sc) sc.textContent = (typeof st !== 'undefined') ? st.coins : 0;
-                const sc2 = document.getElementById('shopCoinsDisplay2'); if(sc2) sc2.textContent = (typeof st !== 'undefined') ? st.coins : 0;
-                const ca = document.getElementById('currentAvatarDisplay'); if(ca && typeof st !== 'undefined') ca.textContent = st.avatar || '🧑';
-                /* تشغيل renderEmojiShop إن وُجدت */
-                try { if (typeof renderEmojiShop === 'function') renderEmojiShop(); } catch(e) {}
-                try { if (typeof toggleEmojiShop === 'function') {
-                    const grid = document.getElementById('emojiShopGrid');
-                    if (grid && grid.children.length === 0) renderEmojiShop && renderEmojiShop();
-                } } catch(e) {}
+                /* تحديث رصيد المتجر وتشغيل المتجر الجديد */
+                try { if (typeof renderShop === 'function') renderShop(); } catch(e) {}
             }
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
