@@ -170,17 +170,27 @@
                 recordDailyStat('game');
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
                 if (G.score > st.bestScore) st.bestScore = G.score;
-                const xpGained = G.score * 2 + G.correct * 5;
-                st.xp += xpGained;
-                while (st.xp >= st.xpToNext) { st.xp -= st.xpToNext;
-                    st.level++;
-                    st.xpToNext = Math.floor(st.xpToNext * 1.3);
-                    playSound('levelup');
-                    /* ✅ FIX-LEVELUP: عرض احتفال رفع المستوى */
-                    const _lvl = st.level;
-                    setTimeout(() => {
-                        try { if (typeof showLevelUpCelebration === 'function') showLevelUpCelebration(_lvl); } catch(e) {}
-                    }, 600);
+                /* ✅ STATS-V2: معادلة XP متوازنة من stats_engine.js */
+                const xpResult = typeof applyXpGain === 'function'
+                    ? applyXpGain(G.correct, G.wrong, G.score, G.bestStreak)
+                    : { xpGained: G.score * 2 + G.correct * 5, levelsGained: 0 };
+                const xpGained = xpResult.xpGained;
+                /* applyXpGain تعالج level++ و xpToNext و الاحتفال تلقائياً */
+                /* إذا لم تكن متاحة (fallback قديم) */
+                if (typeof applyXpGain !== 'function') {
+                    st.xp += xpGained;
+                    while (st.xp >= st.xpToNext) {
+                        st.xp -= st.xpToNext;
+                        st.level++;
+                        st.xpToNext = typeof calcXpToNext === 'function'
+                            ? calcXpToNext(st.level)
+                            : Math.floor(st.xpToNext * 1.3);
+                        playSound('levelup');
+                        const _lvl = st.level;
+                        setTimeout(() => {
+                            try { if (typeof showLevelUpCelebration === 'function') showLevelUpCelebration(_lvl); } catch(e) {}
+                        }, 600);
+                    }
                 }
                 if (['classic', 'speed', 'survival', 'frenzy'].includes(G.mode)) { st.catCounter.correct += G.correct;
                     st.catCounter.total += G.correct + G.wrong; }
