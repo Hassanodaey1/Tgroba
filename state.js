@@ -4,14 +4,18 @@
 
         function todayStr() {
             const d = new Date();
-            return `${d.getFullYear()}-${(d.getMonth()+1)}-${d.getDate()}`; /* ✅ FIX-B1: getMonth()+1 */
+            /* ✅ FIX-DATE-PAD: zero-padding لمنع أخطاء المقارنة النصية (2026-5-1 ≠ 2026-10-1) */
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
         function weekStr() {
+            /* ✅ FIX-WEEKSTR: حساب رقم الأسبوع بشكل صحيح — المعيار ISO 8601 */
             const d = new Date();
-            const jan1 = new Date(d.getFullYear(), 0, 1);
-            const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
-            return `${d.getFullYear()}-W${week}`;
+            const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+            const week = Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
+            return `${date.getUTCFullYear()}-W${String(week).padStart(2,'0')}`;
         }
 
         function defState() {
@@ -209,9 +213,17 @@
         }
 
         function updateSerialNumberDisplay() {
-            ['serialNumberDisplay', 'settingsSerialDisplay'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = st.serialNumber || 'احفظ الملف الشخصي أولاً';
+            /* ✅ FIX-SERIAL-UI: إظهار الرقم فقط في مستطيل صغير، بدون نسخ أو استعادة */
+            const el = document.getElementById('serialNumberDisplay');
+            const section = document.getElementById('serialSection');
+            const serial = st.serialNumber || '';
+            if (el) el.textContent = serial || '—';
+            /* إظهار القسم فقط إذا وُجد رقم تسلسلي */
+            if (section) section.style.display = serial ? 'block' : 'none';
+            /* تحديث عرض الإعدادات أيضاً */
+            ['settingsSerialDisplay'].forEach(id => {
+                const s = document.getElementById(id);
+                if (s) s.textContent = serial || 'احفظ التغييرات أولاً لتوليد الرقم';
             });
         }
 
