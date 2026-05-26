@@ -9,111 +9,8 @@ function openGameSettings() {
     openGameSettingsAndPause();
 }
 
-/* ═══════════ EMOJI SHOP ═══════════ */
-const EMOJI_CATALOG = [
-    { emoji: '👦', price: 0, label: 'ولد افتراضي', gender: 'm' },
-    { emoji: '👧', price: 0, label: 'بنت افتراضية', gender: 'f' },
-    { emoji: '🧑‍🚀', price: 8, label: 'رائد فضاء' },
-    { emoji: '🧛', price: 12, label: 'مصاص دماء' },
-    { emoji: '🧝', price: 10, label: 'جني' },
-    { emoji: '🧞', price: 15, label: 'علاء الدين' },
-    { emoji: '🦊', price: 9, label: 'ثعلب' },
-    { emoji: '🐯', price: 10, label: 'نمر' },
-    { emoji: '🦁', price: 12, label: 'أسد' },
-    { emoji: '🐼', price: 8, label: 'باندا' },
-    { emoji: '🦄', price: 18, label: 'يونيكورن' },
-    { emoji: '🐲', price: 14, label: 'تنين' },
-    { emoji: '🦅', price: 8, label: 'نسر' },
-    { emoji: '🐺', price: 10, label: 'ذئب' },
-    { emoji: '🦉', price: 9, label: 'بومة' },
-    { emoji: '🧑‍🎓', price: 20, label: 'خريج' },
-    { emoji: '🧑‍💻', price: 22, label: 'مبرمج' },
-    { emoji: '🧑‍🔬', price: 25, label: 'عالم' },
-    { emoji: '🤴', price: 35, label: 'أمير' },
-    { emoji: '👸', price: 35, label: 'أميرة' },
-    { emoji: '🦸', price: 30, label: 'بطل خارق' },
-    { emoji: '🧙', price: 28, label: 'ساحر' },
-];
-
+/* ─── دالة مساعدة للأفاتار الافتراضي حسب الجنس ─── */
 function getDefaultAvatarForGender(gender) { return gender === 'f' ? '👧' : '👦'; }
-
-function renderEmojiShop() {
-    const grid = document.getElementById('emojiShopGrid');
-    if (!grid) return;
-    if (!st.ownedEmojis || st.ownedEmojis.length === 0) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
-    grid.innerHTML = EMOJI_CATALOG.map(item => {
-        const owned = st.ownedEmojis.includes(item.emoji);
-        if (item.price === 0 && item.gender && item.gender !== st.gender) return '';
-        if (owned) {
-            /* ✅ مملوك — عرض فقط، لا يمكن التفعيل من المتجر */
-            return `<div class="emoji-shop-item owned" title="${item.label}" style="cursor:default;opacity:0.85;">
-                <div class="emoji-shop-item-icon">${item.emoji}</div>
-                <div class="emoji-shop-item-owned" style="color:var(--green);font-size:0.58em;font-weight:800;">✅ مملوك</div>
-            </div>`;
-        } else {
-            /* 🔒 غير مملوك — اضغط للشراء */
-            return `<div class="emoji-shop-item locked-shop" onclick="buyEmojiShopOnly('${item.emoji}',${item.price},'${item.label}')" title="${item.label}">
-                <div class="emoji-shop-item-icon">${item.emoji}</div>
-                <div class="emoji-shop-item-price">${item.price > 0 ? item.price + '💰' : 'مجاني'}</div>
-                <div class="emoji-shop-lock">🔒</div>
-            </div>`;
-        }
-    }).join('');
-    const cd = document.getElementById('shopCoinsDisplay'); if (cd) cd.textContent = st.coins;
-    const ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
-}
-
-function toggleEmojiShop() {
-    const container = document.getElementById('emojiShopContainer');
-    const btn = document.getElementById('shopToggleBtn');
-    if (!container) return;
-    const isOpen = container.style.display !== 'none';
-    container.style.display = isOpen ? 'none' : 'block';
-    if (btn) btn.textContent = isOpen ? '🛍️ المتجر' : '✖️ إغلاق';
-    if (!isOpen) renderEmojiShop();
-    playSound('click');
-}
-
-/* buyOrSelectEmoji — للتوافق مع كود قديم، يوجّه للشراء فقط */
-function buyOrSelectEmoji(emoji, price) {
-    buyEmojiShopOnly(emoji, price, '');
-}
-
-/* buyEmojiShopOnly — الشراء من المتجر فقط، بدون تفعيل */
-function buyEmojiShopOnly(emoji, price, label) {
-    if (!st.ownedEmojis) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
-    if (st.ownedEmojis.includes(emoji)) {
-        showFeedback('✅ هذا الرمز مملوك — فعّله من الملف الشخصي');
-        return;
-    }
-    if (price === 0) {
-        st.ownedEmojis.push(emoji);
-        saveSt();
-        playSound('levelup');
-        renderEmojiShop();
-        updateUI();
-        showFeedback('🎉 أُضيف للمكتبة! فعّله من الملف الشخصي');
-        return;
-    }
-    if (st.coins < price) { showFeedback('💸 عملاتك لا تكفي!'); return; }
-    const displayLabel = label || emoji;
-    showConfirm(
-        '🛍️ شراء رمز',
-        'شراء ' + displayLabel + ' بـ ' + price + ' عملة؟ سيُضاف لمكتبتك ويمكنك تفعيله من الملف الشخصي.',
-        'نعم اشتري', 'إلغاء',
-        ok => {
-            if (!ok) return;
-            st.coins -= price;
-            st.ownedEmojis.push(emoji);
-            /* لا نغيّر st.avatar — الاختيار من الملف الشخصي فقط */
-            saveSt();
-            playSound('levelup');
-            renderEmojiShop();
-            updateUI();
-            showFeedback('🎉 تم الشراء! فعّله من الملف الشخصي');
-        }
-    );
-}
 
 function updateOwnedEmojisForGender() {
     if (!st.ownedEmojis) st.ownedEmojis = [];
@@ -170,8 +67,7 @@ function loadProfileForm() {
     updateBadgeIcon();
     const cd = document.getElementById('shopCoinsDisplay'); if (cd) cd.textContent = st.coins;
     const hc3 = document.getElementById('headerCoins'); if (hc3) hc3.textContent = st.coins;
-    const ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';
-}
+    const ca = document.getElementById('currentAvatarDisplay'); if (ca) ca.textContent = st.avatar || '🧑';}
 
 function renderProfileDailyTasks() {
     if (!st.dailyTasks) return;
@@ -231,7 +127,7 @@ function selectGender(g, snd = true) {
     document.getElementById('gBtnM').classList.toggle('active', g === 'm');
     document.getElementById('gBtnF').classList.toggle('active', g === 'f');
     updateOwnedEmojisForGender();
-    if (snd) { playSound('click'); renderEmojiShop(); updateUI(); }
+    if (snd) { playSound('click'); if (typeof renderShop === 'function') renderShop(); updateUI(); }
 }
 
 /* ═══════════ SAVE PROFILE ═══════════ */
@@ -263,7 +159,7 @@ function saveProfile() {
     try { if (typeof updateSerialNumberDisplay === 'function') updateSerialNumberDisplay(); } catch(e) {}
     try { if (typeof updateSettingsSerialDisplay === 'function') updateSettingsSerialDisplay(); } catch(e) {}
     playSound('levelup');
-    renderEmojiShop();
+    if (typeof renderShop === 'function') renderShop();
     /* ✅ FIX-SAVE-BTN: تأكيد الحفظ بوضوح */
     const btn = document.getElementById('saveBtn');
     if (btn) {
@@ -654,11 +550,7 @@ function goToEmojiShop() {
     closeAvatarPickerOverlay();
     goTab('shop');
     setTimeout(() => {
-        const shopContainer = document.getElementById('emojiShopContainer');
-        if (shopContainer) {
-            shopContainer.style.display = 'block';
-            renderEmojiShop && renderEmojiShop();
-        }
+        if (typeof renderShop === 'function') renderShop();
     }, 200);
 }
 
@@ -690,26 +582,16 @@ function removeProfilePhotoFromPicker() {
     });
 }
 
-/* دوال قديمة للتوافق مع كود المتجر */
+/* دوال قديمة للتوافق — موجّهة للنظام الجديد */
 function openPhotoPicker() { pickPhotoSource('gallery'); }
 function openEmojiPickerFromAvatar() { openAvatarPickerOverlay(); }
 function closeEmojiPickerOverlay() { closeAvatarPickerOverlay(); }
 function buyEmojiFromPicker(emoji, price, label) {
     if (!st.ownedEmojis) st.ownedEmojis = [getDefaultAvatarForGender(st.gender)];
     if (st.ownedEmojis.includes(emoji)) { selectEmojiFromPicker(emoji); return; }
-    if (price === 0) { st.ownedEmojis.push(emoji); selectEmojiFromPicker(emoji); return; }
-    if (st.coins < price) { showFeedback('💸 لا يكفي!'); return; }
-    showConfirm('شراء رمز', 'هل تريد شراء ' + label + ' بـ ' + price + ' عملة؟', 'نعم اشتري', 'إلغاء', function(ok) {
-        if (ok) {
-            st.coins -= price;
-            st.ownedEmojis.push(emoji);
-            saveSt();
-            playSound && playSound('levelup');
-            updateUI();
-            renderEmojiShop && renderEmojiShop();
-            showFeedback('🎉 تم الشراء!');
-        }
-    });
+    if (typeof buyAvatarFromShop === 'function') {
+        buyAvatarFromShop(emoji, price, label);
+    }
 }
 function handleProfilePhotoUpload(event) {
     const file = event.target.files && event.target.files[0];
