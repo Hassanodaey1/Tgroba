@@ -13,7 +13,6 @@
                 G.score += 10 + G.streak * 2;
                 G.coinsEarned += 0.4;
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
-                /* ✅ AI Adaptive: تسجيل إجابة صحيحة */
                 if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
                 playSound('correct');
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
@@ -28,19 +27,21 @@
                         bt.classList.remove('danger'); }
                 }
                 if (G.currentCatKey && st.stats[G.currentCatKey]) {
-                    const s = st.stats[G.currentCatKey];
-                    s.att++;
-                    s.cor++;
-                    s.max += 3;
-                    s.stars += Math.min(3, Math.floor(G.streak / 3) + 1);
-                    if (G.streak >= 3) s.first++;
+                    try {
+                        const s = st.stats[G.currentCatKey];
+                        s.att++;
+                        s.cor++;
+                        s.max += 3;
+                        s.stars += Math.min(3, Math.floor(G.streak / 3) + 1);
+                        if (G.streak >= 3) s.first++;
+                    } catch(e) { console.warn("stats error", e); }
                 }
-                updTask('correct'); if (G.streak >= 3) updTask('streak', G.streak);
-                if (!G.isTraining) recordDailyStat('correct');
+                try { updTask('correct'); } catch(e) { console.warn("updTask correct error", e); }
+                if (G.streak >= 3) { try { updTask('streak', G.streak); } catch(e) { console.warn("updTask streak error", e); } }
+                if (!G.isTraining) { try { recordDailyStat('correct'); } catch(e) { console.warn("recordDailyStat error", e); } }
                 if (G.streak >= 5) doConfetti();
                 if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
                 showFloatXP(10 + G.streak * 2);
-                /* ✅ FIX-B2: correctTotal يُجمع في endGame فقط لتفادي المضاعفة */
             } else {
                 btn.classList.add('wrong');
                 document.querySelectorAll('.answer-btn').forEach(b => { if (parseInt(b.getAttribute('data-val')) ===
@@ -76,7 +77,6 @@
                                         endGame(); }, 700); return; }
                         }
                     } else if (G.mode === 'survival') {
-                        /* وضع التحمّل: 3 أخطاء = نهاية اللعبة */
                         G._survivalWrong = (G._survivalWrong || 0) + 1;
                         showFeedback('❌');
                         playSound('wrong');
@@ -91,9 +91,12 @@
                         showExplanation();
                     }
                 }
-                if (G.currentCatKey && st.stats[G.currentCatKey]) { st.stats[G.currentCatKey].att++;
-                    st.stats[G.currentCatKey].max += 3; }
-                /* ✅ FIX-B2: wrongTotal يُجمع في endGame فقط لتفادي المضاعفة */
+                if (G.currentCatKey && st.stats[G.currentCatKey]) { 
+                    try { 
+                        st.stats[G.currentCatKey].att++;
+                        st.stats[G.currentCatKey].max += 3; 
+                    } catch(e) {} 
+                }
             }
             document.getElementById('statScore').textContent = G.score;
             document.getElementById('streakNum').textContent = G.streak;
@@ -101,11 +104,16 @@
             updateGameCoinsDisplay();
             const delay = 350;
             setTimeout(() => {
-                if (G.ended) return;
-                if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.currentQ >= G.totalQ) {
-                    endGame();
-                } else if (!G.ended) {
-                    loadQuestion();
+                try {
+                    if (G.ended) return;
+                    if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.currentQ >= G.totalQ) {
+                        endGame();
+                    } else if (!G.ended) {
+                        loadQuestion();
+                    }
+                } catch(e) {
+                    console.error("Error in setTimeout after answer:", e);
+                    if (!G.ended) endGame();
                 }
             }, delay);
         }
@@ -152,10 +160,9 @@
             G.ended = true;
             clearGameTimer();
             if (!G.isTraining) {
-                /* ✅ FIX-V5: تحقق منطقي من النتائج لمنع تعديل كائن G من Console */
                 const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
-                const _maxScore = _maxQ * 60;          /* أقصى نقطة ممكنة نظريًا */
-                const _maxCoins = _maxQ * 0.4 + 10;   /* أقصى عملة ممكنة نظريًا */
+                const _maxScore = _maxQ * 60;
+                const _maxCoins = _maxQ * 0.4 + 10;
                 G.correct     = Math.max(0, Math.min(Math.floor(G.correct),     _maxQ));
                 G.wrong       = Math.max(0, Math.min(Math.floor(G.wrong),       _maxQ));
                 G.score       = Math.max(0, Math.min(Math.floor(G.score),       _maxScore));
@@ -166,17 +173,13 @@
                 st.wrongTotal += G.wrong;
                 st.coins += earnedCoins;
                 st.totalGames++;
-                /* تسجيل إحصائيات اليوم/الأسبوع للعبة */
                 recordDailyStat('game');
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
                 if (G.score > st.bestScore) st.bestScore = G.score;
-                /* ✅ STATS-V2: معادلة XP متوازنة من stats_engine.js */
                 const xpResult = typeof applyXpGain === 'function'
                     ? applyXpGain(G.correct, G.wrong, G.score, G.bestStreak)
                     : { xpGained: G.score * 2 + G.correct * 5, levelsGained: 0 };
                 const xpGained = xpResult.xpGained;
-                /* applyXpGain تعالج level++ و xpToNext و الاحتفال تلقائياً */
-                /* إذا لم تكن متاحة (fallback قديم) */
                 if (typeof applyXpGain !== 'function') {
                     st.xp += xpGained;
                     while (st.xp >= st.xpToNext) {
@@ -195,11 +198,10 @@
                 if (['classic', 'speed', 'survival', 'frenzy'].includes(G.mode)) { st.catCounter.correct += G.correct;
                     st.catCounter.total += G.correct + G.wrong; }
                 if (['speed', 'survival', 'frenzy', 'daily'].includes(G.mode)) st.catChallenges.games++;
-                updTask('game');
+                try { updTask('game'); } catch(e) {}
                 if (G.mode === 'daily') {
-                    /* ✅ FIX-V11: تحدي اليوم مرة واحدة فقط يوميًا */
                     if (typeof hasDailyBeenPlayed === 'function' && !hasDailyBeenPlayed()) {
-                        updTask('daily');
+                        try { updTask('daily'); } catch(e) {}
                         if (typeof markDailyPlayed === 'function') markDailyPlayed();
                     }
                 }
@@ -223,7 +225,6 @@
                 document.getElementById('resultsXP').textContent = `+${xpGained} XP • +${earnedCoins} 💰`;
                 document.getElementById('gameOverlay').classList.remove('active');
                 document.getElementById('resultsOverlay').classList.add('active');
-                /* ── رسالة الفوز / الخسارة ── */
                 const winLoseEl = document.getElementById('winLoseMessage');
                 if (winLoseEl) {
                     if (pct >= 70) {
@@ -232,7 +233,6 @@
                         winLoseEl.innerHTML = '<div style="background:rgba(239,68,68,0.12);border:1.5px solid rgba(239,68,68,0.35);border-radius:14px;padding:10px 14px;font-size:1.05em;font-weight:900;color:#ef4444;text-align:center;">😔 حظاً أوفر في المرة القادمة</div>';
                     }
                 }
-                /* ── زر الرجوع حسب مصدر اللعبة ── */
                 const backBtnEl = document.getElementById('resultsBackBtn');
                 if (backBtnEl) {
                     const src = window._gameSource || 'home';
@@ -277,7 +277,6 @@
                         clearGameTimer();
                         document.getElementById('gameOverlay').classList.remove('active');
                         document.getElementById('resultsOverlay').classList.remove('active');
-                        /* ✅ FIX-QUIT: نتجنب endGame إذا انتهت اللعبة لمنع مضاعفة الإحصائيات */
                         if (!G.ended && !G.isTraining && (G.correct > 0 || G.wrong > 0)) {
                             endGame();
                         } else {
@@ -290,7 +289,6 @@
         }
 
         function doConfetti() {
-            /* ✅ FIX-CONFETTI: نُعلّم كل قطعة بـ data-confetti لإمكانية تنظيفها لاحقاً */
             const c = ['#f0b90b', '#7c3aed', '#06b6d4', '#10b981', '#ef4444', '#ffd54f'];
             for (let i = 0; i < 45; i++) { const el = document.createElement('div');
                 el.className = 'confetti-piece';
@@ -313,8 +311,6 @@
         function updateDailyShield() {
             const today = todayStr();
             if (st.lastDailyDate !== today) {
-                /* ✅ FIX-V8: منع تغيير التاريخ للرجوع للوراء واستعادة الدرع */
-                /* إذا كان التاريخ المخزّن في المستقبل (تلاعب) → نُعيد التهيئة بدون منح درع جديد */
                 if (st.lastDailyDate && st.lastDailyDate > today) {
                     st.lastDailyDate = today;
                     saveSt();
@@ -336,6 +332,142 @@
             saveSt();
             return true;
         }
-
-
-
+        
+        /* ═══════════ LOAD QUESTION — VERSION WITH ERROR HANDLING ═══════════ */
+        function loadQuestion() {
+            try {
+                if (G.ended) return;
+                if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy') {
+                    endGame(); 
+                    return;
+                }
+                G.currentQ++;
+                G.answered = false;
+                G.helpersUsed.remove = false;
+                const removeBtn = document.getElementById('helperRemove');
+                if (removeBtn) removeBtn.classList.remove('used');
+                const expArea = document.getElementById('explanationArea');
+                if (expArea) expArea.innerHTML = '';
+                
+                const age = (st.age || (typeof calculateAgeFromBirthDate === 'function' ? calculateAgeFromBirthDate(st.birthDate) : 0));
+                let q = null;
+                let attempts = 0;
+                const maxAttempts = 60;
+                
+                while (attempts < maxAttempts && !q) {
+                    try {
+                        if (G.isTraining) {
+                            if (G.op === 'table' && G.customTable) {
+                                q = genQ('table', st.difficulty, G.customTable);
+                            } else {
+                                if (typeof getNextQuestion === 'function') {
+                                    q = getNextQuestion(G.op, st.difficulty);
+                                } else {
+                                    q = generateAgeAdaptiveQuestion(G.op, st.difficulty, age);
+                                    if (!q || !q.choices || q.choices.length < 4) q = genQ(G.op, st.difficulty);
+                                }
+                            }
+                        } else {
+                            if (G.op === 'table' && G.customTable) {
+                                q = genQ('table', st.difficulty, G.customTable);
+                            } else if (G.op === 'advanced') {
+                                q = genQ('advanced', st.difficulty);
+                            } else if (G.op === 'laws') {
+                                q = genQ('laws', st.difficulty);
+                            } else if (G.mode === 'daily') {
+                                const dailyIdx = (G.dailyQIndex !== undefined) ? G.dailyQIndex : (G.currentQ - 1);
+                                q = genDailyQ(dailyIdx);
+                                G.dailyQIndex = (G.dailyQIndex || 0) + 1;
+                            } else {
+                                let useDiff = st.difficulty;
+                                if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
+                                if (typeof getNextQuestion === 'function') {
+                                    q = getNextQuestion(G.op, useDiff);
+                                } else if (age > 0 && age <= 13) {
+                                    q = generateAgeAdaptiveQuestion(G.op, useDiff, age);
+                                    if (!q || !q.choices || q.choices.length < 4) q = genQ(G.op, useDiff);
+                                } else {
+                                    q = genQ(G.op, useDiff);
+                                }
+                            }
+                        }
+                        if (!q || typeof q.answer === 'undefined' || !q.choices || q.choices.length === 0) {
+                            console.warn("Invalid question generated, retrying...");
+                            q = null;
+                            attempts++;
+                            continue;
+                        }
+                        if (!G.isTraining) {
+                            const qKey = (q.text || '') + '|' + q.answer;
+                            if (G.askedQuestions && G.askedQuestions.includes(qKey) && attempts < maxAttempts - 5) {
+                                q = null;
+                                attempts++;
+                                continue;
+                            }
+                            if (!G.askedQuestions) G.askedQuestions = [];
+                            if (!G.askedQuestions.includes(qKey)) {
+                                G.askedQuestions.push(qKey);
+                                if (G.askedQuestions.length > 150) G.askedQuestions.shift();
+                            }
+                        }
+                        break;
+                    } catch(e) {
+                        console.error("Error generating question:", e);
+                        q = null;
+                        attempts++;
+                    }
+                }
+                
+                if (!q) {
+                    q = { text: "5 + 3", hint: "اجمع", answer: 8, choices: [8, 7, 9, 6], explanation: "5+3=8", catKey: "addition" };
+                }
+                
+                G.correctAnswer = q.answer;
+                G.currentExplanation = q.explanation || '';
+                G.currentCatKey = q.catKey || getCatStatsKey(G.op || 'add');
+                
+                const qt = document.getElementById('questionText');
+                if (qt) {
+                    qt.style.animation = 'none';
+                    void qt.offsetWidth;
+                    qt.style.animation = '';
+                    qt.textContent = (q.text.endsWith('؟') || q.text.endsWith('?') || q.text.endsWith('= ?') || q.text.endsWith('= ؟')) ? q.text : `${q.text} = ?`;
+                }
+                const hintEl = document.getElementById('questionHint');
+                if (hintEl) hintEl.textContent = q.hint || 'ما هو الجواب؟';
+                
+                const qNumEl = document.getElementById('questionNumber');
+                if (qNumEl) {
+                    if (G.isTraining) {
+                        qNumEl.textContent = `🎓 تدريب - ${G.correct+1}`;
+                    } else {
+                        qNumEl.textContent = G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
+                            G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
+                            G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
+                            `السؤال ${G.currentQ} من ${G.totalQ}`;
+                    }
+                }
+                
+                const statQ = document.getElementById('statQ');
+                if (statQ) statQ.textContent = (G.isTraining || G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy') ? G.correct : `${G.currentQ}/${G.totalQ}`;
+                
+                renderVisualAid(q);
+                
+                const grid = document.getElementById('answersGrid');
+                if (grid) {
+                    grid.innerHTML = '';
+                    const choices = q.choices || shuffle([q.answer, q.answer + 1, q.answer - 1, q.answer + 2]);
+                    choices.forEach(c => {
+                        const btn = document.createElement('button');
+                        btn.className = 'answer-btn';
+                        btn.textContent = c;
+                        btn.setAttribute('data-val', c);
+                        btn.onclick = () => checkAnswer(btn);
+                        grid.appendChild(btn);
+                    });
+                }
+            } catch(e) {
+                console.error("Fatal error in loadQuestion:", e);
+                if (!G.ended) endGame();
+            }
+        }
