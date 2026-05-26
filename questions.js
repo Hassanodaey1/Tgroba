@@ -308,7 +308,7 @@
             G.livesLeft = 99;
             G.customTable = null;
             G.hasTimer = false;
-            G.helpersUsed = { skip: false, remove: false };
+            G.helpersUsed = { skip: false, remove: false, heart: false }; /* ✅ FIX-HEART: تتبع استخدام القلب مرة واحدة فقط */
             G.askedQuestions = [];
             /* ✅ إعادة ضبط ذاكرة التكرار عند كل لعبة جديدة */
             if (typeof clearSessionMemory === 'function') clearSessionMemory();
@@ -429,7 +429,7 @@
             G.maxLives = lives; /* ✅ FIX-LIVES: ثابت — 3 قلوب دائماً لجميع الأعمار */
             G._survivalWrong = 0; /* ✅ FIX-SURVIVAL: عداد أخطاء وضع التحمّل */
             G.hasTimer = hasTimer;
-            G.helpersUsed = { skip: false, remove: false };
+            G.helpersUsed = { skip: false, remove: false, heart: false }; /* ✅ FIX-HEART: تتبع استخدام القلب مرة واحدة فقط */
             const titles = { classic: '🧮 كلاسيك', speed: '⚡ سرعة 60ث', survival: '🔥 التحمّل', frenzy: '💥 اندفاع',
                 daily: '🌟 تحدي اليوم' };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
@@ -529,8 +529,12 @@
                     showFeedback('🗑️ حُذفت إجابة خاطئة'); } else showFeedback('⚠️ لا توجد إجابات خاطئة للحذف');
             } else if (type === 'heart') {
                 if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي قلوب'); return; }
+                /* ✅ FIX-HEART: منع الاستخدام أكثر من مرة في الجلسة الواحدة */
+                if (G.helpersUsed.heart) { showFeedback('💖 استُخدم'); return; }
                 if (st.coins < 7) { showFeedback('💸 تحتاج 7💰'); return; }
                 st.coins -= 7;
+                G.helpersUsed.heart = true;
+                document.getElementById('helperHeart').classList.add('used');
                 G.livesLeft++;
                 saveSt();
                 updateUI();
@@ -590,6 +594,7 @@
             G.answered = false;
             G.helpersUsed.remove = false;
             document.getElementById('helperRemove').classList.remove('used');
+            /* ✅ helperHeart لا يُعاد إلا في بداية لعبة جديدة — ليس لكل سؤال */
             document.getElementById('explanationArea').innerHTML = '';
             const age = st.age || calculateAgeFromBirthDate(st.birthDate);
             let q;
