@@ -27,6 +27,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="shop.css">
 </head>
 <body>
 
@@ -483,39 +484,6 @@
                     </div>
                 </div>
 
-                <!-- SHOP PAGE -->
-                <div class="page" id="page-shop">
-
-                    <!-- رأس المتجر -->
-                    <div style="text-align:center;padding:18px 0 20px;">
-                        <div style="font-size:1.6em;font-weight:900;color:var(--text);">🛍️ المتجر</div>
-                    </div>
-
-                    <!-- رموز تعبيرية — الأحرف والوجوه -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">😊 الوجوه والشخصيات</div>
-                        <div class="emoji-shop-grid" id="emojiShopGrid"></div>
-                    </div>
-
-                    <!-- مشتريات مميزة — إطارات -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🖼️ الإطارات المميزة</div>
-                        <div class="emoji-shop-grid" id="framesShopGrid">
-                            <div style="text-align:center;padding:20px;color:var(--text3);font-size:0.72em;width:100%;">🔜 قريباً</div>
-                        </div>
-                    </div>
-
-                    <!-- مشتريات مميزة — ألقاب -->
-                    <div class="profile-section">
-                        <div class="profile-section-title">🎖️ ألقاب خاصة</div>
-                        <div id="titlesShopGrid" style="display:flex;flex-direction:column;gap:8px;">
-                            <div style="text-align:center;padding:20px;color:var(--text3);font-size:0.72em;">🔜 قريباً</div>
-                        </div>
-                    </div>
-
-                    <div style="text-align:center;padding:10px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
-                </div>
-
                 <!-- SETTINGS PAGE -->
                 <div class="page" id="page-settings">
                     <!-- عنوان الصفحة مُوسَّط -->
@@ -713,6 +681,35 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- SHOP PAGE -->
+                <div class="page" id="page-shop">
+                    <div class="page-title-header">🛍️ المتجر</div>
+
+                    <!-- رأس المتجر — الرصيد -->
+                    <div style="background:linear-gradient(135deg,rgba(240,185,11,0.15),rgba(240,185,11,0.05));border:1.5px solid rgba(240,185,11,0.3);border-radius:18px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                        <div>
+                            <div style="font-size:0.7em;color:var(--text2);">رصيدك الحالي</div>
+                            <div style="font-size:1.4em;font-weight:900;color:var(--gold);">💰 <span id="shopCoinsDisplay">0</span></div>
+                        </div>
+                        <div style="text-align:left;">
+                            <div style="font-size:0.65em;color:var(--text2);">رمزك</div>
+                            <div style="font-size:1.8em;" id="currentAvatarDisplay">🧑</div>
+                        </div>
+                    </div>
+
+                    <!-- تبويبات المتجر -->
+                    <div id="shopTabsRow" style="display:flex;gap:6px;margin-bottom:10px;"></div>
+
+                    <!-- محتوى المتجر -->
+                    <div id="shopItemsContainer"></div>
+
+                    <!-- رصيد ثانوي في الأسفل -->
+                    <div style="text-align:center;padding:10px 0 4px;font-size:0.65em;color:var(--text3);">
+                        رصيدك: <span id="shopCoinsDisplay2" style="color:var(--gold);font-weight:900;">0</span> 💰
+                    </div>
+                </div>
+
             </div><!-- /pages -->
 
             <!-- BOTTOM NAV -->
@@ -1457,5 +1454,6 @@
     <script src="fixes_init.js"></script>
     <script src="questions_engine.js"></script>
     <script src="patches.js"></script>
+    <script src="shop.js"></script>
 </body>
 </html>
