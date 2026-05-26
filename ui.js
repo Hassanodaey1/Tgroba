@@ -459,6 +459,8 @@ function updateUI() {
     try { if (typeof renderProfileTitles === 'function') renderProfileTitles(); } catch (e) {}
     /* تحديث لون زر المنافسة */
     updateCompetitionNavStyle();
+    /* ✅ تحديث عرض الرقم التسلسلي وإظهاره عند وجوده */
+    try { if (typeof updateSerialNumberDisplay === 'function') updateSerialNumberDisplay(); } catch(e) {}
     /* تطبيق الصورة الشخصية */
     try { applyProfilePhoto(); } catch(e) {}
 }
