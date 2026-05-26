@@ -55,6 +55,10 @@
                 tAccent2: '#06b6d4',
                 sessionTimeSecs: 0,
                 sessionDate: todayStr(),
+                /* ✅ STATS-V2: وقت اللعب الكلي التراكمي */
+                totalPlayTimeSecs: 0,
+                /* ✅ STATS-V2: أرشيف الأسابيع */
+                weeklyHistory: [],
                 ownedEmojis: ['👦'],
                 hearts: 3,
                 dailyStreak: 0,
@@ -103,6 +107,21 @@
             if (s.totalGames   > 9999999)  s.totalGames   = 9999999;
             if (typeof s.challengeBestScore !== 'number' || s.challengeBestScore < 0) s.challengeBestScore = 0;
             if (s.challengeBestScore > 9999999) s.challengeBestScore = 9999999;
+            /* ✅ STATS-V2: حقول الوقت الجديدة */
+            if (typeof s.totalPlayTimeSecs !== 'number' || s.totalPlayTimeSecs < 0) s.totalPlayTimeSecs = 0;
+            if (s.totalPlayTimeSecs > 99999999) s.totalPlayTimeSecs = 99999999;
+            if (!s.weeklyHistory) s.weeklyHistory = [];
+            if (s.weeklyStats && typeof s.weeklyStats._baseSessionSecs !== 'number') s.weeklyStats._baseSessionSecs = 0;
+            /* ✅ STATS-V2: إصلاح xpToNext المشوّهة */
+            if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 500;
+            /* إذا كانت xpToNext أكبر من 500,000 → مشوّهة من الضرب المتكرر × 1.3 */
+            if (s.xpToNext > 500000) {
+                const calcFn = typeof calcXpToNext === 'function' ? calcXpToNext : function(lv) {
+                    return Math.floor(400 + 120 * lv + 40 * Math.sqrt(lv));
+                };
+                s.xpToNext = calcFn(s.level || 1);
+                if (s.xp >= s.xpToNext) s.xp = Math.floor(s.xpToNext * 0.5);
+            }
             if (!s.dailyStats || s.dailyStats.date !== todayStr()) {
                 s.dailyStats = { correct: 0, wrong: 0, games: 0, date: todayStr() };
             }
@@ -220,7 +239,9 @@
         }
 
         function restoreAccount() {
-            const serial = document.getElementById('restoreSerialInput').value.trim();
+            /* ✅ يقرأ من الحقل المرئي الجديد أولاً، ثم القديم كـ fallback */
+            const inp = document.getElementById('restoreSerialInput') || document.getElementById('restoreSerialInputLegacy');
+            const serial = inp ? inp.value.trim() : '';
             if (!serial) { showFeedback('الرجاء إدخال الرقم التسلسلي'); return; }
 
             /* ① محلياً أولاً */
