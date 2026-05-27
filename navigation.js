@@ -46,9 +46,27 @@
         }
 
         function getDifficultyByLevel() {
-            if (st.level >= 8) return 'genius';
-            if (st.level >= 5) return 'hard';
-            if (st.level >= 3) return 'medium';
+            /*
+             * ✅ منحنى سلس — لا قفزات مفاجئة
+             * يعتمد على LEVEL_PHASES من questions_engine.js إن وُجدت
+             * وإلا يستخدم منحنى تدريجي محلي
+             */
+            var level = st.level || 1;
+
+            /* استخدام خريطة المستويات الدقيقة إن كانت متاحة */
+            if (typeof LEVEL_PHASES !== 'undefined') {
+                for (var i = 0; i < LEVEL_PHASES.length; i++) {
+                    if (level >= LEVEL_PHASES[i].from && level <= LEVEL_PHASES[i].to) {
+                        return LEVEL_PHASES[i].diff;
+                    }
+                }
+                return 'genius'; /* فوق المستوى 200 */
+            }
+
+            /* fallback: منحنى تدريجي بدون قفزات */
+            if (level >= 66)  return 'genius';
+            if (level >= 23)  return 'hard';
+            if (level >= 11)  return 'medium';
             return 'easy';
         }
 
