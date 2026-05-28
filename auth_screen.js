@@ -201,9 +201,15 @@ function _launchGame() {
         screen.classList.add('hidden');
         setTimeout(() => { screen.style.display = 'none'; }, 500);
     }
+    /* استدعاء كل دوال التهيئة اللازمة */
     try { checkDailyLoginBonus(); } catch (e) {}
     try { updateUI(); } catch (e) {}
     try { loadProfileForm(); } catch (e) {}
     try { updateSerialNumberDisplay(); } catch (e) {}
     try { applyProfilePhoto(); } catch (e) {}
+    try { updateHomeStats(); } catch (e) {}
+    try { renderHistory(); } catch (e) {}
+    try { renderTasks(); } catch (e) {}
+    try { updateUnlocks(); } catch (e) {}
+    try { updateStreakBanner(); } catch (e) {}
 }
