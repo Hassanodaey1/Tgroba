@@ -722,7 +722,10 @@ function _commonMistakes(ans, op) {
             r = [ans + 10, ans - 10, Math.round(ans * 1.1), ans + (ans % 10 === 0 ? 5 : -ans%10)];
             break;
         case 'div':
-            r = [ans + 1, ans - 1, ans + 2, Math.round(ans * 1.5)];
+            /* ✅ FIX-2.6: أخطاء القسمة الشائعة — قلب الأرقام، الضرب بدلاً من القسمة */
+            r = [ans + 1, ans - 1];
+            if (ans !== 0) r.push(ans * 2); /* الضرب بدلاً من القسمة */
+            r.push(Math.round(ans * 1.5));
             break;
         case 'percent':
             r = [Math.round(ans * 10), Math.round(ans / 10), ans * 2, ans - ans/2];
