@@ -145,24 +145,37 @@
             const diffMedium = document.getElementById('diffMedium');
             const diffHard = document.getElementById('diffHard');
             const diffGenius = document.getElementById('diffGenius');
+            /* ✅ زر "تلقائي" متاح دائماً بلا قفل */
+            const diffAuto = document.getElementById('diffAuto');
+            if (diffAuto) { diffAuto.classList.remove('locked'); diffAuto.onclick = function(){ selectDiff(this,'auto'); }; }
             if (diffMedium) {
                 if (level >= 3) { diffMedium.classList.remove('locked');
-                    document.getElementById('lockMedium').style.display = 'none'; } else { diffMedium.classList.add(
-                        'locked');
+                    document.getElementById('lockMedium').style.display = 'none';
+                    diffMedium.onclick = function(){ selectDiff(this,'medium'); };
+                } else { diffMedium.classList.add('locked');
                     document.getElementById('lockMedium').style.display = 'block'; }
             }
             if (diffHard) {
                 if (level >= 5) { diffHard.classList.remove('locked');
-                    document.getElementById('lockHard').style.display = 'none'; } else { diffHard.classList.add(
-                    'locked');
+                    document.getElementById('lockHard').style.display = 'none';
+                    diffHard.onclick = function(){ selectDiff(this,'hard'); };
+                } else { diffHard.classList.add('locked');
                     document.getElementById('lockHard').style.display = 'block'; }
             }
             if (diffGenius) {
                 if (level >= 8) { diffGenius.classList.remove('locked');
-                    document.getElementById('lockGenius').style.display = 'none'; } else { diffGenius.classList.add(
-                        'locked');
+                    document.getElementById('lockGenius').style.display = 'none';
+                    diffGenius.onclick = function(){ selectDiff(this,'genius'); };
+                } else { diffGenius.classList.add('locked');
                     document.getElementById('lockGenius').style.display = 'block'; }
             }
+            /* ✅ استعادة الزر النشط حسب st.difficulty المحفوظة */
+            const _savedDiff = st.difficulty || 'easy';
+            const _chipMap = { auto:'diffAuto', easy:'diffEasy', medium:'diffMedium', hard:'diffHard', genius:'diffGenius' };
+            document.querySelectorAll('.diff-chip').forEach(c => c.classList.remove('active'));
+            const _activeChip = document.getElementById(_chipMap[_savedDiff]);
+            if (_activeChip && !_activeChip.classList.contains('locked')) _activeChip.classList.add('active');
+            else { const _easy = document.getElementById('diffEasy'); if(_easy) _easy.classList.add('active'); }
         }
 
         function selectDiff(el, diff) {
@@ -170,7 +183,7 @@
             document.querySelectorAll('.diff-chip').forEach(c => { if (!c.classList.contains('locked')) c.classList
                     .remove('active'); });
             el.classList.add('active');
-            st.difficulty = diff;
+            st.difficulty = diff; /* 'easy'|'medium'|'hard'|'genius'|'auto' */
             playSound('click');
             saveSt();
         }
