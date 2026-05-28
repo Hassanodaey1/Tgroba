@@ -148,13 +148,14 @@ function generateAndShowSerial() {
         try { if (typeof initTitlesSystem === 'function') initTitlesSystem(); } catch (e) {}
         /* قرار: عرض شاشة Auth أم الدخول مباشرة */
         setTimeout(() => {
-            const isReturning = st && st.serialNumber && st.name && st.name !== 'Player';
+            /* لاعب عائد = عنده أي بيانات محفوظة في localStorage */
+            const hasAnyData  = st && (st.totalGames > 0 || st.xp > 0 || (st.name && st.name !== 'Player') || st.serialNumber);
             const isLoggedIn  = window._authUser != null;
-            if (isLoggedIn || isReturning) {
+            if (isLoggedIn || hasAnyData) {
                 /* لاعب عائد أو مسجّل دخول → اللعبة مباشرة */
                 _launchGame();
             } else {
-                /* لاعب جديد → شاشة Auth */
+                /* لاعب جديد حقيقي → شاشة Auth */
                 showAuthScreen();
             }
         }, 550);
