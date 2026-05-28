@@ -25,6 +25,7 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth-compat.js"></script>
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="shop.css">
@@ -48,6 +49,59 @@
         </div>
         <div class="splash-subtitle">تحديات في الرياضيات</div>
         <div class="splash-dots"><span class="splash-dot"></span><span class="splash-dot"></span><span class="splash-dot"></span></div>
+    </div>
+
+    <!-- ═══════════ AUTH SCREEN ═══════════ -->
+    <div id="authScreen" style="display:none;">
+        <div class="auth-floating-math" id="authFloatingMath"></div>
+        <div class="auth-header">
+            <div class="auth-logo-wrap">
+                <div class="auth-logo-icon">&#x1F9EE;</div>
+                <div class="auth-logo-text">HO Math</div>
+            </div>
+            <div class="auth-tagline">&#x062A;&#x062D;&#x062F;&#x0651;&#x0649; &#x0646;&#x0641;&#x0633;&#x0643; &#x0641;&#x064A; &#x0639;&#x0627;&#x0644;&#x0645; &#x0627;&#x0644;&#x0623;&#x0631;&#x0642;&#x0627;&#x0645;</div>
+        </div>
+        <div class="auth-card">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="atLogin"   onclick="authScreenTab('login')">&#x1F511; &#x062F;&#x062E;&#x0648;&#x0644;</button>
+                <button class="auth-tab"         id="atReg"    onclick="authScreenTab('register')">&#x1F4DD; &#x062D;&#x0633;&#x0627;&#x0628; &#x062C;&#x062F;&#x064A;&#x062F;</button>
+                <button class="auth-tab"         id="atSerial" onclick="authScreenTab('serial')">&#x1F522; &#x0631;&#x0642;&#x0645; &#x062A;&#x0633;&#x0644;&#x0633;&#x0644;&#x064A;</button>
+            </div>
+            <div class="auth-form-panel active" id="apLogin">
+                <div><label class="auth-field-label">&#x1F4E7; &#x0627;&#x0644;&#x0625;&#x064A;&#x0645;&#x064A;&#x0644;</label><input class="auth-input" id="alEmail" type="email" placeholder="example@email.com" autocomplete="email" /></div>
+                <div><label class="auth-field-label">&#x1F512; &#x0643;&#x0644;&#x0645;&#x0629; &#x0627;&#x0644;&#x0645;&#x0631;&#x0648;&#x0631;</label><input class="auth-input" id="alPass" type="password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" autocomplete="current-password" /></div>
+                <div id="alError" class="auth-error-msg"></div>
+                <button class="auth-btn-primary" id="alBtn" onclick="authScreenLogin()"><span>&#x062A;&#x0633;&#x062C;&#x064A;&#x0644; &#x0627;&#x0644;&#x062F;&#x062E;&#x0648;&#x0644;</span></button>
+                <button class="auth-btn-secondary" onclick="authScreenTab('reset')" style="font-size:0.78em;padding:10px;">&#x1F501; &#x0646;&#x0633;&#x064A;&#x062A; &#x0643;&#x0644;&#x0645;&#x0629; &#x0627;&#x0644;&#x0645;&#x0631;&#x0648;&#x0631;&#x061F;</button>
+            </div>
+            <div class="auth-form-panel" id="apReg">
+                <div><label class="auth-field-label">&#x1F4E7; &#x0627;&#x0644;&#x0625;&#x064A;&#x0645;&#x064A;&#x0644;</label><input class="auth-input" id="arEmail" type="email" placeholder="example@email.com" autocomplete="email" /></div>
+                <div><label class="auth-field-label">&#x1F512; &#x0643;&#x0644;&#x0645;&#x0629; &#x0627;&#x0644;&#x0645;&#x0631;&#x0648;&#x0631; (6 &#x0623;&#x062D;&#x0631;&#x0641; &#x0639;&#x0644;&#x0649; &#x0627;&#x0644;&#x0623;&#x0642;&#x0644;)</label><input class="auth-input" id="arPass" type="password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" autocomplete="new-password" /></div>
+                <div><label class="auth-field-label">&#x1F512; &#x062A;&#x0623;&#x0643;&#x064A;&#x062F; &#x0643;&#x0644;&#x0645;&#x0629; &#x0627;&#x0644;&#x0645;&#x0631;&#x0648;&#x0631;</label><input class="auth-input" id="arPass2" type="password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" autocomplete="new-password" /></div>
+                <div id="arError" class="auth-error-msg"></div>
+                <button class="auth-btn-primary" id="arBtn" onclick="authScreenRegister()"><span>&#x0625;&#x0646;&#x0634;&#x0627;&#x0621; &#x0627;&#x0644;&#x062D;&#x0633;&#x0627;&#x0628;</span></button>
+            </div>
+            <div class="auth-form-panel" id="apSerial">
+                <div class="auth-serial-restore">
+                    <div class="auth-serial-restore-title">&#x1F522; &#x0627;&#x0633;&#x062A;&#x0639;&#x0627;&#x062F;&#x0629; &#x0628;&#x0627;&#x0644;&#x0631;&#x0642;&#x0645; &#x0627;&#x0644;&#x062A;&#x0633;&#x0644;&#x0633;&#x0644;&#x064A;</div>
+                    <div style="font-size:0.7em;color:var(--text3);margin-bottom:12px;line-height:1.6;">&#x0625;&#x0630;&#x0627; &#x0643;&#x0646;&#x062A; &#x062A;&#x0644;&#x0639;&#x0628; &#x0633;&#x0627;&#x0628;&#x0642;&#x0627;&#x064B; &#x0628;&#x0627;&#x0644;&#x0631;&#x0642;&#x0645; &#x0627;&#x0644;&#x062A;&#x0633;&#x0644;&#x0633;&#x0644;&#x064A;&#x060C; &#x0623;&#x062F;&#x062E;&#x0644;&#x0647; &#x0647;&#x0646;&#x0627; &#x0644;&#x0627;&#x0633;&#x062A;&#x0639;&#x0627;&#x062F;&#x0629; &#x062A;&#x0642;&#x062F;&#x0645;&#x0643;</div>
+                    <input class="auth-input" id="asSerial" type="text" placeholder="20100515-MOHA-1234-7" style="margin-bottom:10px;font-size:0.82em;letter-spacing:1px;" />
+                    <div id="asError" class="auth-error-msg"></div>
+                    <button class="auth-btn-primary" id="asBtn" onclick="authScreenRestoreSerial()"><span>&#x0627;&#x0633;&#x062A;&#x0639;&#x0627;&#x062F;&#x0629; &#x0627;&#x0644;&#x062D;&#x0633;&#x0627;&#x0628;</span></button>
+                </div>
+            </div>
+            <div class="auth-form-panel" id="apReset">
+                <div style="text-align:center;font-size:0.8em;color:var(--text2);margin-bottom:4px;line-height:1.6;">&#x0623;&#x062F;&#x062E;&#x0644; &#x0625;&#x064A;&#x0645;&#x064A;&#x0644;&#x0643; &#x0648;&#x0633;&#x0646;&#x0631;&#x0633;&#x0644; &#x0644;&#x0643; &#x0631;&#x0627;&#x0628;&#x0637; &#x0625;&#x0639;&#x0627;&#x062F;&#x0629; &#x062A;&#x0639;&#x064A;&#x064A;&#x0646; &#x0643;&#x0644;&#x0645;&#x0629; &#x0627;&#x0644;&#x0645;&#x0631;&#x0648;&#x0631;</div>
+                <div><label class="auth-field-label">&#x1F4E7; &#x0627;&#x0644;&#x0625;&#x064A;&#x0645;&#x064A;&#x0644;</label><input class="auth-input" id="arsetEmail" type="email" placeholder="example@email.com" /></div>
+                <div id="arsetMsg" class="auth-success-msg"></div>
+                <div id="arsetError" class="auth-error-msg"></div>
+                <button class="auth-btn-primary" id="arsetBtn" onclick="authScreenReset()"><span>&#x0625;&#x0631;&#x0633;&#x0627;&#x0644; &#x0631;&#x0627;&#x0628;&#x0637; &#x0627;&#x0644;&#x0627;&#x0633;&#x062A;&#x0639;&#x0627;&#x062F;&#x0629;</span></button>
+                <button class="auth-btn-secondary" onclick="authScreenTab('login')" style="font-size:0.78em;padding:10px;">&#x2190; &#x0627;&#x0644;&#x0639;&#x0648;&#x062F;&#x0629; &#x0644;&#x062A;&#x0633;&#x062C;&#x064A;&#x0644; &#x0627;&#x0644;&#x062F;&#x062E;&#x0648;&#x0644;</button>
+            </div>
+            <div class="auth-divider" style="margin-top:20px;">&#x0623;&#x0648;</div>
+            <button class="auth-guest-btn" onclick="authScreenGuest()" style="margin-top:12px;">&#x1F464; &#x0627;&#x0644;&#x062F;&#x062E;&#x0648;&#x0644; &#x0643;&#x0636;&#x064A;&#x0641; &#x2014; &#x0628;&#x062F;&#x0648;&#x0646; &#x062D;&#x0633;&#x0627;&#x0628;</button>
+            <div class="auth-footer-note" style="margin-top:16px;">&#x1F512; &#x0628;&#x064A;&#x0627;&#x0646;&#x0627;&#x062A;&#x0643; &#x0645;&#x062D;&#x0641;&#x0648;&#x0638;&#x0629; &#x0628;&#x0623;&#x0645;&#x0627;&#x0646; &#x0639;&#x0644;&#x0649; Firebase<br>&#x0627;&#x0644;&#x062D;&#x0633;&#x0627;&#x0628; &#x0628;&#x0627;&#x0644;&#x0625;&#x064A;&#x0645;&#x064A;&#x0644; &#x064A;&#x062A;&#x064A;&#x062D; &#x0644;&#x0643; &#x0627;&#x0633;&#x062A;&#x0639;&#x0627;&#x062F;&#x0629; &#x062A;&#x0642;&#x062F;&#x0645;&#x0643; &#x0639;&#x0644;&#x0649; &#x0623;&#x064A; &#x062C;&#x0647;&#x0627;&#x0632;</div>
+        </div>
     </div>
 
     <!-- CONFIRM DIALOG -->
@@ -1326,134 +1380,4 @@
                 </div>
             </div>
 
-            <!-- زر العودة إلى الصفحة الرئيسية -->
-            <button onclick="document.getElementById('statsOverlay').style.display='none'; goTab('home');" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.9em;font-weight:900;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 العودة إلى الصفحة الرئيسية</button>
-        </div>
-    </div>
-
-    <script>
-        /* ═══ فتح/إغلاق الأقسام القابلة للطي ═══ */
-        function toggleSection(sectionId, chevronId) {
-            var section = document.getElementById(sectionId);
-            var chevron = document.getElementById(chevronId);
-            if (!section) return;
-            var isOpen = section.style.display !== 'none' && section.getAttribute('data-open') === '1';
-            if (isOpen) {
-                section.style.maxHeight = '0';
-                section.style.overflow = 'hidden';
-                section.setAttribute('data-open', '0');
-                if (chevron) chevron.style.transform = 'rotate(0deg)';
-                /* إخفاء كامل بعد انتهاء الأنيميشن */
-                setTimeout(function() {
-                    if (section.getAttribute('data-open') === '0') {
-                        section.style.display = 'none';
-                    }
-                }, 360);
-            } else {
-                section.style.display = 'flex';
-                section.style.flexDirection = 'column';
-                section.style.overflow = 'hidden';
-                section.setAttribute('data-open', '1');
-                /* تأخير بسيط لتشغيل الـ transition */
-                requestAnimationFrame(function() {
-                    section.style.maxHeight = (section.scrollHeight + 500) + 'px';
-                    section.style.overflow = 'auto';
-                    if (chevron) chevron.style.transform = 'rotate(180deg)';
-                });
-            }
-        }
-
-        /* ═══ مهام التحدي اليومية ═══ */
-        var CHALLENGE_TASKS = [
-            { icon:'⚡', name:'المبتدئ',   desc:'اجمع 5 نقاط في التحدي',  target:5,  reward:2  },
-            { icon:'🔥', name:'المتحمس',   desc:'اجمع 15 نقطة في التحدي', target:15, reward:4  },
-            { icon:'💪', name:'المقاتل',   desc:'اجمع 30 نقطة في التحدي', target:30, reward:6  },
-            { icon:'🏅', name:'المحترف',   desc:'اجمع 50 نقطة في التحدي', target:50, reward:10 },
-            { icon:'👑', name:'الأسطورة',  desc:'اجمع 80 نقطة في التحدي', target:80, reward:20 }
-        ];
-
-        function renderChallengeDailyTasks() {
-            var list = document.getElementById('challengeDailyTasksList');
-            if (!list) return;
-            var score = (typeof st !== 'undefined') ? (st.challengeBestScore || 0) : 0;
-            list.innerHTML = CHALLENGE_TASKS.map(function(t) {
-                var prog = Math.min(100, Math.round((score / t.target) * 100));
-                var done = score >= t.target;
-                return '<div class="task-item' + (done ? ' done' : '') + '">' +
-                    '<div class="task-item-icon">' + t.icon + '</div>' +
-                    '<div class="task-item-info">' +
-                        '<div class="task-item-name">' + t.name + '</div>' +
-                        '<div class="task-item-desc">' + t.desc + '</div>' +
-                        '<div class="task-prog-bar"><div class="task-prog-fill" style="width:' + prog + '%"></div></div>' +
-                    '</div>' +
-                    '<div class="task-right">' +
-                        '<div class="task-reward">+' + t.reward + '💰</div>' +
-                        '<div class="task-prog-txt">' + Math.min(score, t.target) + '/' + t.target + '</div>' +
-                        (done ? '<div style="font-size:0.7em;color:var(--green);">✅</div>' : '') +
-                    '</div>' +
-                '</div>';
-            }).join('');
-        }
-
-        /* ═══ فتح overlay الإحصائيات ═══ */
-        function openStatsOverlay() {
-            document.getElementById('statsOverlay').style.display = 'flex';
-            var map = { 'homeCorrect':'stat_correct','homeAccuracy':'stat_accuracy','homeStreak':'stat_streak','homeGames':'stat_games','homeLevel':'stat_level','homeBestScore':'stat_bestScore' };
-            Object.keys(map).forEach(function(s) { var a=document.getElementById(s),b=document.getElementById(map[s]); if(a&&b) b.textContent=a.textContent; });
-            var rn=document.getElementById('ratingNum'),rns=document.getElementById('ratingNumStat');
-            var rs=document.getElementById('ratingStars'),rss=document.getElementById('ratingStatStars');
-            var rb=document.getElementById('ratingBar'),rbs=document.getElementById('ratingStatBar');
-            if(rn&&rns) rns.textContent=rn.textContent;
-            if(rs&&rss) rss.textContent=rs.textContent;
-            if(rb&&rbs) rbs.style.width=rb.style.width;
-            var h=document.getElementById('historyScroll'),hs=document.getElementById('historyScrollStat');
-            if(h&&hs) hs.innerHTML=h.innerHTML;
-        }
-
-        /* تهيئة عند التحميل */
-        document.addEventListener('DOMContentLoaded', function() {
-            /* فتح قسم المهام تلقائياً */
-            var ts = document.getElementById('tasksSection');
-            var tc = document.getElementById('tasksChevron');
-            if (ts) {
-                ts.style.display = 'flex';
-                ts.style.flexDirection = 'column';
-                ts.style.maxHeight = '280px';
-                ts.style.overflow = 'auto';
-                ts.setAttribute('data-open', '1');
-            }
-            if (tc) tc.style.transform = 'rotate(180deg)';
-            /* قسم الإنجازات مغلق */
-            var as2 = document.getElementById('achieveSection');
-            if (as2) {
-                as2.style.display = 'none';
-                as2.style.maxHeight = '0';
-                as2.setAttribute('data-open', '0');
-            }
-            /* مهام التحدي مغلقة */
-            var ct = document.getElementById('challengeTasksBody');
-            if (ct) {
-                ct.style.display = 'none';
-                ct.style.maxHeight = '0';
-                ct.setAttribute('data-open', '0');
-            }
-            setTimeout(renderChallengeDailyTasks, 700);
-        });
-    </script>
-    <!-- JavaScript Modules -->
-    <script src="firebase.js"></script>
-    <script src="state.js"></script>
-    <script src="stats_engine.js"></script>
-    <script src="achievements.js"></script>
-    <script src="titles.js"></script>
-    <script src="audio_effects.js"></script>
-    <script src="navigation.js"></script>
-    <script src="questions.js"></script>
-    <script src="game.js"></script>
-    <script src="ui.js"></script>
-    <script src="fixes_init.js"></script>
-    <script src="questions_engine.js"></script>
-    <script src="patches.js"></script>
-    <script src="shop.js"></script>
-</body>
-</html>
+            <!-- زر العودة إلى الصفحة الرئي
