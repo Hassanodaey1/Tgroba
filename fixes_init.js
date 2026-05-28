@@ -141,12 +141,23 @@ function generateAndShowSerial() {
 
     if (st.bgOn) document.addEventListener('click', () => startBg(), { once: true });
 
-    /* إخفاء شاشة البداية */
+    /* إخفاء شاشة البداية → إظهار Auth أو اللعبة */
     setTimeout(() => {
         const ss = document.getElementById('splashScreen');
         if (ss) { ss.classList.add('hidden'); setTimeout(() => { if (ss) ss.style.display = 'none'; }, 500); }
-        try { checkDailyLoginBonus(); } catch (e) {}
         try { if (typeof initTitlesSystem === 'function') initTitlesSystem(); } catch (e) {}
+        /* قرار: عرض شاشة Auth أم الدخول مباشرة */
+        setTimeout(() => {
+            const isReturning = st && st.serialNumber && st.name && st.name !== 'Player';
+            const isLoggedIn  = window._authUser != null;
+            if (isLoggedIn || isReturning) {
+                /* لاعب عائد أو مسجّل دخول → اللعبة مباشرة */
+                _launchGame();
+            } else {
+                /* لاعب جديد → شاشة Auth */
+                showAuthScreen();
+            }
+        }, 550);
     }, 2800);
 
     document.addEventListener('touchstart', function () {
