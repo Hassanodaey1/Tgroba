@@ -422,36 +422,62 @@
             G.askedQuestions = [];
             let hasTimer = false;
             let lives = 3;
+            /* ✅ 4.TIME: ثوانٍ لكل سؤال حسب الصعوبة */
+            const _secsPerQ = { easy: 3, medium: 4, hard: 5, genius: 6 }[st.difficulty] || 3;
+
             if (mode === 'classic') {
-                G.totalQ = 10;
-                hasTimer = forceTimer;
-                if (hasTimer) { G.maxTime = 60;
-                    G.timeLeft = 60;
-                    lives = 3; } else { G.maxTime = 0;
+                G.totalQ  = 10;
+                hasTimer  = forceTimer;
+                if (hasTimer) {
+                    /* وقت ذكي = عدد الأسئلة × ثوانٍ/سؤال حسب الصعوبة */
+                    G.maxTime  = G.totalQ * _secsPerQ;
+                    G.timeLeft = G.maxTime;
+                    lives = 3;
+                } else {
+                    G.maxTime  = 0;
                     G.timeLeft = 0;
-                    lives = 0; }
-            } else if (mode === 'speed') { G.totalQ = 9999;
-                hasTimer = true;
-                G.maxTime = 60;
+                    lives = 0;
+                }
+            } else if (mode === 'speed') {
+                /* عدد أسئلة مفتوح → وقت ثابت 60 ثانية */
+                G.totalQ   = 9999;
+                hasTimer   = true;
+                G.maxTime  = 60;
                 G.timeLeft = 60;
-                lives = 3; } else if (mode === 'survival') { G.totalQ = 9999;
-                hasTimer = false;
-                lives = 0; } else if (mode === 'frenzy') { G.totalQ = 9999;
-                hasTimer = true;
-                G.maxTime = 30;
+                lives = 3;
+            } else if (mode === 'survival') {
+                G.totalQ  = 9999;
+                hasTimer  = false;
+                lives     = 0;
+            } else if (mode === 'frenzy') {
+                /* عدد مفتوح → وقت ثابت 30 ثانية */
+                G.totalQ   = 9999;
+                hasTimer   = true;
+                G.maxTime  = 30;
                 G.timeLeft = 30;
-                lives = 3; } else if (mode === 'daily') {
-                G.totalQ = 10; /* ✅ FIX-DAILY: رُفع من 5 إلى 10 أسئلة */
-                hasTimer = false;
+                lives = 3;
+            } else if (mode === 'daily') {
+                G.totalQ  = 10; /* ✅ FIX-DAILY: 10 أسئلة متدرجة */
+                /* وقت ذكي لتحدي اليوم = عدد الأسئلة × ثوانٍ/سؤال */
+                hasTimer   = true;
+                G.maxTime  = G.totalQ * _secsPerQ;
+                G.timeLeft = G.maxTime;
                 lives = 0;
-                G.dailyQIndex = 0; /* ✅ FIX-DAILY: عداد للصعوبة المتدرجة */ }
+                G.dailyQIndex = 0; /* ✅ FIX-DAILY: عداد للصعوبة المتدرجة */
+            }
             G.livesLeft = lives;
             G.maxLives = lives; /* ✅ FIX-LIVES: ثابت — 3 قلوب دائماً لجميع الأعمار */
             G._survivalWrong = 0; /* ✅ FIX-SURVIVAL: عداد أخطاء وضع التحمّل */
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false, heart: false }; /* ✅ FIX-HEART: تتبع استخدام القلب مرة واحدة فقط */
-            const titles = { classic: '🧮 كلاسيك', speed: '⚡ سرعة 60ث', survival: '🔥 التحمّل', frenzy: '💥 اندفاع',
-                daily: '🌟 تحدي اليوم' };
+            /* ✅ 4.TIME: عناوين الأوضاع مع الوقت الفعلي */
+            const titles = {
+                classic:  `🧮 كلاسيك${hasTimer ? ' • '+G.maxTime+'ث' : ''}`,
+                speed:    '⚡ سرعة 60ث',
+                survival: '🔥 التحمّل',
+                frenzy:   '💥 اندفاع 30ث',
+                daily:    `🌟 تحدي اليوم • ${G.maxTime}ث`
+            };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
             document.getElementById('streakNum').textContent = 0;
