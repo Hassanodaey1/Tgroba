@@ -33,6 +33,10 @@
             }
             if (tab === 'home') { updateHomeStats();
                 renderHistory(); }
+            if (tab === 'play') {
+                /* ✅ FIX-2.5d: مزامنة أزرار الصعوبة عند فتح صفحة الألعاب */
+                if (typeof syncDiffChips === 'function') syncDiffChips();
+            }
         /* إظهار زر الإعدادات دائماً ما عدا صفحة الإعدادات نفسها */
         const settingsBtn = document.getElementById('mainSettingsBtn');
         if (settingsBtn) {
@@ -167,12 +171,34 @@
 
         function selectDiff(el, diff) {
             if (el.classList.contains('locked')) return;
-            document.querySelectorAll('.diff-chip').forEach(c => { if (!c.classList.contains('locked')) c.classList
-                    .remove('active'); });
+            document.querySelectorAll('.diff-chip').forEach(c => {
+                if (!c.classList.contains('locked')) c.classList.remove('active');
+            });
             el.classList.add('active');
-            st.difficulty = diff;
+            /* ✅ FIX-2.5b: 'auto' = تلقائي حسب المستوى | باقي القيم = اختيار يدوي صريح */
+            st.difficulty = diff; /* 'easy'|'medium'|'hard'|'genius'|'auto' */
             playSound('click');
             saveSt();
+        }
+
+        /* ✅ FIX-2.5b: تحديث زر التلقائي عند تحميل الواجهة */
+        function syncDiffChips() {
+            const d = st.difficulty || 'auto';
+            document.querySelectorAll('.diff-chip').forEach(c => {
+                if (!c.classList.contains('locked')) c.classList.remove('active');
+            });
+            const map = {
+                'easy':   'diffEasy',
+                'medium': 'diffMedium',
+                'hard':   'diffHard',
+                'genius': 'diffGenius',
+                'auto':   'diffAuto'
+            };
+            const targetId = map[d];
+            if (targetId) {
+                const el = document.getElementById(targetId);
+                if (el && !el.classList.contains('locked')) el.classList.add('active');
+            }
         }
 
         function openSheet(id) { document.getElementById(id).classList.add('active'); }
