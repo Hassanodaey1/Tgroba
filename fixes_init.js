@@ -112,23 +112,36 @@ function generateAndShowSerial() {
         if (el) el.textContent = st.vibrationOn ? 'مفعّل' : 'مطفأ';
     });
 
-    /* رقائق الصعوبة */
+    /* ✅ FIX-DIFF-INIT: رقائق الصعوبة — يدعم easy/medium/hard/genius/auto */
     (function () {
         const chips = document.querySelectorAll('.diff-chip');
         chips.forEach(c => c.classList.remove('active'));
-        const diffMap = { medium: 'diffMedium', hard: 'diffHard', genius: 'diffGenius' };
-        const tid = diffMap[st.difficulty];
+        const diffMap = {
+            easy:   'diffEasy',
+            medium: 'diffMedium',
+            hard:   'diffHard',
+            genius: 'diffGenius',
+            auto:   'diffAuto'
+        };
+        const d   = st.difficulty || 'easy';
+        const tid = diffMap[d];
         if (tid) {
             const dc = document.getElementById(tid);
-            /* لا نُفعّل إذا كانت مقفلة (locked أو diff-locked) */
             if (dc && !dc.classList.contains('locked') && !dc.classList.contains('diff-locked')) {
                 dc.classList.add('active');
                 return;
             }
         }
-        /* افتراضي: سهل دائماً */
+        /* إذا كان 'auto' واللاعب جديد → نُفعّل auto ولا نُغيّر st.difficulty */
+        if (d === 'auto') {
+            const autoEl = document.getElementById('diffAuto');
+            if (autoEl) { autoEl.classList.add('active'); return; }
+        }
+        /* افتراضي: سهل */
         st.difficulty = 'easy';
-        if (chips[0]) chips[0].classList.add('active');
+        const easyEl = document.getElementById('diffEasy');
+        if (easyEl) easyEl.classList.add('active');
+        else if (chips[0]) chips[0].classList.add('active');
     })();
 
     try { updSessionTimer(); } catch (e) {}
