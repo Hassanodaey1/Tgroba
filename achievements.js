@@ -39,6 +39,14 @@
                     .age && st.age >= 18 && (st.stats['algebra']?.cor || 0) >= 20, reward: 15 },
             { id: 'wise_numbers', icon: '🧙', name: 'حكيم الأرقام', desc: 'عمرك 60+ وأجبت 30 صحيحة', check: () => st.age &&
                     st.age >= 60 && st.correctTotal >= 30, reward: 20 },
+            /* ✅ FIX-9.1: إنجازات الأوضاع الجديدة + إنجازات الكوين */
+            { id: 'perfect_game',   icon: '🏅', name: 'لعبة مثالية',      desc: 'أكمل لعبة بدقة 100% (5+ أسئلة)', check: () => (st._perfectGames || 0) >= 1, reward: 10 },
+            { id: 'daily_streak3',  icon: '🗓️', name: 'ثلاثة أيام متتالية', desc: 'سجّل الدخول 3 أيام متتالية',      check: () => (st.dailyStreak || 0) >= 3,   reward: 8  },
+            { id: 'daily_streak7',  icon: '📅', name: 'أسبوع كامل',        desc: 'سجّل الدخول 7 أيام متتالية',      check: () => (st.dailyStreak || 0) >= 7,   reward: 15 },
+            { id: 'coins50',        icon: '💎', name: 'خمسون عملة',        desc: 'اجمع 50 عملة',                    check: () => (st.coins || 0) >= 50,        reward: 0  },
+            { id: 'coins200',       icon: '💰', name: 'مئتا عملة',         desc: 'اجمع 200 عملة',                   check: () => (st.coins || 0) >= 200,       reward: 0  },
+            { id: 'genius_diff',    icon: '🧠', name: 'صعوبة العبقري',     desc: 'افتح مستوى صعوبة العبقري',        check: () => (st.level || 1) >= 8,         reward: 10 },
+            { id: 'century',        icon: '💯', name: 'مئة إجابة صحيحة',  desc: 'أجب على 100 سؤال صحيح',           check: () => (st.correctTotal || 0) >= 100,reward: 12 },
         ];
 
         function checkAchievements() {
@@ -48,6 +56,13 @@
             st.achievementsUnlocked = st.achievementsUnlocked.filter(id => validIds.includes(id));
             /* تحقق من أن العملات الممنوحة لم تتجاوز الحد الأقصى الممكن للإنجازات */
             if (typeof st._achCoinsGiven !== 'number') st._achCoinsGiven = 0;
+            /* ✅ FIX-9.2: تحديث سجل اللعبات المثالية */
+            try {
+                if (typeof G !== 'undefined' && G.ended && !G.isTraining) {
+                    const _tt = (G.correct || 0) + (G.wrong || 0);
+                    if (_tt >= 5 && G.wrong === 0) st._perfectGames = (st._perfectGames || 0) + 1;
+                }
+            } catch(e) {}
             let newUnlocks = [];
             ACHIEVEMENTS_DEF.forEach(a => {
                 if (!st.achievementsUnlocked.includes(a.id) && a.check()) {
@@ -174,7 +189,11 @@
                     t.done = true;
                     st.coins += t.reward;
                     changed = true; } }
-            if (changed) playSound('levelup');
+            if (changed) {
+                /* ✅ AUDIO-INT: صوت اكتمال المهمة + إشعار مرئي */
+                playSound('task');
+                try { showFeedback('✅ مهمة مكتملة! عملات أُضيفت 💰'); } catch(e) {}
+            }
             saveSt();
             renderTasks();
         }
