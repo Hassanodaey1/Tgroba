@@ -114,7 +114,8 @@
             setTimeout(() => {
                 try {
                     if (G.ended) return;
-                    if (!G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.currentQ >= G.totalQ) {
+                    const _openModes2 = ['speed', 'survival', 'frenzy'];
+                    if (!G.isTraining && !_openModes2.includes(G.mode) && G.currentQ >= G.totalQ) {
                         endGame();
                     } else if (!G.ended) {
                         loadQuestion();
@@ -173,9 +174,30 @@
                 /* 3.6: رفع الحد الأقصى حسب الصعوبة */
                 const _diffCap  = { easy:0.4, medium:0.8, hard:1.2, genius:1.8 }[st.difficulty] || 0.4;
                 const _maxCoins = _maxQ * _diffCap * 2 + 15;
-                /* 3.7: معامل الوضع الصعب */
-                const _modeMult = { speed:1.5, frenzy:1.8, survival:1.3 }[G.mode] || 1.0;
-                G.coinsEarned   = G.coinsEarned * _modeMult;
+                /* 3.7: معامل الوضع — شامل أوضاع التحديات الجديدة */
+                const _modeMult = {
+                    speed:      1.5,
+                    frenzy:     1.8,
+                    survival:   1.3,
+                    accuracy:   1.6,
+                    marathon:   2.0,
+                    impossible: 2.5
+                }[G.mode] || 1.0;
+                G.coinsEarned = G.coinsEarned * _modeMult;
+
+                /* ✅ شارة التحدي — تُمنح عند إكمال التحدي */
+                if (G._challengeBadge) {
+                    const badgeKey = `badge_${G.mode}`;
+                    if (!st[badgeKey]) {
+                        st[badgeKey] = true;
+                        const badgeNames = {
+                            accuracy:   '🎯 شارة الدقة',
+                            marathon:   '🏆 شارة الماراثون',
+                            impossible: '💀 شارة المستحيل'
+                        };
+                        setTimeout(() => showFeedback(`${G._challengeBadge} حصلت على ${badgeNames[G.mode] || 'شارة جديدة'}!`), 500);
+                    }
+                }
                 G.correct     = Math.max(0, Math.min(Math.floor(G.correct),     _maxQ));
                 G.wrong       = Math.max(0, Math.min(Math.floor(G.wrong),       _maxQ));
                 G.score       = Math.max(0, Math.min(Math.floor(G.score),       _maxScore));
@@ -189,6 +211,10 @@
                 recordDailyStat('game');
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
                 if (G.score > st.bestScore) st.bestScore = G.score;
+                /* ✅ حفظ أفضل نتيجة للأوضاع الجديدة */
+                if (G.mode === 'accuracy'   && G.score > (st.accuracyBest   || 0)) st.accuracyBest   = G.score;
+                if (G.mode === 'marathon'   && G.score > (st.marathonBest   || 0)) st.marathonBest   = G.score;
+                if (G.mode === 'impossible' && G.score > (st.impossibleBest || 0)) st.impossibleBest = G.score;
                 const xpResult = typeof applyXpGain === 'function'
                     ? applyXpGain(G.correct, G.wrong, G.score, G.bestStreak)
                     : { xpGained: G.score * 2 + G.correct * 5, levelsGained: 0 };
@@ -210,7 +236,7 @@
                 }
                 if (['classic', 'speed', 'survival', 'frenzy'].includes(G.mode)) { st.catCounter.correct += G.correct;
                     st.catCounter.total += G.correct + G.wrong; }
-                if (['speed', 'survival', 'frenzy', 'daily'].includes(G.mode)) st.catChallenges.games++;
+                if (['speed', 'survival', 'frenzy', 'daily', 'accuracy', 'marathon', 'impossible'].includes(G.mode)) st.catChallenges.games++;
                 try { updTask('game'); } catch(e) {}
                 if (G.mode === 'daily') {
                     if (typeof hasDailyBeenPlayed === 'function' && !hasDailyBeenPlayed()) {
@@ -239,6 +265,37 @@
                 document.getElementById('resultsTitle').textContent = ttl;
                 document.getElementById('resultsSub').textContent =
                     `${G.correct} صحيح من ${G.correct+G.wrong} سؤال • ${acc}% دقة`;
+
+                /* ✅ 4.1: مقارنة تاريخية — "كيف تحسّنت؟" */
+                const compEl = document.getElementById('resultsComparison');
+                if (compEl && st.history.length >= 2) {
+                    const lastGame = st.history[1]; /* الجلسة السابقة */
+                    const accDiff = acc - (lastGame.acc || 0);
+                    const scoreDiff = G.score - (lastGame.score || 0);
+                    const arrow = v => v >= 0 ? `<span style="color:var(--green)">↑ +${v}</span>` : `<span style="color:var(--red)">↓ ${v}</span>`;
+                    compEl.style.display = 'block';
+                    compEl.innerHTML = `
+                        <div style="font-size:0.72em;font-weight:900;color:var(--text2);margin-bottom:6px;">📊 مقارنة بآخر جلسة</div>
+                        <div style="display:flex;gap:8px;">
+                            <div style="flex:1;background:var(--surface3);border-radius:11px;padding:8px;text-align:center;">
+                                <div style="font-size:0.65em;color:var(--text2);">الدقة</div>
+                                <div style="font-size:0.95em;font-weight:900;color:var(--text);">${acc}%</div>
+                                <div style="font-size:0.6em;">${arrow(accDiff)}</div>
+                            </div>
+                            <div style="flex:1;background:var(--surface3);border-radius:11px;padding:8px;text-align:center;">
+                                <div style="font-size:0.65em;color:var(--text2);">النقاط</div>
+                                <div style="font-size:0.95em;font-weight:900;color:var(--gold);">${G.score}</div>
+                                <div style="font-size:0.6em;">${arrow(scoreDiff)}</div>
+                            </div>
+                            <div style="flex:1;background:var(--surface3);border-radius:11px;padding:8px;text-align:center;">
+                                <div style="font-size:0.65em;color:var(--text2);">أفضل تتابع</div>
+                                <div style="font-size:0.95em;font-weight:900;color:var(--accent2);">${G.bestStreak}</div>
+                                <div style="font-size:0.6em;color:var(--text3);">سجل: ${st.bestStreak}</div>
+                            </div>
+                        </div>`;
+                } else if (compEl) {
+                    compEl.style.display = 'none';
+                }
                 document.getElementById('resScore').textContent = G.score;
                 document.getElementById('resCorrect').textContent = G.correct;
                 document.getElementById('resStreak').textContent = G.bestStreak;
