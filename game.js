@@ -394,7 +394,7 @@
                     return;
                 }
                 let yesterdayD = new Date(Date.now() - 86400000);
-                let yesterday = `${yesterdayD.getFullYear()}-${String(yesterdayD.getMonth()+1).padStart(2,'0')}-${String(yesterdayD.getDate()).padStart(2,'0')}`;
+                let yesterday = `${yesterdayD.getFullYear()}-${yesterdayD.getMonth()+1}-${yesterdayD.getDate()}`;
                 st.dailyStreak = st.lastDailyDate === yesterday ? st.dailyStreak + 1 : 1;
                 st.lastDailyDate = today;
                 st.dailyShieldUsed = false;
@@ -515,7 +515,14 @@
                 
                 G.correctAnswer = q.answer;
                 G.currentExplanation = q.explanation || '';
-                G.currentCatKey = q.catKey || getCatStatsKey(G.op || 'add');
+                /* ✅ تتبع إحصائيات كل جدول ضرب بشكل مستقل */
+                G.currentCatKey = (G.op === 'table' && G.customTable)
+                    ? 'table_' + G.customTable
+                    : (q.catKey || getCatStatsKey(G.op || 'add'));
+                /* تهيئة إحصائيات الجدول إن لم توجد */
+                if (G.op === 'table' && G.customTable && !st.stats[G.currentCatKey]) {
+                    st.stats[G.currentCatKey] = { att: 0, cor: 0, max: 0, stars: 0, first: 0 };
+                }
                 
                 const qt = document.getElementById('questionText');
                 if (qt) {
