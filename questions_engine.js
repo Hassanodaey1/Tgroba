@@ -722,7 +722,26 @@ function _commonMistakes(ans, op) {
             r = [ans + 10, ans - 10, Math.round(ans * 1.1), ans + (ans % 10 === 0 ? 5 : -ans%10)];
             break;
         case 'div':
-            r = [ans + 1, ans - 1, ans + 2, Math.round(ans * 1.5)];
+            /* ✅ FIX-2.6: أخطاء القسمة الشائعة الحقيقية */
+            /* خطأ: الضرب بدلاً من القسمة (لا نعرف b هنا لكن نحاكيه) */
+            r = [
+                ans + 1,                        /* خطأ ±1 شائع */
+                ans - 1,
+                Math.round(ans * 2),            /* ضرب بدلاً من قسمة */
+                ans + 2,                        /* خطأ ±2 */
+                Math.round(ans * 1.5),          /* تقدير خاطئ */
+                ans === 0 ? 1 : 0               /* خطأ: ظن أن الناتج صفر */
+            ];
+            break;
+        case 'sub':
+            /* ✅ FIX-2.6: أخطاء الطرح الشائعة */
+            r = [
+                ans + 1,                        /* ±1 */
+                ans - 1,
+                ans + 10,                       /* خطأ العشرات */
+                ans - 10,
+                -ans                            /* قلب الطرح */
+            ];
             break;
         case 'percent':
             r = [Math.round(ans * 10), Math.round(ans / 10), ans * 2, ans - ans/2];
