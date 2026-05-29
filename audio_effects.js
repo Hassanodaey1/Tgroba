@@ -392,7 +392,8 @@ function bgNote() {
     _bgGain.gain.setValueAtTime(0.022 * vol * (_bgAccelerated ? 1.3 : 1.0), ctx.currentTime);
 
     const noteIdx = _bgCurrentPattern[_bgNoteIdx % _bgCurrentPattern.length];
-    const freq = _BG_SCALE[noteIdx];
+    const activeScale = (typeof _bgActiveScale !== 'undefined') ? _bgActiveScale : _BG_SCALE;
+    const freq = activeScale[noteIdx % activeScale.length];
     _bgNoteIdx++;
 
     const o = ctx.createOscillator();
@@ -467,6 +468,86 @@ function setBgMoodForMode(mode) {
         default:         _bgCurrentPattern = _BG_PATTERNS[0]; break;
     }
     _bgNoteIdx = 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5.5 — ثيمات موسيقية مختلفة حسب وضع اللعب
+═══════════════════════════════════════════════════════════════ */
+
+/* سلّم مينور: D مينور (توتر وإثارة) للأوضاع الصعبة */
+const _BG_SCALE_MINOR = [293.66, 329.63, 349.23, 392.00, 415.30, 466.16, 493.88, 587.33];
+/* سلّم بنتاتوني (مريح وممتع) لوضع التدريب والكلاسيك */
+const _BG_SCALE_PENTA = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+
+var _bgActiveScale = _BG_SCALE; /* السلّم الحالي */
+var _bgBaseInterval = 480;       /* الفاصل الزمني الأساسي */
+
+/**
+ * يبدأ الموسيقى بثيم مخصّص للوضع
+ * @param {string} mode  classic | speed | frenzy | survival | daily
+ */
+function startBgForMode(mode) {
+    stopBg();
+
+    switch (mode) {
+        case 'speed':
+            /* ⚡ سرعة: مينور + سريع */
+            _bgCurrentPattern  = _BG_PATTERNS[1];
+            _bgActiveScale     = _BG_SCALE_MINOR;
+            _bgBaseInterval    = 280;
+            _bgAccelerated     = false;
+            break;
+
+        case 'frenzy':
+            /* 💥 اندفاع: مينور + أسرع + نمط معقد */
+            _bgCurrentPattern  = _BG_PATTERNS[2];
+            _bgActiveScale     = _BG_SCALE_MINOR;
+            _bgBaseInterval    = 220;
+            _bgAccelerated     = true;
+            break;
+
+        case 'survival':
+            /* 🔥 تحمّل: بنتاتوني هادئ + تدريجي */
+            _bgCurrentPattern  = _BG_PATTERNS[0];
+            _bgActiveScale     = _BG_SCALE_PENTA;
+            _bgBaseInterval    = 560;
+            _bgAccelerated     = false;
+            break;
+
+        case 'daily':
+            /* 🌟 يومي: سلّم مجور + نمط تأرجح مميز */
+            _bgCurrentPattern  = _BG_PATTERNS[1];
+            _bgActiveScale     = _BG_SCALE;
+            _bgBaseInterval    = 400;
+            _bgAccelerated     = false;
+            break;
+
+        default:
+            /* كلاسيك وغيره: هادئ مريح */
+            _bgCurrentPattern  = _BG_PATTERNS[0];
+            _bgActiveScale     = _BG_SCALE_PENTA;
+            _bgBaseInterval    = 480;
+            _bgAccelerated     = false;
+            break;
+    }
+
+    _bgNoteIdx = 0;
+    if (st && st.bgOn) {
+        bgInt = setInterval(bgNote, _bgBaseInterval);
+    }
+}
+
+/* نسخة سريعة للأوضاع عالية الضغط */
+function startBgFast() {
+    stopBg();
+    _bgCurrentPattern = _BG_PATTERNS[2];
+    _bgActiveScale    = _BG_SCALE_MINOR;
+    _bgBaseInterval   = 220;
+    _bgAccelerated    = true;
+    _bgNoteIdx        = 0;
+    if (st && st.bgOn) {
+        bgInt = setInterval(bgNote, _bgBaseInterval);
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -549,4 +630,8 @@ document.addEventListener('click', function() {
     gACtx();
     if (aCtx && aCtx.state === 'suspended') aCtx.resume().catch(() => {});
 }, { once: true });
+
+/* 5.5 — تصدير الدوال للاستخدام من questions.js */
+window.startBgForMode = startBgForMode;
+window.startBgFast    = startBgFast;
 
