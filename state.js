@@ -76,7 +76,11 @@
                 challengeBestScore: 0,
                 /* ✅ FIX-4.2: المهام الأسبوعية */
                 weeklyTasks: [],
-                weeklyTasksDate: ''
+                weeklyTasksDate: '',
+                /* 5.3/5.4: مخزون المساعدات المشتراة من المتجر */
+                _inv_skip: 0,
+                _inv_remove: 0,
+                _inv_heart: 0
             };
         }
 
@@ -138,6 +142,13 @@
             /* ✅ FIX-4.2: تهيئة المهام الأسبوعية */
             if (!Array.isArray(s.weeklyTasks)) s.weeklyTasks = [];
             if (typeof s.weeklyTasksDate !== 'string') s.weeklyTasksDate = '';
+            /* 5.3/5.4: تهيئة مخزون المساعدات */
+            if (typeof s._inv_skip   !== 'number' || s._inv_skip   < 0) s._inv_skip   = 0;
+            if (typeof s._inv_remove !== 'number' || s._inv_remove < 0) s._inv_remove = 0;
+            if (typeof s._inv_heart  !== 'number' || s._inv_heart  < 0) s._inv_heart  = 0;
+            if (s._inv_skip   > 99) s._inv_skip   = 99;
+            if (s._inv_remove > 99) s._inv_remove = 99;
+            if (s._inv_heart  > 99) s._inv_heart  = 99;
             return s;
         }
 
