@@ -75,6 +75,9 @@
                 serialNumber: '',
                 darkMode: true,
                 challengeBestScore: 0,
+                /* ✅ 4.2: المهام الأسبوعية */
+                weeklyTasks: [],
+                weeklyTasksDate: '',
                 /* ═══ صندوق المكافأة اليومي ═══ */
                 dailyBox: { opened: false, date: '', reward: 0 },
                 /* ═══ مكافأة تسجيل الدخول اليومي ═══ */
