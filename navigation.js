@@ -10,7 +10,8 @@
             playSound('click');
             if (tab === 'achieve') { checkDailyReset();
                 renderTasks();
-                renderAchievements(); }
+                renderAchievements();
+                try { checkWeeklyReset(); renderWeeklyTasks(); } catch(e) {} }
             if (tab === 'profile') {
                 checkDailyReset();
                 loadProfileForm();
