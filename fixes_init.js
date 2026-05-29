@@ -56,20 +56,15 @@ function setVibrationStrength(val) {
 /* ─── مكافأة يومية ─── */
 function checkDailyLoginBonus() {
     const today = todayStr();
-    /* ✅ FIX-V6: منع إعادة المكافأة بتغيير التاريخ — نتحقق أن اليوم الجديد أكبر من السابق */
-    if (st._lastLoginBonus === today) return;
+    /* ✅ FIX-DOUBLE-BONUS: استخدام نفس المفتاح المستخدم في game.js (loginBonusDate) لمنع المكافأة المزدوجة */
+    if (st.loginBonusDate === today) return;
     /* إذا كان التاريخ المخزّن في المستقبل (تلاعب بالساعة) → نتجاهل ونُحدّث فقط */
-    if (st._lastLoginBonus && st._lastLoginBonus > today) {
-        st._lastLoginBonus = today; saveSt(); return;
+    if (st.loginBonusDate && st.loginBonusDate > today) {
+        st.loginBonusDate = today; saveSt(); return;
     }
-    st._lastLoginBonus = today;
-    const bonus = Math.min(10, 3 + Math.floor((st.dailyStreak || 0) / 3));
-    st.coins += bonus;
+    /* لا نعطي المكافأة هنا — تُعطى بالفعل من updateDailyShield في game.js */
+    /* هذه الدالة تبقى فقط للتحقق من الصحة وعدم التكرار */
     saveSt();
-    setTimeout(() => {
-        showFeedback(`🎁 مكافأة يومية: +${bonus}💰`);
-        doConfetti();
-    }, 3500);
 }
 
 /* ─── عداد السلسلة اليومية ─── */
