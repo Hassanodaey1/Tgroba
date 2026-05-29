@@ -1,4 +1,19 @@
 /* QUESTIONS & GAME MODES */
+        /* ✅ FIX-2.3: دالة تبسيط الكسر — تُعرض الكسور بشكل رياضي صحيح */
+        function simplifyFraction(num, den) {
+            function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+            const g = gcd(Math.abs(num), Math.abs(den));
+            const sNum = num / g, sDen = den / g;
+            if (sDen === 1) return String(sNum);
+            if (sNum > sDen) {
+                const whole = Math.floor(sNum / sDen);
+                const rem   = sNum % sDen;
+                return rem === 0 ? String(whole) : `${whole} و ${rem}/${sDen}`;
+            }
+            return `${sNum}/${sDen}`;
+        }
+
+
         /* ═══════════ QUESTION GENERATOR ═══════════ */
         function genQ(op, diff, customTable = null) {
             if (op === 'table' && customTable) {
@@ -103,7 +118,7 @@
                     { text: 'ما الجذر التكعيبي لـ 27؟', ans: 3, explanation: '3³=27' },
                 ];
                 /* استخدام المجموعة الموسّعة إذا كانت متاحة */
-                if (typeof genExtendedLawQ === 'function' && rnd(0, 1) === 1) {
+                if (typeof genExtendedLawQ === 'function') { /* ✅ FIX-2.1: 100% دائماً بدلاً من 50% */
                     return genExtendedLawQ();
                 }
                 let q = lawQ[rnd(0, lawQ.length - 1)];
@@ -124,7 +139,9 @@
             let ch = op;
             if (op === 'mix') {
                 /* 30% من الأسئلة تأتي من المولّد المتنوع */
-                if (typeof genAdvancedDiverseQ === 'function' && rnd(0, 9) < 3) {
+                /* ✅ FIX-2.4: نسبة ديناميكية حسب المستوى: 30%→50%→70% */
+                const _advChance = Math.min(7, Math.floor((typeof st !== 'undefined' ? (st.level || 1) : 1) / 5) + 3);
+                if (typeof genAdvancedDiverseQ === 'function' && rnd(0, 9) < _advChance) {
                     return genAdvancedDiverseQ(actualDiff);
                 }
                 if (actualDiff === 'easy') ch = ops[rnd(0, 3)];
@@ -192,14 +209,17 @@
                 text = `${a}, ${a+b}, ${a+2*b}, ?`;
                 ans = a + 3 * b;
                 hint = 'ما الرقم التالي في المتتالية؟';
-                explanation = `الفرق = ${b}، الرقم التالي = ${ans}`; } else if (ch === 'fraction_simple') { let d = rnd(
-                    2, 6);
+                explanation = `الفرق = ${b}، الرقم التالي = ${ans}`; } else if (ch === 'fraction_simple') {
+                /* ✅ FIX-2.3: عرض الكسر مُبسَّطاً وصحيحاً رياضياً */
+                let d = rnd(2, 6);
                 let n1 = rnd(1, d - 1);
                 let n2 = rnd(1, d - 1);
-                ans = n1 + n2;
+                const _sumNum = n1 + n2;
+                const _simplified = simplifyFraction(_sumNum, d);
+                ans = _sumNum; /* الجواب الرقمي للمقارنة */
                 text = `${n1}/${d} + ${n2}/${d}`;
                 hint = 'اجمع الكسور ذات المقام المشترك';
-                explanation = `الناتج = ${ans}/${d}`; } else if (ch === 'word_add') { let x = rnd(10, 50);
+                explanation = `${n1}/${d} + ${n2}/${d} = ${_simplified}`; } else if (ch === 'word_add') { let x = rnd(10, 50);
                 let y = rnd(5, 30);
                 ans = x + y;
                 text = `لدى أحمد ${x} تفاحة واشترى ${y} تفاحة أخرى. كم تفاحة لديه الآن؟`;
@@ -1320,14 +1340,14 @@ function genAdvancedDiverseQ(diff) {
             break;
         }
         case 'eq_fraction': {
-            ans = rnd(2, 12);
-            const den = rnd(2, 4);
-            const rhs3 = ans * den + rnd(1, 5);
-            text = `س/${den} + ${ans} = ${rhs3}`;
-            hint = 'اطرح ثم اضرب في المقام';
-            const xVal = (rhs3 - ans) * den;
-            ans = xVal;
-            explanation = `س/${den} = ${rhs3 - (ans/den)}، س = ${ans}`;
+            /* ✅ FIX-2.2: معادلة س ÷ den = rhs3 → س = rhs3 × den (بسيطة وصحيحة رياضياً) */
+            const _den  = rnd(2, 5);
+            const _rhs3 = rnd(2, 12);
+            const _xAct = _rhs3 * _den;
+            text = `س ÷ ${_den} = ${_rhs3}`;
+            ans  = _xAct;
+            hint = 'اضرب الطرفين في المقام';
+            explanation = `س = ${_rhs3} × ${_den} = ${_xAct}`;
             break;
         }
 
