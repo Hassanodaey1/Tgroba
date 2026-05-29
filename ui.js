@@ -342,6 +342,8 @@ function updateUI() {
     renderHistory();
     renderTasks();
     renderAchievements();
+    /* تحديث الصندوق اليومي */
+    try { if (typeof renderDailyBox === 'function') renderDailyBox(); } catch(e) {}
     renderProfileDailyTasks();
     renderProfileAchievements();
     updateUnlocks();
