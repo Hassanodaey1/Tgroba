@@ -379,8 +379,11 @@
                                 q = genDailyQ(dailyIdx);
                                 G.dailyQIndex = (G.dailyQIndex || 0) + 1;
                             } else {
-                                let useDiff = st.difficulty;
-                                if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
+                                /* ✅ FIX-2.5: احترم اختيار اللاعب دائماً
+                                   'auto' = تلقائي حسب المستوى | أي قيمة أخرى = اختيار يدوي */
+                                let useDiff = (st.difficulty === 'auto' || !st.difficulty)
+                                    ? getDifficultyByLevel()
+                                    : st.difficulty;
                                 if (typeof getNextQuestion === 'function') {
                                     q = getNextQuestion(G.op, useDiff);
                                 } else if (age > 0 && age <= 13) {
