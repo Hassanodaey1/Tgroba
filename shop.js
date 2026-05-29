@@ -569,6 +569,8 @@ function buyConsumable(id) {
             case 'buyShield':
                 st.dailyShieldUsed = false;
                 st.lastShieldDate = null;
+                /* ✅ AUDIO-INT: صوت درع الحماية */
+                try { playSound('shield'); } catch(e) {}
                 break;
             case 'hintPack':
                 _shopState.hintsRemaining = (parseInt(_shopState.hintsRemaining) || 0) + (item.actionVal || 5);
