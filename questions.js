@@ -102,8 +102,8 @@
                     { text: 'قيمة 2⁵ = ؟', ans: 32, explanation: '2×2×2×2×2=32' },
                     { text: 'ما الجذر التكعيبي لـ 27؟', ans: 3, explanation: '3³=27' },
                 ];
-                /* استخدام المجموعة الموسّعة إذا كانت متاحة */
-                if (typeof genExtendedLawQ === 'function' && rnd(0, 1) === 1) {
+                /* ✅ FIX-2.1: استخدام المجموعة الموسّعة دائماً (100%) — تُنهي تكرار أسئلة القوانين */
+                if (typeof genExtendedLawQ === 'function') {
                     return genExtendedLawQ();
                 }
                 let q = lawQ[rnd(0, lawQ.length - 1)];
@@ -123,8 +123,10 @@
             const ops = ['add', 'sub', 'mul', 'div'];
             let ch = op;
             if (op === 'mix') {
-                /* 30% من الأسئلة تأتي من المولّد المتنوع */
-                if (typeof genAdvancedDiverseQ === 'function' && rnd(0, 9) < 3) {
+                /* ✅ FIX-2.4: رفع احتمالية الأسئلة المتقدمة تدريجياً مع المستوى
+                   30% عند مستوى 1-4، 50% عند مستوى 5-9، 70% عند مستوى 10+ */
+                const advChance = Math.min(7, Math.floor((st.level || 1) / 5) + 3);
+                if (typeof genAdvancedDiverseQ === 'function' && rnd(0, 9) < advChance) {
                     return genAdvancedDiverseQ(actualDiff);
                 }
                 if (actualDiff === 'easy') ch = ops[rnd(0, 3)];
@@ -192,14 +194,18 @@
                 text = `${a}, ${a+b}, ${a+2*b}, ?`;
                 ans = a + 3 * b;
                 hint = 'ما الرقم التالي في المتتالية؟';
-                explanation = `الفرق = ${b}، الرقم التالي = ${ans}`; } else if (ch === 'fraction_simple') { let d = rnd(
-                    2, 6);
+                explanation = `الفرق = ${b}، الرقم التالي = ${ans}`; } else if (ch === 'fraction_simple') { let d = rnd(2, 6);
                 let n1 = rnd(1, d - 1);
                 let n2 = rnd(1, d - 1);
                 ans = n1 + n2;
                 text = `${n1}/${d} + ${n2}/${d}`;
                 hint = 'اجمع الكسور ذات المقام المشترك';
-                explanation = `الناتج = ${ans}/${d}`; } else if (ch === 'word_add') { let x = rnd(10, 50);
+                /* ✅ FIX-2.3: تبسيط الكسر وعرضه بشكل رياضي صحيح */
+                const _gcdFs = (p, q) => q === 0 ? p : _gcdFs(q, p % q);
+                const _g = _gcdFs(ans, d);
+                const _sN = ans / _g, _sD = d / _g;
+                let _fTxt = _sD === 1 ? String(_sN) : (_sN > _sD ? (Math.floor(_sN/_sD) + (_sN%_sD===0?'':' و '+(_sN%_sD)+'/'+_sD)) : `${_sN}/${_sD}`);
+                explanation = `${n1}/${d} + ${n2}/${d} = ${ans}/${d}${_g > 1 ? ' = ' + _fTxt : ''}`; } else if (ch === 'word_add') { let x = rnd(10, 50);
                 let y = rnd(5, 30);
                 ans = x + y;
                 text = `لدى أحمد ${x} تفاحة واشترى ${y} تفاحة أخرى. كم تفاحة لديه الآن؟`;
@@ -472,6 +478,12 @@
                 document.getElementById('bigTimerWrap').style.display = 'none';
             }
             updateGameCoinsDisplay();
+            /* ✅ AUDIO-INT: تشغيل الموسيقى الخلفية بمزاج يناسب وضع اللعبة */
+            try {
+                if (typeof setBgMoodForMode === 'function') setBgMoodForMode(mode);
+                if (typeof setBgAccelerated === 'function') setBgAccelerated(false);
+                if (typeof startBg === 'function' && st.bgOn) startBg();
+            } catch(e) {}
             document.getElementById('resultsOverlay').classList.remove('active');
             document.getElementById('gameOverlay').classList.add('active');
             loadQuestion();
@@ -624,8 +636,12 @@
                             q = genDailyQ(dailyIdx);
                             G.dailyQIndex = (G.dailyQIndex || 0) + 1;
                         } else {
+                            /* ✅ FIX-2.5: احترام اختيار الصعوبة اليدوية — auto فقط يعتمد على المستوى */
                             let useDiff = st.difficulty;
-                            if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
+                            if (!useDiff || useDiff === 'auto') {
+                                useDiff = getDifficultyByLevel(); /* تلقائي */
+                            }
+                            /* useDiff = اختيار اللاعب يُحترم دائماً */
                             /* ✅ المحرك الذكي — يتكيف مع اللاعب ويضمن عدم التكرار */
                             if (typeof getNextQuestion === 'function') {
                                 q = getNextQuestion(G.op, useDiff);
@@ -1320,14 +1336,13 @@ function genAdvancedDiverseQ(diff) {
             break;
         }
         case 'eq_fraction': {
-            ans = rnd(2, 12);
-            const den = rnd(2, 4);
-            const rhs3 = ans * den + rnd(1, 5);
-            text = `س/${den} + ${ans} = ${rhs3}`;
-            hint = 'اطرح ثم اضرب في المقام';
-            const xVal = (rhs3 - ans) * den;
-            ans = xVal;
-            explanation = `س/${den} = ${rhs3 - (ans/den)}، س = ${ans}`;
+            /* ✅ FIX-2.2: بناء سليم — المعادلة: س ÷ den = rhs3  →  س = rhs3 × den */
+            const den  = rnd(2, 5);
+            const rhs3 = rnd(2, 12);     /* الطرف الأيمن (عدد صحيح) */
+            ans        = rhs3 * den;     /* الجواب الحقيقي */
+            text        = `س ÷ ${den} = ${rhs3}`;
+            hint        = `اضرب طرفي المعادلة في ${den}`;
+            explanation = `س = ${rhs3} × ${den} = ${ans}`;
             break;
         }
 
