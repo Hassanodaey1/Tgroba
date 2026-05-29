@@ -194,18 +194,20 @@
                 text = `${a}, ${a+b}, ${a+2*b}, ?`;
                 ans = a + 3 * b;
                 hint = 'ما الرقم التالي في المتتالية؟';
-                explanation = `الفرق = ${b}، الرقم التالي = ${ans}`; } else if (ch === 'fraction_simple') { let d = rnd(2, 6);
+                explanation = `الفرق = ${b}، الرقم التالي = ${ans}`; } else if (ch === 'fraction_simple') {
+                /* ✅ FIX-2.3: السؤال يطلب البسط صريحاً — المقام ثابت ظاهر في السؤال */
+                let d = rnd(2, 8);
                 let n1 = rnd(1, d - 1);
                 let n2 = rnd(1, d - 1);
                 ans = n1 + n2;
-                text = `${n1}/${d} + ${n2}/${d}`;
-                hint = 'اجمع الكسور ذات المقام المشترك';
-                /* ✅ FIX-2.3: تبسيط الكسر وعرضه بشكل رياضي صحيح */
-                const _gcdFs = (p, q) => q === 0 ? p : _gcdFs(q, p % q);
-                const _g = _gcdFs(ans, d);
-                const _sN = ans / _g, _sD = d / _g;
-                let _fTxt = _sD === 1 ? String(_sN) : (_sN > _sD ? (Math.floor(_sN/_sD) + (_sN%_sD===0?'':' و '+(_sN%_sD)+'/'+_sD)) : `${_sN}/${_sD}`);
-                explanation = `${n1}/${d} + ${n2}/${d} = ${ans}/${d}${_g > 1 ? ' = ' + _fTxt : ''}`; } else if (ch === 'word_add') { let x = rnd(10, 50);
+                text = `${n1}/${d} + ${n2}/${d} = ?/${d}`;
+                hint = 'اجمع البسطَين — المقام يبقى كما هو';
+                const _gcdFs2 = (p, q_) => q_ === 0 ? p : _gcdFs2(q_, p % q_);
+                const _g2 = _gcdFs2(ans, d);
+                const _sN2 = ans / _g2, _sD2 = d / _g2;
+                let _fTxt2 = _sD2 === 1 ? String(_sN2) : (_sN2 > _sD2 ? (Math.floor(_sN2/_sD2) + (_sN2%_sD2===0?'':' و '+(_sN2%_sD2)+'/'+_sD2)) : `${_sN2}/${_sD2}`);
+                explanation = `${n1}/${d} + ${n2}/${d} = ${ans}/${d}${_g2 > 1 ? ' = ' + _fTxt2 : ''}`;
+                } else if (ch === 'word_add') { let x = rnd(10, 50);
                 let y = rnd(5, 30);
                 ans = x + y;
                 text = `لدى أحمد ${x} تفاحة واشترى ${y} تفاحة أخرى. كم تفاحة لديه الآن؟`;
@@ -597,111 +599,15 @@
             return genQ(op, diff);
         }
 
-        /* ═══════════ LOAD QUESTION ═══════════ */
-        function loadQuestion() {
-            if (G.ended) return;
-            if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !==
-                'frenzy') { endGame(); return; }
-            G.currentQ++;
-            G.answered = false;
-            G.helpersUsed.remove = false;
-            document.getElementById('helperRemove').classList.remove('used');
-            /* ✅ helperHeart لا يُعاد إلا في بداية لعبة جديدة — ليس لكل سؤال */
-            document.getElementById('explanationArea').innerHTML = '';
-            const age = st.age || calculateAgeFromBirthDate(st.birthDate);
-            let q;
-            let attempts = 0;
-            const maxAttempts = 50;
-            do {
-                if (G.isTraining) {
-                    if (G.op === 'table' && G.customTable) {
-                        q = genQ('table', st.difficulty, G.customTable);
-                    } else {
-                        if (typeof getNextQuestion === 'function') {
-                            q = getNextQuestion(G.op, st.difficulty);
-                        } else {
-                            q = generateAgeAdaptiveQuestion(G.op, st.difficulty, age);
-                            if (!q.choices || q.choices.length < 4) q = genQ(G.op, st.difficulty);
-                        }
-                    }
-                } else {
-                    if (G.op === 'table' && G.customTable) {
-                        q = genQ('table', st.difficulty, G.customTable);
-                    } else {
-                        if (G.op === 'advanced') q = genQ('advanced', st.difficulty);
-                        else if (G.op === 'laws') q = genQ('laws', st.difficulty);
-                        else if (G.mode === 'daily') {
-                            /* ✅ FIX-DAILY: أسئلة متدرجة الصعوبة لتحدي اليوم */
-                            const dailyIdx = (G.dailyQIndex !== undefined) ? G.dailyQIndex : (G.currentQ - 1);
-                            q = genDailyQ(dailyIdx);
-                            G.dailyQIndex = (G.dailyQIndex || 0) + 1;
-                        } else {
-                            /* ✅ FIX-2.5: احترام اختيار الصعوبة اليدوية — auto فقط يعتمد على المستوى */
-                            let useDiff = st.difficulty;
-                            if (!useDiff || useDiff === 'auto') {
-                                useDiff = getDifficultyByLevel(); /* تلقائي */
-                            }
-                            /* useDiff = اختيار اللاعب يُحترم دائماً */
-                            /* ✅ المحرك الذكي — يتكيف مع اللاعب ويضمن عدم التكرار */
-                            if (typeof getNextQuestion === 'function') {
-                                q = getNextQuestion(G.op, useDiff);
-                            } else if (age > 0 && age <= 13) {
-                                q = generateAgeAdaptiveQuestion(G.op, useDiff, age);
-                                if (!q || !q.choices || q.choices.length < 4) q = genQ(G.op, useDiff);
-                            } else {
-                                q = genQ(G.op, useDiff);
-                            }
-                        }
-                    }
-                }
-                const qKey = q.text + '|' + q.answer;
-                if (!G.askedQuestions.includes(qKey) || G.isTraining) break;
-                attempts++;
-                /* إذا استُنفدت المحاولات، امسح السجل وابدأ من جديد لتجنب التوقف */
-                if (attempts > maxAttempts) {
-                    G.askedQuestions = [];
-                    break;
-                }
-            } while (true);
-            if (!G.isTraining) {
-                const qKey = q.text + '|' + q.answer;
-                if (!G.askedQuestions.includes(qKey)) {
-                    G.askedQuestions.push(qKey);
-                    // الاحتفاظ بآخر 150 سؤال لتجنب تراكم الذاكرة في الأوضاع اللانهائية
-                    if (G.askedQuestions.length > 150) G.askedQuestions.shift();
-                }
-            }
-            G.correctAnswer = q.answer;
-            G.currentExplanation = q.explanation || '';
-            G.currentCatKey = q.catKey || getCatStatsKey(G.op || 'add');
-            const qt = document.getElementById('questionText');
-            qt.style.animation = 'none';
-            void qt.offsetWidth;
-            qt.style.animation = '';
-            if (G.isTraining) {
-                document.getElementById('questionNumber').textContent = `🎓 تدريب - ${G.correct+1}`;
-            } else {
-                document.getElementById('questionNumber').textContent =
-                    G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
-                    G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
-                    G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
-                    `السؤال ${G.currentQ} من ${G.totalQ}`;
-            }
-            document.getElementById('questionText').textContent = (q.text.endsWith('؟') || q.text.endsWith('?') || q.text.endsWith('= ?') || q.text.endsWith('= ؟')) ? q.text : `${q.text} = ?`;
-            document.getElementById('questionHint').textContent = q.hint || 'ما هو الجواب؟';
-            document.getElementById('statQ').textContent = (G.isTraining || G.mode === 'speed' || G.mode ===
-                'survival' || G.mode === 'frenzy') ? G.correct : `${G.currentQ}/${G.totalQ}`;
-            renderVisualAid(q);
-            const grid = document.getElementById('answersGrid');
-            grid.innerHTML = '';
-            const choices = q.choices || shuffle([q.answer, q.answer + 1, q.answer - 1, q.answer + 2]);
-            choices.forEach(c => { const btn = document.createElement('button');
-                btn.className = 'answer-btn';
-                btn.textContent = c;
-                btn.setAttribute('data-val', c);
-                btn.onclick = () => checkAnswer(btn);
-                grid.appendChild(btn); });
-        }
+        /* ═══════════ LOAD QUESTION ═══════════
+           ✅ FIX-DEDUP: النسخة الكاملة والموثوقة موجودة في game.js
+           هذه الدالة محذوفة من هنا لمنع التكرار والتعارض.
+           النسخة في game.js تحتوي على:
+             - معالجة أخطاء شاملة (try/catch)
+             - شريط التقدم المرئي (FIX-7.3)
+             - التحقق من صحة السؤال المُولَّد
+             - حماية من الوقوع في حلقة لا نهائية
+        ═══════════════════════════════════════════ */
 
         /* ═══════════ CHALLENGE GAME (نداء التحدي) ═══════════ */
         /* مولّد أسئلة التحدي مع صعوبة تتزايد تدريجياً */
