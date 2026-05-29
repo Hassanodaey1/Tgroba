@@ -11,10 +11,20 @@
                 G.streak++;
                 if (G.streak > G.bestStreak) G.bestStreak = G.streak;
                 G.score += 10 + G.streak * 2;
-                G.coinsEarned += 0.4;
+                /* ✅ FIX-3.1: ربط كسب الكوين بالصعوبة والمستوى — لا عملة واحدة للجميع */
+                const _diffMult = { 'easy': 0.4, 'medium': 0.7, 'hard': 1.0, 'genius': 1.5 }[st.difficulty] || 0.4;
+                const _lvlBonus = Math.min(0.5, Math.floor((st.level || 1) / 10) * 0.1);
+                G.coinsEarned += _diffMult + _lvlBonus;
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
-                playSound('correct');
+                /* ✅ AUDIO-INT: صوت الكومبو الذكي حسب مستوى التتابع */
+                if (typeof playComboSound === 'function' && G.streak >= 3) {
+                    playComboSound(G.streak);
+                } else {
+                    playSound('correct');
+                }
+                /* مزامنة الموسيقى الخلفية مع المؤقت */
+                if (typeof window._onGameTimerTick === 'function') window._onGameTimerTick();
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive) {
                     G.timeLeft = Math.min(G.maxTime, G.timeLeft + 1);
@@ -73,8 +83,18 @@
                         if (G.livesLeft <= 0) {
                             if (!st.dailyShieldUsed && useDailyShield()) { G.livesLeft = 1;
                                 updateHeartsDisplay();
-                                showFeedback('🛡️ درع الحماية!'); } else { setTimeout(() => { if (!G.ended)
-                                        endGame(); }, 700); return; }
+                                showFeedback('🛡️ درع الحماية!');
+                                playSound('shield');
+                            } else {
+                                /* ✅ SHOP-INT: عرض المتجر العاجل عند انتهاء القلوب */
+                                setTimeout(() => {
+                                    try {
+                                        if (typeof showUrgentHeartOffer === 'function') showUrgentHeartOffer();
+                                        else if (!G.ended) endGame();
+                                    } catch(e) { if (!G.ended) endGame(); }
+                                }, 700);
+                                return;
+                            }
                         }
                     } else if (G.mode === 'survival') {
                         G._survivalWrong = (G._survivalWrong || 0) + 1;
@@ -152,6 +172,18 @@
                 document.getElementById('explanationArea').innerHTML =
                     `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${G.correctAnswer}</strong><br>الشرح: ${G.currentExplanation}</div>`;
             }
+            /* ✅ FIX-7.4: تلميح ذكي إذا تكرّر الخطأ في نفس الفئة */
+            try {
+                const _catStats = st.stats[G.currentCatKey];
+                if (_catStats && _catStats.att >= 5) {
+                    const _errRate = (_catStats.att - (_catStats.cor || 0)) / _catStats.att;
+                    if (_errRate >= 0.4) {
+                        setTimeout(() => {
+                            try { showFeedback('💡 تحتاج مراجعة هذا الموضوع — جرّب وضع التدريب!'); } catch(e) {}
+                        }, 1200);
+                    }
+                }
+            } catch(e) {}
         }
 
         /* ═══════════ END GAME ═══════════ */
@@ -162,23 +194,52 @@
             if (!G.isTraining) {
                 const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
                 const _maxScore = _maxQ * 60;
-                const _maxCoins = _maxQ * 0.4 + 10;
+                /* ✅ FIX-3.2: الحد الأقصى يعكس النظام الجديد (صعوبة × مستوى) */
+                const _maxCoins = _maxQ * 1.5 + 10 + Math.floor((st.level || 1) / 10) * 0.5;
                 G.correct     = Math.max(0, Math.min(Math.floor(G.correct),     _maxQ));
                 G.wrong       = Math.max(0, Math.min(Math.floor(G.wrong),       _maxQ));
                 G.score       = Math.max(0, Math.min(Math.floor(G.score),       _maxScore));
                 G.coinsEarned = Math.max(0, Math.min(G.coinsEarned,             _maxCoins));
                 G.bestStreak  = Math.max(0, Math.min(Math.floor(G.bestStreak),  _maxQ));
+                /* ✅ FIX-3.3: مكافأة الدقة 100% — 3 عملات إضافية مرئية */
+                const _totalAnswered = G.correct + G.wrong;
+                if (_totalAnswered >= 5 && G.wrong === 0) {
+                    G.coinsEarned += 3;
+                    try { showFeedback('🏅 دقة مثالية! +3 عملات'); playSound('perfect'); } catch(e) {}
+                }
                 const earnedCoins = Math.floor(G.coinsEarned);
                 st.correctTotal += G.correct;
                 st.wrongTotal += G.wrong;
                 st.coins += earnedCoins;
+                /* ✅ AUDIO-INT: صوت العملات إذا كسب شيئاً */
+                if (earnedCoins > 0) try { setTimeout(() => playSound('coin'), 100); } catch(e) {}
                 st.totalGames++;
                 recordDailyStat('game');
+                /* ✅ FIX-3.4: مكافأة تسجيل الدخول اليومي — 5 عملات لأول لعبة في اليوم */
+                try {
+                    const _todayKey = 'loginBonus_' + (typeof todayStr === 'function' ? todayStr() : new Date().toISOString().slice(0,10));
+                    if (!st[_todayKey]) {
+                        st[_todayKey] = true;
+                        st.coins += 5;
+                        setTimeout(() => {
+                            try { showFeedback('🌅 مكافأة يومية: +5 عملات!'); playSound('daily_bonus'); } catch(e) {}
+                        }, 400);
+                    }
+                } catch(e) {}
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
                 if (G.score > st.bestScore) st.bestScore = G.score;
+                /* ✅ SHOP-INT: تطبيق مضاعف XP من المتجر */
+                const _xpMult = (typeof getXpMultiplier === 'function') ? getXpMultiplier() : 1;
                 const xpResult = typeof applyXpGain === 'function'
                     ? applyXpGain(G.correct, G.wrong, G.score, G.bestStreak)
                     : { xpGained: G.score * 2 + G.correct * 5, levelsGained: 0 };
+                /* طبّق المضاعف على XP المكتسبة فعلياً */
+                if (_xpMult > 1 && xpResult.xpGained > 0) {
+                    const _extraXp = Math.floor(xpResult.xpGained * (_xpMult - 1));
+                    st.xp += _extraXp;
+                    xpResult.xpGained = Math.floor(xpResult.xpGained * _xpMult);
+                    try { showFeedback(`⚡ مضاعف XP ×${_xpMult} مفعّل! +${xpResult.xpGained} XP`); } catch(e) {}
+                }
                 const xpGained = xpResult.xpGained;
                 if (typeof applyXpGain !== 'function') {
                     st.xp += xpGained;
@@ -223,6 +284,19 @@
                 document.getElementById('resCorrect').textContent = G.correct;
                 document.getElementById('resStreak').textContent = G.bestStreak;
                 document.getElementById('resultsXP').textContent = `+${xpGained} XP • +${earnedCoins} 💰`;
+                /* ✅ FIX-3.3: إظهار مكافأة الدقة 100% في النتائج */
+                try {
+                    const _perfEl = document.getElementById('resultsPerfectBonus');
+                    const _tt2 = G.correct + G.wrong;
+                    if (_perfEl) {
+                        if (_tt2 >= 5 && G.wrong === 0) {
+                            _perfEl.style.display = 'block';
+                            _perfEl.innerHTML = '<span class="perfect-badge">🏅 دقة مثالية +3💰</span>';
+                        } else {
+                            _perfEl.style.display = 'none';
+                        }
+                    }
+                } catch(e) {}
                 /* ✅ FIX-4.1: المقارنة التاريخية — نأخذ الجلسة السابقة (قبل إضافة الحالية) */
                 try {
                     const cmp = document.getElementById('resultsComparison');
@@ -248,6 +322,13 @@
                 } catch(e) {}
                 document.getElementById('gameOverlay').classList.remove('active');
                 document.getElementById('resultsOverlay').classList.add('active');
+                /* ✅ AUDIO-INT: إيقاف الموسيقى الخلفية عند نهاية اللعبة */
+                try { if (typeof stopBg === 'function') stopBg(); } catch(e) {}
+                /* ✅ AUDIO-INT: صوت انتهاء اللعبة حسب النتيجة */
+                try {
+                    if (pct >= 90) setTimeout(() => playSound('levelup'), 200);
+                    else if (pct >= 70) setTimeout(() => playSound('task'), 150);
+                } catch(e) {}
                 const winLoseEl = document.getElementById('winLoseMessage');
                 if (winLoseEl) {
                     if (pct >= 70) {
@@ -402,8 +483,11 @@
                                 q = genDailyQ(dailyIdx);
                                 G.dailyQIndex = (G.dailyQIndex || 0) + 1;
                             } else {
+                                /* ✅ FIX-2.5: احترام الصعوبة اليدوية — 'auto' فقط يعتمد على المستوى */
                                 let useDiff = st.difficulty;
-                                if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
+                                if (!useDiff || useDiff === 'auto') {
+                                    useDiff = getDifficultyByLevel();
+                                }
                                 if (typeof getNextQuestion === 'function') {
                                     q = getNextQuestion(G.op, useDiff);
                                 } else if (age > 0 && age <= 13) {
@@ -470,6 +554,13 @@
                             `السؤال ${G.currentQ} من ${G.totalQ}`;
                     }
                 }
+                /* ✅ FIX-7.3: شريط التقدم المرئي داخل اللعبة */
+                try {
+                    const _pgFill = document.getElementById('gameProgressFill');
+                    if (_pgFill && G.totalQ && G.totalQ < 9999) {
+                        _pgFill.style.width = Math.min(100, Math.round((G.currentQ / G.totalQ) * 100)) + '%';
+                    }
+                } catch(e) {}
                 
                 const statQ = document.getElementById('statQ');
                 if (statQ) statQ.textContent = (G.isTraining || G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy') ? G.correct : `${G.currentQ}/${G.totalQ}`;
