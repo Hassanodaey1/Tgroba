@@ -246,20 +246,20 @@
             if (cat === 'counter') {
                 title.textContent = '🧮 العمليات على الأعداد';
                 let html = `
-                    <div class="mode-card" onclick="startGameWith('classic','add', null, true)"><span class="mode-card-icon">➕</span><div class="mode-card-name">الجمع</div><div class="mode-card-desc">10 أسئلة • مؤقت • قلوب</div></div>
-                    <div class="mode-card" onclick="startGameWith('classic','sub', null, true)"><span class="mode-card-icon">➖</span><div class="mode-card-name">الطرح</div><div class="mode-card-desc">10 أسئلة • مؤقت • قلوب</div></div>`;
+                    <div class="mode-card" onclick="startGameWith('classic','add', null, true)"><span class="mode-card-icon">➕</span><div class="mode-card-name">الجمع</div><div class="mode-card-desc">60 ثانية • قلوب • +1/-1 ثانية</div></div>
+                    <div class="mode-card" onclick="startGameWith('classic','sub', null, true)"><span class="mode-card-icon">➖</span><div class="mode-card-name">الطرح</div><div class="mode-card-desc">60 ثانية • قلوب • +1/-1 ثانية</div></div>`;
                 if (st.level >= 2) {
                     html +=
-                        `<div class="mode-card" onclick="startGameWith('classic','mul', null, true)"><span class="mode-card-icon">✖️</span><div class="mode-card-name">الضرب</div><div class="mode-card-desc">10 أسئلة • مؤقت • قلوب</div></div>
-                    <div class="mode-card" onclick="startGameWith('classic','div', null, true)"><span class="mode-card-icon">➗</span><div class="mode-card-name">القسمة</div><div class="mode-card-desc">10 أسئلة • مؤقت • قلوب</div></div>`;
+                        `<div class="mode-card" onclick="startGameWith('classic','mul', null, true)"><span class="mode-card-icon">✖️</span><div class="mode-card-name">الضرب</div><div class="mode-card-desc">60 ثانية • قلوب • +1/-1 ثانية</div></div>
+                    <div class="mode-card" onclick="startGameWith('classic','div', null, true)"><span class="mode-card-icon">➗</span><div class="mode-card-name">القسمة</div><div class="mode-card-desc">60 ثانية • قلوب • +1/-1 ثانية</div></div>`;
                 } else {
                     html +=
                         `<div class="mode-card locked"><span class="mode-card-icon">✖️</span><div class="mode-card-name">الضرب</div><div class="mode-card-desc">🔒 يفتح Lv.2</div></div>
                     <div class="mode-card locked"><span class="mode-card-icon">➗</span><div class="mode-card-name">القسمة</div><div class="mode-card-desc">🔒 يفتح Lv.2</div></div>`;
                 }
                 html +=
-                    `<div class="mode-card" onclick="startGameWith('classic','mix', null, true)"><div class="mode-card-badge">موصى</div><span class="mode-card-icon">🎲</span><div class="mode-card-name">مختلط</div><div class="mode-card-desc">10 أسئلة • مؤقت • قلوب</div></div>
-                    <div class="mode-card" onclick="startTableGame()"><span class="mode-card-icon">📊</span><div class="mode-card-name">جدول الضرب</div><div class="mode-card-desc">10 أسئلة • مؤقت • قلوب</div></div>`;
+                    `<div class="mode-card" onclick="startGameWith('classic','mix', null, true)"><div class="mode-card-badge">موصى</div><span class="mode-card-icon">🎲</span><div class="mode-card-name">مختلط</div><div class="mode-card-desc">60 ثانية • قلوب • +1/-1 ثانية</div></div>
+                    <div class="mode-card" onclick="startTableGame()"><span class="mode-card-icon">📊</span><div class="mode-card-name">جدول الضرب</div><div class="mode-card-desc">جداول 1–30 • 10 أسئلة • مؤقت</div></div>`;
                 grid.innerHTML = html;
             } else {
                 title.textContent = '⚡ التحديات';
@@ -309,18 +309,84 @@
 
         function startTableGame() {
             closeSheet('opSheet');
-            const maxT = st.difficulty === 'easy' ? 10 : st.difficulty === 'medium' ? 15 : st.difficulty === 'hard' ? 20 :
-                30;
-            let btns = '';
-            for (let i = 1; i <= maxT; i++) btns +=
-                `<div class="mode-card" onclick="closeSheet('opSheet');startTableGameWith(${i})"><span class="mode-card-icon">📊</span><div class="mode-card-name">جدول ${i}</div></div>`;
+            /* ألوان تدرجية لكل مجموعة من الجداول */
+            const colors = [
+                '#10b981','#10b981','#10b981',  /* 1-3  أخضر */
+                '#06b6d4','#06b6d4','#06b6d4',  /* 4-6  سماوي */
+                '#f0b90b','#f0b90b','#f0b90b',  /* 7-9  ذهبي */
+                '#f97316','#f97316','#f97316',  /* 10-12 برتقالي */
+                '#7c3aed','#7c3aed','#7c3aed',  /* 13-15 بنفسجي */
+                '#ef4444','#ef4444','#ef4444',  /* 16-18 أحمر */
+                '#06b6d4','#10b981','#f0b90b',  /* 19-21 متنوع */
+                '#7c3aed','#f97316','#ef4444',  /* 22-24 متنوع */
+                '#10b981','#06b6d4','#f0b90b',  /* 25-27 متنوع */
+                '#7c3aed','#f97316','#ef4444'   /* 28-30 متنوع */
+            ];
+            const emojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟',
+                '1️⃣1️⃣','1️⃣2️⃣','1️⃣3️⃣','1️⃣4️⃣','1️⃣5️⃣','1️⃣6️⃣','1️⃣7️⃣','1️⃣8️⃣','1️⃣9️⃣','2️⃣0️⃣',
+                '2️⃣1️⃣','2️⃣2️⃣','2️⃣3️⃣','2️⃣4️⃣','2️⃣5️⃣','2️⃣6️⃣','2️⃣7️⃣','2️⃣8️⃣','2️⃣9️⃣','3️⃣0️⃣'];
             const grid = document.getElementById('opModeGrid');
-            document.getElementById('opSheetTitle').textContent = '📊 اختر جدول الضرب';
-            grid.innerHTML = btns;
+            document.getElementById('opSheetTitle').textContent = '📊 اختر جدول الضرب (1 – 30)';
+            /* حاوية قابلة للتمرير بارتفاع ثابت */
+            let html = `<div id="tablePickerGrid" style="
+                display:grid;
+                grid-template-columns:repeat(3,1fr);
+                gap:8px;
+                max-height:52vh;
+                overflow-y:auto;
+                -webkit-overflow-scrolling:touch;
+                padding:4px 2px 8px;
+                scrollbar-width:thin;
+            ">`;
+            for (let i = 1; i <= 30; i++) {
+                const col = colors[i-1];
+                const mastered = (st.stats && st.stats['table_'+i] && st.stats['table_'+i].cor >= 20);
+                html += `<div onclick="closeSheet('opSheet');startTableGameWith(${i})"
+                    style="
+                        background:rgba(${hexToRgb(col)},0.12);
+                        border:1.5px solid ${col}55;
+                        border-radius:16px;
+                        padding:12px 6px 10px;
+                        text-align:center;
+                        cursor:pointer;
+                        transition:0.2s;
+                        position:relative;
+                    "
+                    onmousedown="this.style.transform='scale(0.93)'"
+                    onmouseup="this.style.transform='scale(1)'"
+                    ontouchstart="this.style.transform='scale(0.93)'"
+                    ontouchend="this.style.transform='scale(1)'"
+                >
+                    ${mastered ? '<div style="position:absolute;top:4px;right:6px;font-size:0.55em;color:'+col+';">✅</div>' : ''}
+                    <div style="font-size:1.5em;margin-bottom:4px;">${emojis[i-1] || '📊'}</div>
+                    <div style="font-size:0.82em;font-weight:900;color:${col};">× ${i}</div>
+                    <div style="font-size:0.58em;color:var(--text2);margin-top:2px;">${i} × 1 … ${i} × 12</div>
+                </div>`;
+            }
+            html += '</div>';
+            /* مؤشر تمرير بصري */
+            html += `<div style="text-align:center;font-size:0.62em;color:var(--text3);margin-top:6px;padding:2px 0;">
+                ↕ مرّر لرؤية المزيد • الجداول 1 – 30
+            </div>`;
+            grid.style.display = 'block';
+            grid.innerHTML = html;
             openSheet('opSheet');
         }
-        window.startTableGameWith = function(table) { closeSheet('opSheet');
-            startGameWith('classic', 'table', table, true); };
+
+        /* دالة مساعدة: تحويل hex إلى rgb للـ rgba */
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1,3),16);
+            const g = parseInt(hex.slice(3,5),16);
+            const b = parseInt(hex.slice(5,7),16);
+            return `${r},${g},${b}`;
+        }
+
+        window.startTableGameWith = function(table) {
+            const grid = document.getElementById('opModeGrid');
+            if (grid) grid.style.display = '';
+            closeSheet('opSheet');
+            startGameWith('classic', 'table', table, true);
+        };
 
         function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
 
