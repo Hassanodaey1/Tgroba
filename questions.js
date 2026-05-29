@@ -336,13 +336,14 @@
             document.getElementById('statScore').textContent = '0';
             document.getElementById('streakNum').textContent = '0';
             document.getElementById('streakFire').style.display = 'none';
-            document.getElementById('heartsStat').style.display = 'none';
             document.getElementById('helpersBar').style.display = 'none';
-            const timeSelectHtml =
-                `<div class="helper-btn" id="trainingTimeBtn" onclick="selectTrainingTime()" style="flex:0.7;"><div class="helper-btn-icon">⏱️</div><div class="helper-btn-label">تحديد الوقت</div></div>`;
+            /* ✅ إظهار زر تحديد الوقت في إحصائية heartsStat — خاص بالتدريب فقط */
             const heartsStatDiv = document.getElementById('heartsStat');
             heartsStatDiv.style.display = 'flex';
-            heartsStatDiv.innerHTML = timeSelectHtml;
+            heartsStatDiv.innerHTML =
+                `<div class="helper-btn" id="trainingTimeBtn" onclick="selectTrainingTime()" style="flex:0.7;"><div class="helper-btn-icon">⏱️</div><div class="helper-btn-label">تحديد الوقت</div></div>`;
+            heartsStatDiv.style.alignItems = 'center';
+            heartsStatDiv.style.justifyContent = 'center';
             G.timeLeft = 30;
             G.maxTime = 30;
             G.hasTimer = true;
@@ -522,6 +523,11 @@
             document.getElementById('streakNum').textContent = 0;
             document.getElementById('streakFire').style.display = 'none';
             if (lives > 0) {
+                /* ✅ استعادة محتوى القلوب الأصلي في حالة كان وضع التدريب قد غيّره */
+                const hs = document.getElementById('heartsStat');
+                if (hs && !document.getElementById('heartsRow')) {
+                    hs.innerHTML = `<div class="hearts-row" id="heartsRow">❤️❤️❤️</div><div class="game-stat-label">القلوب</div>`;
+                }
                 document.getElementById('heartsStat').style.display = 'flex';
                 updateHeartsDisplay();
             } else {
