@@ -342,7 +342,17 @@
                         </div>
                     </div>
                     <div id="weaknessArea" class="weakness-area"></div>
-                    <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.1));border:1px solid rgba(240,185,11,0.2);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTab('achieve')">
+                    <!-- صندوق المكافأة اليومي -->
+                    <div class="daily-box-card box-available" id="dailyBoxCard" onclick="openDailyBox()">
+                        <div class="daily-box-glow"></div>
+                        <div class="daily-box-icon" id="dailyBoxIcon">🎁</div>
+                        <div class="daily-box-content">
+                            <div class="daily-box-title">صندوق اليوم</div>
+                            <div class="daily-box-sub">اضغط لفتح مكافأتك!</div>
+                        </div>
+                        <div class="daily-box-badge">متاح</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.1));border:1px solid rgba(240,185,11,0.2);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTab('achieve')" >
                         <div style="font-size:1.8em;">🔥</div>
                         <div style="flex:1;">
                             <div style="font-size:0.8em;font-weight:900;color:var(--text);">السلسلة اليومية</div>
@@ -1452,11 +1462,4 @@
     <script src="audio_effects.js"></script>
     <script src="navigation.js"></script>
     <script src="questions.js"></script>
-    <script src="game.js"></script>
-    <script src="ui.js"></script>
-    <script src="fixes_init.js"></script>
-    <script src="questions_engine.js"></script>
-    <script src="patches.js"></script>
-    <script src="shop.js"></script>
-</body>
-</html>
+    <script src="game.
