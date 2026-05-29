@@ -931,6 +931,31 @@ function renderParentStats() {
     if (q('parentTotalAcc'))     q('parentTotalAcc').textContent     = totalAcc + '%';
     if (q('parentBestStreak'))   q('parentBestStreak').textContent   = st.bestStreak   || 0;
 
+    /* ✅ FIX-4.3: تقرير الأداء الأسبوعي */
+    const ws = st.weeklyStats || { correct: 0, wrong: 0, games: 0, bestStreak: 0 };
+    const wTotal = (ws.correct || 0) + (ws.wrong || 0);
+    const wAcc   = wTotal > 0 ? Math.round((ws.correct / wTotal) * 100) : 0;
+
+    if (q('weekAccPct'))     q('weekAccPct').textContent     = wAcc + '%';
+    if (q('weekImprove'))    q('weekImprove').textContent    = (ws.correct || 0) + ' إجابة';
+    if (q('weekBestStreak')) q('weekBestStreak').textContent = (ws.bestStreak || 0);
+    if (q('weekGames'))      q('weekGames').textContent      = (ws.games || 0) + ' جلسة';
+
+    /* أكثر موضوع لُعب هذا الأسبوع من st.stats */
+    try {
+        const opNames = {
+            addition:'الجمع', subtraction:'الطرح', multiplication:'الضرب',
+            division:'القسمة', algebra:'الجبر', percentage:'النسب المئوية',
+            wordproblems:'المسائل الكلامية', geometry:'الهندسة',
+            mathlaws:'القوانين', puzzles:'الألغاز', table:'جدول الضرب'
+        };
+        let topOp = '—', topAtt = 0;
+        Object.entries(st.stats || {}).forEach(([k, v]) => {
+            if ((v.att || 0) > topAtt) { topAtt = v.att; topOp = opNames[k] || k; }
+        });
+        if (q('weekTopOp')) q('weekTopOp').textContent = topOp;
+    } catch(e) {}
+
     /* ── بطاقة التقييم ── */
     const card = q('parentFeedbackCard');
     if (card) {
