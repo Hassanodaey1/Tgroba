@@ -397,6 +397,15 @@
             });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           🕐 نظام الوقت الكلاسيكي المتكيف مع الصعوبة
+           سهل=2ث | متوسط=4ث | صعب=5ث | عبقري=6ث لكل سؤال
+           ════════════════════════════════════════════════════ */
+        function getClassicTimeForDifficulty(totalQ) {
+            const secsPerQ = { easy: 2, medium: 4, hard: 5, genius: 6 }[st.difficulty] || 4;
+            return totalQ * secsPerQ;
+        }
+
         function startGameWith(mode, op, customTable = null, forceTimer = false) {
             closeSheet('modeSheet');
             closeSheet('opSheet');
@@ -420,63 +429,93 @@
             G.isTraining = false;
             G.customTable = customTable || null;
             G.askedQuestions = [];
+            G._challengeBadge = null; /* شارة التحدي */
             let hasTimer = false;
             let lives = 3;
-            /* ✅ 4.TIME: ثوانٍ لكل سؤال حسب الصعوبة */
-            const _secsPerQ = { easy: 3, medium: 4, hard: 5, genius: 6 }[st.difficulty] || 3;
 
             if (mode === 'classic') {
-                G.totalQ  = 10;
-                hasTimer  = forceTimer;
+                /* ✅ وقت متكيف مع الصعوبة: سهل=20ث | متوسط=40ث | صعب=50ث | عبقري=60ث */
+                G.totalQ = 10;
+                hasTimer = forceTimer;
                 if (hasTimer) {
-                    /* وقت ذكي = عدد الأسئلة × ثوانٍ/سؤال حسب الصعوبة */
-                    G.maxTime  = G.totalQ * _secsPerQ;
-                    G.timeLeft = G.maxTime;
+                    const classicTime = getClassicTimeForDifficulty(10);
+                    G.maxTime = classicTime;
+                    G.timeLeft = classicTime;
                     lives = 3;
-                } else {
-                    G.maxTime  = 0;
-                    G.timeLeft = 0;
-                    lives = 0;
-                }
+                } else { G.maxTime = 0; G.timeLeft = 0; lives = 0; }
+
             } else if (mode === 'speed') {
-                /* عدد أسئلة مفتوح → وقت ثابت 60 ثانية */
-                G.totalQ   = 9999;
-                hasTimer   = true;
-                G.maxTime  = 60;
+                /* ⚡ السرعة: مفتوح + 60 ثانية */
+                G.totalQ = 9999;
+                hasTimer = true;
+                G.maxTime = 60;
                 G.timeLeft = 60;
                 lives = 3;
+
             } else if (mode === 'survival') {
-                G.totalQ  = 9999;
-                hasTimer  = false;
-                lives     = 0;
+                /* 🔥 البقاء: بدون وقت + 3 أخطاء */
+                G.totalQ = 9999;
+                hasTimer = false;
+                lives = 0;
+
             } else if (mode === 'frenzy') {
-                /* عدد مفتوح → وقت ثابت 30 ثانية */
-                G.totalQ   = 9999;
-                hasTimer   = true;
-                G.maxTime  = 30;
+                /* 💥 الاندفاع: مفتوح + 30 ثانية */
+                G.totalQ = 9999;
+                hasTimer = true;
+                G.maxTime = 30;
                 G.timeLeft = 30;
                 lives = 3;
+
             } else if (mode === 'daily') {
-                G.totalQ  = 10; /* ✅ FIX-DAILY: 10 أسئلة متدرجة */
-                /* وقت ذكي لتحدي اليوم = عدد الأسئلة × ثوانٍ/سؤال */
-                hasTimer   = true;
-                G.maxTime  = G.totalQ * _secsPerQ;
-                G.timeLeft = G.maxTime;
+                /* 🌟 تحدي اليوم */
+                G.totalQ = 10;
+                hasTimer = false;
                 lives = 0;
-                G.dailyQIndex = 0; /* ✅ FIX-DAILY: عداد للصعوبة المتدرجة */
+                G.dailyQIndex = 0;
+
+            } else if (mode === 'accuracy') {
+                /* 🎯 الدقة: 20 سؤال + 60 ثانية */
+                G.totalQ = 20;
+                hasTimer = true;
+                G.maxTime = 60;
+                G.timeLeft = 60;
+                lives = 3;
+                G._challengeBadge = '🎯';
+
+            } else if (mode === 'marathon') {
+                /* 🏆 الماراثون: 50 سؤال + 60 ثانية */
+                G.totalQ = 50;
+                hasTimer = true;
+                G.maxTime = 60;
+                G.timeLeft = 60;
+                lives = 3;
+                G._challengeBadge = '🏆';
+
+            } else if (mode === 'impossible') {
+                /* 💀 المستحيل: 10 أسئلة + 1.5 ثانية/سؤال = 15 ثانية */
+                G.totalQ = 10;
+                hasTimer = true;
+                G.maxTime = 15;
+                G.timeLeft = 15;
+                lives = 0; /* لا قلوب */
+                G._challengeBadge = '💀';
             }
+
             G.livesLeft = lives;
-            G.maxLives = lives; /* ✅ FIX-LIVES: ثابت — 3 قلوب دائماً لجميع الأعمار */
-            G._survivalWrong = 0; /* ✅ FIX-SURVIVAL: عداد أخطاء وضع التحمّل */
+            G.maxLives = lives;
+            G._survivalWrong = 0;
             G.hasTimer = hasTimer;
-            G.helpersUsed = { skip: false, remove: false, heart: false }; /* ✅ FIX-HEART: تتبع استخدام القلب مرة واحدة فقط */
-            /* ✅ 4.TIME: عناوين الأوضاع مع الوقت الفعلي */
+            G.helpersUsed = { skip: false, remove: false, heart: false };
+
             const titles = {
-                classic:  `🧮 كلاسيك${hasTimer ? ' • '+G.maxTime+'ث' : ''}`,
-                speed:    '⚡ سرعة 60ث',
-                survival: '🔥 التحمّل',
-                frenzy:   '💥 اندفاع 30ث',
-                daily:    `🌟 تحدي اليوم • ${G.maxTime}ث`
+                classic:    '🧮 كلاسيك',
+                speed:      '⚡ سرعة',
+                survival:   '🔥 البقاء',
+                frenzy:     '💥 اندفاع',
+                daily:      '🌟 تحدي اليوم',
+                accuracy:   '🎯 الدقة',
+                marathon:   '🏆 الماراثون',
+                impossible: '💀 المستحيل'
             };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
@@ -634,8 +673,9 @@
         /* ═══════════ LOAD QUESTION ═══════════ */
         function loadQuestion() {
             if (G.ended) return;
-            if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !==
-                'frenzy') { endGame(); return; }
+            /* الأوضاع المفتوحة: تعمل بالمؤقت وليس بعدد الأسئلة */
+            const _infiniteModes = ['speed', 'survival', 'frenzy'];
+            if (G.currentQ >= G.totalQ && !G.isTraining && !_infiniteModes.includes(G.mode)) { endGame(); return; }
             G.currentQ++;
             G.answered = false;
             G.helpersUsed.remove = false;
@@ -712,15 +752,18 @@
                 document.getElementById('questionNumber').textContent = `🎓 تدريب - ${G.correct+1}`;
             } else {
                 document.getElementById('questionNumber').textContent =
-                    G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
-                    G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
-                    G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
+                    G.mode === 'speed'      ? `⚡ السؤال ${G.correct+1}` :
+                    G.mode === 'frenzy'     ? `💥 ${G.correct+1} إجابة` :
+                    G.mode === 'survival'   ? `❤️ ${G.livesLeft} قلوب` :
+                    G.mode === 'accuracy'   ? `🎯 ${G.currentQ} من ${G.totalQ}` :
+                    G.mode === 'marathon'   ? `🏆 ${G.currentQ} من ${G.totalQ}` :
+                    G.mode === 'impossible' ? `💀 ${G.currentQ} من ${G.totalQ}` :
                     `السؤال ${G.currentQ} من ${G.totalQ}`;
             }
             document.getElementById('questionText').textContent = (q.text.endsWith('؟') || q.text.endsWith('?') || q.text.endsWith('= ?') || q.text.endsWith('= ؟')) ? q.text : `${q.text} = ?`;
             document.getElementById('questionHint').textContent = q.hint || 'ما هو الجواب؟';
-            document.getElementById('statQ').textContent = (G.isTraining || G.mode === 'speed' || G.mode ===
-                'survival' || G.mode === 'frenzy') ? G.correct : `${G.currentQ}/${G.totalQ}`;
+            const _openModes = ['speed', 'survival', 'frenzy', 'accuracy', 'marathon', 'impossible'];
+            document.getElementById('statQ').textContent = (G.isTraining || _openModes.includes(G.mode)) ? G.correct : `${G.currentQ}/${G.totalQ}`;
             renderVisualAid(q);
             const grid = document.getElementById('answersGrid');
             grid.innerHTML = '';
