@@ -433,6 +433,74 @@
             if (document.getElementById('dailyBoxCard')) renderDailyBox();
         }, 60000);
 
+        /* ═══════════════════════════════════════════════════
+           ✅ 4.2: نظام المهام الأسبوعية
+        ═══════════════════════════════════════════════════ */
+        function genWeeklyTasks() {
+            return [
+                { id: 'w1', icon: '🗓️', name: 'لاعب الأسبوع',       desc: 'العب 7 أيام متتالية هذا الأسبوع',      reward: 25, goal: 7,   progress: 0, done: false, type: 'streak'  },
+                { id: 'w2', icon: '💯', name: 'مئة إجابة صحيحة',    desc: 'أجب على 100 سؤال صحيح هذا الأسبوع',   reward: 20, goal: 100, progress: 0, done: false, type: 'correct' },
+                { id: 'w3', icon: '🏆', name: 'ثلاثة تحديات يومية', desc: 'أكمل تحدي اليوم 3 مرات هذا الأسبوع', reward: 15, goal: 3,   progress: 0, done: false, type: 'daily'   },
+                { id: 'w4', icon: '⚡', name: 'تتابع ×15',           desc: 'حقّق سلسلة 15 إجابة صحيحة متتالية',   reward: 30, goal: 15,  progress: 0, done: false, type: 'streak'  },
+            ];
+        }
+
+        function checkWeeklyReset() {
+            const thisWeek = weekStr();
+            if (!st.weeklyTasks || st.weeklyTasks.length === 0 || st.weeklyTasksDate !== thisWeek) {
+                st.weeklyTasks    = genWeeklyTasks();
+                st.weeklyTasksDate = thisWeek;
+                saveSt();
+            }
+        }
+
+        function updWeeklyTask(type, val) {
+            if (!Array.isArray(st.weeklyTasks)) return;
+            let changed = false;
+            st.weeklyTasks.forEach(t => {
+                if (t.done) return;
+                let inc = 0;
+                if (type === 'correct' && t.type === 'correct') inc = 1;
+                if (type === 'daily'   && t.type === 'daily')   inc = 1;
+                if (type === 'streak'  && t.type === 'streak' && val >= t.goal) inc = t.goal - t.progress;
+                if (inc > 0) {
+                    t.progress = Math.min(t.goal, t.progress + inc);
+                    if (t.progress >= t.goal && !t.done) {
+                        t.done = true;
+                        st.coins += t.reward;
+                        changed = true;
+                        setTimeout(() => showFeedback(`🗓️ مهمة أسبوعية: ${t.name}! +${t.reward}💰`), 500);
+                    }
+                }
+            });
+            if (changed) { saveSt(); updateUI(); }
+        }
+
+        function renderWeeklyTasks() {
+            const el = document.getElementById('weeklyTasksList');
+            if (!el) return;
+            checkWeeklyReset();
+            if (!st.weeklyTasks || st.weeklyTasks.length === 0) {
+                el.innerHTML = '<div style="font-size:0.74em;color:var(--text3);padding:6px;">لا توجد مهام أسبوعية بعد.</div>';
+                return;
+            }
+            el.innerHTML = st.weeklyTasks.map(t => {
+                const prog = Math.min(100, Math.round((t.progress / t.goal) * 100));
+                return `<div class="task-item ${t.done ? 'done' : ''}">
+                    <div class="task-item-icon">${t.icon}</div>
+                    <div class="task-item-info">
+                        <div class="task-item-name">${t.name}</div>
+                        <div class="task-item-desc">${t.desc}</div>
+                        <div class="task-prog-bar"><div class="task-prog-fill" style="width:${prog}%"></div></div>
+                    </div>
+                    <div class="task-right">
+                        <div class="task-reward">${t.done ? '✅' : '+' + t.reward + '💰'}</div>
+                        <div class="task-prog-txt">${Math.min(t.progress, t.goal)}/${t.goal}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         function openLaws() {
             const el = document.getElementById('lawsContent');
             el.innerHTML = LAWS_DATA.map(cat => `
