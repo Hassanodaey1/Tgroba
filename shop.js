@@ -521,27 +521,41 @@ function buyConsumable(id) {
         if (!ok) return;
         st.coins -= item.price;
 
+        const inGameNow = typeof G !== 'undefined' && !G.ended &&
+            document.getElementById('gameOverlay')?.classList.contains('active');
+
         switch (item.action) {
             case 'addHeart':
-                if (G && !G.ended) {
+                if (inGameNow) {
                     G.livesLeft = Math.min(G.livesLeft + 1, 9);
                     if (typeof updateHeartsDisplay === 'function') updateHeartsDisplay();
+                } else {
+                    /* حفظ في المخزون للاستخدام لاحقاً */
+                    _addToInventory('addHeart', 1);
+                    showFeedback('❤️ أُضيف للمخزون — يُستخدم تلقائياً في اللعبة');
                 }
                 break;
             case 'addHearts':
-                if (G && !G.ended) {
+                if (inGameNow) {
                     G.livesLeft = Math.min(G.livesLeft + (item.actionVal || 3), 9);
                     if (typeof updateHeartsDisplay === 'function') updateHeartsDisplay();
+                } else {
+                    _addToInventory('addHearts', item.actionVal || 3);
+                    showFeedback('💖 أُضيفت للمخزون — تُستخدم تلقائياً في اللعبة');
                 }
                 break;
             case 'skipQuestion':
-                if (G && !G.ended && !G.answered) {
+                if (inGameNow) {
                     G.answered = true;
                     setTimeout(() => { if (!G.ended) loadQuestion(); }, 200);
+                } else {
+                    /* تُخزَّن وتُستهلك تلقائياً عبر useHelperFromInventory */
+                    _addToInventory('skipQuestion', 1);
+                    showFeedback('⏭️ تخطٍّ أُضيف للمخزون');
                 }
                 break;
             case 'removeWrong':
-                if (G && !G.ended && !G.answered) {
+                if (inGameNow) {
                     const btns = [...document.querySelectorAll('.answer-btn:not(:disabled)')];
                     const wrong = btns.filter(b => parseInt(b.getAttribute('data-val')) !== G.correctAnswer);
                     if (wrong.length > 0) {
@@ -549,6 +563,9 @@ function buyConsumable(id) {
                         r.style.opacity = '0.15';
                         r.style.pointerEvents = 'none';
                     }
+                } else {
+                    _addToInventory('removeWrong', 1);
+                    showFeedback('🗑️ حذف خيار أُضيف للمخزون');
                 }
                 break;
             case 'addTime':
@@ -801,6 +818,86 @@ function buyEmojiShopOnly(emoji, price, label) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   ⑪-أ ربط المخزون بأزرار المساعدة (5.3) — يُستدعى من questions.js
+═══════════════════════════════════════════════════════════════ */
+
+/**
+ * يحاول استخدام مساعد من المخزون المشترى مسبقاً.
+ * @param {string} type  'skip' | 'remove' | 'heart'
+ * @returns {boolean}  true إذا نجح الاستخدام من المخزون
+ */
+function useHelperFromInventory(type) {
+    if (!st) return false;
+
+    /* --- تخطّي سؤال من المخزون --- */
+    if (type === 'skip') {
+        const inv = st._inv_skip || 0;
+        if (inv > 0) {
+            st._inv_skip = inv - 1;
+            saveSt();
+            _updateInventoryHintDisplay();
+            return true;
+        }
+        return false;
+    }
+
+    /* --- حذف إجابة خاطئة من المخزون --- */
+    if (type === 'remove') {
+        const inv = st._inv_remove || 0;
+        if (inv > 0) {
+            st._inv_remove = inv - 1;
+            saveSt();
+            _updateInventoryHintDisplay();
+            return true;
+        }
+        return false;
+    }
+
+    /* --- قلب إضافي من المخزون --- */
+    if (type === 'heart') {
+        const inv = st._inv_heart || 0;
+        if (inv > 0) {
+            st._inv_heart = inv - 1;
+            saveSt();
+            _updateInventoryHintDisplay();
+            return true;
+        }
+        return false;
+    }
+
+    return false;
+}
+
+/**
+ * يحدّث عرض مخزون المساعدات داخل اللعبة (5.4)
+ */
+function _updateInventoryHintDisplay() {
+    const skipEl  = document.getElementById('invSkip');
+    const heartEl = document.getElementById('invHeart');
+    const remEl   = document.getElementById('invRemove');
+    if (skipEl)  skipEl.textContent  = st._inv_skip   || 0;
+    if (heartEl) heartEl.textContent = st._inv_heart  || 0;
+    if (remEl)   remEl.textContent   = st._inv_remove || 0;
+
+    /* إظهار/إخفاء شريط المخزون */
+    const hintBar = document.getElementById('helperInventoryHint');
+    if (hintBar) {
+        const total = (st._inv_skip || 0) + (st._inv_heart || 0) + (st._inv_remove || 0);
+        hintBar.style.display = total > 0 ? 'flex' : 'none';
+    }
+}
+
+/* عند شراء مستهلكات تُضاف للمخزون (skip_q, remove_wrong) نزيدها */
+function _addToInventory(action, qty) {
+    qty = qty || 1;
+    if (action === 'skipQuestion')  st._inv_skip   = (st._inv_skip   || 0) + qty;
+    if (action === 'removeWrong')   st._inv_remove = (st._inv_remove || 0) + qty;
+    if (action === 'addHeart')      st._inv_heart  = (st._inv_heart  || 0) + qty;
+    if (action === 'addHearts')     st._inv_heart  = (st._inv_heart  || 0) + qty;
+    saveSt();
+}
+
+/* ═══════════════════════════════════════════════════════════════
    ⑪ مضاعف XP
 ═══════════════════════════════════════════════════════════════ */
 function getXpMultiplier() {
@@ -830,15 +927,18 @@ window.addEventListener('load', function () {
 });
 
 /* تصدير الدوال عالمياً */
-window.renderShop           = renderShop;
-window.buyAvatarFromShop    = buyAvatarFromShop;
-window.selectEmojiFromShop  = selectEmojiFromShop;
-window.buyConsumable        = buyConsumable;
-window.buyBundle            = buyBundle;
-window.showUrgentHeartOffer = showUrgentHeartOffer;
-window.getXpMultiplier      = getXpMultiplier;
-window._setShopTab          = _setShopTab;
-window.renderEmojiShop      = renderEmojiShop;
-window.toggleEmojiShop      = toggleEmojiShop;
-window.buyOrSelectEmoji     = buyOrSelectEmoji;
-window.buyEmojiShopOnly     = buyEmojiShopOnly;
+window.renderShop                = renderShop;
+window.buyAvatarFromShop         = buyAvatarFromShop;
+window.selectEmojiFromShop       = selectEmojiFromShop;
+window.buyConsumable             = buyConsumable;
+window.buyBundle                 = buyBundle;
+window.showUrgentHeartOffer      = showUrgentHeartOffer;
+window.getXpMultiplier           = getXpMultiplier;
+window._setShopTab               = _setShopTab;
+window.renderEmojiShop           = renderEmojiShop;
+window.toggleEmojiShop           = toggleEmojiShop;
+window.buyOrSelectEmoji          = buyOrSelectEmoji;
+window.buyEmojiShopOnly          = buyEmojiShopOnly;
+/* 5.3/5.4 — ربط المخزون */
+window.useHelperFromInventory    = useHelperFromInventory;
+window._updateInventoryHintDisplay = _updateInventoryHintDisplay;
