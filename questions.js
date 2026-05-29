@@ -515,7 +515,7 @@
                 if (st.coins < 3) { showFeedback('💸 تحتاج 3💰'); return; }
                 if (G.helpersUsed.skip) { showFeedback('⏭️ استُخدم'); return; }
                 st.coins -= 3;
-                G.coinsEarned = Math.max(0, G.coinsEarned - 1);
+                /* 3.2: إزالة الخصم المزدوج — الخصم من st.coins يكفي */
                 G.helpersUsed.skip = true;
                 document.getElementById('helperSkip').classList.add('used');
                 saveSt();
