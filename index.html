@@ -121,6 +121,26 @@
                     <div class="helper-btn-cost">7💰</div>
                 </div>
             </div>
+            <!-- 5.4: مخزون المساعدات — يظهر فقط إذا كان هناك مخزون -->
+            <div id="helperInventoryHint" style="
+                display:none;
+                justify-content:center;
+                align-items:center;
+                gap:14px;
+                background:rgba(240,185,11,0.08);
+                border:1px solid rgba(240,185,11,0.25);
+                border-radius:12px;
+                padding:5px 14px;
+                margin:4px 0 0;
+                font-size:0.72em;
+                color:var(--gold, #f0b90b);
+                font-weight:700;
+            ">
+                <span title="تخطّيات في المخزون">⏭️ <span id="invSkip">0</span></span>
+                <span title="حذف خيار في المخزون">🗑️ <span id="invRemove">0</span></span>
+                <span title="قلوب في المخزون">💖 <span id="invHeart">0</span></span>
+                <span style="font-size:0.85em;color:var(--text2,#aaa);">من المخزون</span>
+            </div>
             <button class="return-home-btn" onclick="confirmQuit()">🏠 العودة إلى القائمة الرئيسية</button>
         </div>
     </div>
@@ -1447,14 +1467,4 @@
     <script src="stats_engine.js"></script>
     <script src="achievements.js"></script>
     <script src="titles.js"></script>
-    <script src="audio_effects.js"></script>
-    <script src="navigation.js"></script>
-    <script src="questions.js"></script>
-    <script src="game.js"></script>
-    <script src="ui.js"></script>
-    <script src="fixes_init.js"></script>
-    <script src="questions_engine.js"></script>
-    <script src="patches.js"></script>
-    <script src="shop.js"></script>
-</body>
-</html>
+    <script src="audio_effects.js"></scri
