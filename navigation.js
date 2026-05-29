@@ -27,9 +27,12 @@
             }
             if (tab === 'settings') {
                 loadProfileForm();
+                /* ✅ FIX-8.4: تطبيق وضع كبار السن عند فتح الإعدادات */
+                try { if (typeof _applyElderMode === 'function') _applyElderMode(); } catch(e) {}
             }
             if (tab === 'shop') {
-                /* تحديث رصيد المتجر وتشغيل المتجر الجديد */
+                /* تحديث رصيد المتجر وتشغيل المتجر الجديد + صوت فتح */
+                try { playSound('open'); } catch(e) {}
                 try { if (typeof renderShop === 'function') renderShop(); } catch(e) {}
             }
             if (tab === 'home') { updateHomeStats();
@@ -187,6 +190,18 @@
             st.difficulty = diff; /* 'easy'|'medium'|'hard'|'genius'|'auto' */
             playSound('click');
             saveSt();
+        }
+
+        /* ✅ FIX-8.4: وضع كبار السن — خط أكبر وأزرار أوسع للعمر 60+ */
+        function _applyElderMode() {
+            const _age = st.age || (typeof calculateAgeFromBirthDate === 'function' ? calculateAgeFromBirthDate(st.birthDate) : 0);
+            if (_age && _age >= 60) {
+                document.documentElement.classList.add('elder-mode');
+                document.documentElement.style.setProperty('--font-scale', '1.2');
+            } else {
+                document.documentElement.classList.remove('elder-mode');
+                document.documentElement.style.removeProperty('--font-scale');
+            }
         }
 
         function openSheet(id) { document.getElementById(id).classList.add('active'); }
