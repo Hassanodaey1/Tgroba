@@ -27,7 +27,8 @@
                 avatar: '👦',
                 profilePhoto: null,
                 xp: 0,
-                xpToNext: 1000,
+                /* ✅ FIX-XP: يتوافق مع calcXpToNext(1) = 400+120+40 = 560 بدلاً من 1000 */
+                xpToNext: 560,
                 level: 1,
                 coins: 10,
                 correctTotal: 0,
@@ -85,7 +86,8 @@
             if (s.level  > 200)     s.level  = 200;
             if (typeof s.xp !== 'number'     || s.xp < 0)      s.xp = 0;
             if (s.xp     > 99999999) s.xp    = 99999999;
-            if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 1000;
+            /* ✅ FIX-XP: الحد الأدنى 460 = calcXpToNext(1) تقريباً لتجنب قيم مشوهة */
+            if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 560;
             if (!s.ownedEmojis || !Array.isArray(s.ownedEmojis)) s.ownedEmojis = ['👦'];
             if (!s.stats || typeof s.stats !== 'object') s.stats = {};
             if (!s.history) s.history = [];
@@ -117,7 +119,7 @@
             if (!s.weeklyHistory) s.weeklyHistory = [];
             if (s.weeklyStats && typeof s.weeklyStats._baseSessionSecs !== 'number') s.weeklyStats._baseSessionSecs = 0;
             /* ✅ STATS-V2: إصلاح xpToNext المشوّهة */
-            if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 500;
+            if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 560;
             /* إذا كانت xpToNext أكبر من 500,000 → مشوّهة من الضرب المتكرر × 1.3 */
             if (s.xpToNext > 500000) {
                 const calcFn = typeof calcXpToNext === 'function' ? calcXpToNext : function(lv) {
@@ -326,8 +328,13 @@
         }
 
         /* ═══════════ تحديث الإحصائيات اليومية والأسبوعية ═══════════ */
+        /* ✅ FIX-CONFLICT: الدالة الحقيقية هي recordDailyStatV2 في stats_engine.js
+           وتُسجَّل في window.recordDailyStat تلقائياً عند تحميل stats_engine.js
+           هذه النسخة الاحتياطية تعمل فقط إذا لم يكن stats_engine.js محملاً بعد */
         function recordDailyStat(type) {
-            /* تحقق من التاريخ */
+            /* إذا كانت النسخة المحسّنة محملة، استخدمها */
+            if (typeof recordDailyStatV2 === 'function') { recordDailyStatV2(type); return; }
+            /* نسخة احتياطية بسيطة */
             if (!st.dailyStats || st.dailyStats.date !== todayStr()) {
                 st.dailyStats = { correct: 0, wrong: 0, games: 0, date: todayStr() };
             }
