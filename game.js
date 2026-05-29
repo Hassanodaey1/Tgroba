@@ -11,7 +11,15 @@
                 G.streak++;
                 if (G.streak > G.bestStreak) G.bestStreak = G.streak;
                 G.score += 10 + G.streak * 2;
-                G.coinsEarned += 0.4;
+                /* 3.1: ربط الكسب بالصعوبة */
+                const _diffMult = { easy:0.4, medium:0.7, hard:1.0, genius:1.5 }[st.difficulty] || 0.4;
+                const _levelBonus = Math.min(0.5, Math.floor(st.level / 10) * 0.1);
+                G.coinsEarned += _diffMult + _levelBonus;
+                /* 3.3: مكافأة التتابع */
+                if (G.streak >= 5) {
+                    const _streakBonus = Math.floor(G.streak / 5) * 0.2;
+                    G.coinsEarned += _streakBonus;
+                }
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
                 playSound('correct');
@@ -162,7 +170,12 @@
             if (!G.isTraining) {
                 const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
                 const _maxScore = _maxQ * 60;
-                const _maxCoins = _maxQ * 0.4 + 10;
+                /* 3.6: رفع الحد الأقصى حسب الصعوبة */
+                const _diffCap  = { easy:0.4, medium:0.8, hard:1.2, genius:1.8 }[st.difficulty] || 0.4;
+                const _maxCoins = _maxQ * _diffCap * 2 + 15;
+                /* 3.7: معامل الوضع الصعب */
+                const _modeMult = { speed:1.5, frenzy:1.8, survival:1.3 }[G.mode] || 1.0;
+                G.coinsEarned   = G.coinsEarned * _modeMult;
                 G.correct     = Math.max(0, Math.min(Math.floor(G.correct),     _maxQ));
                 G.wrong       = Math.max(0, Math.min(Math.floor(G.wrong),       _maxQ));
                 G.score       = Math.max(0, Math.min(Math.floor(G.score),       _maxScore));
@@ -208,6 +221,13 @@
                 const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
                 st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
                 if (st.history.length > 10) st.history.pop();
+                /* 3.4: مكافأة الدقة 100% */
+                const _total = G.correct + G.wrong;
+                if (_total > 0 && G.wrong === 0 && G.correct >= 5) {
+                    const _perfectBonus = Math.ceil(G.correct * 0.5);
+                    st.coins += _perfectBonus;
+                    setTimeout(() => showFeedback(`⭐ دقة مثالية! +${_perfectBonus}💰`), 300);
+                }
                 saveSt();
                 updateUI();
                 checkAchievements();
@@ -321,6 +341,17 @@
                 st.dailyStreak = st.lastDailyDate === yesterday ? st.dailyStreak + 1 : 1;
                 st.lastDailyDate = today;
                 st.dailyShieldUsed = false;
+                /* 3.5: مكافأة تسجيل الدخول اليومي */
+                if (st.loginBonusDate !== today) {
+                    st.loginBonusDate = today;
+                    const _streakMiles = { 3:3, 7:7, 14:10, 30:20 };
+                    let _loginBonus = 2;
+                    Object.keys(_streakMiles).forEach(days => {
+                        if (st.dailyStreak >= parseInt(days)) _loginBonus = _streakMiles[days];
+                    });
+                    st.coins += _loginBonus;
+                    setTimeout(() => showFeedback(`🌅 مرحباً! +${_loginBonus}💰 مكافأة يومية (يوم ${st.dailyStreak})`), 800);
+                }
                 saveSt();
             }
         }
