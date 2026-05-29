@@ -74,7 +74,11 @@
                 achievementRewardClaimed: false,
                 serialNumber: '',
                 darkMode: true,
-                challengeBestScore: 0
+                challengeBestScore: 0,
+                /* ═══ صندوق المكافأة اليومي ═══ */
+                dailyBox: { opened: false, date: '', reward: 0 },
+                /* ═══ مكافأة تسجيل الدخول اليومي ═══ */
+                loginBonusDate: ''
             };
         }
 
@@ -134,6 +138,12 @@
             if (!s.weeklyStats || s.weeklyStats.week !== weekStr()) {
                 s.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
             }
+            /* ═══ صندوق المكافأة اليومي ═══ */
+            if (!s.dailyBox || typeof s.dailyBox !== 'object') {
+                s.dailyBox = { opened: false, date: '', reward: 0 };
+            }
+            /* ═══ مكافأة تسجيل الدخول اليومي ═══ */
+            if (typeof s.loginBonusDate !== 'string') s.loginBonusDate = '';
             return s;
         }
 
