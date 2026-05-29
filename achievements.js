@@ -344,6 +344,95 @@
                 ] }
         ];
 
+
+        /* ═══════════════════════════════════════════════════════
+           🎁 نظام الصندوق اليومي — Daily Reward Box
+           يتجدد كل يوم ويمنح مكافأة عشوائية عند الفتح
+           ═══════════════════════════════════════════════════════ */
+
+        function getDailyBoxReward() {
+            /* مكافأة عشوائية بناءً على مستوى اللاعب */
+            const base = st.level >= 20 ? 8 :
+                         st.level >= 10 ? 6 :
+                         st.level >= 5  ? 4 : 3;
+            const bonus = Math.floor(Math.random() * (base + 1));
+            return base + bonus; /* 3-6 للمبتدئين، 8-16 للمتقدمين */
+        }
+
+        function isDailyBoxAvailable() {
+            if (!st.dailyBox || typeof st.dailyBox !== 'object') {
+                st.dailyBox = { opened: false, date: '', reward: 0 };
+            }
+            return st.dailyBox.date !== todayStr() || !st.dailyBox.opened;
+        }
+
+        function openDailyBox() {
+            if (!isDailyBoxAvailable()) {
+                showFeedback('📦 الصندوق فُتح اليوم — عد غداً!');
+                return;
+            }
+            const reward = getDailyBoxReward();
+            st.dailyBox = { opened: true, date: todayStr(), reward: reward };
+            st.coins += reward;
+            saveSt();
+            updateUI();
+            renderDailyBox();
+            /* تشغيل أنيميشن الفتح */
+            const boxEl = document.getElementById('dailyBoxCard');
+            if (boxEl) {
+                boxEl.classList.add('box-opening');
+                setTimeout(() => boxEl.classList.remove('box-opening'), 700);
+            }
+            playSound('levelup');
+            doConfetti();
+            showFeedback(`🎁 مكافأة يومية! +${reward}💰`);
+        }
+
+        function renderDailyBox() {
+            const boxEl = document.getElementById('dailyBoxCard');
+            if (!boxEl) return;
+            const available = isDailyBoxAvailable();
+            const today = todayStr();
+            /* حساب الوقت المتبقي حتى منتصف الليل */
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+            const diff = midnight - now;
+            const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+            const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+
+            if (available) {
+                boxEl.innerHTML = `
+                    <div class="daily-box-glow"></div>
+                    <div class="daily-box-icon" id="dailyBoxIcon">🎁</div>
+                    <div class="daily-box-content">
+                        <div class="daily-box-title">صندوق اليوم</div>
+                        <div class="daily-box-sub">اضغط لفتح مكافأتك!</div>
+                    </div>
+                    <div class="daily-box-badge">متاح</div>`;
+                boxEl.onclick = openDailyBox;
+                boxEl.classList.remove('box-opened');
+                boxEl.classList.add('box-available');
+            } else {
+                const lastReward = st.dailyBox.reward || 0;
+                boxEl.innerHTML = `
+                    <div class="daily-box-icon opened">✅</div>
+                    <div class="daily-box-content">
+                        <div class="daily-box-title">تم الفتح • +${lastReward}💰</div>
+                        <div class="daily-box-sub">يتجدد بعد ${h}:${m}</div>
+                    </div>
+                    <div class="daily-box-badge opened">غداً</div>`;
+                boxEl.onclick = null;
+                boxEl.classList.remove('box-available');
+                boxEl.classList.add('box-opened');
+            }
+        }
+
+        /* تحديث عداد الصندوق كل دقيقة */
+        setInterval(() => {
+            if (document.getElementById('dailyBoxCard')) renderDailyBox();
+        }, 60000);
+
         function openLaws() {
             const el = document.getElementById('lawsContent');
             el.innerHTML = LAWS_DATA.map(cat => `
