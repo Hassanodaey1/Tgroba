@@ -73,7 +73,10 @@
                 achievementRewardClaimed: false,
                 serialNumber: '',
                 darkMode: true,
-                challengeBestScore: 0
+                challengeBestScore: 0,
+                /* ✅ FIX-4.2: المهام الأسبوعية */
+                weeklyTasks: [],
+                weeklyTasksDate: ''
             };
         }
 
@@ -132,6 +135,9 @@
             if (!s.weeklyStats || s.weeklyStats.week !== weekStr()) {
                 s.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
             }
+            /* ✅ FIX-4.2: تهيئة المهام الأسبوعية */
+            if (!Array.isArray(s.weeklyTasks)) s.weeklyTasks = [];
+            if (typeof s.weeklyTasksDate !== 'string') s.weeklyTasksDate = '';
             return s;
         }
 
@@ -338,6 +344,10 @@
             if (type === 'wrong')   { st.dailyStats.wrong++;   st.weeklyStats.wrong++;   }
             if (type === 'game')    { st.dailyStats.games++;   st.weeklyStats.games++;   }
             if (type === 'streak' && st.bestStreak > st.weeklyStats.bestStreak) {
+                st.weeklyStats.bestStreak = st.bestStreak;
+            }
+            /* ✅ FIX-4.3: تحديث bestStreak الأسبوعي دائماً */
+            if ((st.bestStreak || 0) > (st.weeklyStats.bestStreak || 0)) {
                 st.weeklyStats.bestStreak = st.bestStreak;
             }
         }
