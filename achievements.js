@@ -211,6 +211,107 @@
         var renderTasks = renderTasksFiltered;
         window.renderTasks = renderTasksFiltered;
 
+        /* ═══════════════════════════════════════════════════════
+           ✅ FIX-4.2: نظام المهام الأسبوعية
+        ═══════════════════════════════════════════════════════ */
+        function genWeeklyTasks() {
+            return [
+                { id: 'w1', icon: '🗓️', name: 'لاعب الأسبوع',       desc: 'العب 7 أيام متتالية',
+                  reward: 25, goal: 7,   progress: 0, done: false, type: 'streak_days' },
+                { id: 'w2', icon: '💯', name: 'مئة إجابة صحيحة',     desc: '100 إجابة صحيحة هذا الأسبوع',
+                  reward: 20, goal: 100, progress: 0, done: false, type: 'correct' },
+                { id: 'w3', icon: '🏆', name: 'ثلاثة تحديات يومية',  desc: 'أكمل تحدي اليوم 3 مرات',
+                  reward: 15, goal: 3,   progress: 0, done: false, type: 'daily' },
+                { id: 'w4', icon: '⚡', name: 'تتابع ×15',            desc: 'حقّق سلسلة 15 إجابة صحيحة',
+                  reward: 30, goal: 15,  progress: 0, done: false, type: 'streak' },
+            ];
+        }
+
+        function checkWeeklyReset() {
+            const thisWeek = weekStr();
+            if (st.weeklyTasksDate !== thisWeek || !st.weeklyTasks || st.weeklyTasks.length === 0) {
+                st.weeklyTasks    = genWeeklyTasks();
+                st.weeklyTasksDate = thisWeek;
+                saveSt();
+            }
+            /* تحقق من بنية المهام */
+            if (Array.isArray(st.weeklyTasks)) {
+                st.weeklyTasks.forEach(t => {
+                    if (typeof t.done     !== 'boolean') t.done     = false;
+                    if (typeof t.progress !== 'number' || t.progress < 0) t.progress = 0;
+                    if (t.progress > (t.goal || 1)) t.progress = t.goal || 1;
+                });
+            }
+        }
+
+        function updWeeklyTask(type, amount = 1) {
+            checkWeeklyReset();
+            const T = st.weeklyTasks;
+            if (!Array.isArray(T)) return;
+            let changed = false;
+
+            T.forEach(t => {
+                if (t.done) return;
+                if (type === 'correct' && t.type === 'correct') {
+                    t.progress = Math.min(t.goal, t.progress + amount);
+                    if (t.progress >= t.goal) { t.done = true; st.coins += t.reward; changed = true; }
+                }
+                if (type === 'daily' && t.type === 'daily') {
+                    t.progress = Math.min(t.goal, t.progress + 1);
+                    if (t.progress >= t.goal) { t.done = true; st.coins += t.reward; changed = true; }
+                }
+                if (type === 'streak' && t.type === 'streak' && amount >= t.goal) {
+                    t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true;
+                }
+                if (type === 'streak_days' && t.type === 'streak_days') {
+                    t.progress = Math.min(t.goal, st.dailyStreak || 0);
+                    if (t.progress >= t.goal) { t.done = true; st.coins += t.reward; changed = true; }
+                }
+            });
+
+            if (changed) { playSound('levelup'); saveSt(); }
+            renderWeeklyTasks();
+        }
+
+        function renderWeeklyTasks() {
+            checkWeeklyReset();
+            const T = st.weeklyTasks;
+            const container = document.getElementById('weeklyTasksList');
+            const doneEl    = document.getElementById('weeklyTasksDone');
+            const totalEl   = document.getElementById('weeklyTasksTotal');
+            const barEl     = document.getElementById('weeklyTasksBar');
+            if (!container) return;
+
+            const doneCount = T.filter(t => t.done).length;
+            if (doneEl)  doneEl.textContent  = doneCount;
+            if (totalEl) totalEl.textContent  = T.length;
+            if (barEl)   barEl.style.width    = Math.round((doneCount / T.length) * 100) + '%';
+
+            container.innerHTML = T.map(t => {
+                const p = Math.min(100, Math.round((t.progress / t.goal) * 100));
+                return `<div class="task-item ${t.done ? 'done' : ''}">
+                    <div class="task-item-icon">${t.icon}</div>
+                    <div class="task-item-info">
+                        <div class="task-item-name">${t.name}</div>
+                        <div class="task-item-desc">${t.desc}</div>
+                        <div class="task-prog-bar"><div class="task-prog-fill" style="width:${p}%"></div></div>
+                    </div>
+                    <div class="task-right">
+                        <div class="task-reward">${t.done ? '✅' : `+${t.reward}💰`}</div>
+                        ${t.done ? '' : `<div class="task-prog-txt">${t.progress}/${t.goal}</div>`}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        /* تغليف updTask الأصلي لتحديث المهام الأسبوعية أيضاً */
+        const _origUpdTask = updTask;
+        function updTask(type, amount = 1) {
+            _origUpdTask(type, amount);
+            try { updWeeklyTask(type, amount); } catch(e) {}
+        }
+        window.updTask = updTask;
+
         function updCountdown() {
             const now = new Date(),
                 midnight = new Date(now);
