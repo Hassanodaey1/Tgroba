@@ -147,6 +147,8 @@
                 </div>
             </div>
             <div class="results-xp" id="resultsXP">+0 XP • +0 💰</div>
+            <!-- ✅ 4.1: المقارنة التاريخية -->
+            <div id="resultsComparison" style="display:none;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:12px 14px;margin:8px 0;width:100%;box-sizing:border-box;"></div>
             <button class="res-btn primary" onclick="playAgain()">🔄 إعادة اللعب</button>
             <button class="res-btn secondary" id="resultsBackBtn" onclick="goHome()">🏠 الصفحة الرئيسية</button>
         </div>
@@ -482,6 +484,17 @@
                     </div>
                     <div id="tasksSection" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:8px;padding:2px 1px 4px;">
                         <div id="tasksList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                    </div>
+
+                    <!-- ✅ 4.2: قسم المهام الأسبوعية -->
+                    <div style="flex-shrink:0;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(6,182,212,0.2));border:1px solid rgba(124,58,237,0.4);border-radius:14px;padding:11px 16px;cursor:pointer;user-select:none;" onclick="toggleSection('weeklyTasksSection','weeklyChevron')">
+                            <span style="font-size:0.88em;font-weight:900;color:var(--text);">🗓️ المهام الأسبوعية</span>
+                            <span id="weeklyChevron" style="font-size:1em;color:var(--text3);transition:transform 0.3s;">▼</span>
+                        </div>
+                    </div>
+                    <div id="weeklyTasksSection" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;display:flex;flex-direction:column;gap:8px;padding:0 1px;">
+                        <div id="weeklyTasksList" style="display:flex;flex-direction:column;gap:8px;padding-top:4px;"></div>
                     </div>
 
                     <!-- قسم الإنجازات — زر + قائمة قابلة للتمرير -->
@@ -1427,46 +1440,4 @@
         document.addEventListener('DOMContentLoaded', function() {
             /* فتح قسم المهام تلقائياً */
             var ts = document.getElementById('tasksSection');
-            var tc = document.getElementById('tasksChevron');
-            if (ts) {
-                ts.style.display = 'flex';
-                ts.style.flexDirection = 'column';
-                ts.style.maxHeight = '280px';
-                ts.style.overflow = 'auto';
-                ts.setAttribute('data-open', '1');
-            }
-            if (tc) tc.style.transform = 'rotate(180deg)';
-            /* قسم الإنجازات مغلق */
-            var as2 = document.getElementById('achieveSection');
-            if (as2) {
-                as2.style.display = 'none';
-                as2.style.maxHeight = '0';
-                as2.setAttribute('data-open', '0');
-            }
-            /* مهام التحدي مغلقة */
-            var ct = document.getElementById('challengeTasksBody');
-            if (ct) {
-                ct.style.display = 'none';
-                ct.style.maxHeight = '0';
-                ct.setAttribute('data-open', '0');
-            }
-            setTimeout(renderChallengeDailyTasks, 700);
-        });
-    </script>
-    <!-- JavaScript Modules -->
-    <script src="firebase.js"></script>
-<script src="state.js"></script>
-<script src="stats_engine.js"></script>
-<script src="achievements.js"></script>
-<script src="titles.js"></script>
-<script src="audio_effects.js"></script>
-<script src="navigation.js"></script>
-<script src="questions.js"></script>
-<script src="game.js"></script>
-<script src="ui.js"></script>
-<script src="fixes_init.js"></script>
-<script src="questions_engine.js"></script>
-<script src="patches.js"></script>
-<script src="shop.js"></script>
-</body>
-</html>
+            var tc = document.getElementById('tasksChevron
