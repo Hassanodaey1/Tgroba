@@ -98,6 +98,10 @@
             </div>
             <div class="question-card">
                 <div class="question-number" id="questionNumber">السؤال 1 من 10</div>
+                <!-- ✅ FIX-7.3: شريط تقدم مرئي داخل اللعبة -->
+                <div id="gameProgressBar" style="height:5px;background:var(--border,#2a2a3a);border-radius:3px;margin:4px 0 6px 0;overflow:hidden;">
+                    <div id="gameProgressFill" style="height:100%;background:var(--gold,#f0b90b);border-radius:3px;width:0%;transition:width 0.35s ease;"></div>
+                </div>
                 <div class="question-text" id="questionText">...</div>
                 <div class="question-hint" id="questionHint">ما هو الجواب؟</div>
             </div>
@@ -147,6 +151,8 @@
                 </div>
             </div>
             <div class="results-xp" id="resultsXP">+0 XP • +0 💰</div>
+            <!-- ✅ FIX-3.3: مكافأة الدقة المثالية -->
+            <div id="resultsPerfectBonus" style="display:none;text-align:center;margin-top:4px;"></div>
             <button class="res-btn primary" onclick="playAgain()">🔄 إعادة اللعب</button>
             <button class="res-btn secondary" id="resultsBackBtn" onclick="goHome()">🏠 الصفحة الرئيسية</button>
         </div>
@@ -267,6 +273,8 @@
                 <div style="display:flex;align-items:center;gap:4px;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:20px;padding:5px 10px;font-size:0.78em;font-weight:900;color:var(--gold);white-space:nowrap;">
                     💰 <span id="headerCoins">0</span>
                 </div>
+                <!-- ✅ SHOP-INT: مؤشر XP Boost مرئي في الهيدر -->
+                <div id="xpBoostIndicator" style="display:none;align-items:center;background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.5);border-radius:16px;padding:4px 8px;font-size:0.7em;font-weight:900;color:#a78bfa;white-space:nowrap;cursor:pointer;" onclick="goTab('shop');playSound('click');">⚡×2</div>
                 <div class="th-right">
                     <!-- زر الإعدادات — ينقل إلى صفحة الإعدادات -->
                     <div class="icon-pill" id="mainSettingsBtn" onclick="goTab('settings')" title="الإعدادات">⚙️</div>
@@ -1448,13 +1456,4 @@
     <script src="achievements.js"></script>
     <script src="titles.js"></script>
     <script src="audio_effects.js"></script>
-    <script src="navigation.js"></script>
-    <script src="questions.js"></script>
-    <script src="game.js"></script>
-    <script src="ui.js"></script>
-    <script src="fixes_init.js"></script>
-    <script src="questions_engine.js"></script>
-    <script src="patches.js"></script>
-    <script src="shop.js"></script>
-</body>
-</html>
+    <script s
