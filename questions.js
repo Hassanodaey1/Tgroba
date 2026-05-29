@@ -472,6 +472,14 @@
                 document.getElementById('bigTimerWrap').style.display = 'none';
             }
             updateGameCoinsDisplay();
+            /* 5.4: تحديث عرض مخزون المساعدات */
+            if (typeof _updateInventoryHintDisplay === 'function') _updateInventoryHintDisplay();
+            /* 5.5: ثيم موسيقي حسب الوضع */
+            if (typeof startBgForMode === 'function') {
+                startBgForMode(mode);
+            } else if (typeof startBg === 'function') {
+                startBg();
+            }
             document.getElementById('resultsOverlay').classList.remove('active');
             document.getElementById('gameOverlay').classList.add('active');
             loadQuestion();
@@ -491,6 +499,18 @@
             if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي مساعدات'); return; }
             /* ✅ FIX-V9: منع استخدام مساعدات بعملات سلبية أو محرَّفة */
             if (typeof st.coins !== 'number' || st.coins < 0) { st.coins = 0; saveSt(); }
+
+            /* ── 5.3: تحقق من المخزون المشترى مسبقاً ── */
+            if (typeof useHelperFromInventory === 'function') {
+                const usedFromInventory = useHelperFromInventory(type);
+                if (usedFromInventory) {
+                    /* استخدم المخزون مجاناً وطبّق المساعدة */
+                    _applyHelperEffect(type);
+                    return;
+                }
+            }
+
+            /* ── وإلا اخصم من العملات كالمعتاد ── */
             if (type === 'skip') {
                 if (st.coins < 3) { showFeedback('💸 تحتاج 3💰'); return; }
                 if (G.helpersUsed.skip) { showFeedback('⏭️ استُخدم'); return; }
@@ -541,6 +561,41 @@
                 updateHeartsDisplay();
                 updateGameCoinsDisplay();
                 showFeedback('💖 +1 قلب!');
+                playSound('levelup');
+            }
+        }
+
+        /* ── 5.3: تطبيق تأثير المساعدة من المخزون (بدون خصم عملات) ── */
+        function _applyHelperEffect(type) {
+            if (type === 'skip') {
+                if (G.helpersUsed.skip) { showFeedback('⏭️ استُخدم'); return; }
+                G.helpersUsed.skip = true;
+                const skipBtn = document.getElementById('helperSkip');
+                if (skipBtn) skipBtn.classList.add('used');
+                showFeedback('⏭️ تخطّي مجاني من المخزون!');
+                setTimeout(() => loadQuestion(), 300);
+            } else if (type === 'remove') {
+                if (G.helpersUsed.remove) { showFeedback('🗑️ استُخدم'); return; }
+                if (G.answered) return;
+                G.helpersUsed.remove = true;
+                const remBtn = document.getElementById('helperRemove');
+                if (remBtn) remBtn.classList.add('used');
+                const btns = [...document.querySelectorAll('.answer-btn:not(:disabled)')];
+                const wrongs = btns.filter(b => parseInt(b.getAttribute('data-val')) !== G.correctAnswer);
+                if (wrongs.length > 0) {
+                    const rem = wrongs[Math.floor(Math.random() * wrongs.length)];
+                    rem.style.opacity = '0.15';
+                    rem.style.pointerEvents = 'none';
+                    showFeedback('🗑️ حذف مجاني من المخزون!');
+                }
+            } else if (type === 'heart') {
+                if (G.helpersUsed.heart) { showFeedback('💖 استُخدم'); return; }
+                G.helpersUsed.heart = true;
+                const heartBtn = document.getElementById('helperHeart');
+                if (heartBtn) heartBtn.classList.add('used');
+                G.livesLeft++;
+                updateHeartsDisplay();
+                showFeedback('💖 قلب مجاني من المخزون!');
                 playSound('levelup');
             }
         }
