@@ -394,7 +394,7 @@
                     return;
                 }
                 let yesterdayD = new Date(Date.now() - 86400000);
-                let yesterday = `${yesterdayD.getFullYear()}-${yesterdayD.getMonth()+1}-${yesterdayD.getDate()}`;
+                let yesterday = `${yesterdayD.getFullYear()}-${String(yesterdayD.getMonth()+1).padStart(2,'0')}-${String(yesterdayD.getDate()).padStart(2,'0')}`;
                 st.dailyStreak = st.lastDailyDate === yesterday ? st.dailyStreak + 1 : 1;
                 st.lastDailyDate = today;
                 st.dailyShieldUsed = false;
