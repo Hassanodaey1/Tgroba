@@ -509,6 +509,8 @@ window.addEventListener('load', function() {
    تُعوّض updateHomeStats القديمة تلقائياً
    ───────────────────────────────────────────────────────────── */
 /* تسجيل الدوال الجديدة عالمياً */
+/* ✅ FIX-CONFLICT: تصدير recordDailyStatV2 كاسم عالمي صريح حتى تجده state.js */
+window.recordDailyStatV2        = recordDailyStatV2;
 window.updateHomeStats          = updateHomeStatsPrecise;
 window.updateParentTimePrecise  = updateParentTimePrecise;
 window.calcXpToNext             = calcXpToNext;
