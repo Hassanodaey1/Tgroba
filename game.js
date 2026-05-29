@@ -45,7 +45,11 @@
                     } catch(e) { console.warn("stats error", e); }
                 }
                 try { updTask('correct'); } catch(e) { console.warn("updTask correct error", e); }
+                /* ✅ 4.2: تحديث المهام الأسبوعية */
+                try { if (typeof updWeeklyTask === 'function') updWeeklyTask('correct'); } catch(e) {}
                 if (G.streak >= 3) { try { updTask('streak', G.streak); } catch(e) { console.warn("updTask streak error", e); } }
+                /* ✅ 4.2: تحديث مهمة التتابع الأسبوعية */
+                if (G.streak >= 3) { try { if (typeof updWeeklyTask === 'function') updWeeklyTask('streak', G.streak); } catch(e) {} }
                 if (!G.isTraining) { try { recordDailyStat('correct'); } catch(e) { console.warn("recordDailyStat error", e); } }
                 if (G.streak >= 5) doConfetti();
                 if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
@@ -215,11 +219,15 @@
                 if (G.mode === 'daily') {
                     if (typeof hasDailyBeenPlayed === 'function' && !hasDailyBeenPlayed()) {
                         try { updTask('daily'); } catch(e) {}
+                        /* ✅ 4.2: تحديث مهمة التحدي اليومي الأسبوعية */
+                        try { if (typeof updWeeklyTask === 'function') updWeeklyTask('daily'); } catch(e) {}
                         if (typeof markDailyPlayed === 'function') markDailyPlayed();
                     }
                 }
                 const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
-                st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
+                /* ✅ 4.1: احفظ المقارنة قبل إضافة النتيجة الجديدة للتاريخ */
+                const _lastGame = st.history[0] || null;
+                st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op, streak: G.bestStreak });
                 if (st.history.length > 10) st.history.pop();
                 /* 3.4: مكافأة الدقة 100% */
                 const _total = G.correct + G.wrong;
@@ -239,10 +247,41 @@
                 document.getElementById('resultsTitle').textContent = ttl;
                 document.getElementById('resultsSub').textContent =
                     `${G.correct} صحيح من ${G.correct+G.wrong} سؤال • ${acc}% دقة`;
-                document.getElementById('resScore').textContent = G.score;
+                document.getElementById('resScore').textContent   = G.score;
                 document.getElementById('resCorrect').textContent = G.correct;
-                document.getElementById('resStreak').textContent = G.bestStreak;
-                document.getElementById('resultsXP').textContent = `+${xpGained} XP • +${earnedCoins} 💰`;
+                document.getElementById('resStreak').textContent  = G.bestStreak;
+                document.getElementById('resultsXP').textContent  = `+${xpGained} XP • +${earnedCoins} 💰`;
+                /* ✅ 4.1: عرض المقارنة التاريخية */
+                const _compEl = document.getElementById('resultsComparison');
+                if (_compEl) {
+                    if (_lastGame) {
+                        const _accDiff    = acc - (_lastGame.acc || 0);
+                        const _scoreDiff  = G.score - (_lastGame.score || 0);
+                        const _accArrow   = _accDiff >= 0 ? '↑' : '↓';
+                        const _scoreArrow = _scoreDiff >= 0 ? '↑' : '↓';
+                        const _accColor   = _accDiff >= 0 ? '#10b981' : '#ef4444';
+                        const _scoreColor = _scoreDiff >= 0 ? '#10b981' : '#ef4444';
+                        _compEl.innerHTML = `
+                            <div class="comp-row">
+                                <span class="comp-label">🎯 الدقة</span>
+                                <span class="comp-val">${acc}%</span>
+                                <span class="comp-diff" style="color:${_accColor}">${_accDiff >= 0 ? '+' : ''}${_accDiff}% ${_accArrow}</span>
+                            </div>
+                            <div class="comp-row">
+                                <span class="comp-label">⭐ النقاط</span>
+                                <span class="comp-val">${G.score}</span>
+                                <span class="comp-diff" style="color:${_scoreColor}">${_scoreDiff >= 0 ? '+' : ''}${_scoreDiff} ${_scoreArrow}</span>
+                            </div>
+                            <div class="comp-row">
+                                <span class="comp-label">🔥 أفضل تتابع</span>
+                                <span class="comp-val">${G.bestStreak}</span>
+                                <span class="comp-diff" style="color:var(--text3)">سجل: ${st.bestStreak}</span>
+                            </div>`;
+                        _compEl.style.display = 'block';
+                    } else {
+                        _compEl.style.display = 'none';
+                    }
+                }
                 document.getElementById('gameOverlay').classList.remove('active');
                 document.getElementById('resultsOverlay').classList.add('active');
                 const winLoseEl = document.getElementById('winLoseMessage');
