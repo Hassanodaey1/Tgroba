@@ -342,6 +342,8 @@ function updateUI() {
     renderHistory();
     renderTasks();
     renderAchievements();
+    /* ✅ 4.2: تحديث المهام الأسبوعية */
+    try { if (typeof renderWeeklyTasks === 'function') renderWeeklyTasks(); } catch(e) {}
     /* تحديث الصندوق اليومي */
     try { if (typeof renderDailyBox === 'function') renderDailyBox(); } catch(e) {}
     renderProfileDailyTasks();
