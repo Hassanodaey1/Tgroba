@@ -11,10 +11,7 @@
                 G.streak++;
                 if (G.streak > G.bestStreak) G.bestStreak = G.streak;
                 G.score += 10 + G.streak * 2;
-                /* ✅ FIX-3.1: ربط الكسب بالصعوبة والمستوى */
-                const _diffMult = { easy:0.4, medium:0.7, hard:1.0, genius:1.5 }[st.difficulty] || 0.4;
-                const _lvlBonus = Math.min(0.5, Math.floor((st.level||1) / 10) * 0.1);
-                G.coinsEarned += _diffMult + _lvlBonus;
+                G.coinsEarned += 0.4;
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
                 playSound('correct');
@@ -44,11 +41,6 @@
                 if (!G.isTraining) { try { recordDailyStat('correct'); } catch(e) { console.warn("recordDailyStat error", e); } }
                 if (G.streak >= 5) doConfetti();
                 if (G.streak >= 5 && G.streak % 5 === 0) showComboEffect(G.streak);
-                /* ✅ FIX-3.3: مكافأة التتابع على العملات */
-                if (G.streak >= 5) {
-                    const _streakBonus = Math.floor(G.streak / 5) * 0.2;
-                    G.coinsEarned += _streakBonus;
-                }
                 showFloatXP(10 + G.streak * 2);
             } else {
                 btn.classList.add('wrong');
@@ -170,16 +162,11 @@
             if (!G.isTraining) {
                 const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
                 const _maxScore = _maxQ * 60;
-                /* ✅ FIX-3.6: الحد الأقصى للعملات مرتبط بالصعوبة */
-                const _diffCap = { easy:0.4, medium:0.8, hard:1.2, genius:1.8 }[st.difficulty] || 0.4;
-                const _maxCoins = _maxQ * _diffCap * 2 + 15;
+                const _maxCoins = _maxQ * 0.4 + 10;
                 G.correct     = Math.max(0, Math.min(Math.floor(G.correct),     _maxQ));
                 G.wrong       = Math.max(0, Math.min(Math.floor(G.wrong),       _maxQ));
                 G.score       = Math.max(0, Math.min(Math.floor(G.score),       _maxScore));
-                /* ✅ FIX-3.7: معامل عملات الأوضاع الصعبة */
-                const _modeMult = { speed:1.5, frenzy:1.8, survival:1.3 }[G.mode] || 1.0;
-                G.coinsEarned = G.coinsEarned * _modeMult;
-                G.coinsEarned = Math.max(0, Math.min(G.coinsEarned, _maxCoins));
+                G.coinsEarned = Math.max(0, Math.min(G.coinsEarned,             _maxCoins));
                 G.bestStreak  = Math.max(0, Math.min(Math.floor(G.bestStreak),  _maxQ));
                 const earnedCoins = Math.floor(G.coinsEarned);
                 st.correctTotal += G.correct;
@@ -221,13 +208,6 @@
                 const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
                 st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
                 if (st.history.length > 10) st.history.pop();
-                /* ✅ FIX-3.4: مكافأة الدقة 100% — 5 أسئلة أو أكثر */
-                if (G.wrong === 0 && G.correct >= 5) {
-                    const perfectBonus = Math.ceil(G.correct * 0.5);
-                    st.coins += perfectBonus;
-                    G.coinsEarned += perfectBonus;
-                    setTimeout(() => showFeedback(`⭐ دقة مثالية! +${perfectBonus}💰`), 800);
-                }
                 saveSt();
                 updateUI();
                 checkAchievements();
@@ -243,6 +223,29 @@
                 document.getElementById('resCorrect').textContent = G.correct;
                 document.getElementById('resStreak').textContent = G.bestStreak;
                 document.getElementById('resultsXP').textContent = `+${xpGained} XP • +${earnedCoins} 💰`;
+                /* ✅ FIX-4.1: المقارنة التاريخية — نأخذ الجلسة السابقة (قبل إضافة الحالية) */
+                try {
+                    const cmp = document.getElementById('resultsComparison');
+                    if (cmp && st.history.length >= 2) {
+                        const lastGame = st.history[1]; /* [0] = هذه الجلسة، [1] = السابقة */
+                        const accDiff  = acc - (lastGame.acc || 0);
+                        const accArrow = accDiff > 0 ? '↑' : accDiff < 0 ? '↓' : '→';
+                        const accClr   = accDiff > 0 ? '#10b981' : accDiff < 0 ? '#ef4444' : 'var(--text2)';
+                        const accSign  = accDiff > 0 ? '+' : '';
+                        document.getElementById('compAccuracy').innerHTML =
+                            `${acc}% <span style="color:${accClr};font-size:0.88em;">(${accSign}${accDiff}% ${accArrow})</span>`;
+                        const scoreDiff = G.score - (lastGame.score || 0);
+                        const scoreSign = scoreDiff >= 0 ? '+' : '';
+                        const scoreClr  = scoreDiff >= 0 ? '#10b981' : '#ef4444';
+                        document.getElementById('compScore').innerHTML =
+                            `${G.score} <span style="color:${scoreClr};font-size:0.88em;">(${scoreSign}${scoreDiff})</span> • أفضل: ${st.bestScore}`;
+                        document.getElementById('compStreak').innerHTML =
+                            `${G.bestStreak} <span style="color:var(--text2);font-size:0.88em;">• سجل: ${st.bestStreak}</span>`;
+                        cmp.style.display = 'block';
+                    } else if (cmp) {
+                        cmp.style.display = 'none';
+                    }
+                } catch(e) {}
                 document.getElementById('gameOverlay').classList.remove('active');
                 document.getElementById('resultsOverlay').classList.add('active');
                 const winLoseEl = document.getElementById('winLoseMessage');
@@ -341,14 +344,6 @@
                 st.dailyStreak = st.lastDailyDate === yesterday ? st.dailyStreak + 1 : 1;
                 st.lastDailyDate = today;
                 st.dailyShieldUsed = false;
-                /* ✅ FIX-3.5: مكافأة تسجيل الدخول اليومي */
-                const _streakMilestones = { 3:3, 7:7, 14:10, 30:20 };
-                let _loginBonus = 2;
-                Object.keys(_streakMilestones).forEach(days => {
-                    if (st.dailyStreak >= parseInt(days)) _loginBonus = _streakMilestones[days];
-                });
-                st.coins += _loginBonus;
-                setTimeout(() => showFeedback(`🌅 مرحباً! +${_loginBonus}💰 مكافأة يومية (يوم ${st.dailyStreak})`), 400);
                 saveSt();
             }
         }
