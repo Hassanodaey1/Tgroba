@@ -824,10 +824,12 @@
         }
         .diff-row {
             display: flex;
-            gap: 7px;
+            gap: 6px;
+            flex-wrap: wrap; /* ✅ FIX-CSS: يدعم 5 أزرار على شاشات صغيرة */
         }
         .diff-chip {
-            flex: 1;
+            flex: 1 1 calc(20% - 6px); /* ✅ FIX-CSS: 5 أزرار في صف واحد بحد أدنى */
+            min-width: 52px;
             padding: 9px 4px;
             border-radius: 13px;
             text-align: center;
@@ -3261,7 +3263,7 @@ html {
     .cat-card { padding: 10px 8px; border-radius: 14px; }
     .cat-icon { font-size: 1.5em; }
     .cat-name { font-size: 0.7em; }
-    .diff-row { gap: 4px; }
+    .diff-row { gap: 4px; flex-wrap: wrap; } /* ✅ FIX-CSS-RESP */
     .diff-chip { padding: 7px 2px; font-size: 0.62em; border-radius: 10px; }
     .page-title-header { font-size: 1.3em; padding: 12px 0 14px; }
     .top-header { padding: 6px 10px; gap: 6px; }
@@ -3310,7 +3312,7 @@ html {
     .page-title-header { padding: 8px 0 10px; font-size: 1.3em; }
     .cat-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
     .cat-card { padding: 10px 8px; }
-    .diff-row { gap: 5px; }
+    .diff-row { gap: 5px; flex-wrap: wrap; } /* ✅ FIX-CSS-RESP */
     .diff-chip { padding: 6px 3px; font-size: 0.62em; }
     .session-timer-card { padding: 8px 12px; }
     .daily-banner { padding: 10px 14px; }
@@ -3346,56 +3348,4 @@ html {
     .cat-card { padding: 9px 7px; gap: 4px; }
     .cat-icon { font-size: 1.5em; }
     .cat-name { font-size: 0.72em; }
-    .diff-chip { padding: 7px 2px; font-size: 0.6em; }
-}
-
-/* --- تابلت وأجهزة كبيرة (768px+) --- */
-@media (min-width: 768px) {
-    html { font-size: 16px; }
-    .cat-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .diff-chip { font-size: 0.75em; padding: 11px 6px; }
-    .page-title-header { font-size: 1.8em; }
-    .game-cat-card { padding: 22px; }
-    .gcard-name { font-size: 1.1em; }
-}
-
-/* --- ضمان عدم تجاوز نص الأزرار --- */
-.diff-chip, .gender-btn, .save-btn,
-.reset-stats-btn, .reset-complete-btn,
-.return-home-btn, button.save-btn {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-    flex-shrink: 1;
-}
-/* diff-chip خاصة تحتاج wrap لأنها قد تكون طويلة */
-.diff-chip {
-    white-space: normal;
-    line-height: 1.2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-}
-/* منع أيقونات الرموز من التمدد */
-.cat-icon, .gcard-icon, .nav-item-icon {
-    flex-shrink: 0;
-}
-/* ضمان تكيف header العلوي */
-.top-header {
-    flex-wrap: nowrap;
-    min-width: 0;
-}
-
-/* ═══════════════════════════════════════════════════
-   تحسينات التجاوب الشامل — v9 Final
-═══════════════════════════════════════════════════ */
-
-/* ── ضمان عدم اقتطاع page-home في الوضع الأفقي ── */
-@media (orientation: landscape) and (max-height: 500px) {
-    #page-home { padding: 6px 10px 60px; gap: 8px; }
-    .home-player-xp-card { padding: 8px 12px; gap: 5px; }
-    .home-xp-bar-wrap { height: 5px; }
-   
+    .diff-chip { padding: 7px 2px; 
