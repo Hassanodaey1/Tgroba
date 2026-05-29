@@ -370,7 +370,8 @@
                     <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;margin-bottom:4px;">
                         <div class="section-label" style="margin-bottom:10px;">مستوى الصعوبة</div>
                         <div class="diff-row">
-                            <div class="diff-chip active" onclick="selectDiff(this,'easy')"><span class="diff-chip-icon">🟢</span>سهل</div>
+                            <!-- ✅ FIX-2.5c: زر سهل بـ id صريح للـ syncDiffChips -->
+                            <div class="diff-chip active" id="diffEasy" onclick="selectDiff(this,'easy')"><span class="diff-chip-icon">🟢</span>سهل</div>
                             <div class="diff-chip diff-locked" id="diffMedium"><span class="diff-chip-icon">🟡</span>متوسط
                                 <div class="lock-tag" id="lockMedium">🔒 Lv.3</div>
                             </div>
@@ -380,6 +381,8 @@
                             <div class="diff-chip diff-locked" id="diffGenius"><span class="diff-chip-icon">🔴</span>عبقري
                                 <div class="lock-tag" id="lockGenius">🔒 Lv.8</div>
                             </div>
+                            <!-- ✅ FIX-2.5c: زر تلقائي — يتحكم النظام بالصعوبة حسب المستوى -->
+                            <div class="diff-chip" id="diffAuto" onclick="selectDiff(this,'auto')" style="border:1.5px solid var(--accent);"><span class="diff-chip-icon">🤖</span>تلقائي</div>
                         </div>
                     </div>
                     <!-- بطاقات الألعاب بتصميم تفاصيل الفئات -->
