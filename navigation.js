@@ -264,10 +264,45 @@
             } else {
                 title.textContent = '⚡ التحديات';
                 grid.innerHTML = `
-                    <div class="mode-card" onclick="startGameWith('speed','mix', null, true)"><span class="mode-card-icon">⚡</span><div class="mode-card-name">السرعة</div><div class="mode-card-desc">60 ثانية • قلوب • +1/-1 ثانية</div></div>
-                    <div class="mode-card" onclick="startGameWith('survival','mix', null, false)"><span class="mode-card-icon">🔥</span><div class="mode-card-name">التحمّل</div><div class="mode-card-desc">بدون وقت • 3 أخطاء</div></div>
-                    <div class="mode-card" onclick="startGameWith('frenzy','mix', null, true)"><span class="mode-card-icon">💥</span><div class="mode-card-name">الاندفاع</div><div class="mode-card-desc">30 ثانية • قلوب • +1/-1 ثانية</div></div>
-                    <div class="mode-card" onclick="startGameWith('daily','mix', null, false)"><div class="mode-card-badge">+3💰</div><span class="mode-card-icon">🌟</span><div class="mode-card-name">تحدي اليوم</div><div class="mode-card-desc">بدون وقت • مكافأة خاصة</div></div>`;
+                    <div class="mode-card" onclick="startGameWith('speed','mix', null, true)">
+                        <span class="mode-card-icon">⚡</span>
+                        <div class="mode-card-name">السرعة</div>
+                        <div class="mode-card-desc">60 ثانية • مفتوح • ×1.5💰</div>
+                    </div>
+                    <div class="mode-card" onclick="startGameWith('frenzy','mix', null, true)">
+                        <span class="mode-card-icon">💥</span>
+                        <div class="mode-card-name">الاندفاع</div>
+                        <div class="mode-card-desc">30 ثانية • مفتوح • ×1.8💰</div>
+                    </div>
+                    <div class="mode-card" onclick="startGameWith('survival','mix', null, false)">
+                        <span class="mode-card-icon">🔥</span>
+                        <div class="mode-card-name">البقاء</div>
+                        <div class="mode-card-desc">بدون وقت • 3 أخطاء • ×1.3💰</div>
+                    </div>
+                    <div class="mode-card" onclick="startGameWith('accuracy','mix', null, true)">
+                        <div class="mode-card-badge">جديد</div>
+                        <span class="mode-card-icon">🎯</span>
+                        <div class="mode-card-name">الدقة</div>
+                        <div class="mode-card-desc">20 سؤال • 60 ثانية • ×1.6💰 🎯</div>
+                    </div>
+                    <div class="mode-card" onclick="startGameWith('marathon','mix', null, true)">
+                        <div class="mode-card-badge">جديد</div>
+                        <span class="mode-card-icon">🏆</span>
+                        <div class="mode-card-name">الماراثون</div>
+                        <div class="mode-card-desc">50 سؤال • 60 ثانية • ×2.0💰 🏆</div>
+                    </div>
+                    <div class="mode-card" onclick="startGameWith('impossible','mix', null, true)" style="border:1px solid rgba(239,68,68,0.35);">
+                        <div class="mode-card-badge" style="background:var(--red)">تحدي</div>
+                        <span class="mode-card-icon">💀</span>
+                        <div class="mode-card-name">المستحيل</div>
+                        <div class="mode-card-desc">10 أسئلة • 1.5ث/سؤال • ×2.5💰 💀</div>
+                    </div>
+                    <div class="mode-card" onclick="startGameWith('daily','mix', null, false)">
+                        <div class="mode-card-badge">+3💰</div>
+                        <span class="mode-card-icon">🌟</span>
+                        <div class="mode-card-name">تحدي اليوم</div>
+                        <div class="mode-card-desc">بدون وقت • مكافأة خاصة</div>
+                    </div>`;
             }
             openSheet('opSheet');
         }
