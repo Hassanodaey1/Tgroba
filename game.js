@@ -15,6 +15,11 @@
                 const _diffMult = { 'easy': 0.4, 'medium': 0.7, 'hard': 1.0, 'genius': 1.5 }[st.difficulty] || 0.4;
                 const _lvlBonus = Math.min(0.5, Math.floor((st.level || 1) / 10) * 0.1);
                 G.coinsEarned += _diffMult + _lvlBonus;
+                /* ✅ FIX-3.3: مكافأة التتابع على الكوين — كل 5 إجابات متتالية = +0.2 عملة */
+                if (G.streak >= 5) {
+                    const _streakBonus = Math.floor(G.streak / 5) * 0.2;
+                    G.coinsEarned += _streakBonus;
+                }
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
                 /* ✅ AUDIO-INT: صوت الكومبو الذكي حسب مستوى التتابع */
@@ -117,6 +122,8 @@
                         st.stats[G.currentCatKey].max += 3; 
                     } catch(e) {} 
                 }
+                /* ✅ FIX-STATS: تسجيل الإجابة الخاطئة في الإحصائيات اليومية والأسبوعية */
+                if (!G.isTraining) { try { recordDailyStat('wrong'); } catch(e) {} }
             }
             document.getElementById('statScore').textContent = G.score;
             document.getElementById('streakNum').textContent = G.streak;
