@@ -338,6 +338,15 @@ function updateUI() {
         pAcc.textContent = tot > 0 ? Math.round((st.correctTotal / tot) * 100) + '%' : '0%';
     }
     const pCB = document.getElementById('profileChallengeBest'); if (pCB) pCB.textContent = st.challengeBestScore || 0;
+    /* ✅ SHOP-INT: مؤشر XP Boost المرئي في الهيدر */
+    try {
+        const _xpBoostEl = document.getElementById('xpBoostIndicator');
+        const _xpM = (typeof getXpMultiplier === 'function') ? getXpMultiplier() : 1;
+        if (_xpBoostEl) {
+            _xpBoostEl.style.display = _xpM > 1 ? 'flex' : 'none';
+            if (_xpM > 1) _xpBoostEl.textContent = `⚡×${_xpM}`;
+        }
+    } catch(e) {}
     updateHomeStats();
     renderHistory();
     renderTasks();
