@@ -75,13 +75,18 @@
                 serialNumber: '',
                 darkMode: true,
                 challengeBestScore: 0,
-                /* ✅ 4.2: المهام الأسبوعية */
-                weeklyTasks: [],
-                weeklyTasksDate: '',
                 /* ═══ صندوق المكافأة اليومي ═══ */
                 dailyBox: { opened: false, date: '', reward: 0 },
                 /* ═══ مكافأة تسجيل الدخول اليومي ═══ */
-                loginBonusDate: ''
+                loginBonusDate: '',
+                /* ═══ شارات التحديات الجديدة ═══ */
+                badge_accuracy:   false,
+                badge_marathon:   false,
+                badge_impossible: false,
+                /* ═══ إحصائيات الأوضاع الجديدة ═══ */
+                accuracyBest:   0,
+                marathonBest:   0,
+                impossibleBest: 0
             };
         }
 
@@ -147,6 +152,13 @@
             }
             /* ═══ مكافأة تسجيل الدخول اليومي ═══ */
             if (typeof s.loginBonusDate !== 'string') s.loginBonusDate = '';
+            /* ═══ شارات التحديات ═══ */
+            if (s.badge_accuracy   === undefined) s.badge_accuracy   = false;
+            if (s.badge_marathon   === undefined) s.badge_marathon   = false;
+            if (s.badge_impossible === undefined) s.badge_impossible = false;
+            if (typeof s.accuracyBest   !== 'number') s.accuracyBest   = 0;
+            if (typeof s.marathonBest   !== 'number') s.marathonBest   = 0;
+            if (typeof s.impossibleBest !== 'number') s.impossibleBest = 0;
             return s;
         }
 
