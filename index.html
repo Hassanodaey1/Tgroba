@@ -42,26 +42,40 @@
 
     <!-- SPLASH SCREEN -->
     <div class="splash-screen" id="splashScreen">
-        <!-- رموز رياضية متطايرة في الخلفية -->
+
+        <!-- خلفية: رموز رياضية عائمة -->
         <div class="splash-bg-symbols" id="splashSymbols"></div>
 
-        <!-- المحتوى المركزي -->
-        <div class="splash-content-wrap">
-            <!-- حلقة الشعار الدائرية المتحركة -->
-            <div class="splash-logo-ring-wrap">
-                <div class="splash-logo-ring"></div>
+        <!-- جسيمات نجمية -->
+        <canvas id="splashCanvas" class="splash-canvas"></canvas>
+
+        <!-- رمزا باي من اليمين واليسار -->
+        <div class="splash-pi-left"  id="splashPiLeft">π</div>
+        <div class="splash-pi-right" id="splashPiRight">π</div>
+
+        <!-- دائرة الباي المدمجة (تظهر بعد الاندماج) -->
+        <div class="splash-pi-merged" id="splashPiMerged">π</div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="splash-main" id="splashMain">
+            <!-- الشعار -->
+            <div class="splash-logo-wrap">
+                <div class="splash-logo-glow"></div>
                 <div class="splash-logo">
                     <span class="splash-ho">HO</span>
+                    <span class="splash-dot-sep">·</span>
                     <span class="splash-math">Math</span>
                 </div>
+                <div class="splash-logo-underline"></div>
             </div>
 
             <!-- العنوان الفرعي -->
             <div class="splash-subtitle">تحديات في الرياضيات</div>
 
-            <!-- شريط التقدم المتحرك -->
-            <div class="splash-loader-bar-wrap">
-                <div class="splash-loader-bar"></div>
+            <!-- شريط التحميل -->
+            <div class="splash-bar-wrap">
+                <div class="splash-bar" id="splashBar"></div>
+                <div class="splash-bar-glow"></div>
             </div>
 
             <!-- نقاط التحميل -->
@@ -72,8 +86,8 @@
             </div>
         </div>
 
-        <!-- نص المطور في الأسفل -->
-        <div class="splash-credit">© 2026 Hassan Odaey</div>
+        <!-- نص أسفل -->
+        <div class="splash-footer">© 2026 Hassan Odaey</div>
     </div>
 
     <!-- CONFIRM DIALOG -->
@@ -1634,5 +1648,178 @@
 <script src="questions_engine.js"></script>
 <script src="patches.js"></script>
 <script src="shop.js"></script>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HO Math — شاشة التحميل: حركة باي + خلفية + شريط
+    ═══════════════════════════════════════════════════════ -->
+    <script>
+    (function() {
+        /* ── رموز رياضية عائمة ── */
+        function initSplashSymbols() {
+            var el = document.getElementById('splashSymbols');
+            if (!el) return;
+            var symbols = ['+', '−', '×', '÷', '∑', '∞', '√', '∫', '≠', '≤', '≥', '%', '²', '³', 'Δ', 'θ', 'α', 'β', 'λ', '∂'];
+            var html = '';
+            for (var i = 0; i < 28; i++) {
+                var sym  = symbols[i % symbols.length];
+                var size = (Math.random() * 2.2 + 0.9).toFixed(2);
+                var x    = Math.random() * 96;
+                var y    = Math.random() * 96;
+                var dur  = (Math.random() * 7 + 6).toFixed(1);
+                var del  = (Math.random() * 5).toFixed(1);
+                var tx   = ((Math.random() - 0.5) * 30).toFixed(0);
+                var ty   = ((Math.random() - 0.5) * 30).toFixed(0);
+                var rot  = ((Math.random() - 0.5) * 24).toFixed(0);
+                html += '<div class="splash-float-sym" style="'
+                    + 'font-size:' + size + 'em;'
+                    + 'left:' + x + '%;'
+                    + 'top:' + y + '%;'
+                    + '--dur:' + dur + 's;'
+                    + '--delay:-' + del + 's;'
+                    + '--tx:' + tx + 'px;'
+                    + '--ty:' + ty + 'px;'
+                    + '--rot:' + rot + 'deg;'
+                    + '">' + sym + '</div>';
+            }
+            el.innerHTML = html;
+        }
+
+        /* ── Canvas: جسيمات نجمية ── */
+        function initSplashCanvas() {
+            var canvas = document.getElementById('splashCanvas');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            var particles = [];
+            var COLORS = ['rgba(240,185,11,', 'rgba(124,58,237,', 'rgba(6,182,212,'];
+
+            for (var i = 0; i < 60; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 1.4 + 0.3,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    c: COLORS[Math.floor(Math.random() * COLORS.length)],
+                    a: Math.random() * 0.5 + 0.15,
+                    pulse: Math.random() * Math.PI * 2
+                });
+            }
+
+            var alive = true;
+            function draw() {
+                if (!alive) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(function(p) {
+                    p.pulse += 0.03;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+                    var alpha = p.a * (0.6 + 0.4 * Math.sin(p.pulse));
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = p.c + alpha + ')';
+                    ctx.fill();
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+
+            /* أوقف الرسم عند إخفاء الشاشة */
+            var ss = document.getElementById('splashScreen');
+            if (ss) {
+                var obs = new MutationObserver(function() {
+                    if (ss.style.display === 'none') { alive = false; obs.disconnect(); }
+                });
+                obs.observe(ss, { attributes: true, attributeFilter: ['style'] });
+            }
+        }
+
+        /* ── حركة باي: يأتيان من الطرفين ويندمجان ثم تظهر اللعبة ── */
+        function runPiAnimation() {
+            var piL    = document.getElementById('splashPiLeft');
+            var piR    = document.getElementById('splashPiRight');
+            var piM    = document.getElementById('splashPiMerged');
+            var main   = document.getElementById('splashMain');
+            var bar    = document.getElementById('splashBar');
+            if (!piL || !piR || !piM || !main) return;
+
+            var W = window.innerWidth;
+            var cx = W / 2;
+
+            /* المرحلة 1 (0ms): باي يظهر على الأطراف */
+            setTimeout(function() {
+                piL.style.transition = 'none';
+                piR.style.transition = 'none';
+                piL.style.opacity = '1';
+                piR.style.opacity = '1';
+            }, 80);
+
+            /* المرحلة 2 (300ms): باي يتحرك للمنتصف */
+            setTimeout(function() {
+                piL.style.transition = 'left 0.75s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s';
+                piR.style.transition = 'right 0.75s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s';
+                piL.style.left  = 'calc(50% - 80px)';
+                piR.style.right = 'calc(50% - 80px)';
+            }, 300);
+
+            /* المرحلة 3 (1050ms): اندماج — باي المدمج يظهر بضربة */
+            setTimeout(function() {
+                piL.style.transition = 'opacity 0.2s';
+                piR.style.transition = 'opacity 0.2s';
+                piL.style.opacity = '0';
+                piR.style.opacity = '0';
+
+                piM.style.transition = 'transform 0.55s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s';
+                piM.style.opacity = '1';
+                piM.style.transform = 'translate(-50%, -50%) scale(1)';
+
+                /* تأثير انفجار نور */
+                piM.style.filter = 'drop-shadow(0 0 60px rgba(240,185,11,1)) drop-shadow(0 0 120px rgba(124,58,237,0.7))';
+            }, 1080);
+
+            /* المرحلة 4 (1700ms): باي يتقلص ويختفي، المحتوى الرئيسي يظهر */
+            setTimeout(function() {
+                piM.style.transition = 'transform 0.5s cubic-bezier(0.55,0,1,0.45), opacity 0.4s, filter 0.5s';
+                piM.style.transform  = 'translate(-50%, -50%) scale(0)';
+                piM.style.opacity    = '0';
+                piM.style.filter     = 'drop-shadow(0 0 0px transparent)';
+
+                main.style.transition = 'opacity 0.6s ease, transform 0.6s cubic-bezier(0.34,1.56,0.64,1)';
+                main.style.opacity    = '1';
+                main.style.transform  = 'translateY(0)';
+            }, 1700);
+
+            /* المرحلة 5 (1800–2600ms): شريط التحميل يمتلئ */
+            if (bar) {
+                var startFill = 1800;
+                var fillDur   = 800;
+                var startTime = null;
+                function fillBar(ts) {
+                    if (!startTime) startTime = ts;
+                    var elapsed = ts - startTime;
+                    var prog = Math.min(elapsed / fillDur, 1);
+                    /* easing: ease-in-out */
+                    var eased = prog < 0.5 ? 2 * prog * prog : -1 + (4 - 2 * prog) * prog;
+                    bar.style.width = (eased * 100) + '%';
+                    if (prog < 1) requestAnimationFrame(fillBar);
+                }
+                setTimeout(function() { requestAnimationFrame(fillBar); }, startFill);
+            }
+        }
+
+        /* ── تشغيل كل شيء عند DOMContentLoaded ── */
+        document.addEventListener('DOMContentLoaded', function() {
+            initSplashSymbols();
+            initSplashCanvas();
+            runPiAnimation();
+        });
+    })();
+    </script>
 </body>
 </html>
