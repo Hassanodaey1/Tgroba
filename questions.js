@@ -645,7 +645,7 @@
                 G.helpersUsed.remove = true;
                 document.getElementById('helperRemove').classList.add('used');
                 const btns = [...document.querySelectorAll('.answer-btn:not(:disabled)')];
-                const wrongs = btns.filter(b => parseInt(b.getAttribute('data-val')) !== G.correctAnswer);
+                const wrongs = btns.filter(b => Math.abs(parseFloat(b.getAttribute('data-val')) - G.correctAnswer) >= 0.001);
                 if (wrongs.length > 0) {
                     const rem = wrongs[Math.floor(Math.random() * wrongs.length)];
                     rem.style.opacity = '0.15';
@@ -737,115 +737,6 @@
             return genQ(op, diff);
         }
 
-        /* ═══════════ LOAD QUESTION ═══════════ */
-        function loadQuestion() {
-            if (G.ended) return;
-            /* الأوضاع المفتوحة: تعمل بالمؤقت وليس بعدد الأسئلة */
-            const _infiniteModes = ['speed', 'survival', 'frenzy'];
-            if (G.currentQ >= G.totalQ && !G.isTraining && !_infiniteModes.includes(G.mode)) { endGame(); return; }
-            G.currentQ++;
-            G.answered = false;
-            G.helpersUsed.remove = false;
-            G.helpersUsed.hint = false;
-            document.getElementById('helperRemove').classList.remove('used');
-            /* إعادة تلوين التلميح لكل سؤال جديد */
-            (function(){ var _h = document.getElementById('questionHint'); if (_h) { _h.style.color=''; _h.style.fontWeight=''; _h.style.background=''; _h.style.padding=''; } })();
-            /* ✅ helperHeart لا يُعاد إلا في بداية لعبة جديدة — ليس لكل سؤال */
-            document.getElementById('explanationArea').innerHTML = '';
-            const age = st.age || calculateAgeFromBirthDate(st.birthDate);
-            let q;
-            let attempts = 0;
-            const maxAttempts = 50;
-            do {
-                if (G.isTraining) {
-                    if (G.op === 'table' && G.customTable) {
-                        q = genQ('table', st.difficulty, G.customTable);
-                    } else {
-                        if (typeof getNextQuestion === 'function') {
-                            q = getNextQuestion(G.op, st.difficulty);
-                        } else {
-                            q = generateAgeAdaptiveQuestion(G.op, st.difficulty, age);
-                            if (!q.choices || q.choices.length < 4) q = genQ(G.op, st.difficulty);
-                        }
-                    }
-                } else {
-                    if (G.op === 'table' && G.customTable) {
-                        q = genQ('table', st.difficulty, G.customTable);
-                    } else {
-                        if (G.op === 'advanced') q = genQ('advanced', st.difficulty);
-                        else if (G.op === 'laws') q = genQ('laws', st.difficulty);
-                        else if (G.mode === 'daily') {
-                            /* ✅ FIX-DAILY: أسئلة متدرجة الصعوبة لتحدي اليوم */
-                            const dailyIdx = (G.dailyQIndex !== undefined) ? G.dailyQIndex : (G.currentQ - 1);
-                            q = genDailyQ(dailyIdx);
-                            G.dailyQIndex = (G.dailyQIndex || 0) + 1;
-                        } else {
-                            let useDiff = st.difficulty;
-                            if (G.mode === 'classic' && !useDiff) useDiff = getDifficultyByLevel();
-                            /* ✅ المحرك الذكي — يتكيف مع اللاعب ويضمن عدم التكرار */
-                            if (typeof getNextQuestion === 'function') {
-                                q = getNextQuestion(G.op, useDiff);
-                            } else if (age > 0 && age <= 13) {
-                                q = generateAgeAdaptiveQuestion(G.op, useDiff, age);
-                                if (!q || !q.choices || q.choices.length < 4) q = genQ(G.op, useDiff);
-                            } else {
-                                q = genQ(G.op, useDiff);
-                            }
-                        }
-                    }
-                }
-                const qKey = q.text + '|' + q.answer;
-                if (!G.askedQuestions.includes(qKey) || G.isTraining) break;
-                attempts++;
-                /* إذا استُنفدت المحاولات، امسح السجل وابدأ من جديد لتجنب التوقف */
-                if (attempts > maxAttempts) {
-                    G.askedQuestions = [];
-                    break;
-                }
-            } while (true);
-            if (!G.isTraining) {
-                const qKey = q.text + '|' + q.answer;
-                if (!G.askedQuestions.includes(qKey)) {
-                    G.askedQuestions.push(qKey);
-                    // الاحتفاظ بآخر 150 سؤال لتجنب تراكم الذاكرة في الأوضاع اللانهائية
-                    if (G.askedQuestions.length > 150) G.askedQuestions.shift();
-                }
-            }
-            G.correctAnswer = q.answer;
-            G.currentExplanation = q.explanation || '';
-            G.currentCatKey = q.catKey || getCatStatsKey(G.op || 'add');
-            const qt = document.getElementById('questionText');
-            qt.style.animation = 'none';
-            void qt.offsetWidth;
-            qt.style.animation = '';
-            if (G.isTraining) {
-                document.getElementById('questionNumber').textContent = `🎓 تدريب - ${G.correct+1}`;
-            } else {
-                document.getElementById('questionNumber').textContent =
-                    G.mode === 'speed'      ? `⚡ السؤال ${G.correct+1}` :
-                    G.mode === 'frenzy'     ? `💥 ${G.correct+1} إجابة` :
-                    G.mode === 'survival'   ? `❤️ ${G.livesLeft} قلوب` :
-                    G.mode === 'accuracy'   ? `🎯 ${G.currentQ} من ${G.totalQ}` :
-                    G.mode === 'marathon'   ? `🏆 ${G.currentQ} من ${G.totalQ}` :
-                    G.mode === 'impossible' ? `💀 ${G.currentQ} من ${G.totalQ}` :
-                    `السؤال ${G.currentQ} من ${G.totalQ}`;
-            }
-            document.getElementById('questionText').textContent = (q.text.endsWith('؟') || q.text.endsWith('?') || q.text.endsWith('= ?') || q.text.endsWith('= ؟')) ? q.text : `${q.text} = ?`;
-            document.getElementById('questionHint').textContent = q.hint || 'ما هو الجواب؟';
-            G.currentHint = q.hint || 'ما هو الجواب؟'; /* حفظ التلميح الحالي للاستخدام لاحقاً */
-            const _openModes = ['speed', 'survival', 'frenzy', 'accuracy', 'marathon', 'impossible'];
-            document.getElementById('statQ').textContent = (G.isTraining || _openModes.includes(G.mode)) ? G.correct : `${G.currentQ}/${G.totalQ}`;
-            renderVisualAid(q);
-            const grid = document.getElementById('answersGrid');
-            grid.innerHTML = '';
-            const choices = q.choices || shuffle([q.answer, q.answer + 1, q.answer - 1, q.answer + 2]);
-            choices.forEach(c => { const btn = document.createElement('button');
-                btn.className = 'answer-btn';
-                btn.textContent = c;
-                btn.setAttribute('data-val', c);
-                btn.onclick = () => checkAnswer(btn);
-                grid.appendChild(btn); });
-        }
 
         /* ═══════════ CHALLENGE GAME (نداء التحدي) ═══════════ */
         /* مولّد أسئلة التحدي مع صعوبة تتزايد تدريجياً */
@@ -1137,7 +1028,7 @@
         // function checkChallengeAnswer(btn) {
         // if (CG.answered || CG.ended) return;
         // CG.answered = true;
-        // const val = parseInt(btn.getAttribute('data-val'));
+        // const val = parseFloat(btn.getAttribute('data-val'));
         // document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => b.disabled = true);
         //
         // if (val === CG.correctAnswer) {
@@ -1717,7 +1608,7 @@ const EXTENDED_LAWS_POOL = [
     { text: 'ما النسبة المئوية لـ 15 من 60؟', ans: 25, explanation: '15/60 × 100 = 25%' },
     { text: 'ما 1/3 من 99؟', ans: 33, explanation: '99 ÷ 3 = 33' },
     { text: 'ناتج (1/2) ÷ (1/4) = ؟', ans: 2, explanation: '(1/2) × 4 = 2' },
-    { text: 'ما قيمة 1/2 + 1/3؟', ans: 0.83, explanation: '3/6 + 2/6 = 5/6 ≈ 0.83' },
+    { text: 'ما قيمة 1/2 + 1/3؟ (اختر أقرب قيمة)', ans: 0.83, explanation: '3/6 + 2/6 = 5/6 ≈ 0.83' },
     /* أعداد سالبة */
     { text: 'ما ناتج (−3) × (−4)؟', ans: 12, explanation: 'سالب × سالب = موجب' },
     { text: 'ما ناتج (−5) × 3؟', ans: -15, explanation: 'سالب × موجب = سالب' },
