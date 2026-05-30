@@ -459,10 +459,18 @@ function startBg() {
     }
 }
 
-/* إيقاف الموسيقى الخلفية */
+/* إيقاف الموسيقى الخلفية — مع fade out سريع لمنع تقطيع مفاجئ */
 function stopBg() {
     clearInterval(bgInt);
     bgInt = null;
+    /* ✅ FIX-③: إيقاف تدريجي للـ bgGain لمنع التقطيع وضمان انتهاء الـ oscillators */
+    if (_bgGain && aCtx) {
+        try {
+            _bgGain.gain.cancelScheduledValues(aCtx.currentTime);
+            _bgGain.gain.setValueAtTime(_bgGain.gain.value, aCtx.currentTime);
+            _bgGain.gain.linearRampToValueAtTime(0.0001, aCtx.currentTime + 0.08);
+        } catch(e) {}
+    }
 }
 
 /* تسريع الخلفية عند ضغط المؤقت (< 10 ثوان) */
@@ -535,18 +543,39 @@ function toggleSound() {
 function _syncBgWithTimer() {
     if (!G || !G.hasTimer || !G.maxTime) return;
     const pct = G.timeLeft / G.maxTime;
-    if (pct <= 0.2 && !_bgAccelerated) {
+    /* ✅ FIX-④: عتبة أوضح — تسريع عند أقل من 25% من الوقت */
+    if (pct <= 0.25 && !_bgAccelerated) {
         setBgAccelerated(true);
-    } else if (pct > 0.2 && _bgAccelerated) {
+    } else if (pct > 0.25 && _bgAccelerated) {
         setBgAccelerated(false);
     }
 }
 
-/* hook على setInterval الخاص باللعبة — يُستدعى من checkAnswer */
+/* ✅ FIX-④: _onGameTimerTick يُستدعى من timer اللعبة في questions.js
+   لكن كان مفقوداً منه — patches.js تتولى الربط */
 window._onGameTimerTick = function() {
     _syncBgWithTimer();
-    if (G.hasTimer && G.timeLeft <= 5 && G.timeLeft > 0) {
-        playSound('tick');
+    /* tick صوتي فقط عند آخر 5 ثوان — بدون تكرار مع playSound('tick') في questions.js */
+    if (G && G.hasTimer && G.timeLeft <= 5 && G.timeLeft > 0) {
+        if (!st || !st.soundOn) return;
+        /* نغمة tick مباشرة بدون مرور عبر playSound لتجنب التكرار */
+        try {
+            const ctx = gACtx();
+            if (ctx) {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g);
+                g.connect(_compressor || ctx.destination);
+                o.type = 'square';
+                o.frequency.value = 1200;
+                const vol = ((st && st.soundVolume) || 80) / 100;
+                g.gain.setValueAtTime(0, ctx.currentTime);
+                g.gain.linearRampToValueAtTime(0.018 * vol, ctx.currentTime + 0.005);
+                g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.025);
+                o.start(ctx.currentTime);
+                o.stop(ctx.currentTime + 0.03);
+            }
+        } catch(e) {}
     }
 };
 
