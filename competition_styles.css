@@ -292,7 +292,8 @@
 /* ══════════════════════════════════════════
    OVERLAY مشترك — كل الشاشات الحماسية
 ══════════════════════════════════════════ */
-.challenge-overlay {
+/* challenge-overlay مقيّدة داخل صفحة المنافسة فقط */
+#page-leaderboard .challenge-overlay {
     position: absolute;
     inset: 0;
     z-index: 10;
