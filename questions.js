@@ -932,26 +932,27 @@
         }
 
         /* ═══════════ CHALLENGE GAME STATE ═══════════ */
-        var CG = {
-            active: false,
-            score: 0,
-            questionIndex: 0,
-            answered: false,
-            ended: false,
-            correctAnswer: 0,
-            currentExplanation: '',
-            askedQuestions: [],
-            consecutiveWrong: 0  /* عداد الأخطاء المتتالية */
-        };
-        /* ✅ ANTI-CHEAT: مصدر داخلي للنقاط — يمنع التلاعب عبر Console */
-        var _cgScoreInternal = 0;
-        function _cgAddScore(delta) {
-            _cgScoreInternal = Math.max(0, _cgScoreInternal + delta);
-            CG.score = _cgScoreInternal;
-        }
-        function _cgResetScore() { _cgScoreInternal = 0; CG.score = 0; }
-
-        // ── الدوال التالية استُبدلت بـ competition_logic.js ──
+        // ── CG و helpers نُقلت إلى competition_logic.js ──
+        // var CG = {
+        // active: false,
+        // score: 0,
+        // questionIndex: 0,
+        // answered: false,
+        // ended: false,
+        // correctAnswer: 0,
+        // currentExplanation: '',
+        // askedQuestions: [],
+        // consecutiveWrong: 0  /* عداد الأخطاء المتتالية */
+        // };
+        // /* ✅ ANTI-CHEAT: مصدر داخلي للنقاط — يمنع التلاعب عبر Console */
+        // var _cgScoreInternal = 0;
+        // function _cgAddScore(delta) {
+        // _cgScoreInternal = Math.max(0, _cgScoreInternal + delta);
+        // CG.score = _cgScoreInternal;
+        // }
+        // function _cgResetScore() { _cgScoreInternal = 0; CG.score = 0; }
+        //
+        // ── الدوال القديمة استُبدلت بـ competition_logic.js ──
         // function startChallengeGame() {
         // _cgResetScore();
         // /* ✅ FIX: تحديث خصائص CG بدون إعادة التعيين الكاملة لحفظ مرجع الدوال */
@@ -1272,7 +1273,7 @@
         // container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ قاعدة البيانات غير متاحة</div>';
         // }
         // }
-        // ── نهاية الدوال المعلّقة ──
+        // ── نهاية ──
 
 
         function renderVisualAid(q) {
