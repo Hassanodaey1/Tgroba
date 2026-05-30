@@ -3,9 +3,9 @@
         function checkAnswer(btn) {
             if (G.answered || G.ended) return;
             G.answered = true;
-            const val = parseInt(btn.getAttribute('data-val'));
+            const val = parseFloat(btn.getAttribute('data-val'));
             document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-            if (val === G.correctAnswer) {
+            if (Math.abs(val - G.correctAnswer) < 0.001) {
                 btn.classList.add('correct');
                 G.correct++;
                 G.streak++;
@@ -52,8 +52,7 @@
                 showFloatXP(10 + G.streak * 2);
             } else {
                 btn.classList.add('wrong');
-                document.querySelectorAll('.answer-btn').forEach(b => { if (parseInt(b.getAttribute('data-val')) ===
-                        G.correctAnswer) b.classList.add('correct'); });
+                document.querySelectorAll('.answer-btn').forEach(b => { if (Math.abs(parseFloat(b.getAttribute('data-val')) - G.correctAnswer) < 0.001) b.classList.add('correct'); });
                 G.wrong++;
                 G.streak = 0;
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
