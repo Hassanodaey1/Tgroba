@@ -648,7 +648,7 @@ function _refreshQuickToolsPanel() {
 
     var inv   = (typeof st !== 'undefined' && st.inventory) ? st.inventory : { skip: 0, heart: 0, remove: 0 };
     var coins = typeof st !== 'undefined' ? st.coins : 0;
-    var hasInv = (inv.skip || 0) + (inv.heart || 0) + (inv.remove || 0) > 0;
+    var hasInv = (inv.skip || 0) + (inv.heart || 0) + (inv.remove || 0) + (inv.hint || 0) > 0;
     var hasTimer = typeof G !== 'undefined' && G && G.hasTimer;
 
     /* ─── الأدوات الفورية للشراء أثناء اللعب ─── */
@@ -675,10 +675,11 @@ function _refreshQuickToolsPanel() {
                     '<div style="font-size:0.6em;color:var(--text3);margin-top:3px;">اشتري باقات من المتجر الكامل لتظهر هنا</div>' +
                 '</div>';
     } else {
-        html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">';
+        html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">';
         html += _buildInvTile('⏭️', 'تخطّي',     inv.skip   || 0, 'skip',   (inv.skip   || 0) > 0);
         html += _buildInvTile('💗', 'قلب',         inv.heart  || 0, 'heart',  (inv.heart  || 0) > 0);
         html += _buildInvTile('🗑️', 'حذف',         inv.remove || 0, 'remove', (inv.remove || 0) > 0);
+        html += _buildInvTile('💡', 'تلميح',       inv.hint   || 0, 'hint',   (inv.hint   || 0) > 0);
         html += '</div>';
     }
     html += '</div>';
@@ -694,7 +695,7 @@ function _refreshQuickToolsPanel() {
     buyableTools.forEach(function(tool) {
         var canAfford = coins >= tool.price;
         html +=
-            '<div onclick="' + (canAfford ? "buyConsumable('" + tool.id + "');_refreshQuickToolsPanel();playSound('click');" : '') + '" ' +
+            '<div onclick="' + (canAfford ? "buyConsumable('" + tool.id + "');closeInGameShop();playSound('click');" : '') + '" ' +
             'style="display:flex;align-items:center;gap:10px;' +
             'background:' + (canAfford ? 'var(--surface2)' : 'var(--surface3)') + ';' +
             'border:1.5px solid ' + (canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.18)') + ';' +
@@ -718,7 +719,7 @@ function _refreshQuickToolsPanel() {
 
 /* ─── بناء بلاطة مخزون واحدة ─── */
 function _buildInvTile(icon, label, count, type, active) {
-    var onclick = active ? 'onclick="useHelper(\'' + type + '\');_refreshQuickToolsPanel();"' : '';
+    var onclick = active ? 'onclick="useHelper(\'' + type + '\');closeInGameShop();"' : '';
     return '<div ' + onclick + ' style="' +
         'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
         'gap:3px;padding:10px 6px;border-radius:14px;' +
