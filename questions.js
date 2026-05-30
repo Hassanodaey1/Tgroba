@@ -619,20 +619,15 @@
                 if (!fromInv) {
                     if (st.coins < 3) { showFeedback('💸 تحتاج 3💰'); return; }
                     st.coins -= 3;
-                    saveSt();
-                    updateUI();
-                    updateGameCoinsDisplay();
+                    /* ✅ FIX-SKIP-1: saveSt مرة واحدة فقط لمنع التكرار */
+                    saveSt(); updateUI(); updateGameCoinsDisplay();
+                } else {
+                    /* من المخزون: حدّث الواجهة فقط */
+                    updateUI(); updateGameCoinsDisplay();
                 }
                 G.helpersUsed.skip = true;
                 document.getElementById('helperSkip').classList.add('used');
-                if (!fromInv) { /* لا نحتاج saveSt مرة ثانية إذا كان من المخزون */ } else { saveSt(); updateUI(); updateGameCoinsDisplay(); }
-                if (G.hasTimer && G.maxTime > 0) {
-                    G.timeLeft = Math.max(0, G.timeLeft - 4);
-                    const pct = (G.timeLeft / G.maxTime) * 100;
-                    document.getElementById('timerBar').style.width = pct + '%';
-                    const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
-                    if (G.timeLeft <= 0) { clearGameTimer(); endGame(); return; }
-                }
+                /* ✅ FIX-SKIP-2: لا نخصم وقتاً — اللاعب دفع 3💰 بالفعل، العقوبة الزمنية ظلم مزدوج */
                 showFeedback(fromInv ? '⏭️ تخطّي من مخزونك!' : '⏭️ تخطّي!');
                 setTimeout(() => loadQuestion(), 300);
 
@@ -642,10 +637,11 @@
                 if (!fromInv) {
                     if (st.coins < 4) { showFeedback('💸 تحتاج 4💰'); return; }
                     st.coins -= 4;
-                    saveSt();
-                    updateUI();
-                    updateGameCoinsDisplay();
-                } else { saveSt(); updateUI(); updateGameCoinsDisplay(); }
+                    saveSt(); updateUI(); updateGameCoinsDisplay();
+                } else {
+                    /* ✅ FIX-REMOVE: من المخزون — useHelperFromInventory حفظت بالفعل */
+                    updateUI(); updateGameCoinsDisplay();
+                }
                 G.helpersUsed.remove = true;
                 document.getElementById('helperRemove').classList.add('used');
                 const btns = [...document.querySelectorAll('.answer-btn:not(:disabled)')];
@@ -663,10 +659,11 @@
                 if (!fromInv) {
                     if (st.coins < 7) { showFeedback('💸 تحتاج 7💰'); return; }
                     st.coins -= 7;
-                    saveSt();
-                    updateUI();
-                    updateGameCoinsDisplay();
-                } else { saveSt(); updateUI(); updateGameCoinsDisplay(); }
+                    saveSt(); updateUI(); updateGameCoinsDisplay();
+                } else {
+                    /* ✅ FIX-HEART: من المخزون — useHelperFromInventory حفظت بالفعل */
+                    updateUI(); updateGameCoinsDisplay();
+                }
                 G.helpersUsed.heart = true;
                 document.getElementById('helperHeart').classList.add('used');
                 G.livesLeft++;
