@@ -615,37 +615,35 @@
                 : false;
 
             if (type === 'skip') {
-                /* الشراء المباشر: مرة واحدة فقط في الجلسة */
-                if (!fromInv && G.helpersUsed.skip) { showFeedback('⏭️ استُخدم مرة واحدة بالفعل'); return; }
+                if (G.helpersUsed.skip) { showFeedback('⏭️ استُخدم'); return; }
                 if (!fromInv) {
                     if (st.coins < 3) { showFeedback('💸 تحتاج 3💰'); return; }
                     st.coins -= 3;
                     /* ✅ FIX-SKIP-1: saveSt مرة واحدة فقط لمنع التكرار */
                     saveSt(); updateUI(); updateGameCoinsDisplay();
-                    G.helpersUsed.skip = true;
-                    document.getElementById('helperSkip').classList.add('used');
                 } else {
-                    /* من المخزون: الاستخدام المتعدد ممكن حتى تنفد الكمية */
+                    /* من المخزون: حدّث الواجهة فقط */
                     updateUI(); updateGameCoinsDisplay();
                 }
+                G.helpersUsed.skip = true;
+                document.getElementById('helperSkip').classList.add('used');
                 /* ✅ FIX-SKIP-2: لا نخصم وقتاً — اللاعب دفع 3💰 بالفعل، العقوبة الزمنية ظلم مزدوج */
                 showFeedback(fromInv ? '⏭️ تخطّي من مخزونك!' : '⏭️ تخطّي!');
                 setTimeout(() => loadQuestion(), 300);
 
             } else if (type === 'remove') {
+                if (G.helpersUsed.remove) { showFeedback('🗑️ استُخدم'); return; }
                 if (G.answered) return;
-                /* الشراء المباشر: مرة واحدة فقط في الجلسة */
-                if (!fromInv && G.helpersUsed.remove) { showFeedback('🗑️ استُخدم مرة واحدة بالفعل'); return; }
                 if (!fromInv) {
                     if (st.coins < 4) { showFeedback('💸 تحتاج 4💰'); return; }
                     st.coins -= 4;
                     saveSt(); updateUI(); updateGameCoinsDisplay();
-                    G.helpersUsed.remove = true;
-                    document.getElementById('helperRemove').classList.add('used');
                 } else {
                     /* ✅ FIX-REMOVE: من المخزون — useHelperFromInventory حفظت بالفعل */
                     updateUI(); updateGameCoinsDisplay();
                 }
+                G.helpersUsed.remove = true;
+                document.getElementById('helperRemove').classList.add('used');
                 const btns = [...document.querySelectorAll('.answer-btn:not(:disabled)')];
                 const wrongs = btns.filter(b => parseInt(b.getAttribute('data-val')) !== G.correctAnswer);
                 if (wrongs.length > 0) {
@@ -656,16 +654,15 @@
                 } else showFeedback('⚠️ لا توجد إجابات خاطئة للحذف');
 
             } else if (type === 'hint') {
-                /* الشراء المباشر: مرة واحدة فقط في الجلسة */
-                if (!fromInv && G.helpersUsed.hint) { showFeedback('💡 استُخدم مرة واحدة بالفعل'); return; }
+                if (G.helpersUsed.hint) { showFeedback('💡 استُخدم'); return; }
                 if (!fromInv) {
                     if (st.coins < 2) { showFeedback('💸 تحتاج 2💰'); return; }
                     st.coins -= 2;
                     saveSt(); updateUI(); updateGameCoinsDisplay();
-                    G.helpersUsed.hint = true;
                 } else {
                     updateUI(); updateGameCoinsDisplay();
                 }
+                G.helpersUsed.hint = true;
                 /* إظهار التلميح بشكل بارز */
                 var hintEl = document.getElementById('questionHint');
                 if (hintEl) {
@@ -682,18 +679,17 @@
 
             } else if (type === 'heart') {
                 if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي قلوب'); return; }
-                /* الشراء المباشر: مرة واحدة فقط في الجلسة */
-                if (!fromInv && G.helpersUsed.heart) { showFeedback('💖 استُخدم مرة واحدة بالفعل'); return; }
+                if (G.helpersUsed.heart) { showFeedback('💖 استُخدم'); return; }
                 if (!fromInv) {
                     if (st.coins < 7) { showFeedback('💸 تحتاج 7💰'); return; }
                     st.coins -= 7;
                     saveSt(); updateUI(); updateGameCoinsDisplay();
-                    G.helpersUsed.heart = true;
-                    document.getElementById('helperHeart').classList.add('used');
                 } else {
                     /* ✅ FIX-HEART: من المخزون — useHelperFromInventory حفظت بالفعل */
                     updateUI(); updateGameCoinsDisplay();
                 }
+                G.helpersUsed.heart = true;
+                document.getElementById('helperHeart').classList.add('used');
                 G.livesLeft++;
                 updateHeartsDisplay();
                 showFeedback(fromInv ? '💖 +1 قلب من مخزونك!' : '💖 +1 قلب!');
@@ -955,6 +951,11 @@
         }
         function _cgResetScore() { _cgScoreInternal = 0; CG.score = 0; }
 
+        /* ═══════════════════════════════════════════════════════════
+           الدوال التالية تم استبدالها بـ competition_logic.js
+           تم التعليق تلقائياً — لا تحذف هذا الكود
+        ═══════════════════════════════════════════════════════════ */
+        /*
         function startChallengeGame() {
             _cgResetScore();
             /* ✅ FIX: تحديث خصائص CG بدون إعادة التعيين الكاملة لحفظ مرجع الدوال */
@@ -1274,6 +1275,8 @@
             } catch (e) {
                 container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ قاعدة البيانات غير متاحة</div>';
             }
+        */ /* end-competition-functions */
+
         }
 
         function renderVisualAid(q) {
