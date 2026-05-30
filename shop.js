@@ -523,24 +523,46 @@ function buyConsumable(id) {
 
         switch (item.action) {
             case 'addHeart':
+                /* ✅ 5.3: داخل لعبة → أضف قلباً فوراً، خارجها → مخزون */
                 if (G && !G.ended) {
                     G.livesLeft = Math.min(G.livesLeft + 1, 9);
                     if (typeof updateHeartsDisplay === 'function') updateHeartsDisplay();
+                    if (typeof showFeedback === 'function') showFeedback('💖 +1 قلب!');
+                } else {
+                    if (!st.helperInventory) st.helperInventory = { skip: 0, remove: 0, heart: 0 };
+                    st.helperInventory.heart++;
+                    if (typeof showFeedback === 'function') showFeedback('💖 أُضيف للمخزون!');
+                    if (typeof _updateHelperInventoryDisplay === 'function') _updateHelperInventoryDisplay();
                 }
                 break;
             case 'addHearts':
+                /* ✅ 5.3: داخل لعبة → أضف قلوب فوراً، خارجها → مخزون */
                 if (G && !G.ended) {
                     G.livesLeft = Math.min(G.livesLeft + (item.actionVal || 3), 9);
                     if (typeof updateHeartsDisplay === 'function') updateHeartsDisplay();
+                    if (typeof showFeedback === 'function') showFeedback(`💖 +${item.actionVal || 3} قلوب!`);
+                } else {
+                    if (!st.helperInventory) st.helperInventory = { skip: 0, remove: 0, heart: 0 };
+                    st.helperInventory.heart += (item.actionVal || 3);
+                    if (typeof showFeedback === 'function') showFeedback(`💖 ${item.actionVal || 3} أُضيف للمخزون!`);
+                    if (typeof _updateHelperInventoryDisplay === 'function') _updateHelperInventoryDisplay();
                 }
                 break;
             case 'skipQuestion':
+                /* ✅ 5.3: إذا كنا داخل لعبة → طبّق فوراً، وإلا → أضف للمخزون */
                 if (G && !G.ended && !G.answered) {
                     G.answered = true;
                     setTimeout(() => { if (!G.ended) loadQuestion(); }, 200);
+                    if (typeof showFeedback === 'function') showFeedback('⏭️ تخطّي!');
+                } else {
+                    if (!st.helperInventory) st.helperInventory = { skip: 0, remove: 0, heart: 0 };
+                    st.helperInventory.skip++;
+                    if (typeof showFeedback === 'function') showFeedback('⏭️ أُضيف للمخزون!');
+                    if (typeof _updateHelperInventoryDisplay === 'function') _updateHelperInventoryDisplay();
                 }
                 break;
             case 'removeWrong':
+                /* ✅ 5.3: إذا كنا داخل لعبة → طبّق فوراً، وإلا → أضف للمخزون */
                 if (G && !G.ended && !G.answered) {
                     const btns = [...document.querySelectorAll('.answer-btn:not(:disabled)')];
                     const wrong = btns.filter(b => parseInt(b.getAttribute('data-val')) !== G.correctAnswer);
@@ -549,6 +571,12 @@ function buyConsumable(id) {
                         r.style.opacity = '0.15';
                         r.style.pointerEvents = 'none';
                     }
+                    if (typeof showFeedback === 'function') showFeedback('🗑️ حُذفت إجابة خاطئة');
+                } else {
+                    if (!st.helperInventory) st.helperInventory = { skip: 0, remove: 0, heart: 0 };
+                    st.helperInventory.remove++;
+                    if (typeof showFeedback === 'function') showFeedback('🗑️ أُضيف للمخزون!');
+                    if (typeof _updateHelperInventoryDisplay === 'function') _updateHelperInventoryDisplay();
                 }
                 break;
             case 'addTime':
