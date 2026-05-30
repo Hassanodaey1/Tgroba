@@ -372,15 +372,40 @@ function _vibrate(type) {
 
 /* سلّم موسيقي: C مجور (إيجابي، مبهج) */
 const _BG_SCALE = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+
+/* سلّم A صغير (توتر وإثارة) — للأوضاع السريعة */
+const _BG_SCALE_MINOR = [220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00];
+
+/* سلّم G مجور (دافئ ومميز) — لتحدي اليوم */
+const _BG_SCALE_DAILY = [392.00, 440.00, 493.88, 523.25, 587.33, 659.25, 739.99, 783.99];
+
 /* نمط الأرقيجيو (arpeggio) — ترتيب النغمات */
 const _BG_PATTERNS = [
-    [0, 2, 4, 7, 4, 2],          /* ارتقاء هادئ */
-    [0, 4, 7, 4, 2, 4],          /* تأرجح */
-    [0, 2, 4, 2, 0, 4, 7, 4],    /* معقد */
+    [0, 2, 4, 7, 4, 2],          /* ارتقاء هادئ — classic/survival */
+    [0, 4, 7, 4, 2, 4],          /* تأرجح — speed */
+    [0, 2, 4, 2, 0, 4, 7, 4],    /* معقد — frenzy/impossible */
+    [0, 2, 4, 7, 5, 4, 2, 0],    /* تحدي اليوم — daily */
+    [0, 3, 5, 7, 5, 3],          /* صغير — survival/accuracy */
 ];
+
+/* الإعدادات لكل وضع: { pattern, scale, interval, waveType, bassRatio } */
+const _BG_MODE_CONFIGS = {
+    classic:    { patternIdx: 0, scale: '_BG_SCALE',       interval: 480, wave: 'triangle', bassRatio: 0.5 },
+    speed:      { patternIdx: 1, scale: '_BG_SCALE_MINOR',  interval: 300, wave: 'square',   bassRatio: 0.5 },
+    frenzy:     { patternIdx: 2, scale: '_BG_SCALE_MINOR',  interval: 220, wave: 'square',   bassRatio: 0.5 },
+    survival:   { patternIdx: 4, scale: '_BG_SCALE_MINOR',  interval: 420, wave: 'triangle', bassRatio: 0.5 },
+    daily:      { patternIdx: 3, scale: '_BG_SCALE_DAILY',  interval: 460, wave: 'sine',     bassRatio: 0.5 },
+    accuracy:   { patternIdx: 0, scale: '_BG_SCALE',        interval: 400, wave: 'triangle', bassRatio: 0.5 },
+    marathon:   { patternIdx: 1, scale: '_BG_SCALE',        interval: 360, wave: 'triangle', bassRatio: 0.5 },
+    impossible: { patternIdx: 2, scale: '_BG_SCALE_MINOR',  interval: 200, wave: 'square',   bassRatio: 0.5 },
+};
+
 let _bgPatternIdx = 0;
 let _bgNoteIdx = 0;
 let _bgCurrentPattern = _BG_PATTERNS[0];
+let _bgCurrentScale   = _BG_SCALE;
+let _bgCurrentWave    = 'triangle';
+let _bgCurrentInterval = 480;
 
 function bgNote() {
     if (!st || !st.bgOn) return;
@@ -392,17 +417,17 @@ function bgNote() {
     _bgGain.gain.setValueAtTime(0.022 * vol * (_bgAccelerated ? 1.3 : 1.0), ctx.currentTime);
 
     const noteIdx = _bgCurrentPattern[_bgNoteIdx % _bgCurrentPattern.length];
-    const freq = _BG_SCALE[noteIdx];
+    const freq = _bgCurrentScale[noteIdx % _bgCurrentScale.length];
     _bgNoteIdx++;
 
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.connect(g);
     g.connect(_bgGain);
-    o.type = 'triangle';
+    o.type = _bgCurrentWave;
     o.frequency.value = freq;
 
-    const noteDur = _bgAccelerated ? 0.30 : 0.55;
+    const noteDur = _bgAccelerated ? 0.22 : (_bgCurrentInterval / 1000) * 0.85;
     g.gain.setValueAtTime(0, ctx.currentTime);
     g.gain.linearRampToValueAtTime(0.022 * vol, ctx.currentTime + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + noteDur);
@@ -429,7 +454,7 @@ function bgNote() {
 /* بدء الموسيقى الخلفية */
 function startBg() {
     if (!bgInt) {
-        const interval = _bgAccelerated ? 280 : 480;
+        const interval = _bgAccelerated ? 220 : _bgCurrentInterval;
         bgInt = setInterval(bgNote, interval);
     }
 }
@@ -458,15 +483,25 @@ function setBgAccelerated(isAccel) {
     }
 }
 
-/* تغيير النمط الموسيقي حسب وضع اللعبة */
+/* تغيير الثيم الموسيقي حسب وضع اللعبة — يُستدعى من startGameWith */
 function setBgMoodForMode(mode) {
-    switch (mode) {
-        case 'speed':    _bgCurrentPattern = _BG_PATTERNS[1]; break;
-        case 'frenzy':   _bgCurrentPattern = _BG_PATTERNS[2]; break;
-        case 'survival': _bgCurrentPattern = _BG_PATTERNS[0]; break;
-        default:         _bgCurrentPattern = _BG_PATTERNS[0]; break;
-    }
-    _bgNoteIdx = 0;
+    const scaleMap = {
+        '_BG_SCALE':       _BG_SCALE,
+        '_BG_SCALE_MINOR': _BG_SCALE_MINOR,
+        '_BG_SCALE_DAILY': _BG_SCALE_DAILY,
+    };
+    const cfg = _BG_MODE_CONFIGS[mode] || _BG_MODE_CONFIGS['classic'];
+
+    _bgCurrentPattern  = _BG_PATTERNS[cfg.patternIdx];
+    _bgCurrentScale    = scaleMap[cfg.scale] || _BG_SCALE;
+    _bgCurrentWave     = cfg.wave;
+    _bgCurrentInterval = cfg.interval;
+    _bgNoteIdx         = 0;
+    _bgAccelerated     = false;
+
+    /* أعد تشغيل الخلفية بالإعدادات الجديدة */
+    stopBg();
+    if (st && st.bgOn) startBg();
 }
 
 /* ═══════════════════════════════════════════════════════════════
