@@ -155,7 +155,7 @@ function generateAndShowSerial() {
         if (ss) { ss.classList.add('hidden'); setTimeout(() => { if (ss) ss.style.display = 'none'; }, 500); }
         try { checkDailyLoginBonus(); } catch (e) {}
         try { if (typeof initTitlesSystem === 'function') initTitlesSystem(); } catch (e) {}
-    }, 2800);
+    }, 5200);
 
     document.addEventListener('touchstart', function () {
         gACtx();
