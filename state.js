@@ -88,8 +88,8 @@
                 accuracyBest:   0,
                 marathonBest:   0,
                 impossibleBest: 0,
-                /* ✅ 5.3: مخزون المساعدات — يُشترى من المتجر ويُستخدم مجاناً داخل اللعبة */
-                helperInventory: { skip: 0, remove: 0, heart: 0 }
+                /* ═══ مخزون المساعدات الدائم ═══ */
+                inventory: { skip: 0, heart: 0, remove: 0 }
             };
         }
 
@@ -115,13 +115,6 @@
             if (s.darkMode === undefined) s.darkMode = true;
             if (typeof s.challengeBestScore !== 'number') s.challengeBestScore = 0;
             if (typeof s.soundVolume !== 'number') s.soundVolume = 80;
-            /* ✅ 5.3: sanitize مخزون المساعدات */
-            if (!s.helperInventory || typeof s.helperInventory !== 'object') {
-                s.helperInventory = { skip: 0, remove: 0, heart: 0 };
-            }
-            if (typeof s.helperInventory.skip   !== 'number' || s.helperInventory.skip   < 0) s.helperInventory.skip   = 0;
-            if (typeof s.helperInventory.remove !== 'number' || s.helperInventory.remove < 0) s.helperInventory.remove = 0;
-            if (typeof s.helperInventory.heart  !== 'number' || s.helperInventory.heart  < 0) s.helperInventory.heart  = 0;
             if (typeof s.bgVolume !== 'number') s.bgVolume = 60;
             if (s.vibrationOn === undefined) s.vibrationOn = false;
             if (typeof s.vibrationStrength !== 'number') s.vibrationStrength = 30;
@@ -171,6 +164,14 @@
             if (typeof s.accuracyBest   !== 'number') s.accuracyBest   = 0;
             if (typeof s.marathonBest   !== 'number') s.marathonBest   = 0;
             if (typeof s.impossibleBest !== 'number') s.impossibleBest = 0;
+            /* ═══ مخزون المساعدات ═══ */
+            if (!s.inventory || typeof s.inventory !== 'object') s.inventory = { skip: 0, heart: 0, remove: 0 };
+            if (typeof s.inventory.skip   !== 'number' || s.inventory.skip   < 0) s.inventory.skip   = 0;
+            if (typeof s.inventory.heart  !== 'number' || s.inventory.heart  < 0) s.inventory.heart  = 0;
+            if (typeof s.inventory.remove !== 'number' || s.inventory.remove < 0) s.inventory.remove = 0;
+            if (s.inventory.skip   > 99) s.inventory.skip   = 99;
+            if (s.inventory.heart  > 99) s.inventory.heart  = 99;
+            if (s.inventory.remove > 99) s.inventory.remove = 99;
             return s;
         }
 
