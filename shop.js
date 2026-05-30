@@ -632,8 +632,14 @@ function buyConsumable(id) {
                 st.lastShieldDate = null;
                 break;
             case 'hintPack':
-                _shopState.hintsRemaining = (parseInt(_shopState.hintsRemaining) || 0) + (item.actionVal || 5);
-                st._hintsRemaining = _shopState.hintsRemaining;
+                if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0 };
+                if (typeof st.inventory.hint !== 'number') st.inventory.hint = 0;
+                st.inventory.hint = Math.min(99, st.inventory.hint + (item.actionVal || 5));
+                /* احتفظ بالتوافق مع الكود القديم */
+                _shopState.hintsRemaining = st.inventory.hint;
+                st._hintsRemaining = st.inventory.hint;
+                _updateInventoryBar();
+                showFeedback(`💡 أُضيف ${item.actionVal || 5} تلميحات لمخزونك!`);
                 break;
             case 'coinBonus':
                 st.coins += item.actionVal || 20;
@@ -890,20 +896,23 @@ function _updateInventoryBar() {
     const skip   = inv.skip   || 0;
     const heart  = inv.heart  || 0;
     const remove = inv.remove || 0;
-    const hasAny = skip > 0 || heart > 0 || remove > 0;
-
+    const hint   = inv.hint   || 0;
+    const hasAny = skip > 0 || heart > 0 || remove > 0 || hint > 0;
     bar.style.display = hasAny ? 'flex' : 'none';
 
     const skipChip   = document.getElementById('invSkipChip');
     const heartChip  = document.getElementById('invHeartChip');
     const removeChip = document.getElementById('invRemoveChip');
+    const hintChip   = document.getElementById('invHintChip');
     const skipEl     = document.getElementById('invSkipCount');
     const heartEl    = document.getElementById('invHeartCount');
     const removeEl   = document.getElementById('invRemoveCount');
+    const hintEl     = document.getElementById('invHintCount');
 
     if (skipEl   && skipChip)   { skipEl.textContent   = skip;   skipChip.style.display   = skip   > 0 ? 'flex' : 'none'; }
     if (heartEl  && heartChip)  { heartEl.textContent  = heart;  heartChip.style.display  = heart  > 0 ? 'flex' : 'none'; }
     if (removeEl && removeChip) { removeEl.textContent = remove; removeChip.style.display = remove > 0 ? 'flex' : 'none'; }
+    if (hintEl   && hintChip)   { hintEl.textContent   = hint;   hintChip.style.display   = hint   > 0 ? 'flex' : 'none'; }
 }
 
 /* استخدام المخزون — يُستدعى من useHelper في questions.js — البند 5.3 */
@@ -913,6 +922,7 @@ function useHelperFromInventory(type) {
     if (type === 'skip'   && inv.skip   > 0) { inv.skip--;   saveSt(); _updateInventoryBar(); return true; }
     if (type === 'heart'  && inv.heart  > 0) { inv.heart--;  saveSt(); _updateInventoryBar(); return true; }
     if (type === 'remove' && inv.remove > 0) { inv.remove--; saveSt(); _updateInventoryBar(); return true; }
+    if (type === 'hint'   && (inv.hint  || 0) > 0) { inv.hint--;  saveSt(); _updateInventoryBar(); return true; }
     return false;
 }
 
