@@ -16,9 +16,9 @@
             --green: #10b981;
             --red: #ef4444;
             --orange: #f97316;
-            --text: #e8edf5;
-            --text2: #8899b4;
-            --text3: #4a5a78;
+            --text: #f0f4fb;
+            --text2: #a0b0cc;
+            --text3: #6b7fa3;
             --border: rgba(255, 255, 255, 0.06);
             --border2: rgba(255, 255, 255, 0.11);
             --glow-gold: 0 0 28px rgba(240, 185, 11, 0.28);
@@ -40,9 +40,9 @@
             --surface: #eef2f6;
             --surface2: #ffffff;
             --surface3: #e2e8f0;
-            --text: #0f172a;
-            --text2: #334155;
-            --text3: #64748b;
+            --text: #0a0f1e;
+            --text2: #1e2d45;
+            --text3: #4e5f7a;
             --border: rgba(0, 0, 0, 0.08);
             --border2: rgba(0, 0, 0, 0.12);
             --glow-gold: 0 0 18px rgba(240, 185, 11, 0.35);
@@ -138,9 +138,27 @@
             border: 1px solid var(--gold-border) !important;
         }
 
-        /* تأكيد تباين الخط العالي */
-        body, .page, .game-overlay {
+        /* ═══ تباين عالي — كل النصوص بارزة وواضحة ═══ */
+        body, .page, .game-overlay,
+        .sheet, .modal, .overlay,
+        .bottom-nav, .top-header,
+        input, select, textarea,
+        .nav-item-label, .nav-item-icon,
+        h1, h2, h3, h4, h5, p, span, div, label {
             color: var(--text);
+        }
+        /* النصوص الثانوية لا تقل عن text2 أبداً */
+        .page-subtitle,
+        .sub-label,
+        .hint-text,
+        .desc-text,
+        small {
+            color: var(--text2) !important;
+        }
+        /* منع أي وراثة خاطئة من inline styles */
+        .page [style*="color:var(--text3)"],
+        .page [style*="color: var(--text3)"] {
+            color: var(--text2) !important;
         }
         input,
         select {
@@ -591,7 +609,7 @@
         .section-label {
             font-size: 0.69em;
             font-weight: 700;
-            color: var(--text3);
+            color: var(--text2);
             text-transform: uppercase;
             letter-spacing: 1.5px;
             margin-bottom: 6px;
@@ -670,7 +688,7 @@
         }
         .rating-num-sub {
             font-size: 0.64em;
-            color: var(--text3);
+            color: var(--text2);
             margin-top: 2px;
         }
         .rating-right {
@@ -820,7 +838,7 @@
         }
         .hist-chip-acc {
             font-size: 0.56em;
-            color: var(--text3);
+            color: var(--text2);
         }
         .diff-row {
             display: flex;
@@ -861,7 +879,7 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 0.58em;
-            color: var(--text3);
+            color: var(--text2);
             white-space: nowrap;
             background: rgba(0, 0, 0, 0.5);
             padding: 0 4px;
@@ -1142,7 +1160,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1em;
-            color: var(--text3);
+            color: var(--text2);
         }
         .tasks-summary {
             background: var(--surface2);
@@ -1287,7 +1305,7 @@
         }
         .task-prog-txt {
             font-size: 0.6em;
-            color: var(--text3);
+            color: var(--text2);
         }
         /* الإنجازات — مستطيل أفقي مثل المهام */
         .achieve-item {
@@ -1371,7 +1389,7 @@
         }
         .profile-xp-label {
             font-size: 0.58em;
-            color: var(--text3);
+            color: var(--text2);
             margin-top: 3px;
         }
         .stats-grid3 {
@@ -1615,7 +1633,7 @@
         .profile-section-title {
             font-size: 0.68em;
             font-weight: 700;
-            color: var(--text3);
+            color: var(--text2);
             text-transform: uppercase;
             letter-spacing: 1.5px;
             margin-bottom: 9px;
@@ -1704,7 +1722,7 @@
         .nav-item-label {
             font-size: 0.57em;
             font-weight: 700;
-            color: var(--text3);
+            color: var(--text2);
             transition: 0.22s;
             white-space: nowrap;
             text-align: center;
@@ -2119,7 +2137,7 @@
         }
         .question-number {
             font-size: 0.66em;
-            color: var(--text3);
+            color: var(--text2);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
@@ -2146,7 +2164,7 @@
         }
         .question-hint {
             font-size: 0.68em;
-            color: var(--text3);
+            color: var(--text2);
             margin-top: 5px;
         }
         .streak-display {
@@ -3030,7 +3048,7 @@
 .profile-title-info { flex: 1; }
 .profile-title-name { font-size: 0.88em; font-weight: 900; color: var(--text); }
 .profile-title-desc { font-size: 0.64em; color: var(--text2); margin-top: 3px; }
-.profile-title-expiry { font-size: 0.6em; color: var(--text3); margin-top: 4px; }
+.profile-title-expiry { font-size: 0.6em; color: var(--text2); margin-top: 4px; }
 .title-progress-bar { height: 4px; background: var(--surface3); border-radius: 4px; overflow: hidden; margin-top: 6px; }
 .title-progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg,var(--gold),var(--gold2)); transition: width 0.8s ease; }
 
@@ -3292,7 +3310,7 @@
 
 .home-xp-next {
     font-size: 0.62em;
-    color: var(--text3);
+    color: var(--text2);
     font-weight: 600;
 }
 
@@ -3325,7 +3343,7 @@
 }
 
 /* ── الوضع الأفقي للهاتف: تقليص بطاقة XP ── */
-@media (orientation: landscape) and (max-height: 500px) {
+media (orientation: landscape) and (max-height: 500px) {
     .home-player-xp-card { padding: 8px 12px; gap: 6px; }
     .home-xp-bar-wrap { height: 6px; }
     .home-player-name-full { font-size: 0.9em; }
