@@ -188,8 +188,20 @@ function calcXpGained(correct, wrong, score, bestStreak) {
  * يُعيد: { xpGained, levelsGained, newLevel }
  */
 function applyXpGain(correct, wrong, score, bestStreak) {
-    const xpGained = calcXpGained(correct, wrong, score, bestStreak);
+    let xpGained = calcXpGained(correct, wrong, score, bestStreak);
     if (xpGained <= 0) return { xpGained: 0, levelsGained: 0, newLevel: st.level };
+
+    /* ✅ FIX-XP-BOOST: تطبيق مضاعف XP من المتجر */
+    const xpMult = (typeof getXpMultiplier === 'function') ? getXpMultiplier() : 1;
+    if (xpMult > 1) {
+        const bonus = Math.floor(xpGained * (xpMult - 1));
+        xpGained += bonus;
+        if (bonus > 0) {
+            setTimeout(function() {
+                try { showFeedback('⚡ مضاعف XP ×' + xpMult + '! +' + bonus + ' XP إضافية'); } catch(e) {}
+            }, 400);
+        }
+    }
 
     st.xp += xpGained;
     let levelsGained = 0;
