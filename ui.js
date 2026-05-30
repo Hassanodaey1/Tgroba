@@ -776,69 +776,10 @@ function loadLeaderboard() {
 ═══════════════════════════════════════════════════ */
 
 /* التبويب النشط حالياً: 'challenge' أو 'general' */
-var _activeLbTab = 'challenge';
-
-/**
- * تبديل تبويب لائحة الصدارة
- */
-function showLbTab(tab) {
-    _activeLbTab = tab;
-    const btnC = document.getElementById('lbTabChallenge');
-    const btnG = document.getElementById('lbTabGeneral');
-    const header = document.getElementById('lbScoreHeader');
-
-    if (tab === 'challenge') {
-        if (btnC) { btnC.style.background = 'linear-gradient(135deg,var(--gold),var(--gold2))'; btnC.style.color = '#000'; btnC.style.border = 'none'; }
-        if (btnG) { btnG.style.background = 'var(--surface3)'; btnG.style.color = 'var(--text2)'; btnG.style.border = '1px solid var(--border2)'; }
-        if (header) header.textContent = 'نقاط التحدي';
-    } else {
-        if (btnG) { btnG.style.background = 'linear-gradient(135deg,var(--gold),var(--gold2))'; btnG.style.color = '#000'; btnG.style.border = 'none'; }
-        if (btnC) { btnC.style.background = 'var(--surface3)'; btnC.style.color = 'var(--text2)'; btnC.style.border = '1px solid var(--border2)'; }
-        if (header) header.textContent = 'أعلى نقاط';
-    }
-    loadCombinedLeaderboard();
-}
-
-/**
- * تحميل لائحة الصدارة الموحدة حسب التبويب النشط
- */
-/* loadCombinedLeaderboard — نُقلت إلى competition_logic.js */
-/**
- * عرض صفوف لائحة اللاعبين
- */
-function renderLeaderboardList(container, players, scoreKey) {
-    if (!players.length) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">لا توجد نتائج بعد — كن الأول! 🏆</div>';
-        return;
-    }
-
-    const medals = ['🥇', '🥈', '🥉'];
-    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : '';
-    let html = '';
-
-    players.forEach((p, idx) => {
-        const isMe = myKey && (p.id === myKey);
-        const score = p[scoreKey] || 0;
-        html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
-            <span>${medals[idx] || (idx + 1)}</span>
-            <span>${p.avatar || '🧑'} ${p.name || 'لاعب'}</span>
-            <span>${p.level || 1}</span>
-            <span style="color:var(--gold);font-weight:900;">${score}</span>
-        </div>`;
-    });
-
-    container.innerHTML = html;
-
-    /* تمرير تلقائي لموضع اللاعب الحالي */
-    const myRow = container.querySelector('.lb-row-me');
-    if (myRow) {
-        setTimeout(() => myRow.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
-    }
-}
-
-/* استدعاء للتوافق مع الكود القديم — تُوجَّه إلى loadCombinedLeaderboard */
-function _legacyLoadLeaderboard() { if (_activeLbTab === 'general') loadCombinedLeaderboard(); }
-function _legacyLoadChallengeLeaderboard() { if (_activeLbTab === 'challenge') loadCombinedLeaderboard(); }
+/* ═══ هذه الدوال نُقلت إلى competition_logic.js ═══
+   _activeLbTab, showLbTab, loadCombinedLeaderboard,
+   renderLeaderboardList, _legacyLoad*
+   ═════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════
    وضع الوالدين — renderParentStats
