@@ -284,7 +284,7 @@
 
 .comp-lb-hint {
     font-size: 0.62em;
-    color: var(--text3);
+    color: var(--text2);
     text-align: center;
     padding: 6px 0 2px;
 }
@@ -472,7 +472,7 @@
 
 .cga-q-label {
     font-size: 0.62em;
-    color: var(--text3);
+    color: var(--text2);
     font-weight: 700;
 }
 
@@ -542,7 +542,7 @@
 
 .cga-timer-label {
     font-size: 0.62em;
-    color: var(--text3);
+    color: var(--text2);
 }
 
 .cga-timer-num {
@@ -686,7 +686,7 @@
 
 .cga-q-num-label {
     font-size: 0.6em;
-    color: var(--text3);
+    color: var(--text2);
     font-weight: 700;
     letter-spacing: 1.5px;
     margin-bottom: 10px;
@@ -705,7 +705,7 @@
 
 .cga-question-hint {
     font-size: 0.66em;
-    color: var(--text3);
+    color: var(--text2);
     margin-top: 5px;
 }
 
