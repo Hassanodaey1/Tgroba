@@ -245,110 +245,281 @@
                 transform: translateY(-80px) scale(1.6);
             }
         }
+        /* ═══════════════════════════════════════════════
+           شاشة التحميل — تصميم احترافي منسجم v2
+        ═══════════════════════════════════════════════ */
         .splash-screen {
             position: fixed;
             inset: 0;
             z-index: 9999;
-            background: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            gap: 20px;
+            gap: 0;
             pointer-events: none;
-            background-image: radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.2), transparent 60%), radial-gradient(circle at 80% 20%, rgba(240, 185, 11, 0.15), transparent 40%);
-            transition: opacity 0.5s ease;
+            /* خلفية داكنة متدرجة منسجمة مع ثيم اللعبة */
+            background: linear-gradient(160deg, #0a0714 0%, #0e0b1f 40%, #080d1a 70%, #060810 100%);
+            /* هالات خلفية ناعمة */
+            background-image:
+                radial-gradient(ellipse at 30% 20%, rgba(124, 58, 237, 0.18) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 80%, rgba(240, 185, 11, 0.12) 0%, transparent 45%),
+                radial-gradient(ellipse at 60% 40%, rgba(6, 182, 212, 0.08) 0%, transparent 50%);
+            transition: opacity 0.6s ease;
             opacity: 1;
+            overflow: hidden;
         }
         .splash-screen.hidden {
             opacity: 0;
             pointer-events: none;
         }
+
+        /* شبكة خلفية خفيفة */
+        .splash-screen::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+            background-size: 36px 36px;
+            mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 75%);
+            pointer-events: none;
+        }
+
+        /* شعاع دوار في الخلفية */
+        .splash-screen::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 600px;
+            height: 600px;
+            margin: -300px 0 0 -300px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                rgba(240,185,11,0.04) 30deg,
+                transparent 60deg,
+                rgba(124,58,237,0.04) 120deg,
+                transparent 150deg,
+                rgba(6,182,212,0.03) 210deg,
+                transparent 240deg,
+                rgba(240,185,11,0.03) 300deg,
+                transparent 360deg
+            );
+            animation: splashRaysSpin 12s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes splashRaysSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* الرموز المتطايرة في الخلفية */
         .splash-bg-symbols {
             position: absolute;
             inset: 0;
             pointer-events: none;
-            font-size: 2em;
-            color: rgba(255, 255, 255, 0.07);
-            font-weight: bold;
-            display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            justify-content: center;
-            gap: 12px;
-            padding: 20px;
             overflow: hidden;
         }
         .animated-symbol {
             position: absolute;
             white-space: nowrap;
-            animation: floatSymbol 8s infinite alternate ease-in-out;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.055);
+            animation: floatSymbol var(--dur, 9s) infinite alternate ease-in-out;
+            animation-delay: var(--delay, 0s);
         }
         @keyframes floatSymbol {
-            0% {
-                transform: translate(0, 0) rotate(0deg) scale(1);
-                opacity: 0.1;
-            }
-            50% {
-                transform: translate(10px, -15px) rotate(8deg) scale(1.2);
-                opacity: 0.3;
-            }
-            100% {
-                transform: translate(-5px, 10px) rotate(-5deg) scale(0.9);
-                opacity: 0.15;
-            }
+            0%   { transform: translate(0, 0) rotate(0deg) scale(1);    opacity: 0.04; }
+            50%  { transform: translate(12px, -18px) rotate(9deg) scale(1.25); opacity: 0.12; }
+            100% { transform: translate(-7px, 12px) rotate(-6deg) scale(0.85); opacity: 0.06; }
         }
+
+        /* ─── حاوية المحتوى المركزية ─── */
+        .splash-content-wrap {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        /* ─── حلقة الشعار الدائرية ─── */
+        .splash-logo-ring-wrap {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 22px;
+        }
+
+        .splash-logo-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--gold, #f0b90b) 0%,
+                #ffd54f 20%,
+                var(--accent, #7c3aed) 45%,
+                var(--accent2, #06b6d4) 65%,
+                var(--gold, #f0b90b) 100%
+            );
+            animation: splashRingRotate 3s linear infinite;
+            opacity: 0.85;
+        }
+
+        .splash-logo-ring::after {
+            content: '';
+            position: absolute;
+            inset: 5px;
+            border-radius: 50%;
+            background: #0e0b1f;
+        }
+
+        @keyframes splashRingRotate {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ─── الشعار النصي داخل الحلقة ─── */
         .splash-logo {
-            font-size: 6em;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+            gap: 0;
+        }
+
+        .splash-ho {
+            font-size: 2em;
             font-weight: 900;
-            letter-spacing: 15px;
-            background: linear-gradient(135deg, var(--gold), var(--accent), var(--accent2));
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--gold, #f0b90b), #ffd54f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: logoGlow 2s infinite alternate;
-            z-index: 1;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(240,185,11,0.5));
         }
-        @keyframes logoGlow {
-            0% {
-                filter: drop-shadow(0 0 15px var(--gold))
-            }
-            100% {
-                filter: drop-shadow(0 0 35px var(--accent))
-            }
-        }
-        .splash-subtitle {
-            color: var(--text2);
-            font-size: 1.3em;
+
+        .splash-math {
+            font-size: 0.75em;
+            font-weight: 900;
             letter-spacing: 3px;
-            z-index: 1;
+            background: linear-gradient(135deg, var(--accent, #7c3aed), var(--accent2, #06b6d4));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+
+        /* ─── العنوان الفرعي ─── */
+        .splash-subtitle {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.88em;
+            letter-spacing: 4px;
+            z-index: 1;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+            font-weight: 600;
+        }
+
+        /* ─── شريط التحميل ─── */
+        .splash-loader-bar-wrap {
+            position: relative;
+            z-index: 2;
+            width: 160px;
+            height: 3px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .splash-loader-bar {
+            height: 100%;
+            width: 40%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--gold, #f0b90b), var(--accent, #7c3aed), var(--accent2, #06b6d4));
+            animation: splashBarSlide 1.6s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(240,185,11,0.4);
+        }
+
+        @keyframes splashBarSlide {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(350%); }
+        }
+
+        /* ─── نقاط التحميل ─── */
         .splash-dots {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             z-index: 1;
         }
+
         .splash-dot {
-            width: 12px;
-            height: 12px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: var(--gold);
-            animation: bounce 1s infinite alternate;
+            animation: splashDotPulse 1.2s ease-in-out infinite;
         }
+
+        .splash-dot:nth-child(1) {
+            background: var(--gold, #f0b90b);
+            animation-delay: 0s;
+            box-shadow: 0 0 8px rgba(240,185,11,0.6);
+        }
+
         .splash-dot:nth-child(2) {
-            animation-delay: 0.2s;
-            background: var(--accent);
+            background: var(--accent, #7c3aed);
+            animation-delay: 0.25s;
+            box-shadow: 0 0 8px rgba(124,58,237,0.6);
         }
+
         .splash-dot:nth-child(3) {
-            animation-delay: 0.4s;
-            background: var(--accent2);
+            background: var(--accent2, #06b6d4);
+            animation-delay: 0.5s;
+            box-shadow: 0 0 8px rgba(6,182,212,0.6);
         }
+
+        @keyframes splashDotPulse {
+            0%, 100% { transform: scale(0.7); opacity: 0.4; }
+            50%       { transform: scale(1.3); opacity: 1; }
+        }
+
+        /* ─── نص الإصدار/صاحب العمل (اختياري) ─── */
+        .splash-credit {
+            position: absolute;
+            bottom: 28px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.65em;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 2px;
+            z-index: 2;
+        }
+
+        /* حركة ظهور تدريجي للعناصر */
+        @keyframes splashFadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .splash-logo-ring-wrap { animation: splashFadeUp 0.5s ease 0.1s both; }
+        .splash-subtitle       { animation: splashFadeUp 0.5s ease 0.3s both; }
+        .splash-loader-bar-wrap{ animation: splashFadeUp 0.4s ease 0.45s both; }
+        .splash-dots           { animation: splashFadeUp 0.4s ease 0.55s both; }
+
+        /* للتوافق مع الكود القديم الذي يستخدم @keyframes bounce */
         @keyframes bounce {
-            0% {
-                transform: translateY(0)
-            }
-            100% {
-                transform: translateY(-25px)
-            }
+            0%   { transform: translateY(0); }
+            100% { transform: translateY(-10px); }
         }
         .app-wrapper {
             position: relative;
@@ -3118,7 +3289,7 @@
     .mode-card-name { font-size: 0.7em; }
 }
 
-/* ═══ إعدادات السريعة فوق اللعبة ═══ */
+* ═══ إعدادات السريعة فوق اللعبة ═══ */
 #gameSettingsSheet .sheet-panel { max-height: 85vh; overflow-y: auto; }
 #gameSettingsSheet .sheet-cancel {
     background: linear-gradient(135deg, var(--gold), #e0a80b);
