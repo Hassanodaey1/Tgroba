@@ -426,6 +426,17 @@ function _renderConsumables(container) {
 function _buildConsumableCard(item) {
     const canAfford = st.coins >= item.price;
     const isAdReward = item.adReward;
+    /* ✅ FIX-ADREWARD: احسب حالة القيد الزمني لعناصر الإعلان */
+    let adOnCooldown = false;
+    let adCooldownLabel = '📺 شاهد';
+    if (isAdReward) {
+        const _msLeft = (24 * 60 * 60 * 1000) - (Date.now() - (st._lastAdRewardTime || 0));
+        if (_msLeft > 0) {
+            adOnCooldown = true;
+            const _hLeft = Math.ceil(_msLeft / (60 * 60 * 1000));
+            adCooldownLabel = `⏳ ${_hLeft}س`;
+        }
+    }
 
     return `
         <div onclick="buyConsumable('${item.id}');playSound('click');"
@@ -448,7 +459,7 @@ function _buildConsumableCard(item) {
             </div>
             <div style="text-align:center;flex-shrink:0;">
                 ${isAdReward
-                    ? `<div style="font-size:0.72em;font-weight:900;color:var(--green);">📺 شاهد</div><div style="font-size:0.6em;color:var(--text3);">مجاني</div>`
+                    ? `<div style="font-size:0.72em;font-weight:900;color:${adOnCooldown ? 'var(--text3)' : 'var(--green)'};">${adCooldownLabel}</div><div style="font-size:0.6em;color:var(--text3);">${adOnCooldown ? 'قريباً' : 'مجاني'}</div>`
                     : `<div style="font-size:0.85em;font-weight:900;color:${canAfford ? 'var(--gold)' : '#ef4444'};">${item.price}💰</div>
                        <div style="font-size:0.58em;color:${canAfford ? 'var(--green)' : '#ef4444'};">${canAfford ? '✅ يمكنك' : '❌ لا يكفي'}</div>`
                 }
@@ -535,12 +546,29 @@ function buyConsumable(id) {
     if (!item) return;
 
     if (item.adReward) {
-        showConfirm('📺 مكافأة مشاهدة', 'شاهد إعلاناً قصيراً للحصول على 20 عملة مجاناً!', 'شاهد الآن', 'لاحقاً', ok => {
+        /* ✅ FIX-ADREWARD: قيد 24 ساعة لمنع الحصول على عملات مجانية بلا حدود */
+        const _now = Date.now();
+        const _lastAd = st._lastAdRewardTime || 0;
+        const _cooldownMs = 24 * 60 * 60 * 1000; /* 24 ساعة */
+        if (_now - _lastAd < _cooldownMs) {
+            const _msLeft = _cooldownMs - (_now - _lastAd);
+            const _hLeft  = Math.ceil(_msLeft / (60 * 60 * 1000));
+            showFeedback(`⏳ يمكنك الحصول على المكافأة بعد ${_hLeft} ساعة`);
+            return;
+        }
+        showConfirm('📺 مكافأة مشاهدة', 'شاهد إعلاناً قصيراً للحصول على 20 عملة مجاناً!\n(مرة واحدة كل 24 ساعة)', 'شاهد الآن', 'لاحقاً', ok => {
             if (!ok) return;
+            /* تحقق مزدوج: لا نعطي المكافأة إذا مرر اللاعب الحوار بسرعة */
+            const _checkNow = Date.now();
+            if (_checkNow - (st._lastAdRewardTime || 0) < _cooldownMs) {
+                showFeedback('⏳ المكافأة غير متاحة الآن');
+                return;
+            }
             st.coins += 20;
+            st._lastAdRewardTime = _checkNow;
             saveSt(); updateUI(); renderShop();
             playSound('coin');
-            showFeedback('💰 حصلت على 20 عملة!');
+            showFeedback('💰 حصلت على 20 عملة! (متاحة مجدداً بعد 24 ساعة)');
         });
         return;
     }
