@@ -290,12 +290,12 @@ function checkChallengeAnswer(btn) {
     if (CG.answered || CG.ended) return;
     CG.answered = true;
 
-    const val = parseInt(btn.getAttribute('data-val'));
+    const val = parseFloat(btn.getAttribute('data-val'));
     document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => b.disabled = true);
 
     const card = document.getElementById('cgaQuestionCard');
 
-    if (val === CG.correctAnswer) {
+    if (Math.abs(val - CG.correctAnswer) < 0.001) {
         btn.classList.add('correct');
         if (card) card.classList.add('card-correct');
 
@@ -344,7 +344,7 @@ function checkChallengeAnswer(btn) {
     } else {
         btn.classList.add('wrong');
         document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => {
-            if (parseInt(b.getAttribute('data-val')) === CG.correctAnswer) b.classList.add('correct');
+            if (Math.abs(parseFloat(b.getAttribute('data-val')) - CG.correctAnswer) < 0.001) b.classList.add('correct');
         });
         if (card) card.classList.add('card-wrong');
 
@@ -385,7 +385,7 @@ function checkChallengeAnswer(btn) {
     setTimeout(() => {
         if (CG.ended) return;
         loadChallengeQuestion();
-    }, val === CG.correctAnswer ? 320 : 700);
+    }, Math.abs(val - CG.correctAnswer) < 0.001 ? 320 : 700);
 }
 
 /* ══════════════════════════════════════
@@ -543,7 +543,7 @@ function useChallengeHelper(type) {
         const el = document.getElementById('challengeHelperRemove');
         if (el) { el.classList.add('used'); el.style.opacity = '0.3'; }
         const btns = [...document.querySelectorAll('#challengeAnswersGrid .answer-btn:not(:disabled)')];
-        const wrong = btns.filter(b => parseInt(b.getAttribute('data-val')) !== CG.correctAnswer);
+        const wrong = btns.filter(b => Math.abs(parseFloat(b.getAttribute('data-val')) - CG.correctAnswer) >= 0.001);
         if (wrong.length > 0) {
             const r = wrong[Math.floor(Math.random() * wrong.length)];
             r.style.opacity = '0.15';
