@@ -545,128 +545,208 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 /* ═══════════════════════════════════════════════════
-   ⑱ متجر داخل اللعبة — يفتح overlay المتجر مع إيقاف المؤقت
+   ⑱ لوحة الأدوات السريعة داخل اللعبة (Quick Tools Panel)
    الزر موجود في game-header في index.html (inGameShopBtn)
+   عند الضغط: يظهر panel من الأسفل يعرض:
+     - قسم المخزون (الأدوات المشتراة مسبقاً)
+     - قسم الشراء الفوري (أدوات تُطبَّق فوراً)
+   مع زر "المتجر الكامل" للانتقال إلى المتجر العادي
 ═══════════════════════════════════════════════════ */
 
-/* overlay المتجر داخل اللعبة */
+/* ─── فتح لوحة الأدوات السريعة ─── */
 function openInGameShop() {
-    /* إيقاف المؤقت */
     pauseGameTimer();
     playSound('open');
 
-    /* إنشاء overlay المتجر إن لم يكن موجوداً */
-    var existing = document.getElementById('inGameShopOverlay');
-    if (existing) { existing.style.display = 'flex'; _refreshInGameShop(); return; }
+    var existing = document.getElementById('quickToolsPanel');
+    if (existing) {
+        existing.style.display = 'flex';
+        setTimeout(function() { existing.style.transform = 'translateY(0)'; }, 10);
+        _refreshQuickToolsPanel();
+        return;
+    }
 
-    var overlay = document.createElement('div');
-    overlay.id = 'inGameShopOverlay';
-    overlay.style.cssText = [
-        'position:fixed', 'inset:0', 'z-index:9995',
-        'display:flex', 'flex-direction:column',
-        'background:var(--bg,#07090f)',
-        'animation:fadeInBg 0.22s ease'
-    ].join(';');
+    /* ── أنشئ backdrop ── */
+    var backdrop = document.createElement('div');
+    backdrop.id = 'quickToolsBackdrop';
+    backdrop.style.cssText =
+        'position:fixed;inset:0;z-index:9993;background:rgba(0,0,0,0.55);' +
+        'backdrop-filter:blur(3px);animation:fadeInBg 0.2s ease;';
+    backdrop.onclick = closeInGameShop;
+    document.body.appendChild(backdrop);
 
-    overlay.innerHTML =
-        '<div style="display:flex;align-items:center;justify-content:space-between;' +
-        'padding:14px 16px 10px;border-bottom:1px solid var(--border2);flex-shrink:0;">' +
-            '<div style="font-size:1em;font-weight:900;color:var(--text);">🛍️ المتجر</div>' +
-            '<div style="display:flex;align-items:center;gap:10px;">' +
-                '<div style="font-size:0.82em;font-weight:900;color:var(--gold);">💰 <span id="inGameShopCoins">' + (st ? st.coins : 0) + '</span></div>' +
-                '<button onclick="closeInGameShop()" style="' +
-                    'background:var(--surface2);border:1px solid var(--border2);' +
-                    'border-radius:10px;padding:6px 14px;font-size:0.8em;font-weight:900;' +
-                    'color:var(--text);cursor:pointer;">✕ متابعة اللعب</button>' +
+    /* ── أنشئ الـ panel ── */
+    var panel = document.createElement('div');
+    panel.id = 'quickToolsPanel';
+    panel.style.cssText =
+        'position:fixed;bottom:0;left:0;right:0;z-index:9994;' +
+        'display:flex;flex-direction:column;' +
+        'background:var(--surface,#12151f);' +
+        'border-radius:22px 22px 0 0;' +
+        'border-top:2px solid var(--border2);' +
+        'max-height:82vh;' +
+        'transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);';
+
+    panel.innerHTML =
+        '<div style="flex-shrink:0;">' +
+            '<div style="width:40px;height:4px;background:var(--border2);border-radius:4px;margin:10px auto 0;"></div>' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;">' +
+                '<div style="display:flex;align-items:center;gap:8px;">' +
+                    '<span style="font-size:1.1em;">⚔️</span>' +
+                    '<span style="font-size:0.92em;font-weight:900;color:var(--text);">أدواتك في اللعبة</span>' +
+                '</div>' +
+                '<div style="display:flex;align-items:center;gap:8px;">' +
+                    '<div style="font-size:0.8em;font-weight:900;color:var(--gold);">💰 <span id="qtp-coins">' + (typeof st !== 'undefined' ? st.coins : 0) + '</span></div>' +
+                    '<button onclick="closeInGameShop()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:5px 12px;font-size:0.75em;font-weight:900;color:var(--text);cursor:pointer;font-family:Tajawal,sans-serif;">✕ ألعب</button>' +
+                '</div>' +
             '</div>' +
         '</div>' +
-        '<div id="inGameShopTabsRow" style="display:flex;gap:6px;padding:10px 14px 0;flex-shrink:0;"></div>' +
-        '<div id="inGameShopItemsContainer" style="flex:1;overflow-y:auto;padding:8px 14px 20px;"></div>';
+        '<div id="qtp-body" style="flex:1;overflow-y:auto;padding:0 14px 24px;"></div>' +
+        '<div style="flex-shrink:0;padding:10px 14px 16px;border-top:1px solid var(--border2);">' +
+            '<button onclick="closeInGameShop();setTimeout(function(){goTab&&goTab(\'shop\');},350);" style="' +
+                'width:100%;padding:11px;border-radius:14px;' +
+                'background:linear-gradient(135deg,var(--accent,#7c3aed),var(--accent2,#a855f7));' +
+                'color:#fff;font-family:Tajawal,sans-serif;font-size:0.8em;font-weight:900;' +
+                'border:none;cursor:pointer;letter-spacing:0.3px;">' +
+                '🛒 فتح المتجر الكامل' +
+            '</button>' +
+        '</div>';
 
-    document.body.appendChild(overlay);
-    _refreshInGameShop();
+    document.body.appendChild(panel);
+    setTimeout(function() { panel.style.transform = 'translateY(0)'; }, 10);
+    _refreshQuickToolsPanel();
 }
 
+/* ─── إغلاق اللوحة ─── */
 function closeInGameShop() {
-    var overlay = document.getElementById('inGameShopOverlay');
-    if (overlay) overlay.style.display = 'none';
+    var panel    = document.getElementById('quickToolsPanel');
+    var backdrop = document.getElementById('quickToolsBackdrop');
+
+    if (panel) {
+        panel.style.transform = 'translateY(100%)';
+        setTimeout(function() { if (panel) panel.style.display = 'none'; }, 300);
+    }
+    if (backdrop) {
+        backdrop.style.opacity = '0';
+        backdrop.style.transition = 'opacity 0.25s';
+        setTimeout(function() { if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); }, 260);
+    }
+
     resumeGameTimer();
     playSound('close');
-    /* تحديث عرض العملات في اللعبة بعد أي شراء */
     try { if (typeof updateGameCoinsDisplay === 'function') updateGameCoinsDisplay(); } catch(e) {}
     try { if (typeof _updateInventoryBar    === 'function') _updateInventoryBar();    } catch(e) {}
 }
 
-function _refreshInGameShop() {
-    /* تحديث الرصيد */
-    var coinsEl = document.getElementById('inGameShopCoins');
-    if (coinsEl) coinsEl.textContent = st ? st.coins : 0;
+/* ─── تحديث محتوى اللوحة ─── */
+function _refreshQuickToolsPanel() {
+    var coinsEl = document.getElementById('qtp-coins');
+    if (coinsEl && typeof st !== 'undefined') coinsEl.textContent = st.coins;
 
-    /* تبويبات */
-    var tabsRow = document.getElementById('inGameShopTabsRow');
-    if (tabsRow) {
-        var tabs = [
-            { key: 'consumables', icon: '⚡', label: 'مستهلكات' },
-            { key: 'bundles',     icon: '🎁', label: 'حزم' },
-        ];
-        tabsRow.innerHTML = tabs.map(function(t) {
-            var active = (_inGameShopTab === t.key);
-            return '<button onclick="_setInGameShopTab('' + t.key + '')" style="' +
-                'flex:1;padding:8px 4px;border-radius:12px;font-size:0.72em;font-weight:800;' +
-                'background:' + (active ? 'var(--gold)' : 'var(--surface3)') + ';' +
-                'color:' + (active ? '#000' : 'var(--text2)') + ';' +
-                'border:1px solid ' + (active ? 'var(--gold)' : 'var(--border2)') + ';' +
-                'font-family:"Tajawal",sans-serif;cursor:pointer;transition:all 0.18s;">' +
-                t.icon + ' ' + t.label + '</button>';
-        }).join('');
+    var body = document.getElementById('qtp-body');
+    if (!body) return;
+
+    var inv   = (typeof st !== 'undefined' && st.inventory) ? st.inventory : { skip: 0, heart: 0, remove: 0 };
+    var coins = typeof st !== 'undefined' ? st.coins : 0;
+    var hasInv = (inv.skip || 0) + (inv.heart || 0) + (inv.remove || 0) > 0;
+    var hasTimer = typeof G !== 'undefined' && G && G.hasTimer;
+
+    /* ─── الأدوات الفورية للشراء أثناء اللعب ─── */
+    var buyableTools = [
+        { id: 'skip_q',       icon: '⏭️', name: 'تخطّي سؤال',  price: 3,  desc: 'تخطَّ فوراً بدون خسارة' },
+        { id: 'remove_wrong', icon: '🗑️', name: 'حذف خيار',    price: 4,  desc: 'احذف إجابة خاطئة' },
+        { id: 'heart_pack_1', icon: '❤️', name: '+1 قلب',       price: 5,  desc: 'أضف قلبًا الآن' },
+        { id: 'heart_pack_3', icon: '💖', name: '+3 قلوب',      price: 12, desc: 'أضف 3 قلوب دفعة واحدة' },
+    ];
+    if (hasTimer) {
+        buyableTools.push({ id: 'time_plus10', icon: '⏰', name: '+10 ثواني', price: 5, desc: 'أضف وقتاً للمؤقت' });
     }
 
-    /* محتوى التبويب */
-    var container = document.getElementById('inGameShopItemsContainer');
-    if (!container) return;
+    var html = '';
 
-    if (typeof _shopState === 'undefined' || typeof SHOP_CATALOG === 'undefined') {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">⚠️ المتجر غير جاهز</div>';
-        return;
+    /* ── قسم ١: المخزون ── */
+    html += '<div style="margin-bottom:4px;">';
+    html += '<div style="font-size:0.65em;font-weight:900;color:var(--text3);letter-spacing:0.5px;padding:10px 0 8px;">🎒 مخزونك المشترى — اضغط للاستخدام</div>';
+
+    if (!hasInv) {
+        html += '<div style="background:var(--surface2);border:1.5px dashed var(--border2);border-radius:14px;padding:14px;text-align:center;">' +
+                    '<div style="font-size:1.6em;margin-bottom:4px;">📦</div>' +
+                    '<div style="font-size:0.7em;color:var(--text3);">مخزونك فارغ حالياً</div>' +
+                    '<div style="font-size:0.6em;color:var(--text3);margin-top:3px;">اشتري باقات من المتجر الكامل لتظهر هنا</div>' +
+                '</div>';
+    } else {
+        html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">';
+        html += _buildInvTile('⏭️', 'تخطّي',     inv.skip   || 0, 'skip',   (inv.skip   || 0) > 0);
+        html += _buildInvTile('💗', 'قلب',         inv.heart  || 0, 'heart',  (inv.heart  || 0) > 0);
+        html += _buildInvTile('🗑️', 'حذف',         inv.remove || 0, 'remove', (inv.remove || 0) > 0);
+        html += '</div>';
     }
+    html += '</div>';
 
-    /* نُعيد توجيه _shopState.activeTab مؤقتاً للتبويب الداخلي */
-    var savedTab = _shopState.activeTab;
-    _shopState.activeTab = _inGameShopTab;
+    /* ── فاصل ── */
+    html += '<div style="height:1px;background:var(--border2);margin:12px 0 10px;"></div>';
 
-    /* استخدام دوال المتجر الأصلية على الحاوية الداخلية */
-    if (_inGameShopTab === 'consumables') {
-        if (typeof _renderConsumables === 'function') _renderConsumables(container);
-    } else if (_inGameShopTab === 'bundles') {
-        if (typeof _renderBundles === 'function') _renderBundles(container);
-    }
+    /* ── قسم ٢: شراء فوري ── */
+    html += '<div>';
+    html += '<div style="font-size:0.65em;font-weight:900;color:var(--text3);letter-spacing:0.5px;padding:0 0 8px;">⚡ شراء واستخدام فوري</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:7px;">';
 
-    _shopState.activeTab = savedTab;
+    buyableTools.forEach(function(tool) {
+        var canAfford = coins >= tool.price;
+        html +=
+            '<div onclick="' + (canAfford ? "buyConsumable('" + tool.id + "');_refreshQuickToolsPanel();playSound('click');" : '') + '" ' +
+            'style="display:flex;align-items:center;gap:10px;' +
+            'background:' + (canAfford ? 'var(--surface2)' : 'var(--surface3)') + ';' +
+            'border:1.5px solid ' + (canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.18)') + ';' +
+            'border-radius:13px;padding:10px 12px;cursor:' + (canAfford ? 'pointer' : 'not-allowed') + ';' +
+            'opacity:' + (canAfford ? '1' : '0.6') + ';transition:opacity 0.15s;">' +
+                '<div style="font-size:1.55em;flex-shrink:0;">' + tool.icon + '</div>' +
+                '<div style="flex:1;">' +
+                    '<div style="font-size:0.78em;font-weight:900;color:var(--text);">' + tool.name + '</div>' +
+                    '<div style="font-size:0.62em;color:var(--text2);">' + tool.desc + '</div>' +
+                '</div>' +
+                '<div style="text-align:center;flex-shrink:0;">' +
+                    '<div style="font-size:0.82em;font-weight:900;color:' + (canAfford ? 'var(--gold)' : '#ef4444') + ';">' + tool.price + '💰</div>' +
+                    '<div style="font-size:0.56em;color:' + (canAfford ? 'var(--green)' : '#ef4444') + ';">' + (canAfford ? '✅' : '❌ لا يكفي') + '</div>' +
+                '</div>' +
+            '</div>';
+    });
 
-    /* إضافة بانر "أنت داخل اللعبة" في الأعلى */
-    var banner = '<div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);' +
-        'border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:0.72em;font-weight:700;' +
-        'color:#ef4444;text-align:center;">⚔️ أنت في اللعبة — العناصر تُطبَّق فوراً!</div>';
-    container.innerHTML = banner + container.innerHTML;
+    html += '</div></div>';
+    body.innerHTML = html;
 }
 
-var _inGameShopTab = 'consumables';
-
-function _setInGameShopTab(tab) {
-    _inGameShopTab = tab;
-    _refreshInGameShop();
-    playSound('click');
+/* ─── بناء بلاطة مخزون واحدة ─── */
+function _buildInvTile(icon, label, count, type, active) {
+    var onclick = active ? 'onclick="useHelper(\'' + type + '\');_refreshQuickToolsPanel();"' : '';
+    return '<div ' + onclick + ' style="' +
+        'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
+        'gap:3px;padding:10px 6px;border-radius:14px;' +
+        'cursor:' + (active ? 'pointer' : 'default') + ';' +
+        'background:' + (active ? 'var(--surface2)' : 'var(--surface3)') + ';' +
+        'border:2px solid ' + (active ? 'rgba(240,185,11,0.45)' : 'var(--border2)') + ';' +
+        'opacity:' + (active ? '1' : '0.4') + ';' +
+        'position:relative;transition:all 0.15s;">' +
+        (count > 0 ? '<div style="position:absolute;top:-6px;right:-6px;background:var(--gold);color:#000;font-size:0.55em;font-weight:900;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center;">' + count + '</div>' : '') +
+        '<div style="font-size:1.6em;">' + icon + '</div>' +
+        '<div style="font-size:0.6em;font-weight:800;color:var(--text2);">' + label + '</div>' +
+        (active ? '<div style="font-size:0.56em;color:var(--gold);font-weight:700;">اضغط</div>' : '<div style="font-size:0.55em;color:var(--text3);">لا يوجد</div>') +
+    '</div>';
 }
 
-/* تحديث الرصيد تلقائياً بعد كل عملية شراء من المتجر الداخلي */
+/* تحديث الرصيد والمخزون تلقائياً بعد كل عملية شراء */
 window.addEventListener('load', function() {
-    /* نُغلّف saveSt لتحديث رصيد المتجر الداخلي بعد كل حفظ */
     if (typeof saveSt === 'function') {
         var _origSaveSt = saveSt;
         window.saveSt = function() {
             _origSaveSt();
-            var coinsEl = document.getElementById('inGameShopCoins');
+            var coinsEl = document.getElementById('qtp-coins');
             if (coinsEl && typeof st !== 'undefined') coinsEl.textContent = st.coins;
+            /* تحديث اللوحة إن كانت مفتوحة */
+            var panel = document.getElementById('quickToolsPanel');
+            if (panel && panel.style.transform !== 'translateY(100%)' && panel.style.display !== 'none') {
+                _refreshQuickToolsPanel();
+            }
         };
     }
 });
