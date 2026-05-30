@@ -28,6 +28,7 @@
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="shop.css">
+    <link rel="stylesheet" href="competition_styles.css">
 </head>
 <body>
 
@@ -598,138 +599,242 @@
                     <div style="text-align:center;padding:16px 0 4px;font-size:0.6em;color:var(--text3);">© 2026 Hassan Odaey • جميع الحقوق محفوظة</div>
                 </div>
 
-                <!-- LEADERBOARD PAGE -->
-                <div class="page" id="page-leaderboard">
-                    <div class="page-title-header">🏆 المنافسة</div>
+<!-- ═══════════════════════════════════════════════════════════
+     صفحة المنافسة — إعادة تصميم كاملة
+     استبدل كل محتوى <div class="page" id="page-leaderboard"> بهذا
+     © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════ -->
 
-                    <!-- واجهة الترحيب بلعبة التحدي -->
-                    <div id="challengeWelcome" style="display:flex;flex-direction:column;gap:12px;">
-                        <div style="background:linear-gradient(135deg,rgba(240,185,11,0.15),rgba(124,58,237,0.15));border:1.5px solid rgba(240,185,11,0.35);border-radius:22px;padding:20px;text-align:center;">
-                            <div style="font-size:2.5em;margin-bottom:8px;">⚔️</div>
-                            <div style="font-size:1.1em;font-weight:900;color:var(--text);margin-bottom:6px;">لعبة نداء التحدي</div>
-                            <div style="font-size:0.75em;color:var(--text2);line-height:1.6;margin-bottom:14px;">
-                                أجب على أسئلة الجمع والطرح والضرب والقسمة<br>
-                                60 ثانية • +1 ثانية لكل إجابة صحيحة • -2 ثانية عند الخطأ<br>
-                                الصعوبة تزداد تدريجياً كلما تقدمت
-                            </div>
-                            <div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">
-                                <div style="background:var(--surface3);border-radius:14px;padding:10px 16px;text-align:center;">
-                                    <div style="font-size:1.4em;font-weight:900;color:var(--gold);" id="challengeBestDisplay">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);">أفضل نتيجة في التحدي</div>
-                                </div>
-                            </div>
-                            <button onclick="startChallengeGame()" style="width:100%;padding:16px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:1.05em;font-weight:900;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(240,185,11,0.4);transition:0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
-                                ⚔️ لنبدأ التحدي
-                            </button>
-                        </div>
+<div class="page" id="page-leaderboard">
 
-                        <!-- مهام التحدي اليومية -->
-                        <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;overflow:visible;flex-shrink:0;">
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:18px;cursor:pointer;user-select:none;" onclick="toggleSection('challengeTasksBody','challengeTasksChevron')">
-                                <div>
-                                    <div style="font-size:0.85em;font-weight:900;color:var(--text);">⚔️ مهام التحدي اليومية</div>
-                                    <div style="font-size:0.62em;color:var(--text2);margin-top:2px;">5 مهام تتجدد يومياً • تزداد صعوبةً تدريجياً</div>
-                                </div>
-                                <span id="challengeTasksChevron" style="font-size:1em;color:var(--gold);transition:transform 0.3s;">▼</span>
-                            </div>
-                            <div id="challengeTasksBody" style="display:none;max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
-                                <div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:8px;" id="challengeDailyTasksList">
-                                    <!-- تُملأ بـ JS -->
-                                </div>
-                            </div>
-                        </div>
+    <!-- ══════════════════════════════════════════
+         الواجهة الرئيسية للمنافسة (Welcome View)
+    ══════════════════════════════════════════ -->
+    <div id="competitionMainView" style="display:flex;flex-direction:column;gap:0;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 16px;">
 
-                        <!-- لائحة الصدارة -->
-                        <div class="section-label" style="margin-top:4px;">🏆 لائحة الصدارة الموحدة</div>
-                        <div style="display:flex;gap:8px;margin-bottom:6px;">
-                            <button onclick="showLbTab('challenge')" id="lbTabChallenge" style="flex:1;padding:8px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:900;border:none;cursor:pointer;">⚔️ التحدي</button>
-                            <button onclick="showLbTab('general')" id="lbTabGeneral" style="flex:1;padding:8px;border-radius:12px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.78em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">📊 النقاط العامة</button>
-                        </div>
-                        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;">
-                            <!-- رأس الجدول -->
-                            <div class="lb-row lb-header" style="flex-shrink:0;">
-                                <span>المرتبة</span>
-                                <span>اللاعب</span>
-                                <span>Lv.</span>
-                                <span id="lbScoreHeader">نقاط التحدي</span>
-                            </div>
-                            <!-- المحتوى المتمرير -->
-                            <div id="combinedLeaderboardList" style="max-height:40vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;">
-                                <div style="text-align:center;padding:20px;color:var(--text2);">جاري التحميل...</div>
-                            </div>
-                        </div>
-                        <p style="font-size:0.65em;color:var(--text2);text-align:center;flex-shrink:0;">✨ مرّر لأسفل لعرض المزيد من اللاعبين ✨</p>
+        <!-- Hero Banner -->
+        <div class="comp-hero-banner">
+            <div class="comp-hero-bg-sparks" id="compHeroBgSparks"></div>
+            <div class="comp-hero-content">
+                <div class="comp-hero-icon-wrap">
+                    <div class="comp-hero-ring"></div>
+                    <span class="comp-hero-icon">⚔️</span>
+                </div>
+                <div class="comp-hero-title">نداء التحدي</div>
+                <div class="comp-hero-sub">تحدّ نفسك وتسلّق لوحة الصدارة</div>
+                <!-- إحصائياتي -->
+                <div class="comp-my-stats-row">
+                    <div class="comp-my-stat">
+                        <span class="comp-my-stat-val" id="challengeBestDisplay">0</span>
+                        <span class="comp-my-stat-lbl">أفضل نتيجة</span>
                     </div>
-
-                    <!-- منطقة اللعب (تظهر عند بدء التحدي) -->
-                    <div id="challengeGameArea" style="display:none;flex-direction:column;gap:10px;width:100%;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:12px 16px;">
-                            <button onclick="quitChallengeGame()" style="background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;font-family:'Tajawal',sans-serif;font-size:0.75em;font-weight:700;color:var(--text2);cursor:pointer;">⬅ خروج</button>
-                            <div style="text-align:center;">
-                                <div style="font-size:0.65em;color:var(--text3);" id="challengeQNum">السؤال 1</div>
-                                <div style="font-size:0.72em;color:var(--accent2);font-weight:700;" id="challengeDiffLabel">سهل جداً</div>
-                            </div>
-                            <div style="background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.3);border-radius:13px;padding:6px 12px;text-align:center;">
-                                <div style="font-size:1.3em;font-weight:900;color:var(--gold);line-height:1;" id="challengeScoreDisplay">0</div>
-                                <div style="font-size:0.55em;color:var(--text3);">نقاط</div>
-                            </div>
-                        </div>
-                        <div style="background:var(--surface2);border-radius:14px;padding:10px 14px;border:1px solid var(--border2);">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                                <span style="font-size:0.65em;color:var(--text3);">⏱️ الوقت المتبقي</span>
-                                <span style="font-size:1.1em;font-weight:900;color:var(--accent2);" id="challengeTimerDisplay">60</span>
-                            </div>
-                            <div style="background:var(--surface3);border-radius:8px;height:8px;overflow:hidden;">
-                                <div id="challengeTimerBar" style="height:100%;width:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:8px;transition:width 0.3s;"></div>
-                            </div>
-                        </div>
-                        <div class="question-card" style="width:100%;max-width:100%;">
-                            <div class="question-text" id="challengeQuestionText">...</div>
-                            <div class="question-hint" id="challengeHint">ما هو الجواب؟</div>
-                        </div>
-                        <div class="answers-grid" id="challengeAnswersGrid" style="max-width:100%;"></div>
-                        <div id="challengeExplanation" style="display:none;width:100%;"></div>
-                        <div class="helpers-bar" id="challengeHelpersBar">
-                            <div class="helper-btn" id="challengeHelperSkip" onclick="useChallengeHelper('skip')">
-                                <div class="helper-btn-icon">⏭️</div>
-                                <div class="helper-btn-label">تخطّي</div>
-                                <div class="helper-btn-cost">3💰</div>
-                            </div>
-                            <div class="helper-btn" id="challengeHelperRemove" onclick="useChallengeHelper('remove')">
-                                <div class="helper-btn-icon">🗑️</div>
-                                <div class="helper-btn-label">حذف إجابة</div>
-                                <div class="helper-btn-cost">4💰</div>
-                            </div>
-                            <div class="helper-btn" id="challengeHelperTime" onclick="useChallengeHelper('time')">
-                                <div class="helper-btn-icon">⏰</div>
-                                <div class="helper-btn-label">+10 ثانية</div>
-                                <div class="helper-btn-cost">5💰</div>
-                            </div>
-                        </div>
-                        <button onclick="quitChallengeGame()" class="return-home-btn" style="margin-top:6px;">🏆 العودة إلى لائحة الصدارة</button>
+                    <div class="comp-my-stat-divider"></div>
+                    <div class="comp-my-stat">
+                        <span class="comp-my-stat-val" id="compMyRank">—</span>
+                        <span class="comp-my-stat-lbl">مرتبتي</span>
                     </div>
-
-                    <!-- نتيجة التحدي -->
-                    <div id="challengeResultArea" style="display:none;flex-direction:column;gap:12px;align-items:center;width:100%;">
-                        <div style="background:linear-gradient(135deg,var(--surface2),var(--surface3));border:2px solid var(--border2);border-radius:26px;padding:26px 20px;text-align:center;width:100%;">
-                            <div style="font-size:3em;margin-bottom:8px;">🏆</div>
-                            <div style="font-size:1em;font-weight:900;color:var(--text);margin-bottom:4px;" id="challengeResultMsg">رائع!</div>
-                            <div style="font-size:0.75em;color:var(--text2);margin-bottom:16px;">نتيجة جلستك في نداء التحدي</div>
-                            <div style="display:flex;gap:10px;margin-bottom:16px;">
-                                <div style="flex:1;background:var(--surface3);border-radius:13px;padding:14px;">
-                                    <div style="font-size:1.8em;font-weight:900;color:var(--gold);" id="challengeFinalScore">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">نقاطك</div>
-                                </div>
-                                <div style="flex:1;background:var(--surface3);border-radius:13px;padding:14px;">
-                                    <div style="font-size:1.8em;font-weight:900;color:var(--accent2);" id="challengeBestScore">0</div>
-                                    <div style="font-size:0.6em;color:var(--text2);margin-top:2px;">أفضل نتيجة</div>
-                                </div>
-                            </div>
-                            <button onclick="startChallengeGame()" style="width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Tajawal',sans-serif;font-size:0.92em;font-weight:900;border:none;cursor:pointer;margin-bottom:8px;">🔄 حاول مجدداً</button>
-                            <button onclick="restartChallengeGame()" style="width:100%;padding:14px;border-radius:14px;background:var(--surface3);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.88em;font-weight:700;border:1px solid var(--border2);cursor:pointer;">🏠 العودة للمنافسة</button>
-                        </div>
+                    <div class="comp-my-stat-divider"></div>
+                    <div class="comp-my-stat">
+                        <span class="comp-my-stat-val" id="compTotalPlayers">—</span>
+                        <span class="comp-my-stat-lbl">منافس</span>
                     </div>
                 </div>
+            </div>
+            <!-- زر البدء الرئيسي -->
+            <button class="comp-start-btn" onclick="launchChallengeCountdown()" id="compStartBtn">
+                <span class="comp-start-btn-glow"></span>
+                <span class="comp-start-btn-text">⚔️ ابدأ التحدي</span>
+                <span class="comp-start-btn-sub">60 ثانية • +1ث لكل صواب • -2ث لكل خطأ</span>
+            </button>
+        </div>
+
+        <!-- ══ مهام التحدي اليومية ══ -->
+        <div class="comp-section-card" style="margin-top:12px;">
+            <div class="comp-section-header" onclick="toggleSection('challengeTasksBody','challengeTasksChevron')">
+                <div>
+                    <div class="comp-section-title">⚔️ مهام اليوم</div>
+                    <div class="comp-section-sub">5 مهام تتجدد يومياً</div>
+                </div>
+                <span id="challengeTasksChevron" class="comp-chevron">▼</span>
+            </div>
+            <div id="challengeTasksBody" style="display:none;max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
+                <div style="padding:4px 4px 10px;display:flex;flex-direction:column;gap:7px;" id="challengeDailyTasksList"></div>
+            </div>
+        </div>
+
+        <!-- ══ لوحة الصدارة ══ -->
+        <div style="margin-top:12px;">
+            <div class="comp-lb-tabs">
+                <button class="comp-lb-tab active" id="lbTabChallenge" onclick="showLbTab('challenge')">⚔️ التحدي</button>
+                <button class="comp-lb-tab" id="lbTabGeneral" onclick="showLbTab('general')">📊 النقاط</button>
+            </div>
+
+            <div class="comp-lb-card">
+                <!-- رأس الجدول -->
+                <div class="lb-row lb-header">
+                    <span>المرتبة</span>
+                    <span>اللاعب</span>
+                    <span>Lv.</span>
+                    <span id="lbScoreHeader">نقاط التحدي</span>
+                </div>
+                <!-- القائمة -->
+                <div id="combinedLeaderboardList" style="max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;">
+                    <div style="text-align:center;padding:20px;color:var(--text2);">جاري التحميل...</div>
+                </div>
+            </div>
+            <p class="comp-lb-hint">✨ مرّر لأسفل لعرض المزيد</p>
+        </div>
+
+    </div><!-- /competitionMainView -->
+
+
+    <!-- ══════════════════════════════════════════
+         شاشة العد التنازلي (Countdown Overlay)
+    ══════════════════════════════════════════ -->
+    <div id="challengeCountdownOverlay" class="challenge-overlay" style="display:none;">
+        <div class="cdo-bg-lines" id="cdoBgLines"></div>
+        <div class="cdo-content">
+            <div class="cdo-title">استعد!</div>
+            <div class="cdo-number" id="cdoNumber">3</div>
+            <div class="cdo-sub" id="cdoSub">التحدي يبدأ بعد لحظات…</div>
+            <div class="cdo-rules">
+                <div class="cdo-rule">✅ إجابة صحيحة = <strong>+1 نقطة  +1 ثانية</strong></div>
+                <div class="cdo-rule">❌ إجابة خاطئة = <strong>-2 ثانية</strong></div>
+                <div class="cdo-rule">🔥 تتابع ×5 = <strong>بونص مضاعف</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         واجهة اللعب (Challenge Game Arena)
+    ══════════════════════════════════════════ -->
+    <div id="challengeGameArea" class="challenge-overlay" style="display:none;">
+
+        <!-- خلفية حماسية متحركة -->
+        <div class="cga-bg-pulse" id="cgaBgPulse"></div>
+        <div class="cga-bg-grid"></div>
+
+        <!-- Header -->
+        <div class="cga-header">
+            <button class="cga-quit-btn" onclick="quitChallengeGame()">✕</button>
+
+            <div class="cga-center">
+                <div class="cga-q-label" id="challengeQNum">السؤال 1</div>
+                <div class="cga-diff-badge" id="challengeDiffLabel">سهل</div>
+            </div>
+
+            <div class="cga-score-pill">
+                <span class="cga-score-icon">⚡</span>
+                <span class="cga-score-num" id="challengeScoreDisplay">0</span>
+            </div>
+        </div>
+
+        <!-- شريط الوقت (مزدوج: رقم + بار) -->
+        <div class="cga-timer-section">
+            <div class="cga-timer-row">
+                <span class="cga-timer-label">⏱️ الوقت</span>
+                <span class="cga-timer-num" id="challengeTimerDisplay">60</span>
+            </div>
+            <div class="cga-timer-track">
+                <div class="cga-timer-fill" id="challengeTimerBar"></div>
+                <div class="cga-timer-glow" id="cgaTimerGlow"></div>
+            </div>
+        </div>
+
+        <!-- Streak Banner (يظهر عند التتابع) -->
+        <div class="cga-streak-banner" id="cgaStreakBanner" style="display:none;">
+            <span id="cgaStreakText">🔥 ×3</span>
+        </div>
+
+        <!-- بطاقة السؤال -->
+        <div class="cga-body">
+            <div class="cga-question-card" id="cgaQuestionCard">
+                <div class="cga-question-glow"></div>
+                <div class="cga-q-num-label" id="cgaQNumLabel">السؤال 1</div>
+                <div class="cga-question-text" id="challengeQuestionText">...</div>
+                <div class="cga-question-hint" id="challengeHint">ما هو الجواب؟</div>
+            </div>
+
+            <!-- شبكة الإجابات -->
+            <div class="cga-answers-grid" id="challengeAnswersGrid"></div>
+
+            <!-- شرح الخطأ -->
+            <div id="challengeExplanation" style="display:none;width:100%;"></div>
+
+            <!-- شريط المساعدات -->
+            <div class="cga-helpers-bar">
+                <div class="cga-helper" id="challengeHelperSkip" onclick="useChallengeHelper('skip')">
+                    <div class="cga-helper-icon">⏭️</div>
+                    <div class="cga-helper-name">تخطّي</div>
+                    <div class="cga-helper-cost">3💰</div>
+                </div>
+                <div class="cga-helper" id="challengeHelperRemove" onclick="useChallengeHelper('remove')">
+                    <div class="cga-helper-icon">🗑️</div>
+                    <div class="cga-helper-name">حذف</div>
+                    <div class="cga-helper-cost">4💰</div>
+                </div>
+                <div class="cga-helper" id="challengeHelperTime" onclick="useChallengeHelper('time')">
+                    <div class="cga-helper-icon">⏰</div>
+                    <div class="cga-helper-name">+10ث</div>
+                    <div class="cga-helper-cost">5💰</div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /challengeGameArea -->
+
+
+    <!-- ══════════════════════════════════════════
+         شاشة النتيجة (Result Screen)
+    ══════════════════════════════════════════ -->
+    <div id="challengeResultArea" class="challenge-overlay" style="display:none;">
+        <div class="cgr-bg-rays"></div>
+        <div class="cgr-content">
+
+            <!-- الميدالية -->
+            <div class="cgr-medal-wrap">
+                <div class="cgr-medal-ring"></div>
+                <div class="cgr-medal-icon" id="cgrMedalIcon">🏆</div>
+            </div>
+
+            <div class="cgr-title" id="challengeResultMsg">رائع!</div>
+            <div class="cgr-sub">نتيجة جلستك في نداء التحدي</div>
+
+            <!-- النتائج -->
+            <div class="cgr-stats-row">
+                <div class="cgr-stat">
+                    <div class="cgr-stat-num" id="challengeFinalScore">0</div>
+                    <div class="cgr-stat-lbl">نقاطك</div>
+                </div>
+                <div class="cgr-stat cgr-stat-best">
+                    <div class="cgr-stat-num" id="challengeBestScore">0</div>
+                    <div class="cgr-stat-lbl">أفضل نتيجة</div>
+                </div>
+                <div class="cgr-stat">
+                    <div class="cgr-stat-num" id="cgrRank">—</div>
+                    <div class="cgr-stat-lbl">مرتبتك</div>
+                </div>
+            </div>
+
+            <!-- مقارنة بالسابق -->
+            <div class="cgr-compare-row" id="cgrCompareRow" style="display:none;">
+                <span id="cgrCompareText"></span>
+            </div>
+
+            <!-- رسالة التحسّن / السجل الجديد -->
+            <div class="cgr-record-badge" id="cgrRecordBadge" style="display:none;">
+                🎉 سجل شخصي جديد!
+            </div>
+
+            <!-- أزرار -->
+            <div class="cgr-btns">
+                <button class="cgr-btn-primary" onclick="startChallengeGame()">🔄 حاول مجدداً</button>
+                <button class="cgr-btn-secondary" onclick="restartChallengeGame()">🏆 لوحة الصدارة</button>
+            </div>
+        </div>
+    </div><!-- /challengeResultArea -->
+
+</div><!-- /page-leaderboard -->
 
                 <!-- SHOP PAGE -->
                 <div class="page" id="page-shop">
@@ -1498,6 +1603,7 @@
 <script src="audio_effects.js"></script>
 <script src="navigation.js"></script>
 <script src="questions.js"></script>
+<script src="competition_logic.js"></script>
 <script src="game.js"></script>
 <script src="ui.js"></script>
 <script src="fixes_init.js"></script>
