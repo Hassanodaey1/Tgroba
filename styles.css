@@ -2441,6 +2441,24 @@
             opacity: 0.3;
             pointer-events: none;
         }
+        /* ✅ 5.4: شارة عدد مخزون المساعدة */
+        .helper-inv-badge {
+            position: absolute;
+            bottom: -5px;
+            left: -4px;
+            background: #10b981;
+            color: #fff;
+            font-size: 0.55em;
+            font-weight: 900;
+            padding: 1px 5px;
+            border-radius: 20px;
+            min-width: 16px;
+            text-align: center;
+            pointer-events: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            display: none;
+        }
+        .helper-inv-badge:not(:empty) { display: block; }
         .helper-btn-icon {
             font-size: 1.3em;
             line-height: 1;
@@ -3330,29 +3348,4 @@
 
 /* ═══════════════════════════════════════════════════
    تكيّف شامل مع جميع أحجام الشاشات والاتجاهات
-═══════════════════════════════════════════════════ */
-
-/* --- مبادئ أساسية لمنع تجاوز المحتوى --- */
-.page, .game-overlay {
-    box-sizing: border-box;
-}
-.page * {
-    max-width: 100%;
-    box-sizing: border-box;
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-button, .cat-card, .diff-chip, .settings-row,
-.game-cat-card, .nav-item, .profile-section {
-    min-width: 0;
-    flex-shrink: 1;
-}
-/* منع تجاوز النص في الأزرار */
-button {
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-/* الفونت السائل — يتكيف مع العرض */
-html {
-    font-size: clamp(13p
+════════════════
