@@ -951,7 +951,8 @@
         }
         function _cgResetScore() { _cgScoreInternal = 0; CG.score = 0; }
 
-        function startChallengeGame() {
+        /* ── الدوال التالية استُبدلت بـ competition_logic.js ──
+                function startChallengeGame() {
             _cgResetScore();
             /* ✅ FIX: تحديث خصائص CG بدون إعادة التعيين الكاملة لحفظ مرجع الدوال */
             CG.active = true;
@@ -1271,6 +1272,8 @@
                 container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ قاعدة البيانات غير متاحة</div>';
             }
         }
+        ── نهاية الدوال المعلّقة ── */
+
 
         function renderVisualAid(q) {
             const box = document.getElementById('visualAid');
