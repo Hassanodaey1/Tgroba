@@ -3349,3 +3349,72 @@
 /* ═══════════════════════════════════════════════════
    تكيّف شامل مع جميع أحجام الشاشات والاتجاهات
 ════════════════
+/* ═══════════════════════════════════════════════════════════
+   Competition Page — Layout Fixes
+   إصلاح تعارض styles مع .page العام
+═══════════════════════════════════════════════════════════ */
+
+/* 1) إزالة padding و gap من page-leaderboard — المنافسة تتحكم بنفسها */
+#page-leaderboard {
+    padding: 0 !important;
+    gap: 0 !important;
+}
+
+/* 2) competitionMainView يملأ الصفحة كاملاً */
+#competitionMainView {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+}
+
+/* 3) الـ overlays (اللعب / العد / النتيجة) تغطي الصفحة كاملاً */
+#page-leaderboard .challenge-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+}
+
+/* 4) منع border-color override على عناصر المنافسة */
+#page-leaderboard .comp-hero-banner,
+#page-leaderboard .comp-start-btn,
+#page-leaderboard .cgr-btn-primary,
+#page-leaderboard .cgr-btn-secondary,
+#page-leaderboard .cga-quit-btn,
+#page-leaderboard .cga-answer-btn,
+#page-leaderboard .comp-lb-tab.active {
+    border-color: unset !important;
+}
+
+/* 5) أزرار المنافسة — منع override العام */
+#page-leaderboard button {
+    font-family: 'Tajawal', sans-serif;
+}
+#page-leaderboard .comp-start-btn {
+    border: none !important;
+}
+#page-leaderboard .cgr-btn-primary {
+    border: none !important;
+}
+
+/* 6) إصلاح شريط التبويبات */
+#page-leaderboard .comp-lb-tab {
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+#page-leaderboard .comp-lb-tab.active {
+    border: none !important;
+    border-color: transparent !important;
+}
+/* 7) padding جانبي للمحتوى الرئيسي */
+#competitionMainView > * {
+    margin-left: 14px;
+    margin-right: 14px;
+}
+#competitionMainView > div[style*="margin-top"] {
+    margin-left: 14px;
+    margin-right: 14px;
+}
+/* الـ lb-hint تأخذ padding من الأب */
+.comp-lb-hint {
+    margin-left: 14px;
+    margin-right: 14px;
+}
