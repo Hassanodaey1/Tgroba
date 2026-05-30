@@ -603,7 +603,7 @@ function openInGameShop() {
         '</div>' +
         '<div id="qtp-body" style="flex:1;overflow-y:auto;padding:0 14px 24px;"></div>' +
         '<div style="flex-shrink:0;padding:10px 14px 16px;border-top:1px solid var(--border2);">' +
-            '<button onclick="closeInGameShop();setTimeout(function(){goTab&&goTab(\'shop\');},350);" style="' +
+            '<button onclick="_confirmOpenFullShop();" style="' +
                 'width:100%;padding:11px;border-radius:14px;' +
                 'background:linear-gradient(135deg,var(--accent,#7c3aed),var(--accent2,#a855f7));' +
                 'color:#fff;font-family:Tajawal,sans-serif;font-size:0.8em;font-weight:900;' +
@@ -615,6 +615,23 @@ function openInGameShop() {
     document.body.appendChild(panel);
     setTimeout(function() { panel.style.transform = 'translateY(0)'; }, 10);
     _refreshQuickToolsPanel();
+}
+
+/* ─── تأكيد فتح المتجر الكامل (ينهي الجلسة) ─── */
+function _confirmOpenFullShop() {
+    showConfirm(
+        '🛒 فتح المتجر الكامل',
+        '⚠️ سيؤدي فتح المتجر الكامل إلى إنهاء جلستك الحالية وفقدان تقدمك.\n\nهل تريد المتابعة؟',
+        'نعم، افتح المتجر',
+        'إلغاء',
+        function(ok) {
+            if (!ok) return;
+            closeInGameShop();
+            setTimeout(function() {
+                if (typeof goTab === 'function') goTab('shop');
+            }, 350);
+        }
+    );
 }
 
 /* ─── إغلاق اللوحة ─── */
