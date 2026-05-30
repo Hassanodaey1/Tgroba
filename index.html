@@ -108,18 +108,28 @@
                 <div class="helper-btn" id="helperSkip" onclick="useHelper('skip')">
                     <div class="helper-btn-icon">⏭️</div>
                     <div class="helper-btn-label">تخطّي</div>
-                    <div class="helper-btn-cost">3💰</div>
+                    <!-- ✅ 5.4: عرض عدد المخزون -->
+                    <div class="helper-btn-cost" id="helperSkipCost">3💰</div>
+                    <div class="helper-inv-badge" id="invSkip"></div>
                 </div>
                 <div class="helper-btn" id="helperRemove" onclick="useHelper('remove')">
                     <div class="helper-btn-icon">🗑️</div>
                     <div class="helper-btn-label">حذف إجابة</div>
-                    <div class="helper-btn-cost">4💰</div>
+                    <div class="helper-btn-cost" id="helperRemoveCost">4💰</div>
+                    <div class="helper-inv-badge" id="invRemove"></div>
                 </div>
                 <div class="helper-btn" id="helperHeart" onclick="useHelper('heart')">
                     <div class="helper-btn-icon">💖</div>
                     <div class="helper-btn-label">قلب إضافي</div>
-                    <div class="helper-btn-cost">7💰</div>
+                    <div class="helper-btn-cost" id="helperHeartCost">7💰</div>
+                    <div class="helper-inv-badge" id="invHeart"></div>
                 </div>
+            </div>
+            <!-- ✅ 5.4: شريط مخزون المساعدات -->
+            <div id="helperInventoryHint" style="display:none;justify-content:center;gap:14px;font-size:0.72em;color:var(--accent2);font-weight:800;margin-top:4px;margin-bottom:2px;">
+                <span id="invHintSkip"  style="display:none;">⏭️ مخزون: <span id="invSkipCount">0</span></span>
+                <span id="invHintRemove" style="display:none;">🗑️ مخزون: <span id="invRemoveCount">0</span></span>
+                <span id="invHintHeart" style="display:none;">💖 مخزون: <span id="invHeartCount">0</span></span>
             </div>
             <button class="return-home-btn" onclick="confirmQuit()">🏠 العودة إلى القائمة الرئيسية</button>
         </div>
@@ -1434,41 +1444,4 @@
                 ts.style.display = 'flex';
                 ts.style.flexDirection = 'column';
                 ts.style.maxHeight = '280px';
-                ts.style.overflow = 'auto';
-                ts.setAttribute('data-open', '1');
-            }
-            if (tc) tc.style.transform = 'rotate(180deg)';
-            /* قسم الإنجازات مغلق */
-            var as2 = document.getElementById('achieveSection');
-            if (as2) {
-                as2.style.display = 'none';
-                as2.style.maxHeight = '0';
-                as2.setAttribute('data-open', '0');
-            }
-            /* مهام التحدي مغلقة */
-            var ct = document.getElementById('challengeTasksBody');
-            if (ct) {
-                ct.style.display = 'none';
-                ct.style.maxHeight = '0';
-                ct.setAttribute('data-open', '0');
-            }
-            setTimeout(renderChallengeDailyTasks, 700);
-        });
-    </script>
-    <!-- JavaScript Modules -->
-    <script src="firebase.js"></script>
-<script src="state.js"></script>
-<script src="stats_engine.js"></script>
-<script src="achievements.js"></script>
-<script src="titles.js"></script>
-<script src="audio_effects.js"></script>
-<script src="navigation.js"></script>
-<script src="questions.js"></script>
-<script src="game.js"></script>
-<script src="ui.js"></script>
-<script src="fixes_init.js"></script>
-<script src="questions_engine.js"></script>
-<script src="patches.js"></script>
-<script src="shop.js"></script>
-</body>
-</html>
+                ts.style.overf
