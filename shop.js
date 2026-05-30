@@ -402,10 +402,12 @@ function selectEmojiFromShop(emoji) {
 ═══════════════════════════════════════════════════════════════ */
 function _renderConsumables(container) {
     const inGame = typeof G !== 'undefined' && !G.ended &&
-                   document.getElementById('gameOverlay')?.classList.contains('active');
+                   document.getElementById('gameOverlay') &&
+                   document.getElementById('gameOverlay').classList.contains('active');
 
+    /* ✅ FIX-DUPLICATE: داخل اللعبة = كل العناصر، خارجها = الدائمة فقط (بدون gameOnly) */
     const items = SHOP_CATALOG.consumables.filter(item => {
-        if (item.gameOnly && !inGame) return false;
+        if (!inGame && item.gameOnly) return false;
         if (item.timerOnly && (!G || !G.hasTimer)) return false;
         return true;
     });
@@ -416,7 +418,6 @@ function _renderConsumables(container) {
             ${_shopState.xpBoostActive ? `<div style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:0.72em;font-weight:900;color:var(--accent);text-align:center;">⚡ مضاعف XP ×${_shopState.xpBoostMultiplier} مفعّل!</div>` : ''}
             <div style="display:flex;flex-direction:column;gap:8px;">
                 ${items.map(item => _buildConsumableCard(item)).join('')}
-                ${!inGame ? _buildNonGameConsumables() : ''}
             </div>
         </div>
     `;
@@ -457,8 +458,8 @@ function _buildConsumableCard(item) {
 }
 
 function _buildNonGameConsumables() {
-    const alwaysItems = SHOP_CATALOG.consumables.filter(i => !i.gameOnly);
-    return alwaysItems.map(item => _buildConsumableCard(item)).join('');
+    /* ✅ FIX: لا تكرار — _renderConsumables تتولى عرض كل العناصر بشكل صحيح */
+    return '';
 }
 
 /* ═══════════════════════════════════════════════════════════════
