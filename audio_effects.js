@@ -390,13 +390,14 @@ const _BG_PATTERNS = [
 
 /* الإعدادات لكل وضع: { pattern, scale, interval, waveType, bassRatio } */
 const _BG_MODE_CONFIGS = {
-    classic:    { patternIdx: 0, scale: '_BG_SCALE',       interval: 480, wave: 'triangle', bassRatio: 0.5 },
+    classic:    { patternIdx: 0, scale: '_BG_SCALE',        interval: 480, wave: 'triangle', bassRatio: 0.5 },
+    training:   { patternIdx: 0, scale: '_BG_SCALE',        interval: 520, wave: 'sine',     bassRatio: 0.5 }, /* ✅ هادئ ومريح للتدريب */
     speed:      { patternIdx: 1, scale: '_BG_SCALE_MINOR',  interval: 300, wave: 'square',   bassRatio: 0.5 },
     frenzy:     { patternIdx: 2, scale: '_BG_SCALE_MINOR',  interval: 220, wave: 'square',   bassRatio: 0.5 },
     survival:   { patternIdx: 4, scale: '_BG_SCALE_MINOR',  interval: 420, wave: 'triangle', bassRatio: 0.5 },
     daily:      { patternIdx: 3, scale: '_BG_SCALE_DAILY',  interval: 460, wave: 'sine',     bassRatio: 0.5 },
-    accuracy:   { patternIdx: 0, scale: '_BG_SCALE',        interval: 400, wave: 'triangle', bassRatio: 0.5 },
-    marathon:   { patternIdx: 1, scale: '_BG_SCALE',        interval: 360, wave: 'triangle', bassRatio: 0.5 },
+    accuracy:   { patternIdx: 4, scale: '_BG_SCALE',        interval: 380, wave: 'triangle', bassRatio: 0.5 }, /* ✅ هادئ يُناسب التركيز */
+    marathon:   { patternIdx: 1, scale: '_BG_SCALE',        interval: 400, wave: 'triangle', bassRatio: 0.5 }, /* ✅ إيقاع ثابت للجلسة الطويلة */
     impossible: { patternIdx: 2, scale: '_BG_SCALE_MINOR',  interval: 200, wave: 'square',   bassRatio: 0.5 },
 };
 
