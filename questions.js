@@ -383,10 +383,6 @@
                     if (G.timeLeft > 0 && G.timeLeft <= 6) playSound('tick');
                 }
             }, 1000);
-            /* startTrainingMode: الموسيقى الهادئة للتدريب */
-            if (typeof setBgMoodForMode === 'function') setBgMoodForMode('classic');
-            if (st.bgOn && typeof stopBg === 'function') stopBg();
-            if (st.bgOn && typeof startBg === 'function') startBg();
             updateGameCoinsDisplay();
             document.getElementById('resultsOverlay').classList.remove('active');
             document.getElementById('gameOverlay').classList.add('active');
@@ -586,14 +582,15 @@
                 document.getElementById('bigTimerWrap').style.display = 'none';
             }
             updateGameCoinsDisplay();
-            /* ✅ 5.5: تعيين الثيم الموسيقي حسب وضع اللعب */
-            if (typeof setBgMoodForMode === 'function') setBgMoodForMode(mode);
-            if (st.bgOn && typeof stopBg === 'function') { stopBg(); }
-            if (st.bgOn && typeof startBg === 'function') { startBg(); }
-            /* ✅ 5.4: تحديث عرض مخزون المساعدات عند بدء اللعبة */
-            _updateHelperInventoryDisplay();
             document.getElementById('resultsOverlay').classList.remove('active');
             document.getElementById('gameOverlay').classList.add('active');
+
+            /* 🎵 تطبيق الثيم الموسيقي المناسب لوضع اللعب */
+            if (typeof setBgMoodForMode === 'function') setBgMoodForMode(mode);
+
+            /* 🎒 تحديث شريط مخزون المساعدات */
+            if (typeof _updateInventoryBar === 'function') _updateInventoryBar();
+
             loadQuestion();
         }
 
@@ -607,11 +604,28 @@
             row.innerHTML = h;
         }
 
-        /* ✅ 5.3: دالة مساعدة داخلية لتطبيق تأثير المساعدة بعد التحقق من المصدر */
-        function _applyHelperEffect(type) {
+        function useHelper(type) {
+            if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي مساعدات'); return; }
+            /* ✅ FIX-V9: منع استخدام مساعدات بعملات سلبية أو محرَّفة */
+            if (typeof st.coins !== 'number' || st.coins < 0) { st.coins = 0; saveSt(); }
+
+            /* ─── تحقق من المخزون أولاً (5.3) ─── */
+            const fromInv = typeof useHelperFromInventory === 'function'
+                ? useHelperFromInventory(type)
+                : false;
+
             if (type === 'skip') {
+                if (G.helpersUsed.skip) { showFeedback('⏭️ استُخدم'); return; }
+                if (!fromInv) {
+                    if (st.coins < 3) { showFeedback('💸 تحتاج 3💰'); return; }
+                    st.coins -= 3;
+                    saveSt();
+                    updateUI();
+                    updateGameCoinsDisplay();
+                }
                 G.helpersUsed.skip = true;
                 document.getElementById('helperSkip').classList.add('used');
+                if (!fromInv) { /* لا نحتاج saveSt مرة ثانية إذا كان من المخزون */ } else { saveSt(); updateUI(); updateGameCoinsDisplay(); }
                 if (G.hasTimer && G.maxTime > 0) {
                     G.timeLeft = Math.max(0, G.timeLeft - 4);
                     const pct = (G.timeLeft / G.maxTime) * 100;
@@ -619,9 +633,19 @@
                     const bt = document.getElementById('bigTimer'); if (bt) bt.textContent = G.timeLeft;
                     if (G.timeLeft <= 0) { clearGameTimer(); endGame(); return; }
                 }
-                showFeedback('⏭️ تخطّي!');
+                showFeedback(fromInv ? '⏭️ تخطّي من مخزونك!' : '⏭️ تخطّي!');
                 setTimeout(() => loadQuestion(), 300);
+
             } else if (type === 'remove') {
+                if (G.helpersUsed.remove) { showFeedback('🗑️ استُخدم'); return; }
+                if (G.answered) return;
+                if (!fromInv) {
+                    if (st.coins < 4) { showFeedback('💸 تحتاج 4💰'); return; }
+                    st.coins -= 4;
+                    saveSt();
+                    updateUI();
+                    updateGameCoinsDisplay();
+                } else { saveSt(); updateUI(); updateGameCoinsDisplay(); }
                 G.helpersUsed.remove = true;
                 document.getElementById('helperRemove').classList.add('used');
                 const btns = [...document.querySelectorAll('.answer-btn:not(:disabled)')];
@@ -630,105 +654,25 @@
                     const rem = wrongs[Math.floor(Math.random() * wrongs.length)];
                     rem.style.opacity = '0.15';
                     rem.style.pointerEvents = 'none';
-                    showFeedback('🗑️ حُذفت إجابة خاطئة');
+                    showFeedback(fromInv ? '🗑️ حُذف من مخزونك!' : '🗑️ حُذفت إجابة خاطئة');
                 } else showFeedback('⚠️ لا توجد إجابات خاطئة للحذف');
+
             } else if (type === 'heart') {
+                if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي قلوب'); return; }
+                if (G.helpersUsed.heart) { showFeedback('💖 استُخدم'); return; }
+                if (!fromInv) {
+                    if (st.coins < 7) { showFeedback('💸 تحتاج 7💰'); return; }
+                    st.coins -= 7;
+                    saveSt();
+                    updateUI();
+                    updateGameCoinsDisplay();
+                } else { saveSt(); updateUI(); updateGameCoinsDisplay(); }
                 G.helpersUsed.heart = true;
                 document.getElementById('helperHeart').classList.add('used');
                 G.livesLeft++;
                 updateHeartsDisplay();
-                showFeedback('💖 +1 قلب!');
+                showFeedback(fromInv ? '💖 +1 قلب من مخزونك!' : '💖 +1 قلب!');
                 playSound('levelup');
-            }
-            saveSt();
-            updateUI();
-            updateGameCoinsDisplay();
-            _updateHelperInventoryDisplay();
-        }
-
-        /* ✅ 5.4: دالة عرض مخزون المساعدات داخل اللعبة — شاملة */
-        function _updateHelperInventoryDisplay() {
-            if (!st || !st.helperInventory) return;
-            const inv = st.helperInventory;
-
-            /* ── شارات الأرقام على أزرار المساعدة ── */
-            const bSkip   = document.getElementById('invSkip');
-            const bRemove = document.getElementById('invRemove');
-            const bHeart  = document.getElementById('invHeart');
-            if (bSkip)   bSkip.textContent   = inv.skip   > 0 ? `×${inv.skip}`   : '';
-            if (bRemove) bRemove.textContent = inv.remove > 0 ? `×${inv.remove}` : '';
-            if (bHeart)  bHeart.textContent  = inv.heart  > 0 ? `×${inv.heart}`  : '';
-
-            /* ── شريط المخزون ── */
-            const hint = document.getElementById('helperInventoryHint');
-            if (hint) hint.style.display = (inv.skip > 0 || inv.remove > 0 || inv.heart > 0) ? 'flex' : 'none';
-
-            const hSkip   = document.getElementById('invHintSkip');
-            const hRemove = document.getElementById('invHintRemove');
-            const hHeart  = document.getElementById('invHintHeart');
-            const cSkip   = document.getElementById('invSkipCount');
-            const cRemove = document.getElementById('invRemoveCount');
-            const cHeart  = document.getElementById('invHeartCount');
-
-            if (hSkip)   hSkip.style.display   = inv.skip   > 0 ? 'inline' : 'none';
-            if (hRemove) hRemove.style.display = inv.remove > 0 ? 'inline' : 'none';
-            if (hHeart)  hHeart.style.display  = inv.heart  > 0 ? 'inline' : 'none';
-            if (cSkip)   cSkip.textContent   = inv.skip;
-            if (cRemove) cRemove.textContent = inv.remove;
-            if (cHeart)  cHeart.textContent  = inv.heart;
-
-            /* ── تغيير تكلفة الزر: مجاناً إذا في المخزون ── */
-            const costSkip   = document.getElementById('helperSkipCost');
-            const costRemove = document.getElementById('helperRemoveCost');
-            const costHeart  = document.getElementById('helperHeartCost');
-            if (costSkip)   costSkip.textContent   = inv.skip   > 0 ? '✅ مجاناً' : '3💰';
-            if (costRemove) costRemove.textContent = inv.remove > 0 ? '✅ مجاناً' : '4💰';
-            if (costHeart)  costHeart.textContent  = inv.heart  > 0 ? '✅ مجاناً' : '7💰';
-        }
-
-        function useHelper(type) {
-            if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي مساعدات'); return; }
-            /* ✅ FIX-V9: منع استخدام مساعدات بعملات سلبية أو محرَّفة */
-            if (typeof st.coins !== 'number' || st.coins < 0) { st.coins = 0; saveSt(); }
-
-            if (type === 'skip') {
-                if (G.helpersUsed.skip) { showFeedback('⏭️ استُخدم بالفعل'); return; }
-                /* ✅ 5.3: تحقق من المخزون أولاً → إن وُجد استخدمه مجاناً */
-                if (st.helperInventory && st.helperInventory.skip > 0) {
-                    st.helperInventory.skip--;
-                    _applyHelperEffect('skip');
-                    return;
-                }
-                /* وإلا اخصم من العملات */
-                if (st.coins < 3) { showFeedback('💸 تحتاج 3💰'); return; }
-                st.coins -= 3;
-                _applyHelperEffect('skip');
-
-            } else if (type === 'remove') {
-                if (G.helpersUsed.remove) { showFeedback('🗑️ استُخدم بالفعل'); return; }
-                if (G.answered) return;
-                /* ✅ 5.3: تحقق من المخزون أولاً */
-                if (st.helperInventory && st.helperInventory.remove > 0) {
-                    st.helperInventory.remove--;
-                    _applyHelperEffect('remove');
-                    return;
-                }
-                if (st.coins < 4) { showFeedback('💸 تحتاج 4💰'); return; }
-                st.coins -= 4;
-                _applyHelperEffect('remove');
-
-            } else if (type === 'heart') {
-                if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي قلوب'); return; }
-                if (G.helpersUsed.heart) { showFeedback('💖 استُخدم بالفعل'); return; }
-                /* ✅ 5.3: تحقق من المخزون أولاً */
-                if (st.helperInventory && st.helperInventory.heart > 0) {
-                    st.helperInventory.heart--;
-                    _applyHelperEffect('heart');
-                    return;
-                }
-                if (st.coins < 7) { showFeedback('💸 تحتاج 7💰'); return; }
-                st.coins -= 7;
-                _applyHelperEffect('heart');
             }
         }
 
