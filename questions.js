@@ -951,328 +951,328 @@
         }
         function _cgResetScore() { _cgScoreInternal = 0; CG.score = 0; }
 
-        /* ── الدوال التالية استُبدلت بـ competition_logic.js ──
-                function startChallengeGame() {
-            _cgResetScore();
-            /* ✅ FIX: تحديث خصائص CG بدون إعادة التعيين الكاملة لحفظ مرجع الدوال */
-            CG.active = true;
-            CG.score = 0;
-            CG.questionIndex = 0;
-            CG.answered = false;
-            CG.ended = false;
-            CG.correctAnswer = 0;
-            CG.currentExplanation = '';
-            CG.askedQuestions = [];
-            CG.timeLeft = 60;
-            CG.maxTime = 60;
-            if (CG.timer) { clearInterval(CG.timer); CG.timer = null; }
-            CG.helpersUsed = { skip: false, remove: false, time: false };
-            CG.consecutiveWrong = 0;
-            // إخفاء واجهة الترحيب وإظهار واجهة اللعبة
-            document.getElementById('challengeWelcome').style.display = 'none';
-            document.getElementById('challengeGameArea').style.display = 'flex';
-            document.getElementById('challengeScoreDisplay').textContent = '0';
-            // تهيئة المؤقت
-            updateChallengeTimerUI();
-            startChallengeTimer();
-            // تهيئة المساعدات
-            resetChallengeHelpers();
-            loadChallengeQuestion();
-        }
-
-        function startChallengeTimer() {
-            if (CG.timer) clearInterval(CG.timer);
-            CG.timer = setInterval(() => {
-                if (CG.ended) { clearInterval(CG.timer); return; }
-                CG.timeLeft--;
-                updateChallengeTimerUI();
-                if (CG.timeLeft <= 10) {
-                    playSound('tick');
-                    document.getElementById('challengeTimerDisplay').style.color = 'var(--red)';
-                    document.getElementById('challengeTimerBar').style.background = 'linear-gradient(90deg,var(--red),#ff6b6b)';
-                } else {
-                    document.getElementById('challengeTimerDisplay').style.color = 'var(--accent2)';
-                    document.getElementById('challengeTimerBar').style.background = 'linear-gradient(90deg,var(--accent2),var(--accent))';
-                }
-                if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); }
-            }, 1000);
-        }
-
-        function updateChallengeTimerUI() {
-            const el = document.getElementById('challengeTimerDisplay');
-            const bar = document.getElementById('challengeTimerBar');
-            if (el) el.textContent = CG.timeLeft;
-            if (bar) bar.style.width = Math.max(0, (CG.timeLeft / CG.maxTime) * 100) + '%';
-        }
-
-        function resetChallengeHelpers() {
-            CG.helpersUsed = { skip: false, remove: false, time: false };
-            ['challengeHelperSkip','challengeHelperRemove','challengeHelperTime'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.classList.remove('used'); el.style.opacity = '1'; }
-            });
-        }
-
-        function useChallengeHelper(type) {
-            if (CG.ended || CG.answered) return;
-            if (type === 'skip') {
-                if (CG.helpersUsed.skip) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
-                if (st.coins < 3) { showFeedback('💸 لا يكفي!'); return; }
-                st.coins -= 3;
-                CG.helpersUsed.skip = true;
-                const el = document.getElementById('challengeHelperSkip');
-                if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
-                showFeedback('⏭️ تم التخطي');
-                playSound('click');
-                CG.answered = true;
-                setTimeout(() => { if (!CG.ended) loadChallengeQuestion(); }, 300);
-            } else if (type === 'remove') {
-                if (CG.helpersUsed.remove) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
-                if (st.coins < 4) { showFeedback('💸 لا يكفي!'); return; }
-                st.coins -= 4;
-                CG.helpersUsed.remove = true;
-                const el = document.getElementById('challengeHelperRemove');
-                if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
-                // حذف إجابة خاطئة عشوائية
-                const btns = [...document.querySelectorAll('#challengeAnswersGrid .answer-btn:not(:disabled)')];
-                const wrong = btns.filter(b => parseInt(b.getAttribute('data-val')) !== CG.correctAnswer);
-                if (wrong.length > 0) {
-                    const r = wrong[Math.floor(Math.random() * wrong.length)];
-                    r.style.opacity = '0.15';
-                    r.disabled = true;
-                }
-                showFeedback('🗑️ تم حذف إجابة');
-                playSound('click');
-            } else if (type === 'time') {
-                if (CG.helpersUsed.time) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
-                if (st.coins < 5) { showFeedback('💸 لا يكفي!'); return; }
-                st.coins -= 5;
-                CG.helpersUsed.time = true;
-                const el = document.getElementById('challengeHelperTime');
-                if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
-                CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 10);
-                updateChallengeTimerUI();
-                showFeedback('⏰ +10 ثانية!');
-                playSound('correct');
-            }
-            saveSt();
-            updateGameCoinsDisplay();
-        }
-
-        function endChallengeGame() {
-            if (CG.ended) return;
-            CG.ended = true;
-            CG.active = false;
-            if (CG.timer) clearInterval(CG.timer);
-            /* ✅ FIX-V5b: تحقق منطقي من نتيجة التحدي قبل الحفظ */
-            CG.score = Math.max(0, Math.min(Math.floor(_cgScoreInternal || 0), 9999)); _cgScoreInternal = CG.score;
-            // حفظ النتيجة في الـ state
-            if (CG.score > (st.challengeBestScore || 0)) {
-                st.challengeBestScore = CG.score;
-                saveSt();
-            }
-            // مزامنة مع لائحة المتصدرين
-            syncChallengeScore(CG.score);
-            // إظهار نتيجة التحدي
-            document.getElementById('challengeGameArea').style.display = 'none';
-            document.getElementById('challengeResultArea').style.display = 'flex';
-            document.getElementById('challengeFinalScore').textContent = CG.score;
-            document.getElementById('challengeBestScore').textContent = st.challengeBestScore || CG.score;
-            const msg = CG.score >= 50 ? '🏆 أداء مذهل!' : CG.score >= 30 ? '⭐ رائع!' : CG.score >= 15 ? '😊 جيد جداً!' : '💪 حاول مجدداً!';
-            document.getElementById('challengeResultMsg').textContent = msg;
-            if (CG.score >= 15) doConfetti();
-        }
-
-        function loadChallengeQuestion() {
-            if (CG.ended) return;
-            CG.answered = false;
-            document.getElementById('challengeExplanation').innerHTML = '';
-            document.getElementById('challengeExplanation').style.display = 'none';
-
-            let q;
-            let attempts = 0;
-            do {
-                q = genChallengeQ(CG.questionIndex);
-                const qKey = q.text + '|' + q.answer;
-                if (!CG.askedQuestions.includes(qKey)) {
-                    CG.askedQuestions.push(qKey);
-                    // الاحتفاظ بآخر 100 سؤال فقط لتجنب تراكم الذاكرة
-                    if (CG.askedQuestions.length > 100) CG.askedQuestions.shift();
-                    break;
-                }
-                attempts++;
-                if (attempts > 60) break;
-            } while (true);
-
-            CG.correctAnswer = q.answer;
-            CG.currentExplanation = q.explanation || '';
-
-            // تحديث رقم السؤال والصعوبة
-            document.getElementById('challengeQNum').textContent = `السؤال ${CG.questionIndex + 1}`;
-            const levelLabels = ['سهل جداً','سهل','متوسط','متوسط+','صعب','صعب+','عبقري'];
-            document.getElementById('challengeDiffLabel').textContent = levelLabels[q.level] || 'عبقري';
-
-            // عرض السؤال
-            const qt = document.getElementById('challengeQuestionText');
-            qt.style.animation = 'none';
-            void qt.offsetWidth;
-            qt.style.animation = '';
-            qt.textContent = `${q.text} = ?`;
-            document.getElementById('challengeHint').textContent = q.hint || 'ما هو الجواب؟';
-
-            // عرض الأزرار
-            const grid = document.getElementById('challengeAnswersGrid');
-            grid.innerHTML = '';
-            (q.choices || []).forEach(c => {
-                const btn = document.createElement('button');
-                btn.className = 'answer-btn';
-                btn.textContent = c;
-                btn.setAttribute('data-val', c);
-                btn.onclick = () => checkChallengeAnswer(btn);
-                grid.appendChild(btn);
-            });
-        }
-
-        function checkChallengeAnswer(btn) {
-            if (CG.answered || CG.ended) return;
-            CG.answered = true;
-            const val = parseInt(btn.getAttribute('data-val'));
-            document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => b.disabled = true);
-
-            if (val === CG.correctAnswer) {
-                btn.classList.add('correct');
-                /* +1 نقطة لكل إجابة صحيحة */
-                _cgAddScore(1);
-                CG.questionIndex++;
-                CG.consecutiveWrong = 0; /* إعادة عداد الأخطاء */
-                document.getElementById('challengeScoreDisplay').textContent = CG.score;
-                /* +1 ثانية عند الإجابة الصحيحة */
-                CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 1);
-                updateChallengeTimerUI();
-                showFeedback('✅ +1 نقطة');
-                playSound('correct');
-                if (CG.score % 10 === 0 && CG.score > 0) { doConfetti(); showComboEffect(CG.score); }
-                showFloatXP(1);
-            } else {
-                btn.classList.add('wrong');
-                document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => {
-                    if (parseInt(b.getAttribute('data-val')) === CG.correctAnswer) b.classList.add('correct');
-                });
-                /* عداد الأخطاء المتتالية: كل خطأين يخصمان نقطة واحدة */
-                CG.consecutiveWrong = (CG.consecutiveWrong || 0) + 1;
-                if (CG.consecutiveWrong >= 2) {
-                    _cgAddScore(-1);
-                    CG.consecutiveWrong = 0;
-                    document.getElementById('challengeScoreDisplay').textContent = CG.score;
-                    showFeedback('❌ ×2 → -1 نقطة');
-                } else {
-                    showFeedback('❌ خطأ');
-                }
-                playSound('wrong');
-                /* -2 ثانية عند الإجابة الخاطئة */
-                CG.timeLeft = Math.max(0, CG.timeLeft - 2);
-                updateChallengeTimerUI();
-                /* إظهار الشرح */
-                const expArea = document.getElementById('challengeExplanation');
-                expArea.innerHTML = `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${CG.correctAnswer}</strong><br>الشرح: ${CG.currentExplanation}</div>`;
-                expArea.style.display = 'block';
-                if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); return; }
-            }
-            /* إعادة ضبط المساعدات للسؤال التالي */
-            CG.helpersUsed = { skip: false, remove: false, time: false };
-            resetChallengeHelpers();
-
-            setTimeout(() => {
-                if (CG.ended) return;
-                loadChallengeQuestion();
-            }, val === CG.correctAnswer ? 350 : 700);
-        }
-
-        function quitChallengeGame() {
-            showConfirm('إنهاء التحدي', 'هل تريد إنهاء اللعبة؟ ستُحفظ نتيجتك الحالية.', 'نعم', 'استمرار', ok => {
-                if (ok) endChallengeGame();
-            });
-        }
-
-        function restartChallengeGame() {
-            if (CG.timer) clearInterval(CG.timer);
-            document.getElementById('challengeResultArea').style.display = 'none';
-            document.getElementById('challengeWelcome').style.display = 'flex';
-        }
-
-        /* ═══════════ مزامنة نتيجة التحدي مع Firebase ═══════════ */
-        /* ✅ FIX-V11: تتبع آخر مرة لُعب فيها تحدي اليوم */
-        function hasDailyBeenPlayed() {
-            return st._dailyGameDate === (typeof todayStr === 'function' ? todayStr() : '');
-        }
-        function markDailyPlayed() {
-            st._dailyGameDate = typeof todayStr === 'function' ? todayStr() : '';
-            saveSt();
-        }
-
-        function syncChallengeScore(score) {
-            if (!database) return;
-            /* ✅ FIX-V3b+V10: serialNumber كـ key + حد أقصى للنتيجة */
-            if (!st.serialNumber) return;
-            try {
-                const safeScore = Math.max(0, Math.min(Math.floor(score || 0), 9999));
-                const safeLevel = Math.min(st.level || 1, 200);
-                const playerKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-                const ref = database.ref('challenge_leaderboard/' + playerKey);
-                ref.once('value', snap => {
-                    const existing = snap.val();
-                    if (!existing || safeScore > (existing.challengeScore || 0)) {
-                        ref.set({
-                            name:           st.name,
-                            avatar:         st.avatar || '🧑',
-                            level:          safeLevel,
-                            challengeScore: safeScore,
-                            serialNumber:   st.serialNumber,
-                            lastUpdated:    Date.now()
-                        }).catch(() => {});
-                    }
-                }).catch(() => {});
-            } catch (e) {}
-        }
-
-        /* ═══════════ تحميل لائحة المتصدرين للتحدي ═══════════ */
-        function loadChallengeLeaderboard() {
-            const container = document.getElementById('challengeLeaderboardList');
-            if (!container) return;
-            if (!database) {
-                container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:16px;">⚠️ قاعدة البيانات غير متصلة</div>';
-                return;
-            }
-            container.innerHTML = '<div style="text-align:center;padding:16px;">⏳ جاري التحميل...</div>';
-            try {
-                database.ref('challenge_leaderboard').orderByChild('challengeScore').limitToLast(10).once('value', (snapshot) => {
-                    const players = [];
-                    snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                    players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
-                    if (players.length === 0) {
-                        container.innerHTML = '<div style="text-align:center;padding:16px;">لا توجد نتائج بعد — كن الأول!</div>';
-                        return;
-                    }
-                    const medals = ['🥇','🥈','🥉'];
-                    let html = '';
-                    players.forEach((p, idx) => {
-                        const isMe = p.id === st.serialNumber;
-                        html += `<div class="lb-row${isMe?' lb-row-me':''}">`
-                            + `<span>${medals[idx] || (idx+1)}</span>`
-                            + `<span>${p.avatar||'🧑'} ${p.name}</span>`
-                            + `<span>${p.level||1}</span>`
-                            + `<span style="color:var(--gold);font-weight:900;">${p.challengeScore||0}</span>`
-                            + `</div>`;
-                    });
-                    container.innerHTML = html;
-                }).catch(() => {
-                    container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ فشل التحميل</div>';
-                });
-            } catch (e) {
-                container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ قاعدة البيانات غير متاحة</div>';
-            }
-        }
-        ── نهاية الدوال المعلّقة ── */
+        // ── الدوال التالية استُبدلت بـ competition_logic.js ──
+        // function startChallengeGame() {
+        // _cgResetScore();
+        // /* ✅ FIX: تحديث خصائص CG بدون إعادة التعيين الكاملة لحفظ مرجع الدوال */
+        // CG.active = true;
+        // CG.score = 0;
+        // CG.questionIndex = 0;
+        // CG.answered = false;
+        // CG.ended = false;
+        // CG.correctAnswer = 0;
+        // CG.currentExplanation = '';
+        // CG.askedQuestions = [];
+        // CG.timeLeft = 60;
+        // CG.maxTime = 60;
+        // if (CG.timer) { clearInterval(CG.timer); CG.timer = null; }
+        // CG.helpersUsed = { skip: false, remove: false, time: false };
+        // CG.consecutiveWrong = 0;
+        // // إخفاء واجهة الترحيب وإظهار واجهة اللعبة
+        // document.getElementById('challengeWelcome').style.display = 'none';
+        // document.getElementById('challengeGameArea').style.display = 'flex';
+        // document.getElementById('challengeScoreDisplay').textContent = '0';
+        // // تهيئة المؤقت
+        // updateChallengeTimerUI();
+        // startChallengeTimer();
+        // // تهيئة المساعدات
+        // resetChallengeHelpers();
+        // loadChallengeQuestion();
+        // }
+        //
+        // function startChallengeTimer() {
+        // if (CG.timer) clearInterval(CG.timer);
+        // CG.timer = setInterval(() => {
+        // if (CG.ended) { clearInterval(CG.timer); return; }
+        // CG.timeLeft--;
+        // updateChallengeTimerUI();
+        // if (CG.timeLeft <= 10) {
+        // playSound('tick');
+        // document.getElementById('challengeTimerDisplay').style.color = 'var(--red)';
+        // document.getElementById('challengeTimerBar').style.background = 'linear-gradient(90deg,var(--red),#ff6b6b)';
+        // } else {
+        // document.getElementById('challengeTimerDisplay').style.color = 'var(--accent2)';
+        // document.getElementById('challengeTimerBar').style.background = 'linear-gradient(90deg,var(--accent2),var(--accent))';
+        // }
+        // if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); }
+        // }, 1000);
+        // }
+        //
+        // function updateChallengeTimerUI() {
+        // const el = document.getElementById('challengeTimerDisplay');
+        // const bar = document.getElementById('challengeTimerBar');
+        // if (el) el.textContent = CG.timeLeft;
+        // if (bar) bar.style.width = Math.max(0, (CG.timeLeft / CG.maxTime) * 100) + '%';
+        // }
+        //
+        // function resetChallengeHelpers() {
+        // CG.helpersUsed = { skip: false, remove: false, time: false };
+        // ['challengeHelperSkip','challengeHelperRemove','challengeHelperTime'].forEach(id => {
+        // const el = document.getElementById(id);
+        // if (el) { el.classList.remove('used'); el.style.opacity = '1'; }
+        // });
+        // }
+        //
+        // function useChallengeHelper(type) {
+        // if (CG.ended || CG.answered) return;
+        // if (type === 'skip') {
+        // if (CG.helpersUsed.skip) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
+        // if (st.coins < 3) { showFeedback('💸 لا يكفي!'); return; }
+        // st.coins -= 3;
+        // CG.helpersUsed.skip = true;
+        // const el = document.getElementById('challengeHelperSkip');
+        // if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
+        // showFeedback('⏭️ تم التخطي');
+        // playSound('click');
+        // CG.answered = true;
+        // setTimeout(() => { if (!CG.ended) loadChallengeQuestion(); }, 300);
+        // } else if (type === 'remove') {
+        // if (CG.helpersUsed.remove) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
+        // if (st.coins < 4) { showFeedback('💸 لا يكفي!'); return; }
+        // st.coins -= 4;
+        // CG.helpersUsed.remove = true;
+        // const el = document.getElementById('challengeHelperRemove');
+        // if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
+        // // حذف إجابة خاطئة عشوائية
+        // const btns = [...document.querySelectorAll('#challengeAnswersGrid .answer-btn:not(:disabled)')];
+        // const wrong = btns.filter(b => parseInt(b.getAttribute('data-val')) !== CG.correctAnswer);
+        // if (wrong.length > 0) {
+        // const r = wrong[Math.floor(Math.random() * wrong.length)];
+        // r.style.opacity = '0.15';
+        // r.disabled = true;
+        // }
+        // showFeedback('🗑️ تم حذف إجابة');
+        // playSound('click');
+        // } else if (type === 'time') {
+        // if (CG.helpersUsed.time) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
+        // if (st.coins < 5) { showFeedback('💸 لا يكفي!'); return; }
+        // st.coins -= 5;
+        // CG.helpersUsed.time = true;
+        // const el = document.getElementById('challengeHelperTime');
+        // if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
+        // CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 10);
+        // updateChallengeTimerUI();
+        // showFeedback('⏰ +10 ثانية!');
+        // playSound('correct');
+        // }
+        // saveSt();
+        // updateGameCoinsDisplay();
+        // }
+        //
+        // function endChallengeGame() {
+        // if (CG.ended) return;
+        // CG.ended = true;
+        // CG.active = false;
+        // if (CG.timer) clearInterval(CG.timer);
+        // /* ✅ FIX-V5b: تحقق منطقي من نتيجة التحدي قبل الحفظ */
+        // CG.score = Math.max(0, Math.min(Math.floor(_cgScoreInternal || 0), 9999)); _cgScoreInternal = CG.score;
+        // // حفظ النتيجة في الـ state
+        // if (CG.score > (st.challengeBestScore || 0)) {
+        // st.challengeBestScore = CG.score;
+        // saveSt();
+        // }
+        // // مزامنة مع لائحة المتصدرين
+        // syncChallengeScore(CG.score);
+        // // إظهار نتيجة التحدي
+        // document.getElementById('challengeGameArea').style.display = 'none';
+        // document.getElementById('challengeResultArea').style.display = 'flex';
+        // document.getElementById('challengeFinalScore').textContent = CG.score;
+        // document.getElementById('challengeBestScore').textContent = st.challengeBestScore || CG.score;
+        // const msg = CG.score >= 50 ? '🏆 أداء مذهل!' : CG.score >= 30 ? '⭐ رائع!' : CG.score >= 15 ? '😊 جيد جداً!' : '💪 حاول مجدداً!';
+        // document.getElementById('challengeResultMsg').textContent = msg;
+        // if (CG.score >= 15) doConfetti();
+        // }
+        //
+        // function loadChallengeQuestion() {
+        // if (CG.ended) return;
+        // CG.answered = false;
+        // document.getElementById('challengeExplanation').innerHTML = '';
+        // document.getElementById('challengeExplanation').style.display = 'none';
+        //
+        // let q;
+        // let attempts = 0;
+        // do {
+        // q = genChallengeQ(CG.questionIndex);
+        // const qKey = q.text + '|' + q.answer;
+        // if (!CG.askedQuestions.includes(qKey)) {
+        // CG.askedQuestions.push(qKey);
+        // // الاحتفاظ بآخر 100 سؤال فقط لتجنب تراكم الذاكرة
+        // if (CG.askedQuestions.length > 100) CG.askedQuestions.shift();
+        // break;
+        // }
+        // attempts++;
+        // if (attempts > 60) break;
+        // } while (true);
+        //
+        // CG.correctAnswer = q.answer;
+        // CG.currentExplanation = q.explanation || '';
+        //
+        // // تحديث رقم السؤال والصعوبة
+        // document.getElementById('challengeQNum').textContent = `السؤال ${CG.questionIndex + 1}`;
+        // const levelLabels = ['سهل جداً','سهل','متوسط','متوسط+','صعب','صعب+','عبقري'];
+        // document.getElementById('challengeDiffLabel').textContent = levelLabels[q.level] || 'عبقري';
+        //
+        // // عرض السؤال
+        // const qt = document.getElementById('challengeQuestionText');
+        // qt.style.animation = 'none';
+        // void qt.offsetWidth;
+        // qt.style.animation = '';
+        // qt.textContent = `${q.text} = ?`;
+        // document.getElementById('challengeHint').textContent = q.hint || 'ما هو الجواب؟';
+        //
+        // // عرض الأزرار
+        // const grid = document.getElementById('challengeAnswersGrid');
+        // grid.innerHTML = '';
+        // (q.choices || []).forEach(c => {
+        // const btn = document.createElement('button');
+        // btn.className = 'answer-btn';
+        // btn.textContent = c;
+        // btn.setAttribute('data-val', c);
+        // btn.onclick = () => checkChallengeAnswer(btn);
+        // grid.appendChild(btn);
+        // });
+        // }
+        //
+        // function checkChallengeAnswer(btn) {
+        // if (CG.answered || CG.ended) return;
+        // CG.answered = true;
+        // const val = parseInt(btn.getAttribute('data-val'));
+        // document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => b.disabled = true);
+        //
+        // if (val === CG.correctAnswer) {
+        // btn.classList.add('correct');
+        // /* +1 نقطة لكل إجابة صحيحة */
+        // _cgAddScore(1);
+        // CG.questionIndex++;
+        // CG.consecutiveWrong = 0; /* إعادة عداد الأخطاء */
+        // document.getElementById('challengeScoreDisplay').textContent = CG.score;
+        // /* +1 ثانية عند الإجابة الصحيحة */
+        // CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 1);
+        // updateChallengeTimerUI();
+        // showFeedback('✅ +1 نقطة');
+        // playSound('correct');
+        // if (CG.score % 10 === 0 && CG.score > 0) { doConfetti(); showComboEffect(CG.score); }
+        // showFloatXP(1);
+        // } else {
+        // btn.classList.add('wrong');
+        // document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => {
+        // if (parseInt(b.getAttribute('data-val')) === CG.correctAnswer) b.classList.add('correct');
+        // });
+        // /* عداد الأخطاء المتتالية: كل خطأين يخصمان نقطة واحدة */
+        // CG.consecutiveWrong = (CG.consecutiveWrong || 0) + 1;
+        // if (CG.consecutiveWrong >= 2) {
+        // _cgAddScore(-1);
+        // CG.consecutiveWrong = 0;
+        // document.getElementById('challengeScoreDisplay').textContent = CG.score;
+        // showFeedback('❌ ×2 → -1 نقطة');
+        // } else {
+        // showFeedback('❌ خطأ');
+        // }
+        // playSound('wrong');
+        // /* -2 ثانية عند الإجابة الخاطئة */
+        // CG.timeLeft = Math.max(0, CG.timeLeft - 2);
+        // updateChallengeTimerUI();
+        // /* إظهار الشرح */
+        // const expArea = document.getElementById('challengeExplanation');
+        // expArea.innerHTML = `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${CG.correctAnswer}</strong><br>الشرح: ${CG.currentExplanation}</div>`;
+        // expArea.style.display = 'block';
+        // if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); return; }
+        // }
+        // /* إعادة ضبط المساعدات للسؤال التالي */
+        // CG.helpersUsed = { skip: false, remove: false, time: false };
+        // resetChallengeHelpers();
+        //
+        // setTimeout(() => {
+        // if (CG.ended) return;
+        // loadChallengeQuestion();
+        // }, val === CG.correctAnswer ? 350 : 700);
+        // }
+        //
+        // function quitChallengeGame() {
+        // showConfirm('إنهاء التحدي', 'هل تريد إنهاء اللعبة؟ ستُحفظ نتيجتك الحالية.', 'نعم', 'استمرار', ok => {
+        // if (ok) endChallengeGame();
+        // });
+        // }
+        //
+        // function restartChallengeGame() {
+        // if (CG.timer) clearInterval(CG.timer);
+        // document.getElementById('challengeResultArea').style.display = 'none';
+        // document.getElementById('challengeWelcome').style.display = 'flex';
+        // }
+        //
+        // /* ═══════════ مزامنة نتيجة التحدي مع Firebase ═══════════ */
+        // /* ✅ FIX-V11: تتبع آخر مرة لُعب فيها تحدي اليوم */
+        // function hasDailyBeenPlayed() {
+        // return st._dailyGameDate === (typeof todayStr === 'function' ? todayStr() : '');
+        // }
+        // function markDailyPlayed() {
+        // st._dailyGameDate = typeof todayStr === 'function' ? todayStr() : '';
+        // saveSt();
+        // }
+        //
+        // function syncChallengeScore(score) {
+        // if (!database) return;
+        // /* ✅ FIX-V3b+V10: serialNumber كـ key + حد أقصى للنتيجة */
+        // if (!st.serialNumber) return;
+        // try {
+        // const safeScore = Math.max(0, Math.min(Math.floor(score || 0), 9999));
+        // const safeLevel = Math.min(st.level || 1, 200);
+        // const playerKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
+        // const ref = database.ref('challenge_leaderboard/' + playerKey);
+        // ref.once('value', snap => {
+        // const existing = snap.val();
+        // if (!existing || safeScore > (existing.challengeScore || 0)) {
+        // ref.set({
+        // name:           st.name,
+        // avatar:         st.avatar || '🧑',
+        // level:          safeLevel,
+        // challengeScore: safeScore,
+        // serialNumber:   st.serialNumber,
+        // lastUpdated:    Date.now()
+        // }).catch(() => {});
+        // }
+        // }).catch(() => {});
+        // } catch (e) {}
+        // }
+        //
+        // /* ═══════════ تحميل لائحة المتصدرين للتحدي ═══════════ */
+        // function loadChallengeLeaderboard() {
+        // const container = document.getElementById('challengeLeaderboardList');
+        // if (!container) return;
+        // if (!database) {
+        // container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:16px;">⚠️ قاعدة البيانات غير متصلة</div>';
+        // return;
+        // }
+        // container.innerHTML = '<div style="text-align:center;padding:16px;">⏳ جاري التحميل...</div>';
+        // try {
+        // database.ref('challenge_leaderboard').orderByChild('challengeScore').limitToLast(10).once('value', (snapshot) => {
+        // const players = [];
+        // snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+        // players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
+        // if (players.length === 0) {
+        // container.innerHTML = '<div style="text-align:center;padding:16px;">لا توجد نتائج بعد — كن الأول!</div>';
+        // return;
+        // }
+        // const medals = ['🥇','🥈','🥉'];
+        // let html = '';
+        // players.forEach((p, idx) => {
+        // const isMe = p.id === st.serialNumber;
+        // html += `<div class="lb-row${isMe?' lb-row-me':''}">`
+        // + `<span>${medals[idx] || (idx+1)}</span>`
+        // + `<span>${p.avatar||'🧑'} ${p.name}</span>`
+        // + `<span>${p.level||1}</span>`
+        // + `<span style="color:var(--gold);font-weight:900;">${p.challengeScore||0}</span>`
+        // + `</div>`;
+        // });
+        // container.innerHTML = html;
+        // }).catch(() => {
+        // container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ فشل التحميل</div>';
+        // });
+        // } catch (e) {
+        // container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ قاعدة البيانات غير متاحة</div>';
+        // }
+        // }
+        // ── نهاية الدوال المعلّقة ──
 
 
         function renderVisualAid(q) {
