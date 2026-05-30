@@ -17,9 +17,10 @@
 
 /* ─── حاوية المتجر ─── */
 #shopItemsContainer {
-    max-height: calc(100vh - 200px);
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    padding: 0 2px 80px;
+    padding: 0 2px 12px;
     scroll-behavior: smooth;
 }
 #shopItemsContainer::-webkit-scrollbar {
@@ -128,8 +129,9 @@ html.light-mode #avatarShopGrid > div {
 #page-shop {
     display: none;
     flex-direction: column;
-    overflow-y: auto;
-    padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 10px);
+    overflow: hidden;
+    padding-bottom: 0;
+    height: 100%;
 }
 #page-shop.active {
     display: flex;
