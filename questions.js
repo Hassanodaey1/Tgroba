@@ -653,6 +653,30 @@
                     showFeedback(fromInv ? '🗑️ حُذف من مخزونك!' : '🗑️ حُذفت إجابة خاطئة');
                 } else showFeedback('⚠️ لا توجد إجابات خاطئة للحذف');
 
+            } else if (type === 'hint') {
+                if (G.helpersUsed.hint) { showFeedback('💡 استُخدم'); return; }
+                if (!fromInv) {
+                    if (st.coins < 2) { showFeedback('💸 تحتاج 2💰'); return; }
+                    st.coins -= 2;
+                    saveSt(); updateUI(); updateGameCoinsDisplay();
+                } else {
+                    updateUI(); updateGameCoinsDisplay();
+                }
+                G.helpersUsed.hint = true;
+                /* إظهار التلميح بشكل بارز */
+                var hintEl = document.getElementById('questionHint');
+                if (hintEl) {
+                    hintEl.textContent = '💡 ' + (G.currentHint || 'فكّر جيداً!');
+                    hintEl.style.color = 'var(--gold)';
+                    hintEl.style.fontWeight = '900';
+                    hintEl.style.background = 'rgba(240,185,11,0.12)';
+                    hintEl.style.borderRadius = '10px';
+                    hintEl.style.padding = '4px 10px';
+                    hintEl.style.transition = 'all 0.3s';
+                }
+                showFeedback(fromInv ? '💡 تلميح من مخزونك!' : '💡 تلميح!');
+                playSound('click');
+
             } else if (type === 'heart') {
                 if (G.isTraining) { showFeedback('⚠️ وضع التدريب لا يحتوي قلوب'); return; }
                 if (G.helpersUsed.heart) { showFeedback('💖 استُخدم'); return; }
@@ -722,7 +746,10 @@
             G.currentQ++;
             G.answered = false;
             G.helpersUsed.remove = false;
+            G.helpersUsed.hint = false;
             document.getElementById('helperRemove').classList.remove('used');
+            /* إعادة تلوين التلميح لكل سؤال جديد */
+            (function(){ var _h = document.getElementById('questionHint'); if (_h) { _h.style.color=''; _h.style.fontWeight=''; _h.style.background=''; _h.style.padding=''; } })();
             /* ✅ helperHeart لا يُعاد إلا في بداية لعبة جديدة — ليس لكل سؤال */
             document.getElementById('explanationArea').innerHTML = '';
             const age = st.age || calculateAgeFromBirthDate(st.birthDate);
@@ -805,6 +832,7 @@
             }
             document.getElementById('questionText').textContent = (q.text.endsWith('؟') || q.text.endsWith('?') || q.text.endsWith('= ?') || q.text.endsWith('= ؟')) ? q.text : `${q.text} = ?`;
             document.getElementById('questionHint').textContent = q.hint || 'ما هو الجواب؟';
+            G.currentHint = q.hint || 'ما هو الجواب؟'; /* حفظ التلميح الحالي للاستخدام لاحقاً */
             const _openModes = ['speed', 'survival', 'frenzy', 'accuracy', 'marathon', 'impossible'];
             document.getElementById('statQ').textContent = (G.isTraining || _openModes.includes(G.mode)) ? G.correct : `${G.currentQ}/${G.totalQ}`;
             renderVisualAid(q);
