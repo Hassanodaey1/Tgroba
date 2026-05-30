@@ -89,7 +89,9 @@
                 marathonBest:   0,
                 impossibleBest: 0,
                 /* ═══ مخزون المساعدات الدائم ═══ */
-                inventory: { skip: 0, heart: 0, remove: 0 }
+                inventory: { skip: 0, heart: 0, remove: 0 },
+                /* ✅ FIX-ADREWARD: وقت آخر مكافأة إعلان — لمنع الغش (0 = لم يُستخدم بعد) */
+                _lastAdRewardTime: 0
             };
         }
 
@@ -172,6 +174,8 @@
             if (s.inventory.skip   > 99) s.inventory.skip   = 99;
             if (s.inventory.heart  > 99) s.inventory.heart  = 99;
             if (s.inventory.remove > 99) s.inventory.remove = 99;
+            /* ✅ FIX-ADREWARD: تأكد من أن وقت المكافأة رقم صحيح */
+            if (typeof s._lastAdRewardTime !== 'number' || s._lastAdRewardTime < 0) s._lastAdRewardTime = 0;
             return s;
         }
 
