@@ -1,0 +1,1038 @@
+/* ═══════════════════════════════════════════════════════════
+   صفحة المنافسة — CSS الحماسي
+   أضف هذا في آخر ملف styles.css أو في ملف منفصل
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   Hero Banner — البطل الرئيسي
+══════════════════════════════════════════ */
+.comp-hero-banner {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    margin-top: 10px;
+    padding: 24px 18px 18px;
+    background: linear-gradient(145deg, #0e0b1f 0%, #1a0a2e 40%, #0b1a2e 100%);
+    border: 1.5px solid rgba(240, 185, 11, 0.3);
+    box-shadow: 0 8px 40px rgba(124, 58, 237, 0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.comp-hero-bg-sparks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.comp-spark {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: sparkFly var(--dur, 4s) linear infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+}
+
+@keyframes sparkFly {
+    0%   { transform: translate(0,0) scale(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.6; }
+    100% { transform: translate(var(--tx, 60px), var(--ty, -80px)) scale(2); opacity: 0; }
+}
+
+.comp-hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    z-index: 1;
+}
+
+.comp-hero-icon-wrap {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.comp-hero-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold), var(--accent), #ef4444, var(--gold));
+    animation: spin 3s linear infinite;
+    opacity: 0.8;
+}
+
+.comp-hero-ring::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: #1a0a2e;
+}
+
+.comp-hero-icon {
+    font-size: 2.2em;
+    position: relative;
+    z-index: 1;
+    animation: heroPulse 2s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 12px rgba(240,185,11,0.6));
+}
+
+@keyframes heroPulse {
+    from { transform: scale(1); filter: drop-shadow(0 0 8px rgba(240,185,11,0.4)); }
+    to   { transform: scale(1.08); filter: drop-shadow(0 0 20px rgba(240,185,11,0.9)); }
+}
+
+.comp-hero-title {
+    font-size: 1.55em;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 1px;
+    text-shadow: 0 0 20px rgba(240,185,11,0.3);
+}
+
+.comp-hero-sub {
+    font-size: 0.72em;
+    color: var(--text2);
+    margin-bottom: 4px;
+}
+
+/* إحصائياتي الثلاث */
+.comp-my-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.comp-my-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px;
+    gap: 2px;
+}
+
+.comp-my-stat-val {
+    font-size: 1.25em;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+}
+
+.comp-my-stat-lbl {
+    font-size: 0.54em;
+    color: var(--text2);
+    font-weight: 600;
+}
+
+.comp-my-stat-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+
+/* زر البدء الرئيسي */
+.comp-start-btn {
+    position: relative;
+    width: 100%;
+    margin-top: 14px;
+    padding: 16px 20px 14px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #f0b90b 0%, #ffd54f 50%, #f0b90b 100%);
+    background-size: 200% 100%;
+    color: #000;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+    box-shadow: 0 6px 28px rgba(240,185,11,0.45), 0 2px 0 rgba(255,255,255,0.2) inset;
+    animation: btnShimmer 2.5s ease infinite;
+}
+
+@keyframes btnShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.comp-start-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 12px rgba(240,185,11,0.3);
+}
+
+.comp-start-btn-glow {
+    position: absolute;
+    inset: -4px;
+    border-radius: 22px;
+    background: rgba(240,185,11,0.2);
+    filter: blur(12px);
+    animation: glowPulse 1.8s ease infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes glowPulse {
+    from { opacity: 0.4; }
+    to   { opacity: 1; }
+}
+
+.comp-start-btn-text {
+    display: block;
+    font-size: 1.1em;
+    font-weight: 900;
+    position: relative;
+    z-index: 1;
+}
+
+.comp-start-btn-sub {
+    display: block;
+    font-size: 0.62em;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ══ بطاقات الأقسام ══ */
+.comp-section-card {
+    background: var(--surface2);
+    border: 1px solid var(--gold-border);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.comp-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.comp-section-title {
+    font-size: 0.88em;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.comp-section-sub {
+    font-size: 0.62em;
+    color: var(--text2);
+    margin-top: 2px;
+}
+
+.comp-chevron {
+    font-size: 0.85em;
+    color: var(--gold);
+    transition: transform 0.3s;
+}
+
+/* ══ تبويبات لوحة الصدارة ══ */
+.comp-lb-tabs {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 8px;
+}
+
+.comp-lb-tab {
+    flex: 1;
+    padding: 9px 8px;
+    border-radius: 12px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.78em;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1.5px solid var(--border2);
+    background: var(--surface3);
+    color: var(--text2);
+}
+
+.comp-lb-tab.active {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    border-color: var(--gold);
+    box-shadow: 0 3px 12px rgba(240,185,11,0.3);
+}
+
+.comp-lb-card {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.comp-lb-hint {
+    font-size: 0.62em;
+    color: var(--text3);
+    text-align: center;
+    padding: 6px 0 2px;
+}
+
+/* ══════════════════════════════════════════
+   OVERLAY مشترك — كل الشاشات الحماسية
+══════════════════════════════════════════ */
+.challenge-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    background: #07090f;
+    overflow: hidden;
+}
+
+/* ══════════════════════════════════════════
+   شاشة العد التنازلي
+══════════════════════════════════════════ */
+#challengeCountdownOverlay {
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #1a0b30 0%, #07090f 70%);
+}
+
+.cdo-bg-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.cdo-line {
+    position: absolute;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(240,185,11,0.15), transparent);
+    animation: lineSlide var(--dur, 3s) linear infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+}
+
+@keyframes lineSlide {
+    0%   { transform: translateY(-100%); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 0.5; }
+    100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.cdo-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 24px;
+}
+
+.cdo-title {
+    font-size: 1em;
+    font-weight: 800;
+    color: var(--text2);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.cdo-number {
+    font-size: 7em;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    text-shadow: 0 0 60px rgba(240,185,11,0.7), 0 0 120px rgba(240,185,11,0.3);
+    animation: cdoNumPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes cdoNumPop {
+    from { transform: scale(0.3); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.cdo-sub {
+    font-size: 0.8em;
+    color: var(--text2);
+    animation: fadeIn 0.4s ease 0.2s both;
+}
+
+.cdo-rules {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin-top: 8px;
+    animation: fadeIn 0.4s ease 0.3s both;
+}
+
+.cdo-rule {
+    font-size: 0.76em;
+    color: var(--text2);
+}
+
+.cdo-rule strong {
+    color: var(--text);
+}
+
+/* ══════════════════════════════════════════
+   واجهة اللعب الحماسية (Challenge Game Arena)
+══════════════════════════════════════════ */
+#challengeGameArea {
+    background: #060810;
+    flex-direction: column;
+}
+
+/* خلفية نابضة ديناميكية */
+.cga-bg-pulse {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 20%, rgba(124,58,237,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(239,68,68,0.08) 0%, transparent 50%);
+    animation: bgPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse {
+    from { opacity: 0.6; }
+    to   { opacity: 1; }
+}
+
+/* شبكة خلفية */
+.cga-bg-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 80%);
+}
+
+/* Header */
+.cga-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--safe-top) + 12px) 14px 10px;
+    flex-shrink: 0;
+    background: rgba(6,8,16,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    z-index: 5;
+}
+
+.cga-quit-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: var(--red);
+    font-size: 0.85em;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cga-quit-btn:active { transform: scale(0.88); background: rgba(239,68,68,0.25); }
+
+.cga-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.cga-q-label {
+    font-size: 0.62em;
+    color: var(--text3);
+    font-weight: 700;
+}
+
+.cga-diff-badge {
+    font-size: 0.65em;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(6,182,212,0.15);
+    border: 1px solid rgba(6,182,212,0.3);
+    color: var(--accent2);
+    transition: background 0.4s, border-color 0.4s, color 0.4s;
+}
+
+.cga-diff-badge.diff-easy   { background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.35); color:#10b981; }
+.cga-diff-badge.diff-medium { background:rgba(6,182,212,0.15);  border-color:rgba(6,182,212,0.35);  color:#06b6d4; }
+.cga-diff-badge.diff-hard   { background:rgba(249,115,22,0.15); border-color:rgba(249,115,22,0.35); color:#f97316; }
+.cga-diff-badge.diff-genius { background:rgba(239,68,68,0.15);  border-color:rgba(239,68,68,0.35);  color:#ef4444; }
+
+.cga-score-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(240,185,11,0.1);
+    border: 1.5px solid rgba(240,185,11,0.3);
+    border-radius: 14px;
+    padding: 6px 12px;
+}
+
+.cga-score-icon { font-size: 0.9em; }
+
+.cga-score-num {
+    font-size: 1.3em;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    min-width: 28px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.cga-score-num.score-bump {
+    animation: scoreBump 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scoreBump {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.35); color: #ffd54f; }
+    100% { transform: scale(1); }
+}
+
+/* شريط الوقت */
+.cga-timer-section {
+    flex-shrink: 0;
+    padding: 8px 14px 4px;
+    position: relative;
+    z-index: 4;
+    background: rgba(6,8,16,0.7);
+}
+
+.cga-timer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.cga-timer-label {
+    font-size: 0.62em;
+    color: var(--text3);
+}
+
+.cga-timer-num {
+    font-size: 1.6em;
+    font-weight: 900;
+    color: var(--accent2);
+    line-height: 1;
+    transition: color 0.3s;
+    font-variant-numeric: tabular-nums;
+}
+
+.cga-timer-num.danger {
+    color: var(--red);
+    animation: timerPulse 0.45s ease-in-out infinite alternate;
+}
+
+.cga-timer-track {
+    position: relative;
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    overflow: visible;
+}
+
+.cga-timer-fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--accent2), #7c3aed);
+    transition: width 0.3s linear, background 0.5s;
+    position: relative;
+    box-shadow: 0 0 10px rgba(6,182,212,0.5);
+}
+
+.cga-timer-fill.danger-bar {
+    background: linear-gradient(90deg, #ef4444, #f97316);
+    box-shadow: 0 0 14px rgba(239,68,68,0.6);
+    animation: dangerFlash 0.5s ease infinite alternate;
+}
+
+@keyframes dangerFlash {
+    from { box-shadow: 0 0 8px rgba(239,68,68,0.4); }
+    to   { box-shadow: 0 0 20px rgba(239,68,68,0.9); }
+}
+
+.cga-timer-glow {
+    position: absolute;
+    top: -3px;
+    right: -2px;
+    width: 12px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent2);
+    filter: blur(4px);
+    transition: background 0.5s;
+}
+
+/* Streak Banner */
+.cga-streak-banner {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(239,68,68,0.15));
+    border-bottom: 1px solid rgba(240,185,11,0.25);
+    padding: 6px 14px;
+    text-align: center;
+    position: relative;
+    z-index: 4;
+    animation: streakSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes streakSlideIn {
+    from { transform: translateY(-100%); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+#cgaStreakText {
+    font-size: 0.9em;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(240,185,11,0.5);
+}
+
+/* Body اللعبة */
+.cga-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 14px 12px;
+    gap: 10px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 3;
+}
+
+/* بطاقة السؤال */
+.cga-question-card {
+    width: 100%;
+    background: linear-gradient(145deg, #0f1220, #141830);
+    border: 2px solid rgba(124,58,237,0.3);
+    border-radius: 24px;
+    padding: 22px 18px 18px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(124,58,237,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: border-color 0.3s;
+}
+
+.cga-question-card.card-correct {
+    border-color: rgba(16,185,129,0.6);
+    box-shadow: 0 4px 30px rgba(16,185,129,0.2);
+}
+
+.cga-question-card.card-wrong {
+    border-color: rgba(239,68,68,0.6);
+    box-shadow: 0 4px 30px rgba(239,68,68,0.2);
+    animation: cardShake 0.4s ease;
+}
+
+@keyframes cardShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.cga-question-glow {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%);
+    pointer-events: none;
+}
+
+.cga-q-num-label {
+    font-size: 0.6em;
+    color: var(--text3);
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.cga-question-text {
+    font-size: 2.8em;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.2;
+    direction: ltr;
+    unicode-bidi: embed;
+    animation: qPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cga-question-hint {
+    font-size: 0.66em;
+    color: var(--text3);
+    margin-top: 5px;
+}
+
+/* شبكة الإجابات */
+.cga-answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.cga-answers-grid .answer-btn {
+    background: linear-gradient(145deg, #111525, #171e30);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 16px 10px;
+    font-size: 1.35em;
+    font-weight: 900;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Tajawal', sans-serif;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+}
+
+.cga-answers-grid .answer-btn:active {
+    transform: scale(0.94);
+}
+
+.cga-answers-grid .answer-btn:hover:not(:disabled) {
+    border-color: rgba(240,185,11,0.4);
+    background: linear-gradient(145deg, #171825, #1e2438);
+}
+
+.cga-answers-grid .answer-btn.correct {
+    background: linear-gradient(145deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1));
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 20px rgba(16,185,129,0.3);
+    animation: correctBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cga-answers-grid .answer-btn.wrong {
+    background: linear-gradient(145deg, rgba(239,68,68,0.18), rgba(239,68,68,0.08));
+    border-color: var(--red);
+    color: var(--red);
+    animation: wrongShake 0.36s ease;
+}
+
+@keyframes correctBounce {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* شريط المساعدات */
+.cga-helpers-bar {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.cga-helper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: linear-gradient(145deg, #111525, #151d2e);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 8px 4px 9px;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+}
+
+.cga-helper:active {
+    transform: scale(0.92);
+    border-color: var(--gold);
+}
+
+.cga-helper.used {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.cga-helper-icon { font-size: 1.25em; line-height: 1; }
+.cga-helper-name { font-size: 0.52em; color: var(--text2); font-weight: 700; }
+.cga-helper-cost {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--gold);
+    color: #000;
+    font-size: 0.5em;
+    font-weight: 900;
+    padding: 2px 5px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════
+   شاشة النتيجة
+══════════════════════════════════════════ */
+#challengeResultArea {
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #15102a 0%, #060810 60%);
+}
+
+.cgr-bg-rays {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: conic-gradient(from 0deg at 50% 40%,
+        transparent 0deg,
+        rgba(240,185,11,0.03) 10deg,
+        transparent 20deg,
+        rgba(240,185,11,0.03) 30deg,
+        transparent 40deg,
+        rgba(240,185,11,0.03) 50deg,
+        transparent 60deg
+    );
+    animation: raysRotate 20s linear infinite;
+}
+
+@keyframes raysRotate {
+    to { transform: rotate(360deg); }
+}
+
+.cgr-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+    padding: 24px 18px;
+    width: 100%;
+    max-width: 380px;
+}
+
+.cgr-medal-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cgr-medal-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold) 0%, #ffd54f 25%, var(--gold) 50%, #f97316 75%, var(--gold) 100%);
+    animation: spin 4s linear infinite;
+}
+
+.cgr-medal-ring::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: #15102a;
+}
+
+.cgr-medal-icon {
+    font-size: 2.4em;
+    position: relative;
+    z-index: 1;
+    animation: medalBounce 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes medalBounce {
+    0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.cgr-title {
+    font-size: 1.6em;
+    font-weight: 900;
+    color: var(--text);
+    text-shadow: 0 0 20px rgba(240,185,11,0.3);
+}
+
+.cgr-sub {
+    font-size: 0.72em;
+    color: var(--text2);
+    margin-top: -4px;
+}
+
+.cgr-stats-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.cgr-stat {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 14px 6px;
+    text-align: center;
+}
+
+.cgr-stat-best {
+    background: rgba(240,185,11,0.08);
+    border-color: rgba(240,185,11,0.25);
+}
+
+.cgr-stat-num {
+    font-size: 1.7em;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+}
+
+.cgr-stat-lbl {
+    font-size: 0.58em;
+    color: var(--text2);
+    margin-top: 4px;
+}
+
+.cgr-compare-row {
+    background: rgba(6,182,212,0.08);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 0.75em;
+    color: var(--accent2);
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+}
+
+.cgr-record-badge {
+    background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(249,115,22,0.15));
+    border: 1.5px solid rgba(240,185,11,0.4);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.82em;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(240,185,11,0.4);
+    animation: recordPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes recordPop {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.cgr-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.cgr-btn-primary {
+    width: 100%;
+    padding: 15px;
+    border-radius: 16px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.97em;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    box-shadow: 0 4px 20px rgba(240,185,11,0.35);
+    transition: 0.2s;
+}
+
+.cgr-btn-primary:active { transform: scale(0.97); }
+
+.cgr-btn-secondary {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.88em;
+    font-weight: 700;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text2);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.cgr-btn-secondary:active { background: rgba(255,255,255,0.09); }
+
+/* ══ Responsive adjustments ══ */
+@media (max-height: 680px) {
+    .cga-question-text { font-size: 2.2em; }
+    .cga-body { gap: 8px; padding: 8px 12px 10px; }
+    .cga-answers-grid .answer-btn { padding: 13px 8px; }
+    .comp-hero-banner { padding: 18px 14px 14px; }
+    .cdo-number { font-size: 5em; }
+}
+
+@media (max-height: 580px) {
+    .cga-question-text { font-size: 1.9em; }
+    .cga-body { gap: 6px; padding: 6px 10px 8px; }
+    .cga-answers-grid .answer-btn { padding: 10px 6px; font-size: 1.15em; }
+    .comp-hero-icon-wrap { width: 55px; height: 55px; }
+}
+
+/* ═══ Layout Fixes — معزولة عن styles.css العام ═══ */
+
+#page-leaderboard {
+    padding: 0 !important;
+    gap: 0 !important;
+}
+
+#page-leaderboard .challenge-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+}
+
+#page-leaderboard .comp-start-btn  { border: none !important; }
+#page-leaderboard .cgr-btn-primary  { border: none !important; }
+#page-leaderboard .comp-lb-tab.active { border: none !important; }
