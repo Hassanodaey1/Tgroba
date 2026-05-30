@@ -232,7 +232,9 @@ function confirmResetStats() {
             st.totalGames = 0; st.bestScore = 0;
             st.catCounter = { correct: 0, total: 0 };
             st.catChallenges = { games: 0 };
-            st.history = []; st.xp = 0; st.level = 1; st.xpToNext = 1000;
+            st.history = []; st.xp = 0; st.level = 1;
+            /* ✅ FIX-XPTONEXT: استخدام calcXpToNext(1) الصحيح = 560 بدلاً من 1000 الثابتة */
+            st.xpToNext = typeof calcXpToNext === 'function' ? calcXpToNext(1) : 560;
             for (let k in st.stats) st.stats[k] = { att: 0, cor: 0, first: 0, stars: 0, max: 0 };
             st.achievementsUnlocked = [];
             st.achievementRewardClaimed = false;
