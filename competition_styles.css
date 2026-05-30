@@ -1037,3 +1037,141 @@
 #page-leaderboard .comp-start-btn  { border: none !important; }
 #page-leaderboard .cgr-btn-primary  { border: none !important; }
 #page-leaderboard .comp-lb-tab.active { border: none !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   🔧 FIX: إجبار اللون الأبيض على كل النصوص والأرقام في واجهة التحدي
+   يضمن القراءة الجيدة بغض النظر عن وضع الثيم (فاتح/داكن)
+═══════════════════════════════════════════════════════════════ */
+
+/* --- شاشة العد التنازلي --- */
+#challengeCountdownOverlay,
+#challengeCountdownOverlay * {
+    color: inherit;
+}
+
+#challengeCountdownOverlay .cdo-title,
+#challengeCountdownOverlay .cdo-sub,
+#challengeCountdownOverlay .cdo-rule {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+#challengeCountdownOverlay .cdo-number {
+    color: var(--gold, #f0b90b) !important;
+}
+
+#challengeCountdownOverlay .cdo-rule strong {
+    color: #ffffff !important;
+}
+
+/* --- منطقة اللعب الحماسية --- */
+#challengeGameArea .cga-q-label,
+#challengeGameArea .cga-timer-label,
+#challengeGameArea .cga-helper-name {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+#challengeGameArea .cga-q-num-label,
+#challengeGameArea .cga-question-hint {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+#challengeGameArea .cga-question-text {
+    color: #ffffff !important;
+}
+
+#challengeGameArea .cga-score-num {
+    color: var(--gold, #f0b90b) !important;
+}
+
+#challengeGameArea .cga-timer-num {
+    color: #ffffff !important;
+}
+
+#challengeGameArea .cga-timer-num.danger {
+    color: #ff6b6b !important;
+}
+
+/* أزرار الإجابة */
+#challengeGameArea .cga-answers-grid .answer-btn {
+    color: #ffffff !important;
+}
+
+#challengeGameArea .cga-answers-grid .answer-btn.correct {
+    color: #4ade80 !important;
+}
+
+#challengeGameArea .cga-answers-grid .answer-btn.wrong {
+    color: #ff6b6b !important;
+}
+
+/* شريط المساعدات */
+#challengeGameArea .cga-helper-cost {
+    color: #000000 !important;
+}
+
+/* --- شاشة النتيجة --- */
+#challengeResultArea .cgr-title {
+    color: #ffffff !important;
+}
+
+#challengeResultArea .cgr-sub,
+#challengeResultArea .cgr-stat-lbl {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+#challengeResultArea .cgr-stat-num {
+    color: var(--gold, #f0b90b) !important;
+}
+
+#challengeResultArea .cgr-compare-row {
+    color: #67e8f9 !important;
+}
+
+#challengeResultArea .cgr-record-badge {
+    color: var(--gold, #f0b90b) !important;
+}
+
+/* --- لوحة الصدارة العامة (comp-hero-banner) --- */
+.comp-hero-title {
+    color: #ffffff !important;
+}
+
+.comp-hero-sub,
+.comp-my-stat-lbl {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.comp-my-stat-val {
+    color: var(--gold, #f0b90b) !important;
+}
+
+.comp-section-title {
+    color: #ffffff !important;
+}
+
+.comp-section-sub {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* التبويبات غير النشطة */
+.comp-lb-tab {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.comp-lb-tab.active {
+    color: #000000 !important;
+}
+
+/* الـ streak banner */
+#cgaStreakText {
+    color: var(--gold, #f0b90b) !important;
+}
+
+/* نص زر البدء */
+.comp-start-btn-text {
+    color: #000000 !important;
+}
+
+.comp-start-btn-sub {
+    color: rgba(0, 0, 0, 0.7) !important;
+}
