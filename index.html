@@ -313,6 +313,7 @@
             <div class="pages">
                 <!-- HOME PAGE -->
                 <div class="page active" id="page-home">
+                    <div class="page-title-header">🏠 الرئيسية</div>
                     <!-- بطاقة اللاعب + شريط XP في أعلى الصفحة الرئيسية -->
                     <div class="home-player-xp-card">
                         <div class="home-player-identity">
@@ -404,7 +405,7 @@
                         <div class="daily-icon">🌟</div>
                         <div>
                             <div class="daily-title">تحدي اليوم</div>
-                            <div class="daily-sub">5 أسئلة متنوعة • +3 عملات</div>
+                            <div class="daily-sub">10 أسئلة متنوعة • +3 عملات</div>
                         </div>
                         <div class="daily-badge">جديد</div>
                     </div>
@@ -606,6 +607,7 @@
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="page" id="page-leaderboard">
+    <div class="page-title-header">⚔️ المنافسة</div>
 
     <!-- ══════════════════════════════════════════
          الواجهة الرئيسية للمنافسة (Welcome View)
@@ -858,10 +860,7 @@
                     <!-- محتوى المتجر -->
                     <div id="shopItemsContainer"></div>
 
-                    <!-- رصيد ثانوي في الأسفل -->
-                    <div style="text-align:center;padding:10px 0 4px;font-size:0.65em;color:var(--text3);">
-                        رصيدك: <span id="shopCoinsDisplay2" style="color:var(--gold);font-weight:900;">0</span> 💰
-                    </div>
+
                 </div>
 
             </div><!-- /pages -->
@@ -1585,7 +1584,7 @@
                 as2.setAttribute('data-open', '0');
             }
             /* مهام التحدي مغلقة */
-            var ct = document.getElementById('challengeTasksBody');
+           var ct = document.getElementById('challengeTasksBody');
             if (ct) {
                 ct.style.display = 'none';
                 ct.style.maxHeight = '0';
