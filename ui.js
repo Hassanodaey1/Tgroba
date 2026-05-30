@@ -800,47 +800,8 @@ function showLbTab(tab) {
 }
 
 /**
- * تحميل لائحة الصدارة الموحدة حسب التبويب النشط
+ * loadCombinedLeaderboard — تم نقلها إلى competition_logic.js (نسخة محسّنة مع Cache)
  */
-function loadCombinedLeaderboard() {
-    const container = document.getElementById('combinedLeaderboardList');
-    if (!container) return;
-
-    if (!database) {
-        container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">⚠️ قاعدة البيانات غير متصلة</div>';
-        return;
-    }
-
-    container.innerHTML = '<div style="text-align:center;padding:20px;">⏳ جاري التحميل...</div>';
-
-    try {
-        if (_activeLbTab === 'challenge') {
-            /* لائحة التحدي */
-            database.ref('challenge_leaderboard').orderByChild('challengeScore').limitToLast(50).once('value', snapshot => {
-                const players = [];
-                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
-                renderLeaderboardList(container, players, 'challengeScore');
-            }).catch(() => {
-                container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⚠️ فشل التحميل</div>';
-            });
-        } else {
-            /* لائحة النقاط العامة */
-            database.ref('leaderboard').orderByChild('bestScore').limitToLast(50).once('value', snapshot => {
-                const players = [];
-                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                players.sort((a, b) => (b.bestScore || 0) - (a.bestScore || 0));
-                renderLeaderboardList(container, players, 'bestScore');
-                /* تحديث تتبع المرتبة الأولى للألقاب */
-                try { if (typeof updateFirstPlaceTracking === 'function') updateFirstPlaceTracking(players); } catch(e) {}
-            }).catch(() => {
-                container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⚠️ فشل التحميل</div>';
-            });
-        }
-    } catch(e) {
-        container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);">⚠️ خطأ في الاتصال</div>';
-    }
-}
 
 /**
  * عرض صفوف لائحة اللاعبين
