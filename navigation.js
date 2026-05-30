@@ -43,9 +43,7 @@
             settingsBtn.style.display = (tab === 'settings') ? 'none' : 'flex';
         }
             if (tab === 'leaderboard') {
-                loadCombinedLeaderboard();
-                const el = document.getElementById('challengeBestDisplay');
-                if (el) el.textContent = st.challengeBestScore || 0;
+                if (typeof initCompetitionPage === 'function') initCompetitionPage();
             }
         }
 
