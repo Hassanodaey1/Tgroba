@@ -205,6 +205,8 @@
 
         function saveSt() {
             try {
+                /* ✅ ANTI-CHEAT: تحقق من الحدود قبل الحفظ دائماً */
+                sanitizeState(st);
                 localStorage.setItem(SK, JSON.stringify(st));
                 if (st.serialNumber) {
                     saveSerialBackup(st.serialNumber, st);
