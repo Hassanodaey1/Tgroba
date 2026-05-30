@@ -62,6 +62,17 @@ const SHOP_CATALOG = {
             gameOnly: true,
         },
         {
+            id: 'heart_store3',
+            icon: '💗',
+            name: 'احتياط 3 قلوب',
+            desc: 'تُخزَّن في مخزونك وتُستخدم تلقائياً عند انتهاء القلوب',
+            price: 10,
+            action: 'storeHeart',
+            actionVal: 3,
+            badge: 'ذكي',
+            hot: true,
+        },
+        {
             id: 'skip_q',
             icon: '⏭️',
             name: 'تخطّي سؤال',
@@ -71,6 +82,16 @@ const SHOP_CATALOG = {
             gameOnly: true,
         },
         {
+            id: 'skip_pack3',
+            icon: '⏭️',
+            name: 'باقة 3 تخطّيات',
+            desc: 'احصل على 3 تخطّيات تُخزَّن وتُستخدم تلقائياً',
+            price: 7,
+            action: 'storeSkip',
+            actionVal: 3,
+            badge: 'وفّر',
+        },
+        {
             id: 'remove_wrong',
             icon: '🗑️',
             name: 'حذف خيار',
@@ -78,6 +99,16 @@ const SHOP_CATALOG = {
             price: 4,
             action: 'removeWrong',
             gameOnly: true,
+        },
+        {
+            id: 'remove_pack3',
+            icon: '🗑️',
+            name: 'باقة 3 حذف خيار',
+            desc: '3 استخدامات تُخزَّن في مخزونك',
+            price: 9,
+            action: 'storeRemove',
+            actionVal: 3,
+            badge: 'وفّر',
         },
         {
             id: 'time_plus10',
@@ -217,6 +248,7 @@ function renderShop() {
     _renderShopTabs();
     _renderActiveShopTab();
     _checkAndShowUrgentOffer();
+    _updateInventoryBar();
 }
 
 function _renderShopHeader() {
@@ -523,46 +555,24 @@ function buyConsumable(id) {
 
         switch (item.action) {
             case 'addHeart':
-                /* ✅ 5.3: داخل لعبة → أضف قلباً فوراً، خارجها → مخزون */
                 if (G && !G.ended) {
                     G.livesLeft = Math.min(G.livesLeft + 1, 9);
                     if (typeof updateHeartsDisplay === 'function') updateHeartsDisplay();
-                    if (typeof showFeedback === 'function') showFeedback('💖 +1 قلب!');
-                } else {
-                    if (!st.helperInventory) st.helperInventory = { skip: 0, remove: 0, heart: 0 };
-                    st.helperInventory.heart++;
-                    if (typeof showFeedback === 'function') showFeedback('💖 أُضيف للمخزون!');
-                    if (typeof _updateHelperInventoryDisplay === 'function') _updateHelperInventoryDisplay();
                 }
                 break;
             case 'addHearts':
-                /* ✅ 5.3: داخل لعبة → أضف قلوب فوراً، خارجها → مخزون */
                 if (G && !G.ended) {
                     G.livesLeft = Math.min(G.livesLeft + (item.actionVal || 3), 9);
                     if (typeof updateHeartsDisplay === 'function') updateHeartsDisplay();
-                    if (typeof showFeedback === 'function') showFeedback(`💖 +${item.actionVal || 3} قلوب!`);
-                } else {
-                    if (!st.helperInventory) st.helperInventory = { skip: 0, remove: 0, heart: 0 };
-                    st.helperInventory.heart += (item.actionVal || 3);
-                    if (typeof showFeedback === 'function') showFeedback(`💖 ${item.actionVal || 3} أُضيف للمخزون!`);
-                    if (typeof _updateHelperInventoryDisplay === 'function') _updateHelperInventoryDisplay();
                 }
                 break;
             case 'skipQuestion':
-                /* ✅ 5.3: إذا كنا داخل لعبة → طبّق فوراً، وإلا → أضف للمخزون */
                 if (G && !G.ended && !G.answered) {
                     G.answered = true;
                     setTimeout(() => { if (!G.ended) loadQuestion(); }, 200);
-                    if (typeof showFeedback === 'function') showFeedback('⏭️ تخطّي!');
-                } else {
-                    if (!st.helperInventory) st.helperInventory = { skip: 0, remove: 0, heart: 0 };
-                    st.helperInventory.skip++;
-                    if (typeof showFeedback === 'function') showFeedback('⏭️ أُضيف للمخزون!');
-                    if (typeof _updateHelperInventoryDisplay === 'function') _updateHelperInventoryDisplay();
                 }
                 break;
             case 'removeWrong':
-                /* ✅ 5.3: إذا كنا داخل لعبة → طبّق فوراً، وإلا → أضف للمخزون */
                 if (G && !G.ended && !G.answered) {
                     const btns = [...document.querySelectorAll('.answer-btn:not(:disabled)')];
                     const wrong = btns.filter(b => parseInt(b.getAttribute('data-val')) !== G.correctAnswer);
@@ -571,12 +581,6 @@ function buyConsumable(id) {
                         r.style.opacity = '0.15';
                         r.style.pointerEvents = 'none';
                     }
-                    if (typeof showFeedback === 'function') showFeedback('🗑️ حُذفت إجابة خاطئة');
-                } else {
-                    if (!st.helperInventory) st.helperInventory = { skip: 0, remove: 0, heart: 0 };
-                    st.helperInventory.remove++;
-                    if (typeof showFeedback === 'function') showFeedback('🗑️ أُضيف للمخزون!');
-                    if (typeof _updateHelperInventoryDisplay === 'function') _updateHelperInventoryDisplay();
                 }
                 break;
             case 'addTime':
@@ -604,6 +608,25 @@ function buyConsumable(id) {
                 break;
             case 'coinBonus':
                 st.coins += item.actionVal || 20;
+                break;
+            /* ─── عناصر المخزون الدائم ─── */
+            case 'storeSkip':
+                if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0 };
+                st.inventory.skip = Math.min(99, (st.inventory.skip || 0) + (item.actionVal || 3));
+                _updateInventoryBar();
+                showFeedback(`⏭️ أُضيف ${item.actionVal} تخطّيات لمخزونك!`);
+                break;
+            case 'storeHeart':
+                if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0 };
+                st.inventory.heart = Math.min(99, (st.inventory.heart || 0) + (item.actionVal || 3));
+                _updateInventoryBar();
+                showFeedback(`💗 أُضيف ${item.actionVal} قلوب لمخزونك!`);
+                break;
+            case 'storeRemove':
+                if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0 };
+                st.inventory.remove = Math.min(99, (st.inventory.remove || 0) + (item.actionVal || 3));
+                _updateInventoryBar();
+                showFeedback(`🗑️ أُضيف ${item.actionVal} حذف خيار لمخزونك!`);
                 break;
         }
 
@@ -829,7 +852,43 @@ function buyEmojiShopOnly(emoji, price, label) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ⑪ مضاعف XP
+   ⑫ شريط المخزون داخل اللعبة — البند 5.4
+═══════════════════════════════════════════════════════════════ */
+function _updateInventoryBar() {
+    const bar = document.getElementById('helperInventoryBar');
+    if (!bar) return;
+    const inv = st.inventory || { skip: 0, heart: 0, remove: 0 };
+    const skip   = inv.skip   || 0;
+    const heart  = inv.heart  || 0;
+    const remove = inv.remove || 0;
+    const hasAny = skip > 0 || heart > 0 || remove > 0;
+
+    bar.style.display = hasAny ? 'flex' : 'none';
+
+    const skipChip   = document.getElementById('invSkipChip');
+    const heartChip  = document.getElementById('invHeartChip');
+    const removeChip = document.getElementById('invRemoveChip');
+    const skipEl     = document.getElementById('invSkipCount');
+    const heartEl    = document.getElementById('invHeartCount');
+    const removeEl   = document.getElementById('invRemoveCount');
+
+    if (skipEl   && skipChip)   { skipEl.textContent   = skip;   skipChip.style.display   = skip   > 0 ? 'flex' : 'none'; }
+    if (heartEl  && heartChip)  { heartEl.textContent  = heart;  heartChip.style.display  = heart  > 0 ? 'flex' : 'none'; }
+    if (removeEl && removeChip) { removeEl.textContent = remove; removeChip.style.display = remove > 0 ? 'flex' : 'none'; }
+}
+
+/* استخدام المخزون — يُستدعى من useHelper في questions.js — البند 5.3 */
+function useHelperFromInventory(type) {
+    if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0 };
+    const inv = st.inventory;
+    if (type === 'skip'   && inv.skip   > 0) { inv.skip--;   saveSt(); _updateInventoryBar(); return true; }
+    if (type === 'heart'  && inv.heart  > 0) { inv.heart--;  saveSt(); _updateInventoryBar(); return true; }
+    if (type === 'remove' && inv.remove > 0) { inv.remove--; saveSt(); _updateInventoryBar(); return true; }
+    return false;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ⑬ مضاعف XP
 ═══════════════════════════════════════════════════════════════ */
 function getXpMultiplier() {
     if (!_shopState.xpBoostActive) return 1;
@@ -858,15 +917,17 @@ window.addEventListener('load', function () {
 });
 
 /* تصدير الدوال عالمياً */
-window.renderShop           = renderShop;
-window.buyAvatarFromShop    = buyAvatarFromShop;
-window.selectEmojiFromShop  = selectEmojiFromShop;
-window.buyConsumable        = buyConsumable;
-window.buyBundle            = buyBundle;
-window.showUrgentHeartOffer = showUrgentHeartOffer;
-window.getXpMultiplier      = getXpMultiplier;
-window._setShopTab          = _setShopTab;
-window.renderEmojiShop      = renderEmojiShop;
-window.toggleEmojiShop      = toggleEmojiShop;
-window.buyOrSelectEmoji     = buyOrSelectEmoji;
-window.buyEmojiShopOnly     = buyEmojiShopOnly;
+window.renderShop              = renderShop;
+window.buyAvatarFromShop       = buyAvatarFromShop;
+window.selectEmojiFromShop     = selectEmojiFromShop;
+window.buyConsumable           = buyConsumable;
+window.buyBundle               = buyBundle;
+window.showUrgentHeartOffer    = showUrgentHeartOffer;
+window.getXpMultiplier         = getXpMultiplier;
+window._setShopTab             = _setShopTab;
+window.renderEmojiShop         = renderEmojiShop;
+window.toggleEmojiShop         = toggleEmojiShop;
+window.buyOrSelectEmoji        = buyOrSelectEmoji;
+window.buyEmojiShopOnly        = buyEmojiShopOnly;
+window.useHelperFromInventory  = useHelperFromInventory;
+window._updateInventoryBar     = _updateInventoryBar;
