@@ -603,7 +603,7 @@ function openInGameShop() {
         '</div>' +
         '<div id="qtp-body" style="flex:1;overflow-y:auto;padding:0 14px 24px;"></div>' +
         '<div style="flex-shrink:0;padding:10px 14px 16px;border-top:1px solid var(--border2);">' +
-            '<button onclick="closeInGameShop();setTimeout(function(){goTab&&goTab(\'shop\');},350);" style="' +
+            '<button onclick="_confirmOpenFullShop();" style="' +
                 'width:100%;padding:11px;border-radius:14px;' +
                 'background:linear-gradient(135deg,var(--accent,#7c3aed),var(--accent2,#a855f7));' +
                 'color:#fff;font-family:Tajawal,sans-serif;font-size:0.8em;font-weight:900;' +
@@ -637,6 +637,74 @@ function closeInGameShop() {
     try { if (typeof updateGameCoinsDisplay === 'function') updateGameCoinsDisplay(); } catch(e) {}
     try { if (typeof _updateInventoryBar    === 'function') _updateInventoryBar();    } catch(e) {}
 }
+
+/* ═══════════════════════════════════════════════════
+   ⚠️ تحذير إنهاء الجلسة عند فتح المتجر الكامل
+═══════════════════════════════════════════════════ */
+function _confirmOpenFullShop() {
+    var overlay = document.createElement('div');
+    overlay.id = 'fullShopWarningOverlay';
+    overlay.style.cssText =
+        'position:fixed;inset:0;z-index:99995;' +
+        'display:flex;align-items:center;justify-content:center;' +
+        'background:rgba(0,0,0,0.72);' +
+        'backdrop-filter:blur(4px);' +
+        'animation:fadeInBg 0.2s ease;';
+
+    overlay.innerHTML =
+        '<div style="' +
+            'background:linear-gradient(145deg,#0e0b1f,#141830);' +
+            'border:2px solid rgba(239,68,68,0.5);' +
+            'border-radius:22px;padding:24px 20px;text-align:center;' +
+            'max-width:300px;width:88%;' +
+            'animation:levelUpPop 0.35s cubic-bezier(0.34,1.56,0.64,1);' +
+            'box-shadow:0 8px 40px rgba(239,68,68,0.2);">' +
+            '<div style="font-size:2.8em;margin-bottom:8px;">\u26A0\uFE0F</div>' +
+            '<div style="font-size:1em;font-weight:900;color:#ef4444;margin-bottom:6px;">\u062A\u062D\u0630\u064A\u0631!</div>' +
+            '<div style="font-size:0.78em;color:rgba(255,255,255,0.75);line-height:1.55;margin-bottom:6px;">' +
+                '\u0633\u064A\u062A\u0645 <strong style=\"color:#ef4444;\">\u0625\u0646\u0647\u0627\u0621 \u062C\u0644\u0633\u0629 \u0627\u0644\u0644\u0639\u0628 \u0627\u0644\u062D\u0627\u0644\u064A\u0629</strong> \u0639\u0646\u062F \u0641\u062A\u062D \u0627\u0644\u0645\u062A\u062C\u0631 \u0627\u0644\u0643\u0627\u0645\u0644.' +
+            '</div>' +
+            '<div style="font-size:0.7em;color:rgba(255,255,255,0.45);margin-bottom:20px;">' +
+                '\u0644\u0646 \u062A\u062A\u0645\u0643\u0646 \u0645\u0646 \u0627\u0644\u0639\u0648\u062F\u0629 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u062C\u0644\u0633\u0629.' +
+            '</div>' +
+            '<div style="display:flex;flex-direction:column;gap:9px;">' +
+                '<button id="fullShopConfirmBtn" style="width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,var(--accent,#7c3aed),var(--accent2,#a855f7));color:#fff;font-family:Tajawal,sans-serif;font-size:0.88em;font-weight:900;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,0.35);">' +
+                    '\uD83D\uDED2 \u0646\u0639\u0645\u060C \u0627\u0641\u062A\u062D \u0627\u0644\u0645\u062A\u062C\u0631' +
+                '</button>' +
+                '<button id="fullShopCancelBtn" style="width:100%;padding:11px;border-radius:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-family:Tajawal,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;">' +
+                    '\u21A9\uFE0F \u0623\u0643\u0645\u0644 \u0627\u0644\u0644\u0639\u0628' +
+                '</button>' +
+            '</div>' +
+        '</div>';
+
+    document.body.appendChild(overlay);
+
+    document.getElementById('fullShopConfirmBtn').onclick = function() {
+        overlay.remove();
+        var panel    = document.getElementById('quickToolsPanel');
+        var backdrop = document.getElementById('quickToolsBackdrop');
+        if (panel    && panel.parentNode)    panel.parentNode.removeChild(panel);
+        if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+        try { if (typeof confirmQuit === 'function') confirmQuit(); } catch(e) {}
+        setTimeout(function() {
+            try { if (typeof goTab === 'function') goTab('shop'); } catch(e) {}
+        }, 400);
+        playSound('click');
+    };
+
+    document.getElementById('fullShopCancelBtn').onclick = function() {
+        overlay.remove();
+        playSound('close');
+    };
+
+    overlay.onclick = function(e) {
+        if (e.target === overlay) { overlay.remove(); playSound('close'); }
+    };
+
+    playSound('warning');
+}
+
+window._confirmOpenFullShop = _confirmOpenFullShop;
 
 /* ─── تحديث محتوى اللوحة ─── */
 function _refreshQuickToolsPanel() {
