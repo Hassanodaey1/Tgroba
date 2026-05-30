@@ -542,3 +542,131 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
 });
 
+
+
+/* ═══════════════════════════════════════════════════
+   ⑱ متجر داخل اللعبة — يفتح overlay المتجر مع إيقاف المؤقت
+   الزر موجود في game-header في index.html (inGameShopBtn)
+═══════════════════════════════════════════════════ */
+
+/* overlay المتجر داخل اللعبة */
+function openInGameShop() {
+    /* إيقاف المؤقت */
+    pauseGameTimer();
+    playSound('open');
+
+    /* إنشاء overlay المتجر إن لم يكن موجوداً */
+    var existing = document.getElementById('inGameShopOverlay');
+    if (existing) { existing.style.display = 'flex'; _refreshInGameShop(); return; }
+
+    var overlay = document.createElement('div');
+    overlay.id = 'inGameShopOverlay';
+    overlay.style.cssText = [
+        'position:fixed', 'inset:0', 'z-index:9995',
+        'display:flex', 'flex-direction:column',
+        'background:var(--bg,#07090f)',
+        'animation:fadeInBg 0.22s ease'
+    ].join(';');
+
+    overlay.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:space-between;' +
+        'padding:14px 16px 10px;border-bottom:1px solid var(--border2);flex-shrink:0;">' +
+            '<div style="font-size:1em;font-weight:900;color:var(--text);">🛍️ المتجر</div>' +
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+                '<div style="font-size:0.82em;font-weight:900;color:var(--gold);">💰 <span id="inGameShopCoins">' + (st ? st.coins : 0) + '</span></div>' +
+                '<button onclick="closeInGameShop()" style="' +
+                    'background:var(--surface2);border:1px solid var(--border2);' +
+                    'border-radius:10px;padding:6px 14px;font-size:0.8em;font-weight:900;' +
+                    'color:var(--text);cursor:pointer;">✕ متابعة اللعب</button>' +
+            '</div>' +
+        '</div>' +
+        '<div id="inGameShopTabsRow" style="display:flex;gap:6px;padding:10px 14px 0;flex-shrink:0;"></div>' +
+        '<div id="inGameShopItemsContainer" style="flex:1;overflow-y:auto;padding:8px 14px 20px;"></div>';
+
+    document.body.appendChild(overlay);
+    _refreshInGameShop();
+}
+
+function closeInGameShop() {
+    var overlay = document.getElementById('inGameShopOverlay');
+    if (overlay) overlay.style.display = 'none';
+    resumeGameTimer();
+    playSound('close');
+    /* تحديث عرض العملات في اللعبة بعد أي شراء */
+    try { if (typeof updateGameCoinsDisplay === 'function') updateGameCoinsDisplay(); } catch(e) {}
+    try { if (typeof _updateInventoryBar    === 'function') _updateInventoryBar();    } catch(e) {}
+}
+
+function _refreshInGameShop() {
+    /* تحديث الرصيد */
+    var coinsEl = document.getElementById('inGameShopCoins');
+    if (coinsEl) coinsEl.textContent = st ? st.coins : 0;
+
+    /* تبويبات */
+    var tabsRow = document.getElementById('inGameShopTabsRow');
+    if (tabsRow) {
+        var tabs = [
+            { key: 'consumables', icon: '⚡', label: 'مستهلكات' },
+            { key: 'bundles',     icon: '🎁', label: 'حزم' },
+        ];
+        tabsRow.innerHTML = tabs.map(function(t) {
+            var active = (_inGameShopTab === t.key);
+            return '<button onclick="_setInGameShopTab('' + t.key + '')" style="' +
+                'flex:1;padding:8px 4px;border-radius:12px;font-size:0.72em;font-weight:800;' +
+                'background:' + (active ? 'var(--gold)' : 'var(--surface3)') + ';' +
+                'color:' + (active ? '#000' : 'var(--text2)') + ';' +
+                'border:1px solid ' + (active ? 'var(--gold)' : 'var(--border2)') + ';' +
+                'font-family:"Tajawal",sans-serif;cursor:pointer;transition:all 0.18s;">' +
+                t.icon + ' ' + t.label + '</button>';
+        }).join('');
+    }
+
+    /* محتوى التبويب */
+    var container = document.getElementById('inGameShopItemsContainer');
+    if (!container) return;
+
+    if (typeof _shopState === 'undefined' || typeof SHOP_CATALOG === 'undefined') {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);">⚠️ المتجر غير جاهز</div>';
+        return;
+    }
+
+    /* نُعيد توجيه _shopState.activeTab مؤقتاً للتبويب الداخلي */
+    var savedTab = _shopState.activeTab;
+    _shopState.activeTab = _inGameShopTab;
+
+    /* استخدام دوال المتجر الأصلية على الحاوية الداخلية */
+    if (_inGameShopTab === 'consumables') {
+        if (typeof _renderConsumables === 'function') _renderConsumables(container);
+    } else if (_inGameShopTab === 'bundles') {
+        if (typeof _renderBundles === 'function') _renderBundles(container);
+    }
+
+    _shopState.activeTab = savedTab;
+
+    /* إضافة بانر "أنت داخل اللعبة" في الأعلى */
+    var banner = '<div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);' +
+        'border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:0.72em;font-weight:700;' +
+        'color:#ef4444;text-align:center;">⚔️ أنت في اللعبة — العناصر تُطبَّق فوراً!</div>';
+    container.innerHTML = banner + container.innerHTML;
+}
+
+var _inGameShopTab = 'consumables';
+
+function _setInGameShopTab(tab) {
+    _inGameShopTab = tab;
+    _refreshInGameShop();
+    playSound('click');
+}
+
+/* تحديث الرصيد تلقائياً بعد كل عملية شراء من المتجر الداخلي */
+window.addEventListener('load', function() {
+    /* نُغلّف saveSt لتحديث رصيد المتجر الداخلي بعد كل حفظ */
+    if (typeof saveSt === 'function') {
+        var _origSaveSt = saveSt;
+        window.saveSt = function() {
+            _origSaveSt();
+            var coinsEl = document.getElementById('inGameShopCoins');
+            if (coinsEl && typeof st !== 'undefined') coinsEl.textContent = st.coins;
+        };
+    }
+});
