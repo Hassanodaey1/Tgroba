@@ -250,3 +250,240 @@ function copySettingsSerial() {
 
 /* toggleSettingsRestorePanel و restoreFromSettings معرّفتان في state.js — لا تكرار */
 
+
+/* ═══════════════════════════════════════════════════
+   ⑩ إصلاح openSettingsSubPage / closeSettingsSubPage
+   — تُستدعى من index.html لكن لم تكن معرّفة هنا
+═══════════════════════════════════════════════════ */
+/* هذه الدوال معرّفة في index.html داخل <script> مدمج،
+   لكن نُعيد تعريفها هنا كـ fallback لضمان عملها دائماً */
+if (typeof window.openSettingsSubPage === 'undefined') {
+    window.openSettingsSubPage = function(id) {
+        var map = {
+            'profile-sub': 'subPageProfileOverlay',
+            'audio-sub':   'subPageAudioOverlay',
+            'theme-sub':   'subPageThemeOverlay',
+            'parent-sub':  'subPageParentOverlay'
+        };
+        var overlayId = map[id] || id;
+        var el = document.getElementById(overlayId);
+        if (!el) return;
+        el.style.display = 'flex';
+        el.style.flexDirection = 'column';
+        playSound && playSound('click');
+        if (overlayId === 'subPageProfileOverlay') {
+            try { loadProfileForm(); } catch(e) {}
+            try { updateSerialNumberDisplay(); } catch(e) {}
+        }
+        if (overlayId === 'subPageAudioOverlay') {
+            try { initVolumeSliders(); } catch(e) {}
+        }
+        if (overlayId === 'subPageParentOverlay') {
+            try { renderParentStats(); } catch(e) {}
+        }
+    };
+}
+
+if (typeof window.closeSettingsSubPage === 'undefined') {
+    window.closeSettingsSubPage = function(overlayId) {
+        var el = document.getElementById(overlayId);
+        if (el) el.style.display = 'none';
+        playSound && playSound('click');
+    };
+}
+
+/* ═══════════════════════════════════════════════════
+   ⑪ إصلاح مضاعف XP — ربط getXpMultiplier بـ applyXpGain
+   applyXpGain في stats_engine.js لا تستخدم getXpMultiplier
+   نُعيد تعريفها هنا بعد تحميل كل الملفات
+═══════════════════════════════════════════════════ */
+window.addEventListener('load', function() {
+    /* نُغلّف applyXpGain الأصلية لإضافة دعم مضاعف XP */
+    if (typeof applyXpGain === 'function' && typeof getXpMultiplier === 'function') {
+        var _originalApplyXpGain = applyXpGain;
+        window.applyXpGain = function(correct, wrong, score, bestStreak) {
+            var result = _originalApplyXpGain(correct, wrong, score, bestStreak);
+            /* تطبيق المضاعف على XP المكتسبة إن كان فعّالاً */
+            var mult = getXpMultiplier();
+            if (mult > 1 && result && result.xpGained > 0) {
+                var bonus = Math.floor(result.xpGained * (mult - 1));
+                if (bonus > 0) {
+                    st.xp += bonus;
+                    /* إعادة حساب المستويات بعد الإضافة */
+                    while (st.xp >= st.xpToNext) {
+                        st.xp -= st.xpToNext;
+                        st.level++;
+                        st.xpToNext = typeof calcXpToNext === 'function' ? calcXpToNext(st.level) : Math.floor(st.xpToNext * 1.3);
+                        playSound('levelup');
+                        var _lvl = st.level;
+                        setTimeout((function(l){ return function() {
+                            try { if (typeof showLevelUpCelebration === 'function') showLevelUpCelebration(l); } catch(e) {}
+                        }; })(st.level), 600);
+                    }
+                    result.xpGained += bonus;
+                    setTimeout(function() {
+                        showFeedback('⚡ XP مضاعف ×' + mult + '! +' + bonus + ' XP إضافية');
+                    }, 400);
+                }
+            }
+            return result;
+        };
+    }
+});
+
+/* ═══════════════════════════════════════════════════
+   ⑫ إصلاح _buildNonGameConsumables — منع التكرار
+   المشكلة: تُظهر عناصر بدون gameOnly مرتين:
+   مرة في _renderConsumables وأخرى في _buildNonGameConsumables
+═══════════════════════════════════════════════════ */
+window.addEventListener('load', function() {
+    if (typeof _renderConsumables === 'function') {
+        /* نُعيد تعريف _renderConsumables لإصلاح التكرار */
+        window._renderConsumables = function(container) {
+            var inGame = typeof G !== 'undefined' && !G.ended &&
+                         document.getElementById('gameOverlay') &&
+                         document.getElementById('gameOverlay').classList.contains('active');
+
+            /* داخل اللعبة: اعرض فقط عناصر gameOnly + العناصر الدائمة بدون تكرار */
+            /* خارج اللعبة: اعرض فقط العناصر الدائمة (بدون gameOnly) */
+            var items;
+            if (inGame) {
+                /* كل العناصر: سواء gameOnly أو لا */
+                items = SHOP_CATALOG.consumables.filter(function(item) {
+                    if (item.timerOnly && (!G || !G.hasTimer)) return false;
+                    return true;
+                });
+            } else {
+                /* خارج اللعبة: العناصر الدائمة فقط */
+                items = SHOP_CATALOG.consumables.filter(function(item) {
+                    return !item.gameOnly;
+                });
+            }
+
+            container.innerHTML =
+                '<div style="padding:8px 0;">' +
+                (inGame ? '<div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:0.72em;font-weight:700;color:#ef4444;text-align:center;">⚔️ أنت في اللعبة — العناصر تُطبَّق فوراً!</div>' : '') +
+                (_shopState.xpBoostActive ? '<div style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:0.72em;font-weight:900;color:var(--accent);text-align:center;">⚡ مضاعف XP ×' + _shopState.xpBoostMultiplier + ' مفعّل!</div>' : '') +
+                '<div style="display:flex;flex-direction:column;gap:8px;">' +
+                items.map(function(item) { return _buildConsumableCard(item); }).join('') +
+                '</div></div>';
+        };
+    }
+});
+
+/* ═══════════════════════════════════════════════════
+   ⑬ إصلاح شراء الدرع — buyShield يُلغي اشتراط اليوم
+   المشكلة: buyShield يضبط dailyShieldUsed=false فقط
+   لكن useDailyShield تتحقق من lastDailyDate أيضاً
+═══════════════════════════════════════════════════ */
+window.addEventListener('load', function() {
+    /* نُعيد تعريف buyConsumable لإصلاح حالة buyShield */
+    if (typeof buyConsumable === 'function') {
+        var _origBuyConsumable = buyConsumable;
+        window.buyConsumable = function(id) {
+            _origBuyConsumable(id);
+            /* بعد الشراء: إذا كان الدرع، نُحدّث الحالة لضمان عمله */
+            if (id === 'shield_day') {
+                st.dailyShieldUsed = false;
+                /* إزالة تاريخ الدرع القديم لإتاحة استخدامه في أي وقت */
+                st.lastShieldDate = null;
+                saveSt();
+            }
+        };
+    }
+});
+
+/* ═══════════════════════════════════════════════════
+   ⑭ تحديث currentAvatarDisplay عند فتح المتجر
+   + تحديث shopCoinsDisplay بشكل فوري
+═══════════════════════════════════════════════════ */
+window.addEventListener('load', function() {
+    if (typeof renderShop === 'function') {
+        var _origRenderShop = renderShop;
+        window.renderShop = function() {
+            _origRenderShop();
+            /* تحديث رمز الأفاتار في صفحة المتجر */
+            var ca = document.getElementById('currentAvatarDisplay');
+            if (ca) ca.textContent = st.avatar || '🧑';
+        };
+    }
+});
+
+/* ═══════════════════════════════════════════════════
+   ⑮ إصلاح نظام التتابع اليومي — حساب أمس الصحيح
+   المشكلة: updateDailyShield في game.js تحسب أمس بدون zero-padding
+   مما يسبب خطأ في المقارنة (2026-5-1 ≠ 2026-05-01)
+═══════════════════════════════════════════════════ */
+window.addEventListener('load', function() {
+    if (typeof updateDailyShield === 'function') {
+        var _origUpdateDailyShield = updateDailyShield;
+        window.updateDailyShield = function() {
+            var today = todayStr();
+            if (st.lastDailyDate !== today) {
+                if (st.lastDailyDate && st.lastDailyDate > today) {
+                    st.lastDailyDate = today;
+                    saveSt();
+                    return;
+                }
+                /* ✅ حساب أمس مع zero-padding الصحيح */
+                var yesterdayD = new Date(Date.now() - 86400000);
+                var yesterday = yesterdayD.getFullYear() + '-' +
+                    String(yesterdayD.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(yesterdayD.getDate()).padStart(2, '0');
+
+                st.dailyStreak = (st.lastDailyDate === yesterday) ? st.dailyStreak + 1 : 1;
+                st.lastDailyDate = today;
+                st.dailyShieldUsed = false;
+
+                if (st.loginBonusDate !== today) {
+                    st.loginBonusDate = today;
+                    var _streakMiles = { 3: 3, 7: 7, 14: 10, 30: 20 };
+                    var _loginBonus = 2;
+                    Object.keys(_streakMiles).forEach(function(days) {
+                        if (st.dailyStreak >= parseInt(days)) _loginBonus = _streakMiles[days];
+                    });
+                    st.coins += _loginBonus;
+                    setTimeout(function() {
+                        showFeedback('🌅 مرحباً! +' + _loginBonus + '💰 مكافأة يومية (يوم ' + st.dailyStreak + ')');
+                    }, 800);
+                }
+                saveSt();
+            }
+        };
+    }
+});
+
+/* ═══════════════════════════════════════════════════
+   ⑯ إضافة playComboSound إلى checkAnswer
+   — يُستدعى من audio_effects.js لكن checkAnswer لا يستدعيه
+═══════════════════════════════════════════════════ */
+window.addEventListener('load', function() {
+    if (typeof checkAnswer === 'function' && typeof playComboSound === 'function') {
+        var _origCheckAnswer = checkAnswer;
+        window.checkAnswer = function(btn) {
+            _origCheckAnswer(btn);
+            /* تشغيل صوت الكومبو عند التتابع */
+            if (G && G.streak >= 3) {
+                try { playComboSound(G.streak); } catch(e) {}
+            }
+            /* مزامنة الموسيقى مع المؤقت */
+            try { if (typeof window._onGameTimerTick === 'function') window._onGameTimerTick(); } catch(e) {}
+        };
+    }
+});
+
+/* ═══════════════════════════════════════════════════
+   ⑰ تأكيد تحميل المتجر عند أول فتح للتطبيق
+═══════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        /* تحديث shopCoinsDisplay عند البداية */
+        var sc = document.getElementById('shopCoinsDisplay');
+        if (sc && typeof st !== 'undefined') sc.textContent = st.coins;
+        var sc2 = document.getElementById('shopCoinsDisplay2');
+        if (sc2 && typeof st !== 'undefined') sc2.textContent = st.coins;
+        var ca = document.getElementById('currentAvatarDisplay');
+        if (ca && typeof st !== 'undefined') ca.textContent = st.avatar || '🧑';
+    }, 3000);
+});
+
