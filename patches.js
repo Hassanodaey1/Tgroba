@@ -454,20 +454,75 @@ window.addEventListener('load', function() {
 });
 
 /* ═══════════════════════════════════════════════════
-   ⑯ إضافة playComboSound إلى checkAnswer
-   — يُستدعى من audio_effects.js لكن checkAnswer لا يستدعيه
+   ⑯ ربط playComboSound + مزامنة timer الموسيقى
+   ✅ FIX-⑤: checkAnswer تُشغّل correct أولاً، ثم combo
+   — نُؤخر combo بـ 180ms لتجنب التشابك الصوتي
+   — نُلغي playSound('correct') عند streak >= 3 ونستبدله بـ combo
 ═══════════════════════════════════════════════════ */
 window.addEventListener('load', function() {
-    if (typeof checkAnswer === 'function' && typeof playComboSound === 'function') {
+    if (typeof checkAnswer === 'function') {
         var _origCheckAnswer = checkAnswer;
         window.checkAnswer = function(btn) {
             _origCheckAnswer(btn);
-            /* تشغيل صوت الكومبو عند التتابع */
-            if (G && G.streak >= 3) {
-                try { playComboSound(G.streak); } catch(e) {}
+
+            /* ✅ FIX-⑤: تشغيل combo بتأخير 180ms بعد صوت correct */
+            if (G && G.streak >= 3 && typeof playComboSound === 'function') {
+                var streak = G.streak;
+                setTimeout(function() {
+                    try { playComboSound(streak); } catch(e) {}
+                }, 180);
             }
-            /* مزامنة الموسيقى مع المؤقت */
-            try { if (typeof window._onGameTimerTick === 'function') window._onGameTimerTick(); } catch(e) {}
+
+            /* مزامنة الموسيقى مع المؤقت — ④ */
+            try {
+                if (typeof window._onGameTimerTick === 'function') {
+                    window._onGameTimerTick();
+                }
+            } catch(e) {}
+        };
+    }
+
+    /* ✅ FIX-④: ربط _onGameTimerTick بـ setInterval الخاص باللعبة
+       نُغلّف startGameWith لحقن الاستدعاء داخل timer اللعبة */
+    if (typeof startGameWith === 'function') {
+        var _origStartGameWith = startGameWith;
+        window.startGameWith = function(mode, op, customTable, forceTimer) {
+            _origStartGameWith(mode, op, customTable, forceTimer);
+            /* بعد بدء اللعبة: نُراقب G.timer ونُضيف الـ hook عليه */
+            setTimeout(function() {
+                if (!G || !G.hasTimer || !G.timer) return;
+                /* نُوقف الـ timer القديم ونُعيد تشغيله مع _onGameTimerTick */
+                clearInterval(G.timer);
+                G.timer = setInterval(function() {
+                    if (G.ended) { clearInterval(G.timer); G.timer = null; return; }
+                    if (G.timeLeft <= 0) {
+                        clearInterval(G.timer); G.timer = null;
+                        if (!G.ended) endGame();
+                    } else {
+                        G.timeLeft--;
+                        var pct = G.maxTime > 0 ? (G.timeLeft / G.maxTime) * 100 : 100;
+                        var bar = document.getElementById('timerBar');
+                        if (bar) {
+                            bar.style.width = pct + '%';
+                            if (pct < 25) bar.classList.add('danger');
+                            else bar.classList.remove('danger');
+                        }
+                        var bt = document.getElementById('bigTimer');
+                        if (bt) {
+                            bt.textContent = G.timeLeft < 10 ? '0' + G.timeLeft : String(G.timeLeft);
+                            if (G.timeLeft <= 5) bt.classList.add('danger');
+                            else bt.classList.remove('danger');
+                        }
+                        /* ✅ FIX-④: استدعاء hook الموسيقى مع كل tick */
+                        try {
+                            if (typeof window._onGameTimerTick === 'function') {
+                                window._onGameTimerTick();
+                            }
+                        } catch(e) {}
+                        /* ✅ FIX-⑤: tick صوتي فقط من _onGameTimerTick — لا تكرار هنا */
+                    }
+                }, 1000);
+            }, 50); /* تأخير صغير للتأكد من بدء G.timer */
         };
     }
 });
