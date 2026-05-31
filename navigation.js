@@ -216,12 +216,24 @@
             const grid  = document.getElementById('opModeGrid');
             const title = document.getElementById('opSheetTitle');
             title.textContent = '🧠 ألعاب العقل';
+
+            /* عرض أفضل سلسلة للاعب */
+            const bestChain = st.chainBest || 0;
+            const chainBadge = bestChain >= 10 ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#f0b90b,#f97316);">×' + bestChain + '</div>' :
+                               '<div class="mode-card-badge">جديد</div>';
+
             grid.innerHTML = `
                 <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','mix', null, false)">
                     <div class="mode-card-badge">متاح</div>
                     <span class="mode-card-icon">🧠</span>
                     <div class="mode-card-name">الذاكرة</div>
                     <div class="mode-card-desc">10 أسئلة • تظهر 3 ثوانٍ ثم تختفي</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('chain','mix', null, false)" style="border:1px solid rgba(240,185,11,0.3);">
+                    ${chainBadge}
+                    <span class="mode-card-icon">🔗</span>
+                    <div class="mode-card-name">السلسلة</div>
+                    <div class="mode-card-desc">ناتج كل سؤال = مدخل التالي • خطأ = نهاية${bestChain > 0 ? ' • أفضلك: ' + bestChain : ''}</div>
                 </div>
             `;
             openSheet('opSheet');
