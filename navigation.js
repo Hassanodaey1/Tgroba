@@ -210,6 +210,42 @@
 
         function openCounterGame() { openOpSheet('counter', true); }
 
+        /* 🧠 بطاقة الذاكرة — فتح sheet اختيار العملية */
+        function openMemoryGame() {
+            const grid = document.getElementById('opModeGrid');
+            const title = document.getElementById('opSheetTitle');
+            title.textContent = '🧠 بطاقة الذاكرة — اختر العملية';
+            grid.innerHTML = `
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','add', null, false)">
+                    <span class="mode-card-icon">➕</span>
+                    <div class="mode-card-name">الجمع</div>
+                    <div class="mode-card-desc">تذكّر وأجب</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','sub', null, false)">
+                    <span class="mode-card-icon">➖</span>
+                    <div class="mode-card-name">الطرح</div>
+                    <div class="mode-card-desc">تذكّر وأجب</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','mul', null, false)">
+                    <span class="mode-card-icon">✖️</span>
+                    <div class="mode-card-name">الضرب</div>
+                    <div class="mode-card-desc">تذكّر وأجب</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','div', null, false)">
+                    <span class="mode-card-icon">➗</span>
+                    <div class="mode-card-name">القسمة</div>
+                    <div class="mode-card-desc">تذكّر وأجب</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','mix', null, false)">
+                    <div class="mode-card-badge">موصى</div>
+                    <span class="mode-card-icon">🎲</span>
+                    <div class="mode-card-name">مختلط</div>
+                    <div class="mode-card-desc">جميع العمليات</div>
+                </div>
+            `;
+            openSheet('opSheet');
+        }
+
         function openAdvancedGame() {
             if (st.level >= 7) startGameWith('classic', 'advanced', null, true);
             else showFeedback('🔒 هذا القسم مقفول حتى المستوى 7');
