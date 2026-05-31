@@ -104,7 +104,11 @@
                 badge_sudden: false,    /* شارة وضع ضد الساعة */
                 /* ═══ وضع الصاروخ ═══ */
                 _rocketMaxStage: 0,     /* أعلى مرحلة وصلها اللاعب (0=سهل ... 6=عبقري) */
-                badge_rocket: false     /* شارة وضع الصاروخ */
+                badge_rocket: false,    /* شارة وضع الصاروخ */
+                /* ═══ تحدي الأسبوع ═══ */
+                weeklyChallengePlayed: false,   /* هل لُعب تحدي الأسبوع هذا الأسبوع؟ */
+                weeklyChallengeDate: '',        /* رقم الأسبوع ISO عند آخر لعب */
+                weeklyChallengeBest: 0          /* أفضل نتيجة في تحدي الأسبوع */
             };
         }
 
@@ -202,6 +206,15 @@
             if (typeof s._rocketMaxStage !== 'number' || s._rocketMaxStage < 0) s._rocketMaxStage = 0;
             if (s._rocketMaxStage > 6) s._rocketMaxStage = 6;
             if (s.badge_rocket === undefined) s.badge_rocket = false;
+            /* ═══ تحدي الأسبوع ═══ */
+            if (typeof s.weeklyChallengePlayed !== 'boolean') s.weeklyChallengePlayed = false;
+            if (typeof s.weeklyChallengeDate   !== 'string')  s.weeklyChallengeDate   = '';
+            if (typeof s.weeklyChallengeBest   !== 'number' || s.weeklyChallengeBest < 0) s.weeklyChallengeBest = 0;
+            /* إعادة ضبط تلقائي إذا تغيّر الأسبوع (حماية من التلاعب بالتاريخ) */
+            if (s.weeklyChallengeDate && s.weeklyChallengeDate !== weekStr()) {
+                s.weeklyChallengePlayed = false;
+                s.weeklyChallengeDate   = '';
+            }
             return s;
         }
 
