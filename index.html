@@ -434,7 +434,7 @@
                 <!-- HOME PAGE -->
                 <div class="page active" id="page-home">
                     <div class="page-title-header">🏠 الرئيسية</div>
-                    <!-- بطاقة اللاعب + شريط XP في أعلى الصفحة الرئيسية -->
+                    <!-- بطاقة اللاعب + شريط XP -->
                     <div class="home-player-xp-card">
                         <div class="home-player-identity">
                             <div class="home-player-name-full" id="homePlayerName">اللاعب</div>
@@ -450,56 +450,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="session-timer-card">
-                        <div class="session-timer-label">⏱️ وقت اللعب اليوم</div>
-                        <div class="session-timer-value" id="sessionTimerDisplay">00:00:00</div>
-                    </div>
-                    <div onclick="openStatsOverlay()" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(6,182,212,0.1));border:1px solid var(--gold-border);border-radius:18px;padding:16px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
-                        <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;">📊</div>
-                        <div style="flex:1;">
-                            <div style="font-size:0.9em;font-weight:900;color:var(--text);">الإحصائيات المتقدمة</div>
-                            <div style="font-size:0.66em;color:var(--text2);margin-top:3px;">الدقة • التتابع • الجلسات • المستوى</div>
-                        </div>
-                        <div style="font-size:1.3em;color:var(--text3);">›</div>
-                    </div>
-                    <div>
-                        <div class="section-label">تفاصيل الفئات</div>
-                        <div class="cat-grid">
-                            <div class="cat-card" style="--chip-color:#f0b90b" id="homeCatCounter" onclick="openOpSheet('counter')">
-                                <div class="cat-icon">🧮</div>
-                                <div class="cat-name">العمليات على الأعداد</div>
-                                <div class="cat-progress">
-                                    <div class="cat-progress-fill" id="catProg0" style="width:0%"></div>
-                                </div>
-                                <div class="cat-stats" id="catStats0">0% • 0 صح</div>
-                            </div>
-                            <div class="cat-card" style="--chip-color:#7c3aed" id="homeCatChallenges" onclick="openOpSheet('challenges')">
-                                <div class="cat-icon">⚡</div>
-                                <div class="cat-name">التحديات</div>
-                                <div class="cat-progress">
-                                    <div class="cat-progress-fill" id="catProg1" style="width:0%"></div>
-                                </div>
-                                <div class="cat-stats" id="catStats1">0 جلسة</div>
-                            </div>
-                            <div class="cat-card locked" style="--chip-color:#06b6d4" id="catAdvanced">
-                                <div class="cat-icon">📐</div>
-                                <div class="cat-name">رياضيات متقدمة</div>
-                                <div class="cat-progress">
-                                    <div class="cat-progress-fill" style="width:0%"></div>
-                                </div>
-                                <div class="cat-stats" id="catAdvancedStats">🔒 يفتح Lv.7</div>
-                            </div>
-                            <div class="cat-card locked" style="--chip-color:#10b981" id="catLaws">
-                                <div class="cat-icon">📜</div>
-                                <div class="cat-name">قوانين وألغاز</div>
-                                <div class="cat-progress">
-                                    <div class="cat-progress-fill" style="width:0%"></div>
-                                </div>
-                                <div class="cat-stats" id="catLawsStats">🔒 يفتح Lv.10</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="weaknessArea" class="weakness-area"></div>
                     <!-- صندوق المكافأة اليومي -->
                     <div class="daily-box-card box-available" id="dailyBoxCard" onclick="openDailyBox()">
                         <div class="daily-box-glow"></div>
@@ -510,7 +460,8 @@
                         </div>
                         <div class="daily-box-badge">متاح</div>
                     </div>
-                    <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.1));border:1px solid rgba(240,185,11,0.2);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTab('achieve')" >
+                    <!-- السلسلة اليومية -->
+                    <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.1));border:1px solid rgba(240,185,11,0.2);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTab('achieve')">
                         <div style="font-size:1.8em;">🔥</div>
                         <div style="flex:1;">
                             <div style="font-size:0.8em;font-weight:900;color:var(--text);">السلسلة اليومية</div>
@@ -521,6 +472,7 @@
                             <div style="font-size:0.55em;color:var(--text2);">يوم</div>
                         </div>
                     </div>
+                    <!-- تحدي اليوم -->
                     <div class="daily-banner" onclick="window._gameSource='home'; startGameWith('daily','mix', null, false);">
                         <div class="daily-icon">🌟</div>
                         <div>
@@ -530,15 +482,40 @@
                         <div class="daily-badge">جديد</div>
                     </div>
                     <!-- تحدي الأسبوع -->
-                    <div class="weekly-challenge-card weekly-available" id="weeklyChallengeCard">
-                        <div class="weekly-ch-glow"></div>
-                        <div class="weekly-ch-icon">🗓️</div>
-                        <div class="weekly-ch-content">
-                            <div class="weekly-ch-title">تحدي الأسبوع</div>
-                            <div class="weekly-ch-sub">15 سؤالاً • +15 عملة</div>
+                    <div class="daily-banner weekly-variant" id="weeklyChallengeCard" onclick="window._gameSource='home'; startGameWith('weekly','mix', null, false);">
+                        <div class="daily-icon" style="animation:weeklyPulse 3s ease-in-out infinite;">🗓️</div>
+                        <div>
+                            <div class="daily-title">تحدي الأسبوع</div>
+                            <div class="daily-sub">15 سؤالاً • +15 عملة</div>
                         </div>
-                        <div class="weekly-ch-badge">جديد</div>
+                        <div class="daily-badge" style="background:var(--accent2);">جديد</div>
                     </div>
+                    <!-- وقت اللعب -->
+                    <div class="session-timer-card">
+                        <div class="session-timer-label">⏱️ وقت اللعب اليوم</div>
+                        <div class="session-timer-value" id="sessionTimerDisplay">00:00:00</div>
+                    </div>
+                    <!-- الإحصائيات المتقدمة -->
+                    <div onclick="openStatsOverlay()" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(6,182,212,0.1));border:1px solid var(--gold-border);border-radius:18px;padding:16px;cursor:pointer;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                        <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;">📊</div>
+                        <div style="flex:1;">
+                            <div style="font-size:0.9em;font-weight:900;color:var(--text);">الإحصائيات المتقدمة</div>
+                            <div style="font-size:0.66em;color:var(--text2);margin-top:3px;">الدقة • التتابع • الجلسات • المستوى</div>
+                        </div>
+                        <div style="font-size:1.3em;color:var(--text3);">›</div>
+                    </div>
+                    <!-- عناصر مخفية مطلوبة لـ updateUI — لا تُحذف -->
+                    <div id="weaknessArea" class="weakness-area" style="display:none;"></div>
+                    <div id="homeCatCounter" style="display:none;"></div>
+                    <div id="homeCatChallenges" style="display:none;"></div>
+                    <div id="catAdvanced" style="display:none;"></div>
+                    <div id="catLaws" style="display:none;"></div>
+                    <div id="catProg0" style="display:none;"></div>
+                    <div id="catProg1" style="display:none;"></div>
+                    <div id="catStats0" style="display:none;"></div>
+                    <div id="catStats1" style="display:none;"></div>
+                    <div id="catAdvancedStats" style="display:none;"></div>
+                    <div id="catLawsStats" style="display:none;"></div>
                 </div>
 
                 <!-- PLAY PAGE -->
