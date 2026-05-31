@@ -440,6 +440,81 @@
             if (document.getElementById('dailyBoxCard')) renderDailyBox();
         }, 60000);
 
+        /* ═══════════════════════════════════════════════════════
+           🗓️ تحدي الأسبوع — Weekly Challenge
+           15 سؤالاً تتجدد كل أسبوع • مكافأة +15 عملة
+           ═══════════════════════════════════════════════════════ */
+
+        function hasWeeklyChallengeBeenPlayed() {
+            return st.weeklyChallengeDate === weekStr() && st.weeklyChallengePlayed === true;
+        }
+
+        function markWeeklyChallengePlayed(score) {
+            st.weeklyChallengePlayed = true;
+            st.weeklyChallengeDate   = weekStr();
+            if ((score || 0) > (st.weeklyChallengeBest || 0)) {
+                st.weeklyChallengeBest = score || 0;
+            }
+            st.coins += 15;
+            saveSt();
+            updateUI();
+            renderWeeklyChallenge();
+            showFeedback('🗓️ أكملت تحدي الأسبوع! +15💰');
+            playSound('levelup');
+            doConfetti();
+        }
+
+        function renderWeeklyChallenge() {
+            const el = document.getElementById('weeklyChallengeCard');
+            if (!el) return;
+            const played = hasWeeklyChallengeBeenPlayed();
+
+            /* حساب الوقت المتبقي حتى نهاية الأسبوع (الأحد منتصف الليل) */
+            const now  = new Date();
+            const day  = now.getDay(); /* 0=أحد */
+            const daysLeft = day === 0 ? 0 : 7 - day;
+            const endOfWeek = new Date(now);
+            endOfWeek.setDate(now.getDate() + daysLeft);
+            endOfWeek.setHours(23, 59, 59, 0);
+            const diff = endOfWeek - now;
+            const hh = String(Math.floor(diff / 3600000)).padStart(2, '0');
+            const mm = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+
+            if (!played) {
+                el.innerHTML = `
+                    <div class="weekly-ch-glow"></div>
+                    <div class="weekly-ch-icon">🗓️</div>
+                    <div class="weekly-ch-content">
+                        <div class="weekly-ch-title">تحدي الأسبوع</div>
+                        <div class="weekly-ch-sub">15 سؤالاً • +15 عملة • ينتهي بعد ${hh}:${mm}</div>
+                    </div>
+                    <div class="weekly-ch-badge">جديد</div>`;
+                el.onclick = () => {
+                    window._gameSource = 'home';
+                    startGameWith('weekly', 'mix', null, false);
+                };
+                el.classList.remove('weekly-played');
+                el.classList.add('weekly-available');
+            } else {
+                const best = st.weeklyChallengeBest || 0;
+                el.innerHTML = `
+                    <div class="weekly-ch-icon played">✅</div>
+                    <div class="weekly-ch-content">
+                        <div class="weekly-ch-title">تم • أفضل نتيجة: ${best}/15</div>
+                        <div class="weekly-ch-sub">يتجدد الأحد القادم</div>
+                    </div>
+                    <div class="weekly-ch-badge played">منتهي</div>`;
+                el.onclick = null;
+                el.classList.remove('weekly-available');
+                el.classList.add('weekly-played');
+            }
+        }
+
+        /* تحديث عداد تحدي الأسبوع كل دقيقة */
+        setInterval(() => {
+            if (document.getElementById('weeklyChallengeCard')) renderWeeklyChallenge();
+        }, 60000);
+
         function openLaws() {
             const el = document.getElementById('lawsContent');
             el.innerHTML = LAWS_DATA.map(cat => `
