@@ -494,7 +494,9 @@
             const map = { add: 'addition', sub: 'subtraction', mul: 'multiplication', div: 'division', mix: 'addition',
                 table: 'table', percent: 'percentage', fraction: 'division', power: 'algebra', sqrt: 'squareroot',
                 equation: 'algebra', sequence: 'puzzles', algebra: 'algebra', word: 'wordproblems',
-                geometry: 'geometry', advanced: 'algebra', laws: 'mathlaws' };
+                geometry: 'geometry', advanced: 'algebra', laws: 'mathlaws',
+                adv_roots: 'algebra', adv_log: 'algebra', adv_geo: 'geometry',
+                adv_eq: 'algebra', adv_seq: 'puzzles', adv_trig: 'algebra' };
             return map[op] || 'addition';
         }
 
