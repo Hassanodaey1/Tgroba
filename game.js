@@ -224,6 +224,23 @@
                 document.getElementById('explanationArea').innerHTML =
                     `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${G.correctAnswer}</strong><br>الشرح: ${G.currentExplanation}</div>`;
             }
+
+            /* ✅ §7.4 — تلميح ذكي عند الخطأ المتكرر في نفس الموضوع */
+            try {
+                const catKey = G.currentCatKey;
+                if (catKey && st.stats && st.stats[catKey]) {
+                    const s = st.stats[catKey];
+                    const wrongCount = (s.att || 0) - (s.cor || 0);
+                    if (wrongCount >= 5 && !G._smartTipShown) {
+                        G._smartTipShown = true;
+                        setTimeout(() => {
+                            if (typeof showFeedback === 'function') {
+                                showFeedback('💡 هذا الموضوع يحتاج مراجعة — جرّب وضع التدريب!');
+                            }
+                        }, 1200);
+                    }
+                }
+            } catch(_e) {}
         }
 
         /* ═══════════ END GAME ═══════════ */
@@ -775,6 +792,21 @@
                             G.mode === 'sudden' ? `⚡ ${G._suddenScore || 0} صحيح` :
                             G.mode === 'rocket' ? `🚀 ${G.correct} صحيح` :
                             `السؤال ${G.currentQ} من ${G.totalQ}`;
+                    }
+                }
+
+                /* ✅ §7.3 — تحديث شريط التقدم المرئي */
+                const _pgBar  = document.getElementById('gameProgressBar');
+                const _pgFill = document.getElementById('gameProgressFill');
+                if (_pgBar && _pgFill) {
+                    /* يظهر فقط في الأوضاع المحدودة (classic, daily, weekly, fill, memory) */
+                    const _limitedModes = ['classic', 'daily', 'weekly', 'fill', 'memory'];
+                    if (_limitedModes.includes(G.mode) && G.totalQ < 9999 && !G.isTraining) {
+                        _pgBar.style.display = 'block';
+                        const _pct = Math.min(100, ((G.currentQ - 1) / G.totalQ) * 100);
+                        _pgFill.style.width = _pct + '%';
+                    } else {
+                        _pgBar.style.display = 'none';
                     }
                 }
                 
