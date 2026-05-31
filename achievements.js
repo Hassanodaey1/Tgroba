@@ -469,9 +469,9 @@
             if (!el) return;
             const played = hasWeeklyChallengeBeenPlayed();
 
-            /* حساب الوقت المتبقي حتى نهاية الأسبوع (الأحد منتصف الليل) */
+            /* حساب الوقت المتبقي حتى نهاية الأسبوع */
             const now  = new Date();
-            const day  = now.getDay(); /* 0=أحد */
+            const day  = now.getDay();
             const daysLeft = day === 0 ? 0 : 7 - day;
             const endOfWeek = new Date(now);
             endOfWeek.setDate(now.getDate() + daysLeft);
@@ -482,31 +482,32 @@
 
             if (!played) {
                 el.innerHTML = `
-                    <div class="weekly-ch-glow"></div>
-                    <div class="weekly-ch-icon">🗓️</div>
-                    <div class="weekly-ch-content">
-                        <div class="weekly-ch-title">تحدي الأسبوع</div>
-                        <div class="weekly-ch-sub">15 سؤالاً • +15 عملة • ينتهي بعد ${hh}:${mm}</div>
+                    <div class="daily-icon" style="animation:weeklyPulse 3s ease-in-out infinite;">🗓️</div>
+                    <div>
+                        <div class="daily-title">تحدي الأسبوع</div>
+                        <div class="daily-sub">15 سؤالاً • +15 عملة • ينتهي بعد ${hh}:${mm}</div>
                     </div>
-                    <div class="weekly-ch-badge">جديد</div>`;
+                    <div class="daily-badge" style="background:var(--accent2);">جديد</div>`;
                 el.onclick = () => {
                     window._gameSource = 'home';
                     startGameWith('weekly', 'mix', null, false);
                 };
                 el.classList.remove('weekly-played');
-                el.classList.add('weekly-available');
+                el.style.opacity = '';
+                el.style.cursor  = 'pointer';
             } else {
                 const best = st.weeklyChallengeBest || 0;
                 el.innerHTML = `
-                    <div class="weekly-ch-icon played">✅</div>
-                    <div class="weekly-ch-content">
-                        <div class="weekly-ch-title">تم • أفضل نتيجة: ${best}/15</div>
-                        <div class="weekly-ch-sub">يتجدد الأحد القادم</div>
+                    <div class="daily-icon" style="animation:none;">✅</div>
+                    <div>
+                        <div class="daily-title">تحدي الأسبوع — مكتمل</div>
+                        <div class="daily-sub">أفضل نتيجة: ${best}/15 • يتجدد الأحد القادم</div>
                     </div>
-                    <div class="weekly-ch-badge played">منتهي</div>`;
+                    <div class="daily-badge" style="background:var(--border2);color:var(--text2);">منتهي</div>`;
                 el.onclick = null;
-                el.classList.remove('weekly-available');
                 el.classList.add('weekly-played');
+                el.style.opacity = '0.65';
+                el.style.cursor  = 'default';
             }
         }
 
