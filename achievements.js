@@ -39,6 +39,13 @@
                     .age && st.age >= 18 && (st.stats['algebra']?.cor || 0) >= 20, reward: 15 },
             { id: 'wise_numbers', icon: '🧙', name: 'حكيم الأرقام', desc: 'عمرك 60+ وأجبت 30 صحيحة', check: () => st.age &&
                     st.age >= 60 && st.correctTotal >= 30, reward: 20 },
+            /* ═══ إنجازات بطاقة الذاكرة ═══ */
+            { id: 'memory_first', icon: '🧠', name: 'أول لعبة ذاكرة', desc: 'العب وضع بطاقة الذاكرة لأول مرة',
+                check: () => (st.memoryBest || 0) >= 1, reward: 5 },
+            { id: 'memory_ace', icon: '💎', name: 'ذاكرة حديدية', desc: 'أكمل بطاقة الذاكرة بدون أخطاء',
+                check: () => (st.memoryPerfect || 0) >= 1, reward: 10 },
+            { id: 'memory_streak', icon: '🔗', name: 'ذاكرة الأبطال', desc: 'أجب على 8+ إجابات صحيحة في وضع الذاكرة',
+                check: () => (st.memoryBest || 0) >= 8, reward: 8 },
         ];
 
         function checkAchievements() {
