@@ -257,7 +257,7 @@
                     <div class="mode-card-name">الصاروخ</div>
                     <div class="mode-card-desc">تصعيد تلقائي • 5 أسئلة/مرحلة • 3 قلوب${bestRocket > 0 ? ' • أعلى مرحلة: ' + rocketStageNames[bestRocket] : ''}</div>
                 </div>
-                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('classic','laws', null, true)" style="border:1px solid rgba(16,185,129,0.35);">
+                <div class="mode-card" onclick="window._gameSource='play'; closeSheet('opSheet'); startGameWith('classic','laws', null, true)" style="border:1px solid rgba(16,185,129,0.35);">
                     <div class="mode-card-badge" style="background:#10b981">جديد</div>
                     <span class="mode-card-icon">🧩</span>
                     <div class="mode-card-name">ألغاز رياضية</div>
