@@ -212,15 +212,20 @@
 
         /* 🧠 بطاقة العقل — فتح sheet ألعاب العقل */
         function openMindGame() {
-            window._gameSource = 'play';
+            window._gameSource = 'mindgame';    /* زر العودة يرجع لبطاقة العقل */
             const grid  = document.getElementById('opModeGrid');
             const title = document.getElementById('opSheetTitle');
             title.textContent = '🧠 ألعاب العقل';
 
             /* عرض أفضل سلسلة للاعب */
-            const bestChain = st.chainBest || 0;
-            const chainBadge = bestChain >= 10 ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#f0b90b,#f97316);">×' + bestChain + '</div>' :
-                               '<div class="mode-card-badge">جديد</div>';
+            const bestChain  = st.chainBest  || 0;
+            const bestSudden = st.suddenBest || 0;
+            const chainBadge = bestChain >= 10
+                ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#f0b90b,#f97316);">×' + bestChain + '</div>'
+                : '<div class="mode-card-badge">جديد</div>';
+            const suddenBadge = bestSudden >= 10
+                ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#ef4444,#f97316);">⚡' + bestSudden + '</div>'
+                : '<div class="mode-card-badge" style="background:#ef4444">حار</div>';
 
             grid.innerHTML = `
                 <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','mix', null, false)">
@@ -234,6 +239,12 @@
                     <span class="mode-card-icon">🔗</span>
                     <div class="mode-card-name">السلسلة</div>
                     <div class="mode-card-desc">ناتج كل سؤال = مدخل التالي • خطأ = نهاية${bestChain > 0 ? ' • أفضلك: ' + bestChain : ''}</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('sudden','mix', null, true)" style="border:1px solid rgba(239,68,68,0.35);">
+                    ${suddenBadge}
+                    <span class="mode-card-icon">⏱️</span>
+                    <div class="mode-card-name">ضد الساعة</div>
+                    <div class="mode-card-desc">10 ثوانٍ/سؤال • خطأ = نهاية • ×2.0💰${bestSudden > 0 ? ' • أفضلك: ' + bestSudden : ''}</div>
                 </div>
             `;
             openSheet('opSheet');
