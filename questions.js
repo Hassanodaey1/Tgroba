@@ -538,6 +538,15 @@
                 G._chainVal  = rnd(2, 9); /* القيمة الابتدائية */
                 G._chainLen  = 0;        /* عداد طول السلسلة الحالية */
                 G._chainDone = false;    /* تم الانتهاء بالخطأ */
+
+            } else if (mode === 'sudden') {
+                /* ⚡ وضع ضد الساعة: 10 ثوانٍ لكل سؤال — خطأ واحد أو انتهاء الوقت = نهاية */
+                G.totalQ       = 9999;   /* لا نهاية — تنتهي بالخطأ أو انتهاء الوقت */
+                hasTimer       = true;
+                G.maxTime      = 10;     /* 10 ثوانٍ لكل سؤال */
+                G.timeLeft     = 10;
+                lives          = 0;      /* لا قلوب — خطأ واحد = نهاية فورية */
+                G._suddenScore = 0;      /* عداد الأسئلة الصحيحة */
             }
 
             G.livesLeft = lives;
@@ -556,7 +565,8 @@
                 marathon:   '🏆 الماراثون',
                 impossible: '💀 المستحيل',
                 memory:     '🧠 بطاقة الذاكرة',
-                chain:      '🔗 وضع السلسلة'
+                chain:      '🔗 وضع السلسلة',
+                sudden:     '⚡ ضد الساعة'
             };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
