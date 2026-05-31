@@ -346,6 +346,8 @@ function updateUI() {
     renderAchievements();
     /* تحديث الصندوق اليومي */
     try { if (typeof renderDailyBox === 'function') renderDailyBox(); } catch(e) {}
+    /* تحديث تحدي الأسبوع */
+    try { if (typeof renderWeeklyChallenge === 'function') renderWeeklyChallenge(); } catch(e) {}
     renderProfileDailyTasks();
     renderProfileAchievements();
     updateUnlocks();
