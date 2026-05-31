@@ -63,13 +63,17 @@
                     ans = b - a;
                     text = `س + ${a} = ${b}`;
                     hint = 'ما قيمة س؟';
-                    explanation = `س = ${b} - ${a} = ${ans}`; } else if (ch === 'fraction_add') { let c = rnd(2, 8);
+                    explanation = `س = ${b} - ${a} = ${ans}`; } else if (ch === 'fraction_add') { let c = rnd(3, 9);
                     let a2 = rnd(1, c - 1);
                     let b2 = rnd(1, c - 1);
-                    ans = a2 + b2;
+                    const sumN = a2 + b2;
+                    function gcdF(x,y){return y===0?x:gcdF(y,x%y);}
+                    const g2 = gcdF(sumN, c);
+                    const fracStr = g2 === c ? String(sumN/c) : (sumN/g2 + '/' + c/g2);
+                    ans = sumN; /* رقمياً للمقارنة */
                     text = `${a2}/${c} + ${b2}/${c}`;
-                    hint = 'اجمع الكسور (المقامات متساوية)';
-                    explanation = `${a2}/${c} + ${b2}/${c} = ${ans}/${c}`; } else if (ch === 'percent') { let pct = [
+                    hint = 'اجمع البسطين (المقامات متساوية)';
+                    explanation = `${a2}/${c} + ${b2}/${c} = ${sumN}/${c}` + (g2 > 1 ? ` = ${fracStr}` : ''); } else if (ch === 'percent') { let pct = [
                         10, 20, 25, 50
                     ][rnd(0, 3)];
                     a = rnd(1, 20) * 10;
@@ -103,8 +107,31 @@
                     text = `2س + ${a} = ${b}`;
                     hint = 'ما قيمة س؟';
                     explanation = `س = (${b} - ${a})/2 = ${ans}`; }
-                let choices = shuffle([ans, ans + 1, ans - 1, ans + 2]);
-                if (typeof ans !== 'number') choices = shuffle([ans, ans + 1, ans - 1, ans + 2]);
+                /* خيارات ذكية حسب نوع السؤال */
+                let choices;
+                if (ch === 'trig_simple') {
+                    /* قيم المثلثات: استخدم القيم الحقيقية فقط */
+                    const trigAllVals = [0, 0.5, 0.58, 0.71, 0.87, 1, 1.73];
+                    const wrong3 = [];
+                    for (const v of shuffle([...trigAllVals])) {
+                        if (v !== ans) { wrong3.push(v); if (wrong3.length === 3) break; }
+                    }
+                    choices = shuffle([ans, ...wrong3]);
+                } else if (ch === 'sqrt') {
+                    /* جذور تربيعية: خيارات قريبة من الجذر الصحيح */
+                    const w1 = ans + 1, w2 = ans - 1 > 0 ? ans - 1 : ans + 2, w3 = ans + 2;
+                    choices = shuffle([ans, w1, w2, w3]);
+                } else if (ch === 'fraction_add') {
+                    /* كسور: خيارات في نفس النطاق المعقول */
+                    const w1 = ans + 1, w2 = ans - 1 >= 0 ? ans - 1 : ans + 2, w3 = ans + 2;
+                    choices = shuffle([ans, w1, w2, w3]);
+                } else if (ch === 'area_circle') {
+                    /* مساحة: خيارات ضمن ±30% */
+                    const spread = Math.max(5, Math.round(ans * 0.2));
+                    choices = shuffle([ans, ans + spread, ans - spread > 0 ? ans - spread : ans + spread + 5, ans + spread * 2]);
+                } else {
+                    choices = shuffle([ans, ans + 1, ans - 1, ans + 2]);
+                }
                 return { text, hint, answer: ans, choices, explanation, catKey: 'algebra' };
             }
             /* ═══ أسس وجذور ═══ */
