@@ -547,6 +547,17 @@
                 G.timeLeft     = 10;
                 lives          = 0;      /* لا قلوب — خطأ واحد = نهاية فورية */
                 G._suddenScore = 0;      /* عداد الأسئلة الصحيحة */
+
+            } else if (mode === 'rocket') {
+                /* 🚀 وضع الصاروخ: تصعيد حقيقي — الصعوبة تتصاعد كل 5 إجابات صحيحة */
+                G.totalQ        = 9999;  /* لا نهاية — تنتهي بنفاد القلوب */
+                hasTimer        = false;
+                lives           = 3;     /* 3 قلوب — الصعوبة هي التحدي */
+                G._rocketStage  = 0;     /* المرحلة الحالية: 0=سهل، 1=سهل+، 2=متوسط، 3=صعب، 4=عبقري */
+                G._rocketBest   = 0;     /* أفضل مرحلة وصلها */
+                G._rocketStageLabels = ['سهل', 'سهل+', 'متوسط', 'صعب', 'عبقري'];
+                /* تعيين الصعوبة الابتدائية = سهل بغض النظر عن اختيار اللاعب */
+                G._rocketDiff   = 'easy';
             }
 
             G.livesLeft = lives;
@@ -566,7 +577,8 @@
                 impossible: '💀 المستحيل',
                 memory:     '🧠 بطاقة الذاكرة',
                 chain:      '🔗 وضع السلسلة',
-                sudden:     '⚡ ضد الساعة'
+                sudden:     '⚡ ضد الساعة',
+                rocket:     '🚀 وضع الصاروخ'
             };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
@@ -638,6 +650,22 @@
                 }
             } else {
                 if (_chainBar) _chainBar.style.display = 'none';
+            }
+
+            /* 🚀 عرض شريط مرحلة الصاروخ */
+            const _rocketBar = document.getElementById('rocketStageBar');
+            if (mode === 'rocket') {
+                if (_rocketBar) {
+                    _rocketBar.style.display = 'block';
+                    const _rs = document.getElementById('rocketStageLabel');
+                    if (_rs) _rs.textContent = '🚀 المرحلة 1: سهل';
+                    const _rf = document.getElementById('rocketStageProgress');
+                    if (_rf) { _rf.style.width = '0%'; }
+                    const _rb = document.getElementById('rocketBestStage');
+                    if (_rb) _rb.textContent = st._rocketMaxStage || 0;
+                }
+            } else {
+                if (_rocketBar) _rocketBar.style.display = 'none';
             }
 
             /* 🎵 تطبيق الثيم الموسيقي المناسب لوضع اللعب */
