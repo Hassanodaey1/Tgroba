@@ -473,10 +473,11 @@
                 lives = 3;
 
             } else if (mode === 'survival') {
-                /* 🔥 البقاء: بدون وقت + 3 أخطاء */
-                G.totalQ = 9999;
-                hasTimer = false;
-                lives = 0;
+                /* 🔥 البقاء: بدون وقت + 3 أخطاء + تصعيد حقيقي كل 10 إجابات */
+                G.totalQ          = 9999;
+                hasTimer          = false;
+                lives             = 0;
+                G._survivalDiffLevel = 0; /* مستوى الصعوبة الداخلي: 0=سهل، 1=متوسط، 2=صعب، 3=عبقري */
 
             } else if (mode === 'frenzy') {
                 /* 💥 الاندفاع: مفتوح + 30 ثانية */
@@ -570,6 +571,7 @@
             G.livesLeft = lives;
             G.maxLives = lives;
             G._survivalWrong = 0;
+            G._survivalDiffLevel = G._survivalDiffLevel || 0; /* يُحتفظ بقيمة تهيئة survival أو يبقى 0 */
             G.hasTimer = hasTimer;
             G.helpersUsed = { skip: false, remove: false, heart: false };
 
