@@ -98,7 +98,7 @@
                         'gcardAdvancedStats').textContent = 'يفتح عند Lv.7';
                 } else {
                     gcardAdvanced.classList.remove('locked');
-                    gcardAdvanced.onclick = () => startGameWith('classic', 'advanced', null, true);
+                    gcardAdvanced.onclick = () => openAdvancedGame();
                     const _ba2 = gcardAdvanced.querySelector('.gcard-badge'); if(_ba2) _ba2.textContent = 'متاح';
                     if (document.getElementById('gcardAdvancedStats')) document.getElementById(
                         'gcardAdvancedStats').textContent = 'اضغط للعب';
@@ -268,8 +268,51 @@
         }
 
         function openAdvancedGame() {
-            if (st.level >= 7) startGameWith('classic', 'advanced', null, true);
-            else showFeedback('🔒 هذا القسم مقفول حتى المستوى 7');
+            if (st.level < 7) { showFeedback('🔒 هذا القسم مقفول حتى المستوى 7'); return; }
+            window._gameSource = 'play';
+            const grid  = document.getElementById('opModeGrid');
+            const title = document.getElementById('opSheetTitle');
+            title.textContent = '📐 الرياضيات المتقدمة';
+
+            grid.innerHTML = `
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('adv_roots','mix', null, true)" style="border:1px solid rgba(240,185,11,0.35);">
+                    <div class="mode-card-badge" style="background:linear-gradient(135deg,#f0b90b,#f97316);">جديد</div>
+                    <span class="mode-card-icon">🔢</span>
+                    <div class="mode-card-name">الأسس والجذور</div>
+                    <div class="mode-card-desc">قوى • جذور تربيعية • جذور تكعيبية</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('adv_log','mix', null, true)" style="border:1px solid rgba(6,182,212,0.35);">
+                    <div class="mode-card-badge" style="background:#06b6d4;">جديد</div>
+                    <span class="mode-card-icon">📊</span>
+                    <div class="mode-card-name">اللوغاريتم</div>
+                    <div class="mode-card-desc">log • ln • خصائص اللوغاريتم</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('adv_geo','mix', null, true)" style="border:1px solid rgba(16,185,129,0.35);">
+                    <div class="mode-card-badge" style="background:#10b981;">جديد</div>
+                    <span class="mode-card-icon">📐</span>
+                    <div class="mode-card-name">الهندسة</div>
+                    <div class="mode-card-desc">مساحات • محيطات • حجوم • فيثاغورس</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('adv_eq','mix', null, true)" style="border:1px solid rgba(239,68,68,0.35);">
+                    <div class="mode-card-badge" style="background:#ef4444;">جديد</div>
+                    <span class="mode-card-icon">🔣</span>
+                    <div class="mode-card-name">المعادلات</div>
+                    <div class="mode-card-desc">معادلات الدرجة الأولى • نظام معادلتين</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('adv_seq','mix', null, true)" style="border:1px solid rgba(124,58,237,0.35);">
+                    <div class="mode-card-badge" style="background:#7c3aed;">جديد</div>
+                    <span class="mode-card-icon">📈</span>
+                    <div class="mode-card-name">المتتاليات</div>
+                    <div class="mode-card-desc">حسابية • هندسية • فيبوناتشي • مربعات</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('adv_trig','mix', null, true)" style="border:1px solid rgba(236,72,153,0.35);">
+                    <div class="mode-card-badge" style="background:#ec4899;">جديد</div>
+                    <span class="mode-card-icon">📐</span>
+                    <div class="mode-card-name">المثلثات</div>
+                    <div class="mode-card-desc">جا • جتا • ظا • الزوايا القياسية</div>
+                </div>
+            `;
+            openSheet('opSheet');
         }
 
         function openLawsGame() {
