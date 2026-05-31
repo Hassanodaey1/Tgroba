@@ -387,6 +387,11 @@
                         if (typeof markDailyPlayed === 'function') markDailyPlayed();
                     }
                 }
+                if (G.mode === 'weekly') {
+                    if (typeof hasWeeklyChallengeBeenPlayed === 'function' && !hasWeeklyChallengeBeenPlayed()) {
+                        if (typeof markWeeklyChallengePlayed === 'function') markWeeklyChallengePlayed(G.correct);
+                    }
+                }
                 const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
                 st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
                 if (st.history.length > 10) st.history.pop();
