@@ -107,6 +107,231 @@
                 if (typeof ans !== 'number') choices = shuffle([ans, ans + 1, ans - 1, ans + 2]);
                 return { text, hint, answer: ans, choices, explanation, catKey: 'algebra' };
             }
+            /* ═══ أسس وجذور ═══ */
+            if (op === 'adv_roots') {
+                const types = ['sqrt_easy','sqrt_hard','cbrt','power_simple','power_hard','nth_root'];
+                const t = types[rnd(0, types.length-1)];
+                let a, b, ans, text, hint, explanation;
+                if (t === 'sqrt_easy') {
+                    const sq = [4,9,16,25,36,49,64,81,100,121,144,169,196,225];
+                    a = sq[rnd(0,sq.length-1)]; ans = Math.sqrt(a);
+                    text = `√${a} = ؟`; hint = 'ما الجذر التربيعي؟';
+                    explanation = `√${a} = ${ans} لأن ${ans}² = ${a}`;
+                } else if (t === 'sqrt_hard') {
+                    const sq = [256,289,324,361,400,441,484,529,576,625];
+                    a = sq[rnd(0,sq.length-1)]; ans = Math.sqrt(a);
+                    text = `√${a} = ؟`; hint = 'ما الجذر التربيعي؟';
+                    explanation = `√${a} = ${ans} لأن ${ans}² = ${a}`;
+                } else if (t === 'cbrt') {
+                    const cb = [[8,2],[27,3],[64,4],[125,5],[216,6],[343,7],[512,8]];
+                    const pick = cb[rnd(0,cb.length-1)]; a=pick[0]; ans=pick[1];
+                    text = `∛${a} = ؟`; hint = 'ما الجذر التكعيبي؟';
+                    explanation = `∛${a} = ${ans} لأن ${ans}³ = ${a}`;
+                } else if (t === 'power_simple') {
+                    a = rnd(2,9); b = rnd(2,3); ans = Math.pow(a,b);
+                    text = `${a}^${b} = ؟`; hint = `اضرب ${a} في نفسه ${b} مرات`;
+                    explanation = `${a}^${b} = ${ans}`;
+                } else if (t === 'power_hard') {
+                    const bases = [[2,8,256],[2,9,512],[2,10,1024],[3,5,243],[3,6,729],[4,4,256],[5,4,625]];
+                    const p = bases[rnd(0,bases.length-1)];
+                    text = `${p[0]}^${p[1]} = ؟`; ans = p[2]; hint = `قوة العدد ${p[0]}`;
+                    explanation = `${p[0]}^${p[1]} = ${p[2]}`;
+                } else {
+                    const opts = [[4,0.5,2,'√4'],[8,0.333,2,'∛8'],[16,0.25,2,'⁴√16'],[81,0.25,3,'⁴√81']];
+                    const pick = opts[rnd(0,opts.length-1)];
+                    text = `${pick[3]} = ؟`; ans = pick[3]==='⁴√16'?2:3; hint='جذر الأعداد';
+                    explanation = `${pick[3]} = ${ans}`;
+                }
+                const wr = new Set(); let s=0;
+                while(wr.size<3 && s<200){s++; const o=rnd(-5,5); if(o!==0&&ans+o>0) wr.add(ans+o);}
+                while(wr.size<3) wr.add(ans+wr.size+1);
+                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
+            }
+
+            /* ═══ لوغاريتم ═══ */
+            if (op === 'adv_log') {
+                const types = ['log10','log_base','ln_simple','log_prop','antilog'];
+                const t = types[rnd(0,types.length-1)];
+                let ans, text, hint, explanation;
+                if (t === 'log10') {
+                    const exp = rnd(1,5); ans = exp;
+                    text = `log₁₀(10^${exp}) = ؟`; hint = 'log₁₀(10^x) = x';
+                    explanation = `log₁₀(10^${exp}) = ${exp}`;
+                } else if (t === 'log_base') {
+                    const pairs = [[2,8,3,'log₂(8)'],[2,16,4,'log₂(16)'],[2,32,5,'log₂(32)'],[3,9,2,'log₃(9)'],[3,27,3,'log₃(27)'],[5,25,2,'log₅(25)'],[4,64,3,'log₄(64)']];
+                    const p = pairs[rnd(0,pairs.length-1)];
+                    text = `${p[3]} = ؟`; ans = p[2]; hint = `${p[0]}^x = ${p[1]}`;
+                    explanation = `${p[3]} = ${p[2]} لأن ${p[0]}^${p[2]} = ${p[1]}`;
+                } else if (t === 'ln_simple') {
+                    const opts = [[1,0,'ln(1)'],[Math.E,1,'ln(e)'],[Math.pow(Math.E,2),2,'ln(e²)'],[Math.pow(Math.E,3),3,'ln(e³)']];
+                    const p = opts[rnd(0,opts.length-1)]; ans = p[1];
+                    text = `${p[2]} = ؟`; hint = 'ln(eˣ) = x';
+                    explanation = `${p[2]} = ${p[1]}`;
+                } else if (t === 'log_prop') {
+                    const a = rnd(2,5); const b = rnd(2,5); ans = a+b;
+                    text = `log(10^${a} × 10^${b}) = ؟`; hint = 'log(a×b) = log(a)+log(b)';
+                    explanation = `log(10^${a}) + log(10^${b}) = ${a} + ${b} = ${ans}`;
+                } else {
+                    const exp = rnd(1,4); ans = Math.pow(10,exp);
+                    text = `إذا log(x) = ${exp}، فـ x = ؟`; hint = 'x = 10^(log x)';
+                    explanation = `x = 10^${exp} = ${ans}`;
+                }
+                const wr = new Set(); let s=0;
+                while(wr.size<3 && s<200){s++; const o=rnd(-3,3); if(o!==0) wr.add(ans+o);}
+                while(wr.size<3) wr.add(ans+wr.size+1);
+                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
+            }
+
+            /* ═══ هندسة ═══ */
+            if (op === 'adv_geo') {
+                const types = ['area_rect','area_tri','area_circle','perim_rect','perim_circle','vol_cube','vol_cyl','pythagoras'];
+                const t = types[rnd(0,types.length-1)];
+                let ans, text, hint, explanation;
+                if (t === 'area_rect') {
+                    const w=rnd(3,12),h=rnd(3,12); ans=w*h;
+                    text=`مساحة مستطيل ${w}×${h} = ؟`; hint='المساحة = الطول × العرض';
+                    explanation=`${w} × ${h} = ${ans}`;
+                } else if (t === 'area_tri') {
+                    const b=rnd(4,14),h=rnd(3,10); ans=Math.round(b*h/2);
+                    text=`مساحة مثلث قاعدة ${b} وارتفاع ${h} = ؟`; hint='المساحة = ½ × القاعدة × الارتفاع';
+                    explanation=`½ × ${b} × ${h} = ${ans}`;
+                } else if (t === 'area_circle') {
+                    const r=rnd(2,9); ans=Math.round(Math.PI*r*r);
+                    text=`مساحة دائرة نصف قطرها ${r} (π≈3.14) = ؟`; hint='المساحة = π × نق²';
+                    explanation=`3.14 × ${r}² = ${ans}`;
+                } else if (t === 'perim_rect') {
+                    const w=rnd(3,12),h=rnd(3,12); ans=2*(w+h);
+                    text=`محيط مستطيل ${w}×${h} = ؟`; hint='المحيط = 2×(الطول+العرض)';
+                    explanation=`2×(${w}+${h}) = ${ans}`;
+                } else if (t === 'perim_circle') {
+                    const r=rnd(2,9); ans=Math.round(2*Math.PI*r);
+                    text=`محيط دائرة نصف قطرها ${r} (π≈3.14) = ؟`; hint='المحيط = 2×π×نق';
+                    explanation=`2×3.14×${r} = ${ans}`;
+                } else if (t === 'vol_cube') {
+                    const s=rnd(2,8); ans=s*s*s;
+                    text=`حجم مكعب ضلعه ${s} = ؟`; hint='الحجم = الضلع³';
+                    explanation=`${s}³ = ${ans}`;
+                } else if (t === 'vol_cyl') {
+                    const r=rnd(2,5),h=rnd(3,8); ans=Math.round(Math.PI*r*r*h);
+                    text=`حجم أسطوانة نق=${r} وارتفاع=${h} (π≈3.14) = ؟`; hint='الحجم = π×نق²×الارتفاع';
+                    explanation=`3.14×${r}²×${h} = ${ans}`;
+                } else {
+                    const pairs=[[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15]];
+                    const p=pairs[rnd(0,pairs.length-1)]; ans=p[2];
+                    text=`مثلث قائم أضلاعه ${p[0]} و ${p[1]}، ما الوتر؟`; hint='الوتر² = الضلع₁² + الضلع₂²';
+                    explanation=`√(${p[0]}²+${p[1]}²) = √${p[0]*p[0]+p[1]*p[1]} = ${p[2]}`;
+                }
+                const wr=new Set(); let s=0;
+                while(wr.size<3&&s<300){s++; const o=rnd(-8,8); if(o!==0&&ans+o>0) wr.add(ans+o);}
+                while(wr.size<3) wr.add(ans+wr.size+2);
+                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
+            }
+
+            /* ═══ معادلات ═══ */
+            if (op === 'adv_eq') {
+                const types = ['linear1','linear2','two_var','quadratic_simple','system'];
+                const t = types[rnd(0,types.length-1)];
+                let ans, text, hint, explanation;
+                if (t === 'linear1') {
+                    const a=rnd(2,9),b=rnd(1,15); ans=b;
+                    text=`س + ${a} = ${a+b}`; hint='اطرح من الطرفين';
+                    explanation=`س = ${a+b} - ${a} = ${b}`;
+                } else if (t === 'linear2') {
+                    const a=rnd(2,6),b=rnd(1,10); ans=b;
+                    text=`${a}س = ${a*b}`; hint='اقسم الطرفين على ${a}';
+                    explanation=`س = ${a*b} ÷ ${a} = ${b}`;
+                } else if (t === 'two_var') {
+                    const a=rnd(2,6),b=rnd(1,8); ans=b;
+                    const c=rnd(1,5); const d=a*b+c;
+                    text=`${a}س + ${c} = ${d}`; hint='اطرح ثم اقسم';
+                    explanation=`${a}س = ${d-c} → س = ${b}`;
+                } else if (t === 'quadratic_simple') {
+                    const r=rnd(2,9); ans=r*r;
+                    text=`س² = ${r*r} → س = ؟`; hint='خذ الجذر التربيعي';
+                    explanation=`س = √${r*r} = ${r}`;
+                    ans=r;
+                } else {
+                    const x=rnd(2,8),y=rnd(2,8);
+                    text=`س+ص=${x+y} وس−ص=${x-y}، قيمة س = ؟`; ans=x; hint='اجمع المعادلتين';
+                    explanation=`2س = ${x+y+x-y} → س = ${x}`;
+                }
+                const wr=new Set(); let s=0;
+                while(wr.size<3&&s<200){s++; const o=rnd(-5,5); if(o!==0&&ans+o>0) wr.add(ans+o);}
+                while(wr.size<3) wr.add(ans+wr.size+1);
+                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
+            }
+
+            /* ═══ متتاليات ═══ */
+            if (op === 'adv_seq') {
+                const types = ['arith','geo','squares','fib','mixed'];
+                const t = types[rnd(0,types.length-1)];
+                let ans, text, hint, explanation;
+                if (t === 'arith') {
+                    const a=rnd(1,10),d=rnd(2,9);
+                    text=`${a}، ${a+d}، ${a+2*d}، ${a+3*d}، ؟`; ans=a+4*d; hint='ابحث عن الفرق الثابت';
+                    explanation=`الفرق = ${d}، التالي = ${a+3*d}+${d} = ${ans}`;
+                } else if (t === 'geo') {
+                    const a=rnd(1,5),r=rnd(2,4);
+                    text=`${a}، ${a*r}، ${a*r*r}، ${a*r*r*r}، ؟`; ans=a*r*r*r*r; hint='ابحث عن الأساس المشترك';
+                    explanation=`الأساس = ${r}، التالي = ${a*r*r*r}×${r} = ${ans}`;
+                } else if (t === 'squares') {
+                    const n=rnd(4,8);
+                    text=`1، 4، 9، 16، ... ما الحد رقم ${n}؟`; ans=n*n; hint='مربعات الأعداد الطبيعية';
+                    explanation=`الحد رقم ${n} = ${n}² = ${ans}`;
+                } else if (t === 'fib') {
+                    const fibs=[1,1,2,3,5,8,13,21,34,55,89];
+                    const s=rnd(0,6);
+                    text=`${fibs[s]}، ${fibs[s+1]}، ${fibs[s+2]}، ${fibs[s+3]}، ؟`; ans=fibs[s+4]; hint='كل عدد = مجموع العددين قبله';
+                    explanation=`${fibs[s+3]}+${fibs[s+2]} = ${ans} (فيبوناتشي)`;
+                } else {
+                    const a=rnd(2,8),d=rnd(3,7);
+                    const s=[a,a+d,a+2*d];
+                    text=`${s[0]}، ${s[1]}، ${s[2]}، ؟ (متتالية حسابية)`; ans=s[2]+d; hint=`الفرق = ${d}`;
+                    explanation=`الفرق = ${d}، التالي = ${s[2]}+${d} = ${ans}`;
+                }
+                const wr=new Set(); let s2=0;
+                while(wr.size<3&&s2<200){s2++; const o=rnd(-6,6); if(o!==0&&ans+o>0) wr.add(ans+o);}
+                while(wr.size<3) wr.add(ans+wr.size+2);
+                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
+            }
+
+            /* ═══ مثلثات ═══ */
+            if (op === 'adv_trig') {
+                const types = ['sin_val','cos_val','tan_val','angle_from_sin','pythagorean_id'];
+                const t = types[rnd(0,types.length-1)];
+                let ans, text, hint, explanation;
+                const sinTable = {0:0, 30:0.5, 45:0.7, 60:0.9, 90:1};
+                const cosTable = {0:1, 30:0.9, 45:0.7, 60:0.5, 90:0};
+                const tanTable = {0:0, 30:0.6, 45:1, 60:1.7};
+                if (t === 'sin_val') {
+                    const degs=[0,30,45,60,90]; const d=degs[rnd(0,degs.length-1)];
+                    ans=sinTable[d]; text=`جا(${d}°) = ؟`; hint='قيم جيب التمام المعيارية';
+                    explanation=`جا(${d}°) = ${ans}`;
+                } else if (t === 'cos_val') {
+                    const degs=[0,30,45,60,90]; const d=degs[rnd(0,degs.length-1)];
+                    ans=cosTable[d]; text=`جتا(${d}°) = ؟`; hint='قيم جيب التمام المعيارية';
+                    explanation=`جتا(${d}°) = ${ans}`;
+                } else if (t === 'tan_val') {
+                    const degs=[0,30,45,60]; const d=degs[rnd(0,degs.length-1)];
+                    ans=tanTable[d]; text=`ظا(${d}°) = ؟`; hint='ظا = جا ÷ جتا';
+                    explanation=`ظا(${d}°) = ${ans}`;
+                } else if (t === 'angle_from_sin') {
+                    const pairs=[[0.5,30],[1,90],[0,0]]; const p=pairs[rnd(0,pairs.length-1)];
+                    text=`جا(س) = ${p[0]}، إذن س = ؟`; ans=p[1]; hint='استخدم جدول الزوايا القياسية';
+                    explanation=`جا⁻¹(${p[0]}) = ${p[1]}°`;
+                } else {
+                    const degs=[30,45,60]; const d=degs[rnd(0,degs.length-1)];
+                    const sv=sinTable[d], cv=cosTable[d];
+                    ans=1; text=`جا²(${d}°) + جتا²(${d}°) = ؟`; hint='الهوية المثلثية الأساسية';
+                    explanation=`جا²+جتا² = ${sv}²+${cv}² ≈ 1 دائماً`;
+                }
+                const wr=new Set(); const opts=[-0.5,0,0.5,0.7,0.9,1,1.7,30,45,60,90];
+                let tries=0;
+                while(wr.size<3&&tries<200){tries++; const o=opts[rnd(0,opts.length-1)]; if(o!==ans) wr.add(o);}
+                while(wr.size<3) wr.add(wr.size*0.1);
+                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
+            }
+
             if (op === 'laws') {
                 const lawQ = [
                     { text: 'ما ناتج 3 × (4 + 5) وفق قانون التوزيع؟', ans: 27,
@@ -138,7 +363,7 @@
                 }
                 let q = lawQ[rnd(0, lawQ.length - 1)];
                 let choices = shuffle([q.ans, q.ans + 1, q.ans - 1, q.ans + 2]);
-                return { text: q.text, hint: '🧩 فكّر بتمعن وحل اللغز!', answer: q.ans, choices, explanation: q.explanation,
+                return { text: q.text, hint: 'تطبيق قانون رياضي', answer: q.ans, choices, explanation: q.explanation,
                     catKey: 'mathlaws' };
             }
             let actualDiff = diff;
@@ -1675,117 +1900,77 @@ function getCatStatsKeyDiverse(ch) {
 
 /* ═══ مولّد موسّع للائحة القوانين ═══ */
 const EXTENDED_LAWS_POOL = [
-
-    /* ═══════ المستوى ١: ألغاز سهلة ═══════ */
-    { text: '🧩 أنا عدد إذا ضربتني في نفسي أعطيتك 49، من أنا؟', ans: 7,
-      explanation: '7 × 7 = 49 ✓' },
-    { text: '🧩 أنا عدد إذا أضفت إليّ 15 أصبحت 30، من أنا؟', ans: 15,
-      explanation: '15 + 15 = 30 ✓' },
-    { text: '🧩 ثلاثة أعداد متتالية مجموعها 12، ما أصغرها؟', ans: 3,
-      explanation: '3 + 4 + 5 = 12 ✓ أصغرها 3' },
-    { text: '🧩 عندي 20 تفاحة وأعطيت نصفها لصديقي ثم أكلت 3، كم تبقى معي؟', ans: 7,
-      explanation: '20 ÷ 2 = 10، ثم 10 − 3 = 7 ✓' },
-    { text: '🧩 مربع طول ضلعه 5، ما الفرق بين محيطه ومساحته؟', ans: 5,
-      explanation: 'المحيط = 20، المساحة = 25، الفرق = 25 − 20 = 5 ✓' },
-    { text: '🧩 عدد إذا قسمته على 4 أعطاك 9، ما هو؟', ans: 36,
-      explanation: '36 ÷ 4 = 9 ✓' },
-    { text: '🧩 إذا كانت 🍎 = 5 و 🍊 = 3، فما قيمة 🍎 + 🍊 + 🍎؟', ans: 13,
-      explanation: '5 + 3 + 5 = 13 ✓' },
-    { text: '🧩 في سلة 8 برتقالات، أخذت منها النصف ثم أضفت 5، كم أصبح العدد؟', ans: 9,
-      explanation: '8 ÷ 2 = 4، ثم 4 + 5 = 9 ✓' },
-    { text: '🧩 عدد إذا ضربته في 3 ثم طرحت 6 حصلت على 9، ما هو؟', ans: 5,
-      explanation: '3س − 6 = 9 → 3س = 15 → س = 5 ✓' },
-    { text: '🧩 ما العدد الذي إذا جمعته مع ضعفه أعطاك 18؟', ans: 6,
-      explanation: 'س + 2س = 18 → 3س = 18 → س = 6 ✓' },
-
-    /* ═══════ المستوى ٢: ألغاز متوسطة ═══════ */
-    { text: '🔢 النمط: 2، 4، 8، 16، ؟ ما الرقم التالي؟', ans: 32,
-      explanation: 'كل عدد يُضرب في 2 → 16 × 2 = 32 ✓' },
-    { text: '🔢 النمط: 1، 4، 9، 16، ؟ ما الرقم التالي؟', ans: 25,
-      explanation: 'مربعات الأعداد: 1²،2²،3²،4²،5² = 25 ✓' },
-    { text: '🔢 النمط: 100، 90، 81، 73، ؟ كم ينقص كل مرة؟', ans: 8,
-      explanation: '100−10=90، 90−9=81، 81−8=73، ينقص 8 في المرحلة القادمة ✓' },
-    { text: '🔢 النمط: 3، 6، 12، 24، ؟ ما الرقم التالي؟', ans: 48,
-      explanation: 'كل عدد يُضرب في 2 → 24 × 2 = 48 ✓' },
-    { text: '🔢 5 طلاب تصافحوا كل واحد مع الآخرين، كم مصافحة جرت؟', ans: 10,
-      explanation: '5×4÷2 = 10 مصافحات ✓' },
-    { text: '🔢 إذا كان 🐱 × 🐱 = 16، فما قيمة 🐱 × 3؟', ans: 12,
-      explanation: '🐱 = 4 لأن 4×4=16، إذن 4×3 = 12 ✓' },
-    { text: '🔢 عمر أحمد ضعف عمر سارة، ومجموع عمريهما 24، ما عمر سارة؟', ans: 8,
-      explanation: 'س + 2س = 24 → 3س = 24 → س = 8 ✓' },
-    { text: '🔢 غرفة مستطيلة طولها 8م وعرضها 5م، ما مساحتها؟', ans: 40,
-      explanation: '8 × 5 = 40 م² ✓' },
-    { text: '🔢 اشتريت 3 كتب بنفس السعر ودفعت 45 ريالاً، ما سعر الكتاب الواحد؟', ans: 15,
-      explanation: '45 ÷ 3 = 15 ريال ✓' },
-    { text: '🔢 ما أكبر عدد من رقمين يقبل القسمة على 9؟', ans: 99,
-      explanation: '99 ÷ 9 = 11 ✓ وهو أكبر عدد من رقمين يقبل القسمة على 9' },
-
-    /* ═══════ المستوى ٣: ألغاز تفكير ═══════ */
-    { text: '🧠 إذا كانت 🍕 + 🍕 = 16 و 🍕 − 🥤 = 4، فما قيمة 🥤؟', ans: 4,
-      explanation: '🍕 = 8، إذن 8 − 🥤 = 4 → 🥤 = 4 ✓' },
-    { text: '🧠 ثلاثة أعداد فردية متتالية مجموعها 33، ما أكبرها؟', ans: 13,
-      explanation: '9 + 11 + 13 = 33 ✓ أكبرها 13' },
-    { text: '🧠 عدد زوجي بين 14 و 20 يقبل القسمة على 3، ما هو؟', ans: 18,
-      explanation: '18 زوجي وبين 14 و20 و18÷3=6 ✓' },
-    { text: '🧠 أبي عمره ضعف عمري، وبعد 10 سنوات سيكون عمره 5 أضعاف ما كان عمري الآن، ما عمري الآن؟', ans: 10,
-      explanation: 'عمري = س، عمر أبي = 2س، وبعد 10 سنوات: 2س+10 = 5س → س=10 ✓' },
-    { text: '🧠 مزارع لديه دجاج وأبقار، عدد الرؤوس 10 وعدد الأرجل 28، كم دجاجة لديه؟', ans: 6,
-      explanation: 'دجاج=د، بقر=ب، د+ب=10، 2د+4ب=28 → د=6 ✓' },
-    { text: '🧠 إذا كان 4 عمال ينجزون عملاً في 6 أيام، كم يوماً يحتاج 8 عمال لنفس العمل؟', ans: 3,
-      explanation: '4×6 = 24 يوم/عامل، 24÷8 = 3 أيام ✓' },
-    { text: '🧠 النمط: 1، 1، 2، 3، 5، 8، ؟ ما الرقم التالي؟', ans: 13,
-      explanation: 'فيبوناتشي: كل عدد = مجموع العددين قبله → 5+8=13 ✓' },
-    { text: '🧠 عدد إذا ضربته في 5 ثم جمعت النتيجة مع 8 حصلت على 43، ما هو؟', ans: 7,
-      explanation: '5س + 8 = 43 → 5س = 35 → س = 7 ✓' },
-    { text: '🧠 كيس فيه كرات حمراء وزرقاء، الحمراء ضعف الزرقاء، المجموع 18، كم كرة حمراء؟', ans: 12,
-      explanation: 'زرقاء=س، حمراء=2س، 3س=18 → س=6 → حمراء=12 ✓' },
-    { text: '🧠 مجموع عددين 20 وحاصل ضربهما 96، ما الفرق بينهما؟', ans: 4,
-      explanation: 'العددان 8 و12: 8+12=20 ✓، 8×12=96 ✓، 12−8=4 ✓' },
-
-    /* ═══════ المستوى ٤: ألغاز متقدمة ═══════ */
-    { text: '⭐ قطار طوله 100م يسير بسرعة 50م/ث، كم يستغرق لعبور جسر طوله 400م؟', ans: 10,
-      explanation: 'المسافة = 400+100 = 500م، الزمن = 500÷50 = 10 ثوانٍ ✓' },
-    { text: '⭐ إذا كانت نسبة أرباح محل 20% وربحه 800 ريال، ما رأس ماله؟', ans: 4000,
-      explanation: 'رأس المال = 800÷0.20 = 4000 ريال ✓' },
-    { text: '⭐ مجموع أرقام عدد من رقمين 11، وإذا عكسنا أرقامه نقص 27، ما العدد؟', ans: 74,
-      explanation: '74: 7+4=11 ✓، 74−47=27 ✓' },
-    { text: '⭐ مستطيل محيطه 36 وطوله ضعف عرضه، ما مساحته؟', ans: 72,
-      explanation: '2(2س+س)=36 → 6س=36 → س=6، طول=12، مساحة=72 ✓' },
-    { text: '⭐ ثلاثة أعداد متوسطها 15 وأكبرها 20 وأصغرها 10، ما العدد الأوسط؟', ans: 15,
-      explanation: 'المجموع = 15×3 = 45، 45−20−10 = 15 ✓' },
-    { text: '⭐ اشترى تاجر بضاعة بـ 500 وباعها بربح 30%، ما سعر البيع؟', ans: 650,
-      explanation: '500 + 500×0.30 = 500+150 = 650 ✓' },
-    { text: '⭐ عدد فردي أصغر من 50 مجموع أرقامه 9 ويقبل القسمة على 9، ما هو؟', ans: 45,
-      explanation: '45: 4+5=9 ✓، 45÷9=5 ✓، فردي? 45 فردي ✓' },
-    { text: '⭐ بئر عمقها 20م، ضفدع يقفز 3م للأعلى نهاراً وينزل 2م ليلاً، كم يوماً للخروج؟', ans: 18,
-      explanation: 'يتقدم 1م يومياً، بعد 17 يوم وصل 17م، اليوم 18 قفز 3م فأصبح 20م ✓' },
+    /* الجبر والمعادلات */
+    { text: 'ما ناتج 3 × (4 + 5) وفق قانون التوزيع؟', ans: 27, explanation: '3×4 + 3×5 = 12+15 = 27' },
+    { text: 'ما قيمة 5⁰؟', ans: 1, explanation: 'أي عدد غير صفري مرفوع للأس صفر = 1' },
+    { text: 'حل: 2س + 4 = 16', ans: 6, explanation: '2س = 12، س = 6' },
+    { text: 'حل: 3س − 9 = 0', ans: 3, explanation: '3س = 9، س = 3' },
+    { text: 'حل: س/4 = 5', ans: 20, explanation: 'س = 5 × 4 = 20' },
+    { text: 'حل: 5(س − 2) = 15', ans: 5, explanation: 'س − 2 = 3، س = 5' },
+    { text: 'ما قيمة 2⁸؟', ans: 256, explanation: '2⁸ = 256' },
+    { text: 'ما قيمة 3⁴؟', ans: 81, explanation: '3×3×3×3 = 81' },
+    { text: '2³ × 2² = 2^؟', ans: 5, explanation: 'قانون الأسس: نجمع الأسس → 2^5 = 32، الأس = 5' },
+    { text: 'ما قيمة 10³ ÷ 10²؟', ans: 10, explanation: '10^(3-2) = 10¹ = 10' },
+    /* الهندسة */
+    { text: 'مساحة مربع طول ضلعه 7؟', ans: 49, explanation: 'المساحة = الضلع² = 49' },
+    { text: 'محيط مربع طول ضلعه 6؟', ans: 24, explanation: 'المحيط = 4 × 6 = 24' },
+    { text: 'ما محيط دائرة نصف قطرها 5 (π≈3.14)؟', ans: 31, explanation: '2×3.14×5 ≈ 31' },
+    { text: 'مساحة مثلث قاعدته 10 وارتفاعه 6؟', ans: 30, explanation: '½ × 10 × 6 = 30' },
+    { text: 'مساحة دائرة نصف قطرها 3 (π≈3)؟', ans: 27, explanation: 'π × 3² ≈ 3 × 9 = 27' },
+    { text: 'حجم مكعب طول ضلعه 4؟', ans: 64, explanation: '4³ = 64' },
+    { text: 'محيط مثلث متساوي الأضلاع طول ضلعه 8؟', ans: 24, explanation: '3 × 8 = 24' },
+    /* الحساب والنسب */
+    { text: 'ما متوسط الأعداد 4، 8، 12، 16؟', ans: 10, explanation: '(4+8+12+16)/4 = 40/4 = 10' },
+    { text: 'ما 30% من 200؟', ans: 60, explanation: '200 × 0.3 = 60' },
+    { text: 'ما 75% من 80؟', ans: 60, explanation: '80 × 0.75 = 60' },
+    { text: 'ما النسبة المئوية لـ 15 من 60؟', ans: 25, explanation: '15/60 × 100 = 25%' },
+    { text: 'ما 1/3 من 99؟', ans: 33, explanation: '99 ÷ 3 = 33' },
+    { text: 'ناتج (1/2) ÷ (1/4) = ؟', ans: 2, explanation: '(1/2) × 4 = 2' },
+    { text: 'ما قيمة 1/2 + 1/3؟ (اختر أقرب قيمة)', ans: 0.83, explanation: '3/6 + 2/6 = 5/6 ≈ 0.83' },
+    /* أعداد سالبة */
+    { text: 'ما ناتج (−3) × (−4)؟', ans: 12, explanation: 'سالب × سالب = موجب' },
+    { text: 'ما ناتج (−5) × 3؟', ans: -15, explanation: 'سالب × موجب = سالب' },
+    { text: 'ما ناتج (−20) ÷ (−4)؟', ans: 5, explanation: 'سالب ÷ سالب = موجب' },
+    { text: '|−13| = ؟', ans: 13, explanation: 'القيمة المطلقة دائماً موجبة' },
+    { text: 'ما ناتج −8 + (−5)؟', ans: -13, explanation: '−8 − 5 = −13' },
+    { text: 'ما ناتج −7 − (−3)؟', ans: -4, explanation: '−7 + 3 = −4' },
+    /* الجذور والأسس */
+    { text: 'جذر 144 = ؟', ans: 12, explanation: '12² = 144' },
+    { text: 'جذر 225 = ؟', ans: 15, explanation: '15² = 225' },
+    { text: 'الجذر التكعيبي لـ 27 = ؟', ans: 3, explanation: '3³ = 27' },
+    { text: 'الجذر التكعيبي لـ 64 = ؟', ans: 4, explanation: '4³ = 64' },
+    { text: '√169 = ؟', ans: 13, explanation: '13² = 169' },
+    /* متتاليات وأنماط */
+    { text: 'ما الحد التالي: 1، 4، 9، 16، ؟', ans: 25, explanation: 'مربعات: 5² = 25' },
+    { text: 'ما الحد التالي: 2، 6، 18، 54، ؟', ans: 162, explanation: 'كل حد يُضرب في 3' },
+    { text: 'ما الحد التالي: 100، 50، 25، ؟', ans: 12.5, explanation: 'كل حد يُقسم على 2' },
+    /* قوانين احتمالات ومتوسطات */
+    { text: 'إذا رمينا حجر نرد احتمال ظهور 3 = ؟ (كسر)', ans: 0.17, explanation: '1/6 ≈ 0.17' },
+    { text: 'المدى للأعداد 3، 7، 15، 2، 10 = ؟', ans: 13, explanation: 'أكبر − أصغر = 15 − 2 = 13' },
+    { text: 'الوسيط للأعداد 1، 3، 5، 7، 9 = ؟', ans: 5, explanation: 'العدد الأوسط في المتسلسلة = 5' },
 ];
 
 /**
  * يولّد سؤالاً من مجموعة القوانين الموسّعة
  */
-function genExtendedLawQ() {
-    const q = EXTENDED_LAWS_POOL[rnd(0, EXTENDED_LAWS_POOL.length - 1)];
-    const ansNum = typeof q.ans === 'number' ? q.ans : parseFloat(q.ans);
-    const spread = Math.max(2, Math.ceil(Math.abs(ansNum) * 0.25) + 2);
-    const wrSet = new Set();
-    let safety = 0;
-    while (wrSet.size < 3 && safety < 400) {
-        safety++;
-        const off = rnd(-spread, spread);
-        if (off === 0) continue;
-        const candidate = Math.round((ansNum + off) * 100) / 100;
-        if (candidate !== ansNum) wrSet.add(String(candidate));
-    }
-    let extra = 1;
-    while (wrSet.size < 3) { wrSet.add(String(Math.round((ansNum + extra * 4) * 100) / 100)); extra++; }
 
-    return {
-        text: q.text,
-        hint: '🧩 فكّر بتمعن وحل اللغز!',
-        answer: ansNum,
-        choices: shuffle([ansNum, ...[...wrSet].map(Number)]),
-        explanation: q.explanation,
-        catKey: 'mathlaws'
-    };
-}
+/* ═══════════════════════════════════════════════════════════════
+   ألعاب الرياضيات المتقدمة — كل قسم منفصل
+═══════════════════════════════════════════════════════════════ */
+
+/* 1️⃣ الأسس والجذور */
+function genPowerSqrtQ() {
+    const type = rnd(0, 3);
+    let a, b, ans, text, hint, explanation;
+
+    if (type === 0) {
+        // جذر تربيعي
+        const squares = [4,9,16,25,36,49,64,81,100,121,144,169,196,225,256];
+        a = squares[rnd(0, squares.length - 1)];
+        ans = Math.sqrt(a);
+        text = `√${a} = ؟`;
+        hint = 'ما العدد الذي إذا ضربته في نفسه أعطاك ' + a + '؟';
+        explanation = `√${a} = ${ans} لأن ${ans}² = ${a}`;
+    } else if (type === 1) {
+        // جذر تكعيبي
+   
