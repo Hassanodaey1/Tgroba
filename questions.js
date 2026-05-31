@@ -700,6 +700,7 @@
             G.customTable = customTable || null;
             G.askedQuestions = [];
             G._challengeBadge = null; /* شارة التحدي */
+            G._smartTipShown  = false; /* ✅ §7.4 */
             /* ✅ إعادة ضبط ذاكرة جدول الضرب لمنع التكرار */
             if (typeof genQ._tableUsed !== 'undefined') genQ._tableUsed = {};
             let hasTimer = false;
@@ -942,7 +943,63 @@
             /* 🎒 تحديث شريط مخزون المساعدات */
             if (typeof _updateInventoryBar === 'function') _updateInventoryBar();
 
-            loadQuestion();
+            /* ✅ §7.2 — عدّ تنازلي قبل بدء اللعبة */
+            _startCountdownThenPlay();
+        }
+
+        /* ✅ §7.2 — عدّ تنازلي احترافي قبل بدء اللعبة */
+        function _startCountdownThenPlay() {
+            /* أوضاع سريعة لا تحتاج عداداً: تدريب، وضع تلقائي، frenzy */
+            const skipModes = ['frenzy', 'speed'];
+            if (G.isTraining || skipModes.includes(G.mode)) {
+                loadQuestion();
+                return;
+            }
+
+            const overlay = document.getElementById('gameCountdownOverlay');
+            const numEl   = document.getElementById('countdownNum');
+            if (!overlay || !numEl) { loadQuestion(); return; }
+
+            const emojis = { 3: '3', 2: '2', 1: '1' };
+            const colors = { 3: 'var(--gold)', 2: '#f97316', 1: 'var(--green)' };
+
+            overlay.style.display = 'flex';
+            let count = 3;
+
+            function tick() {
+                numEl.textContent = emojis[count] || count;
+                numEl.style.color = colors[count] || 'var(--text)';
+                /* نبضة بصرية */
+                numEl.style.transform = 'scale(1.4)';
+                numEl.style.opacity   = '0';
+                setTimeout(() => {
+                    numEl.style.transform = 'scale(1)';
+                    numEl.style.opacity   = '1';
+                }, 30);
+                if (typeof playSound === 'function') playSound('tick');
+                count--;
+                if (count > 0) {
+                    setTimeout(tick, 900);
+                } else {
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        loadQuestion();
+                    }, 700);
+                }
+            }
+            tick();
+        }
+
+        /* ✅ §7.5 — زر "العب الآن" يبدأ آخر وضع لعب فوراً */
+        function quickPlay() {
+            const mode = st.lastMode || 'classic';
+            const op   = st.lastOp   || 'mix';
+            const label = document.getElementById('quickPlayLabel');
+            if (label) label.textContent = 'جارٍ التحميل...';
+            setTimeout(() => {
+                window._gameSource = 'home';
+                startGameWith(mode, op, null, false);
+            }, 80);
         }
 
         function updateHeartsDisplay() {
