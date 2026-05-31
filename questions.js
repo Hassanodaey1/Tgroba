@@ -1957,7 +1957,6 @@ const EXTENDED_LAWS_POOL = [
 /* ═══════════════════════════════════════════════════════════════
    ألعاب الرياضيات المتقدمة — كل قسم منفصل
 ═══════════════════════════════════════════════════════════════ */
-
 /* 1️⃣ الأسس والجذور */
 function genPowerSqrtQ() {
     const type = rnd(0, 3);
@@ -1973,4 +1972,342 @@ function genPowerSqrtQ() {
         explanation = `√${a} = ${ans} لأن ${ans}² = ${a}`;
     } else if (type === 1) {
         // جذر تكعيبي
-   
+        const cubes = [{n:8,r:2},{n:27,r:3},{n:64,r:4},{n:125,r:5},{n:216,r:6},{n:343,r:7},{n:512,r:8}];
+        const c = cubes[rnd(0, cubes.length - 1)];
+        ans = c.r; a = c.n;
+        text = `∛${a} = ؟`;
+        hint = 'ما العدد الذي إذا ضربته في نفسه مرتين أعطاك ' + a + '؟';
+        explanation = `∛${a} = ${ans} لأن ${ans}³ = ${a}`;
+    } else if (type === 2) {
+        // أسس
+        a = rnd(2, 7); b = rnd(2, 4);
+        ans = Math.pow(a, b);
+        text = `${a}^${b} = ؟`;
+        hint = `اضرب ${a} في نفسه ${b} مرات`;
+        explanation = `${a}^${b} = ${[...Array(b)].map(()=>a).join(' × ')} = ${ans}`;
+    } else {
+        // مقارنة أسس
+        a = rnd(2, 5); b = rnd(2, 4); const c2 = rnd(1, 4);
+        ans = Math.pow(a, b + c2);
+        text = `${a}^${b} × ${a}^${c2} = ${a}^؟`;
+        hint = 'قانون الأسس: اجمع الأسس عند الضرب';
+        explanation = `${a}^${b} × ${a}^${c2} = ${a}^(${b}+${c2}) = ${a}^${b+c2}، الأس = ${b+c2}`;
+        ans = b + c2;
+    }
+
+    const spread = Math.max(2, Math.ceil(Math.abs(ans) * 0.3) + 1);
+    const wrongs = new Set();
+    let safety = 0;
+    while (wrongs.size < 3 && safety < 200) {
+        safety++;
+        const off = rnd(-spread, spread);
+        if (off === 0) continue;
+        const w = Math.round(ans + off);
+        if (w !== ans && w > 0) wrongs.add(w);
+    }
+    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 1);
+    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+}
+
+/* 2️⃣ اللوغاريتم */
+function genLogQ() {
+    const type = rnd(0, 3);
+    let ans, text, hint, explanation;
+
+    if (type === 0) {
+        // log₁₀ بسيط
+        const exp = rnd(1, 5);
+        ans = exp;
+        text = `log₁₀(10^${exp}) = ؟`;
+        hint = 'log₁₀(10^n) = n دائماً';
+        explanation = `log₁₀(10^${exp}) = ${exp}`;
+    } else if (type === 1) {
+        // log₁₀ لأعداد بسيطة
+        const vals = [{n:10,a:1},{n:100,a:2},{n:1000,a:3},{n:10000,a:4}];
+        const v = vals[rnd(0, vals.length - 1)];
+        ans = v.a; text = `log₁₀(${v.n}) = ؟`;
+        hint = '10 مرفوعة لأي أس تعطي هذا العدد؟';
+        explanation = `log₁₀(${v.n}) = ${v.a} لأن 10^${v.a} = ${v.n}`;
+    } else if (type === 2) {
+        // ln بسيط
+        const lnVals = [{n:'e',a:1},{n:'e²',a:2},{n:'e³',a:3},{n:'1',a:0}];
+        const v = lnVals[rnd(0, lnVals.length - 1)];
+        ans = v.a; text = `ln(${v.n}) = ؟`;
+        hint = 'ln(eⁿ) = n و ln(1) = 0';
+        explanation = `ln(${v.n}) = ${v.a}`;
+    } else {
+        // خاصية اللوغاريتم
+        const a = rnd(1, 4), b = rnd(1, 4);
+        ans = a + b;
+        text = `log₁₀(10^${a}) + log₁₀(10^${b}) = ؟`;
+        hint = 'log(A) + log(B) = log(A×B)';
+        explanation = `${a} + ${b} = ${ans}`;
+    }
+
+    const wrongs = new Set();
+    const options = [ans-2, ans-1, ans+1, ans+2, ans+3].filter(x => x !== ans && x >= 0);
+    while (wrongs.size < 3 && options.length > 0) wrongs.add(options.splice(rnd(0, options.length-1), 1)[0]);
+    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 1);
+    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+}
+
+/* 3️⃣ الهندسة */
+function genGeometryQ() {
+    const type = rnd(0, 5);
+    let ans, text, hint, explanation;
+
+    if (type === 0) {
+        // مساحة دائرة
+        const r = rnd(2, 8);
+        ans = Math.round(Math.PI * r * r);
+        text = `مساحة دائرة نصف قطرها ${r} (π≈3.14)`;
+        hint = 'المساحة = π × نق²';
+        explanation = `π × ${r}² = 3.14 × ${r*r} ≈ ${ans}`;
+    } else if (type === 1) {
+        // مساحة مثلث
+        const base = rnd(4, 14) * 2; const h = rnd(3, 10);
+        ans = base * h / 2;
+        text = `مساحة مثلث قاعدته ${base} وارتفاعه ${h}`;
+        hint = 'المساحة = ½ × القاعدة × الارتفاع';
+        explanation = `½ × ${base} × ${h} = ${ans}`;
+    } else if (type === 2) {
+        // حجم متوازي مستطيلات
+        const l = rnd(2, 8), w = rnd(2, 8), h2 = rnd(2, 6);
+        ans = l * w * h2;
+        text = `حجم متوازي مستطيلات أبعاده ${l}، ${w}، ${h2}`;
+        hint = 'الحجم = الطول × العرض × الارتفاع';
+        explanation = `${l} × ${w} × ${h2} = ${ans}`;
+    } else if (type === 3) {
+        // محيط دائرة
+        const r2 = rnd(3, 9);
+        ans = Math.round(2 * Math.PI * r2);
+        text = `محيط دائرة نصف قطرها ${r2} (π≈3.14)`;
+        hint = 'المحيط = 2 × π × نق';
+        explanation = `2 × 3.14 × ${r2} ≈ ${ans}`;
+    } else if (type === 4) {
+        // مساحة شبه منحرف
+        const a2 = rnd(4, 10), b2 = rnd(4, 10), h3 = rnd(3, 8);
+        ans = Math.round((a2 + b2) * h3 / 2);
+        text = `مساحة شبه منحرف قاعدتاه ${a2} و${b2} وارتفاعه ${h3}`;
+        hint = 'المساحة = ½ × (ق₁+ق₂) × الارتفاع';
+        explanation = `½ × (${a2}+${b2}) × ${h3} = ${ans}`;
+    } else {
+        // نظرية فيثاغورس
+        const triples = [[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15]];
+        const tr = triples[rnd(0, triples.length - 1)];
+        ans = tr[2];
+        text = `مثلث قائم ساقاه ${tr[0]} و${tr[1]}، ما الوتر؟`;
+        hint = 'الوتر² = الساق₁² + الساق₂² (فيثاغورس)';
+        explanation = `√(${tr[0]}² + ${tr[1]}²) = √(${tr[0]*tr[0]+tr[1]*tr[1]}) = ${ans}`;
+    }
+
+    const spread = Math.max(3, Math.ceil(ans * 0.2));
+    const wrongs = new Set();
+    let safety = 0;
+    while (wrongs.size < 3 && safety < 300) {
+        safety++;
+        const off = rnd(-spread, spread);
+        if (off === 0) continue;
+        const w = Math.round(ans + off);
+        if (w !== ans && w > 0) wrongs.add(w);
+    }
+    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 2);
+    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+}
+
+/* 4️⃣ المعادلات */
+function genEquationsQ() {
+    const type = rnd(0, 4);
+    let ans, text, hint, explanation;
+
+    if (type === 0) {
+        // درجة أولى بسيطة
+        ans = rnd(2, 15);
+        const a = rnd(2, 6);
+        const b = a * ans;
+        text = `${a}س = ${b}`;
+        hint = 'اقسم الطرفين على ' + a;
+        explanation = `س = ${b} ÷ ${a} = ${ans}`;
+    } else if (type === 1) {
+        // درجة أولى خطوتين
+        ans = rnd(2, 10);
+        const a = rnd(2, 5), c = rnd(1, 10);
+        const b = a * ans + c;
+        text = `${a}س + ${c} = ${b}`;
+        hint = 'اطرح ' + c + ' أولاً ثم اقسم';
+        explanation = `${a}س = ${b}-${c} = ${b-c}، س = ${b-c}÷${a} = ${ans}`;
+    } else if (type === 2) {
+        // معادلة بمجهول على الطرفين
+        ans = rnd(2, 8);
+        const a = rnd(3, 7), b = rnd(1, a-1), c = rnd(1, 10);
+        const rhs = (a - b) * ans + c;
+        text = `${a}س = ${b}س + ${rhs}`;
+        hint = 'اجمع المجاهيل في طرف واحد';
+        explanation = `${a}س - ${b}س = ${rhs}، ${a-b}س = ${rhs}، س = ${ans}`;
+    } else if (type === 3) {
+        // معادلة تربيعية بسيطة س²=n
+        const roots = [2,3,4,5,6,7,8,9,10,11,12];
+        ans = roots[rnd(0, roots.length - 1)];
+        const n = ans * ans;
+        text = `س² = ${n}`;
+        hint = 'خذ الجذر التربيعي للطرفين';
+        explanation = `س = √${n} = ${ans}`;
+    } else {
+        // معادلة بكسر
+        ans = rnd(3, 12);
+        const a = rnd(2, 5);
+        const b = ans * a;
+        text = `س ÷ ${a} = ${ans}`;
+        hint = 'اضرب الطرفين في ' + a;
+        explanation = `س = ${ans} × ${a} = ${b}`;
+        ans = b;
+    }
+
+    const spread = Math.max(2, Math.ceil(Math.abs(ans) * 0.3) + 1);
+    const wrongs = new Set();
+    let safety = 0;
+    while (wrongs.size < 3 && safety < 200) {
+        safety++;
+        const off = rnd(-spread, spread);
+        if (off === 0) continue;
+        const w = ans + off;
+        if (w !== ans) wrongs.add(w);
+    }
+    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 1);
+    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+}
+
+/* 5️⃣ المتتاليات */
+function genSequenceQ() {
+    const type = rnd(0, 4);
+    let ans, text, hint, explanation;
+
+    if (type === 0) {
+        // متتالية حسابية
+        const a = rnd(1, 15), d = rnd(2, 9);
+        text = `${a}، ${a+d}، ${a+2*d}، ${a+3*d}، ؟`;
+        ans = a + 4 * d;
+        hint = `الفرق الثابت = ${d}`;
+        explanation = `كل حد يزيد بـ${d}، التالي = ${a+3*d} + ${d} = ${ans}`;
+    } else if (type === 1) {
+        // متتالية هندسية
+        const a = rnd(1, 5), r = rnd(2, 4);
+        text = `${a}، ${a*r}، ${a*r*r}، ${a*r*r*r}، ؟`;
+        ans = a * Math.pow(r, 4);
+        hint = `كل حد يُضرب في ${r}`;
+        explanation = `${a*r*r*r} × ${r} = ${ans}`;
+    } else if (type === 2) {
+        // مربعات
+        text = `1، 4، 9، 16، 25، ؟`;
+        ans = 36;
+        hint = 'مربعات الأعداد الطبيعية';
+        explanation = `6² = 36`;
+    } else if (type === 3) {
+        // فيبوناتشي
+        const a = rnd(1, 5), b = rnd(a, a+5);
+        const c = a+b, d2 = b+c, e = c+d2;
+        text = `${a}، ${b}، ${c}، ${d2}، ؟`;
+        ans = e;
+        hint = 'كل حد = مجموع الحدين اللذين قبله';
+        explanation = `${c} + ${d2} = ${ans}`;
+    } else {
+        // متتالية تناقصية
+        const a = rnd(50, 100), d = rnd(5, 15);
+        text = `${a}، ${a-d}، ${a-2*d}، ${a-3*d}، ؟`;
+        ans = a - 4 * d;
+        hint = `الفرق الثابت = −${d}`;
+        explanation = `${a-3*d} − ${d} = ${ans}`;
+    }
+
+    const spread = Math.max(3, Math.ceil(Math.abs(ans) * 0.2));
+    const wrongs = new Set();
+    let safety = 0;
+    while (wrongs.size < 3 && safety < 200) {
+        safety++;
+        const off = rnd(-spread, spread);
+        if (off === 0) continue;
+        const w = ans + off;
+        if (w !== ans) wrongs.add(w);
+    }
+    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 2);
+    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+}
+
+/* 6️⃣ المثلثات */
+function genTrigQ() {
+    const type = rnd(0, 2);
+    let ans, text, hint, explanation;
+
+    const sinVals = [
+        {deg:0,  val:0,    frac:'0'},
+        {deg:30, val:0.5,  frac:'½'},
+        {deg:45, val:0.71, frac:'√2/2'},
+        {deg:60, val:0.87, frac:'√3/2'},
+        {deg:90, val:1,    frac:'1'}
+    ];
+    const cosVals = [
+        {deg:0,  val:1,    frac:'1'},
+        {deg:30, val:0.87, frac:'√3/2'},
+        {deg:45, val:0.71, frac:'√2/2'},
+        {deg:60, val:0.5,  frac:'½'},
+        {deg:90, val:0,    frac:'0'}
+    ];
+    const tanVals = [
+        {deg:0,  val:0,    frac:'0'},
+        {deg:30, val:0.58, frac:'1/√3'},
+        {deg:45, val:1,    frac:'1'},
+        {deg:60, val:1.73, frac:'√3'}
+    ];
+
+    if (type === 0) {
+        const v = sinVals[rnd(0, sinVals.length - 1)];
+        ans = v.val; text = `جا(${v.deg}°) = ؟`;
+        hint = 'قيم جيب الزاوية للزوايا الأساسية';
+        explanation = `جا(${v.deg}°) = ${v.frac} = ${v.val}`;
+    } else if (type === 1) {
+        const v = cosVals[rnd(0, cosVals.length - 1)];
+        ans = v.val; text = `جتا(${v.deg}°) = ؟`;
+        hint = 'قيم جيب التمام للزوايا الأساسية';
+        explanation = `جتا(${v.deg}°) = ${v.frac} = ${v.val}`;
+    } else {
+        const v = tanVals[rnd(0, tanVals.length - 1)];
+        ans = v.val; text = `ظا(${v.deg}°) = ؟`;
+        hint = 'ظا = جا ÷ جتا';
+        explanation = `ظا(${v.deg}°) = ${v.frac} = ${v.val}`;
+    }
+
+    const allVals = [0, 0.5, 0.58, 0.71, 0.87, 1, 1.73];
+    const wrongs = new Set();
+    for (const v of shuffle(allVals)) {
+        if (v !== ans) { wrongs.add(v); if (wrongs.size === 3) break; }
+    }
+    while (wrongs.size < 3) wrongs.add(Math.round((ans + wrongs.size * 0.1) * 100) / 100);
+    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+}
+
+function genExtendedLawQ() {
+    const q = EXTENDED_LAWS_POOL[rnd(0, EXTENDED_LAWS_POOL.length - 1)];
+    const ansNum = typeof q.ans === 'number' ? q.ans : parseFloat(q.ans);
+    const spread = Math.max(2, Math.ceil(Math.abs(ansNum) * 0.25) + 2);
+    const wrSet = new Set();
+    let safety = 0;
+    while (wrSet.size < 3 && safety < 400) {
+        safety++;
+        const off = rnd(-spread, spread);
+        if (off === 0) continue;
+        const candidate = Math.round((ansNum + off) * 100) / 100;
+        if (candidate !== ansNum) wrSet.add(String(candidate));
+    }
+    let extra = 1;
+    while (wrSet.size < 3) { wrSet.add(String(Math.round((ansNum + extra * 4) * 100) / 100)); extra++; }
+
+    return {
+        text: q.text,
+        hint: 'تطبيق قانون رياضي',
+        answer: ansNum,
+        choices: shuffle([ansNum, ...[...wrSet].map(Number)]),
+        explanation: q.explanation,
+        catKey: 'mathlaws'
+    };
+}
+
