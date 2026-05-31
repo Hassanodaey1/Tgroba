@@ -529,6 +529,15 @@
                 G._memPhase = 'show';    /* 'show' → 'hide' → 'answer' */
                 G._memTimer = null;      /* معرّف setTimeout */
                 G._memCorrect = 0;       /* إجابات صحيحة لتتبع الإنجاز */
+
+            } else if (mode === 'chain') {
+                /* 🔗 وضع السلسلة: ناتج كل سؤال = مدخل التالي — خطأ واحد ينهيها */
+                G.totalQ     = 9999;     /* لا نهاية — تنتهي بالخطأ فقط */
+                hasTimer     = false;
+                lives        = 0;        /* لا قلوب */
+                G._chainVal  = rnd(2, 9); /* القيمة الابتدائية */
+                G._chainLen  = 0;        /* عداد طول السلسلة الحالية */
+                G._chainDone = false;    /* تم الانتهاء بالخطأ */
             }
 
             G.livesLeft = lives;
@@ -546,7 +555,8 @@
                 accuracy:   '🎯 الدقة',
                 marathon:   '🏆 الماراثون',
                 impossible: '💀 المستحيل',
-                memory:     '🧠 بطاقة الذاكرة'
+                memory:     '🧠 بطاقة الذاكرة',
+                chain:      '🔗 وضع السلسلة'
             };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
@@ -603,6 +613,21 @@
                 _gameOv.classList.remove('memory-active');
                 const _mb = document.getElementById('memoryCountdownBar');
                 if (_mb) _mb.style.display = 'none';
+            }
+
+            /* 🔗 عرض عداد السلسلة في حالة وضع chain */
+            const _chainBar = document.getElementById('chainCounterBar');
+            if (mode === 'chain') {
+                if (_chainBar) {
+                    _chainBar.style.display = 'block';
+                    const _cc = document.getElementById('chainCounterNum');
+                    if (_cc) _cc.textContent = '0';
+                    /* عرض أفضل سلسلة سابقة */
+                    const _cb2 = document.getElementById('chainBestDisplay');
+                    if (_cb2) _cb2.textContent = st.chainBest || 0;
+                }
+            } else {
+                if (_chainBar) _chainBar.style.display = 'none';
             }
 
             /* 🎵 تطبيق الثيم الموسيقي المناسب لوضع اللعب */
