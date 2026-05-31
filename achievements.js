@@ -411,24 +411,24 @@
             if (available) {
                 boxEl.innerHTML = `
                     <div class="daily-box-glow"></div>
-                    <div class="daily-box-icon" id="dailyBoxIcon">🎁</div>
-                    <div class="daily-box-content">
-                        <div class="daily-box-title">صندوق اليوم</div>
-                        <div class="daily-box-sub">اضغط لفتح مكافأتك!</div>
+                    <div class="daily-icon">🎁</div>
+                    <div>
+                        <div class="daily-title">المكافآت اليومية</div>
+                        <div class="daily-sub">اضغط لفتح مكافأتك!</div>
                     </div>
-                    <div class="daily-box-badge">متاح</div>`;
+                    <div class="daily-badge">متاح</div>`;
                 boxEl.onclick = openDailyBox;
                 boxEl.classList.remove('box-opened');
                 boxEl.classList.add('box-available');
             } else {
                 const lastReward = st.dailyBox.reward || 0;
                 boxEl.innerHTML = `
-                    <div class="daily-box-icon opened">✅</div>
-                    <div class="daily-box-content">
-                        <div class="daily-box-title">تم الفتح • +${lastReward}💰</div>
-                        <div class="daily-box-sub">يتجدد بعد ${h}:${m}</div>
+                    <div class="daily-icon">✅</div>
+                    <div>
+                        <div class="daily-title">تم الفتح • +${lastReward}💰</div>
+                        <div class="daily-sub">يتجدد بعد ${h}:${m}</div>
                     </div>
-                    <div class="daily-box-badge opened">غداً</div>`;
+                    <div class="daily-badge" style="background:var(--surface3);color:var(--text2);">غداً</div>`;
                 boxEl.onclick = null;
                 boxEl.classList.remove('box-available');
                 boxEl.classList.add('box-opened');
