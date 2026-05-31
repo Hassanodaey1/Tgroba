@@ -139,6 +139,12 @@
                         showExplanation();
                         setTimeout(() => { if (!G.ended) endGame(); }, 1200);
                         return;
+                    } else if (G.mode === 'rocket') {
+                        /* 🚀 خطأ = ينقص قلب — مثل باقي الألعاب (القلوب = 3) */
+                        /* لا منطق خاص — يُعالَج بنظام القلوب العادي أعلاه */
+                        showFeedback('❌');
+                        playSound('wrong');
+                        showExplanation();
                     } else {
                         showFeedback('❌');
                         playSound('wrong');
@@ -160,7 +166,7 @@
             setTimeout(() => {
                 try {
                     if (G.ended) return;
-                    const _openModes2 = ['speed', 'survival', 'frenzy', 'chain', 'sudden'];
+                    const _openModes2 = ['speed', 'survival', 'frenzy', 'chain', 'sudden', 'rocket'];
                     if (!G.isTraining && !_openModes2.includes(G.mode) && G.currentQ >= G.totalQ) {
                         endGame();
                     } else if (!G.ended) {
@@ -228,6 +234,9 @@
             /* ⚡ تنظيف وضع ضد الساعة */
             const _sbEnd = document.getElementById('suddenInfoBar');
             if (_sbEnd) _sbEnd.style.display = 'none';
+            /* 🚀 تنظيف وضع الصاروخ */
+            const _rbEnd = document.getElementById('rocketStageBar');
+            if (_rbEnd) _rbEnd.style.display = 'none';
             if (!G.isTraining) {
                 const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
                 const _maxScore = _maxQ * 60;
@@ -244,7 +253,8 @@
                     impossible: 2.5,
                     memory:     1.4,  /* 🧠 وضع الذاكرة: مكافأة معتدلة */
                     chain:      1.6,  /* 🔗 وضع السلسلة: مكافأة جيدة */
-                    sudden:     2.0   /* ⚡ ضد الساعة: مكافأة عالية للضغط */
+                    sudden:     2.0,  /* ⚡ ضد الساعة: مكافأة عالية للضغط */
+                    rocket:     1.8   /* 🚀 الصاروخ: مكافأة عالية للتصعيد */
                 }[G.mode] || 1.0;
                 G.coinsEarned = G.coinsEarned * _modeMult;
 
@@ -290,6 +300,26 @@
                             setTimeout(() => showFeedback('⚡ شارة ضد الساعة! أول 10 أسئلة صحيحة!'), 800);
                         }
                     }
+                }
+
+                /* ════ وضع الصاروخ: تتبع الإحصائيات والشارة ════ */
+                if (G.mode === 'rocket') {
+                    const _rStage = G._rocketStage || 0;
+                    /* تحديث أعلى مرحلة وصلها اللاعب */
+                    if (_rStage > (st._rocketMaxStage || 0)) {
+                        st._rocketMaxStage = _rStage;
+                    }
+                    /* إخفاء شريط الصاروخ */
+                    const _rbEl = document.getElementById('rocketStageBar');
+                    if (_rbEl) _rbEl.style.display = 'none';
+                    /* شارة الصاروخ عند الوصول للمرحلة 4 (عبقري) */
+                    if (_rStage >= 4 && !st.badge_rocket) {
+                        st.badge_rocket = true;
+                        setTimeout(() => showFeedback('🚀 شارة الصاروخ! وصلت لمرحلة العبقري!'), 800);
+                    }
+                    /* رسالة النتيجة الخاصة بالصاروخ */
+                    const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'صعب', 'صعب +', 'عبقري'];
+                    setTimeout(() => showFeedback(`🚀 وصلت لـ: ${_stageNames[_rStage]} (${G.correct} صحيح)`), 400);
                 }
 
                 /* ════ وضع الذاكرة: تتبع الإحصائيات والشارة ════ */
@@ -486,6 +516,9 @@
                         /* ⚡ تنظيف شريط ضد الساعة عند الخروج */
                         const _sbQ = document.getElementById('suddenInfoBar');
                         if (_sbQ) _sbQ.style.display = 'none';
+                        /* 🚀 تنظيف شريط الصاروخ عند الخروج */
+                        const _rbQ = document.getElementById('rocketStageBar');
+                        if (_rbQ) _rbQ.style.display = 'none';
                         document.getElementById('resultsOverlay').classList.remove('active');
                         if (!G.ended && !G.isTraining && (G.correct > 0 || G.wrong > 0)) {
                             endGame();
@@ -558,7 +591,7 @@
         function loadQuestion() {
             try {
                 if (G.ended) return;
-                if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.mode !== 'sudden' && G.mode !== 'chain') {
+                if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.mode !== 'sudden' && G.mode !== 'chain' && G.mode !== 'rocket') {
                     endGame(); 
                     return;
                 }
@@ -598,6 +631,31 @@
                             } else if (G.mode === 'chain') {
                                 /* 🔗 وضع السلسلة: بناء السؤال من القيمة السابقة */
                                 q = genChainQ(G._chainVal);
+
+                            } else if (G.mode === 'rocket') {
+                                /* 🚀 وضع الصاروخ: الصعوبة تتصاعد كل 5 إجابات صحيحة */
+                                const _stageDiffs = ['easy', 'easy', 'medium', 'medium', 'hard', 'hard', 'genius'];
+                                const _stage = Math.floor(G.correct / 5);
+                                G._rocketStage = Math.min(_stage, 6);
+                                G._rocketDiff  = _stageDiffs[G._rocketStage];
+                                /* تحديث شريط المرحلة في الواجهة */
+                                const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'صعب', 'صعب +', 'عبقري'];
+                                const _rl = document.getElementById('rocketStageLabel');
+                                if (_rl) _rl.textContent = `🚀 المرحلة ${G._rocketStage + 1}: ${_stageNames[G._rocketStage]}`;
+                                /* شريط تقدم داخل المرحلة (0-5 إجابات) */
+                                const _progressInStage = (G.correct % 5) / 5 * 100;
+                                const _rf = document.getElementById('rocketStageProgress');
+                                if (_rf) _rf.style.width = _progressInStage + '%';
+                                /* إشعار عند الترقي لمرحلة جديدة */
+                                if (G.correct > 0 && G.correct % 5 === 0 && G._rocketStage > 0) {
+                                    showFeedback(`🚀 ترقية! ${_stageNames[G._rocketStage]}`);
+                                    playSound('levelup');
+                                }
+                                if (typeof getNextQuestion === 'function') {
+                                    q = getNextQuestion(G.op, G._rocketDiff);
+                                } else {
+                                    q = genQ(G.op, G._rocketDiff);
+                                }
 
                             } else if (G.mode === 'daily') {
                                 const dailyIdx = (G.dailyQIndex !== undefined) ? G.dailyQIndex : (G.currentQ - 1);
@@ -682,6 +740,7 @@
                             G.mode === 'memory' ? `🧠 السؤال ${G.currentQ} من ${G.totalQ}` :
                             G.mode === 'chain' ? `🔗 حلقة ${G._chainLen || 0}` :
                             G.mode === 'sudden' ? `⚡ ${G._suddenScore || 0} صحيح` :
+                            G.mode === 'rocket' ? `🚀 ${G.correct} صحيح` :
                             `السؤال ${G.currentQ} من ${G.totalQ}`;
                     }
                 }
@@ -694,6 +753,8 @@
                         statQ.textContent = `🔗 ${G._chainLen || 0}`;
                     } else if (G.mode === 'sudden') {
                         statQ.textContent = `⚡ ${G._suddenScore || 0}`;
+                    } else if (G.mode === 'rocket') {
+                        statQ.textContent = `🚀 ${G.correct}`;
                     } else {
                         statQ.textContent = `${G.currentQ}/${G.totalQ}`;
                     }
