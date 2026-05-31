@@ -813,7 +813,13 @@
                 memory:     '🧠 بطاقة الذاكرة',
                 chain:      '🔗 وضع السلسلة',
                 sudden:     '⚡ ضد الساعة',
-                rocket:     '🚀 وضع الصاروخ'
+                rocket:     '🚀 وضع الصاروخ',
+                adv_roots:  '🔢 الأسس والجذور',
+                adv_log:    '📊 اللوغاريتم',
+                adv_geo:    '📐 الهندسة',
+                adv_eq:     '🔣 المعادلات',
+                adv_seq:    '📈 المتتاليات',
+                adv_trig:   '📐 المثلثات'
             };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
@@ -1957,6 +1963,7 @@ const EXTENDED_LAWS_POOL = [
 /* ═══════════════════════════════════════════════════════════════
    ألعاب الرياضيات المتقدمة — كل قسم منفصل
 ═══════════════════════════════════════════════════════════════ */
+
 /* 1️⃣ الأسس والجذور */
 function genPowerSqrtQ() {
     const type = rnd(0, 3);
@@ -2310,4 +2317,3 @@ function genExtendedLawQ() {
         catKey: 'mathlaws'
     };
 }
-
