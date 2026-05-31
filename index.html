@@ -450,15 +450,15 @@
                             </div>
                         </div>
                     </div>
-                    <!-- صندوق المكافأة اليومي -->
-                    <div class="daily-box-card box-available" id="dailyBoxCard" onclick="openDailyBox()">
+                    <!-- صندوق المكافأة اليومي — بنفس حجم تحدي اليوم -->
+                    <div class="daily-banner daily-reward-banner box-available" id="dailyBoxCard" onclick="openDailyBox()">
                         <div class="daily-box-glow"></div>
-                        <div class="daily-box-icon" id="dailyBoxIcon">🎁</div>
-                        <div class="daily-box-content">
-                            <div class="daily-box-title">صندوق اليوم</div>
-                            <div class="daily-box-sub">اضغط لفتح مكافأتك!</div>
+                        <div class="daily-icon" id="dailyBoxIcon">🎁</div>
+                        <div>
+                            <div class="daily-title">المكافآت اليومية</div>
+                            <div class="daily-sub">اضغط لفتح مكافأتك!</div>
                         </div>
-                        <div class="daily-box-badge">متاح</div>
+                        <div class="daily-badge" id="dailyBoxBadge">متاح</div>
                     </div>
                     <!-- السلسلة اليومية -->
                     <div style="background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.1));border:1px solid rgba(240,185,11,0.2);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTab('achieve')">
@@ -542,37 +542,37 @@
                     </div>
                     <!-- بطاقات الألعاب بتصميم تفاصيل الفئات -->
                     <div class="cat-grid">
-                        <div class="cat-card" style="--chip-color:#f0b90b" id="playCardCounter" onclick="openCounterGame()">
+                        <div class="cat-card memory-game-card" style="--chip-color:#f0b90b" id="playCardCounter" onclick="openCounterGame()">
                             <div class="cat-icon">🧮</div>
                             <div class="cat-name">العمليات على الأعداد</div>
                             <div class="cat-progress"><div class="cat-progress-fill" id="gcatProg0" style="width:0%"></div></div>
                             <div class="cat-stats" id="gcatStats0">0 إجابة</div>
                         </div>
-                        <div class="cat-card" style="--chip-color:#7c3aed" id="playCardChallenges" onclick="openOpSheet('challenges')">
+                        <div class="cat-card memory-game-card" style="--chip-color:#7c3aed" id="playCardChallenges" onclick="openOpSheet('challenges')">
                             <div class="cat-icon">⚡</div>
                             <div class="cat-name">التحديات</div>
                             <div class="cat-progress"><div class="cat-progress-fill" id="gcatProg1" style="width:0%"></div></div>
                             <div class="cat-stats" id="gcatStats1">0 جلسة</div>
                         </div>
-                        <div class="cat-card locked" style="--chip-color:#06b6d4" id="gcardAdvanced">
+                        <div class="cat-card memory-game-card locked" style="--chip-color:#06b6d4" id="gcardAdvanced">
                             <div class="cat-icon">📐</div>
                             <div class="cat-name">الرياضيات المتقدمة</div>
                             <div class="cat-progress"><div class="cat-progress-fill" style="width:0%"></div></div>
                             <div class="cat-stats" id="gcardAdvancedStats">🔒 Lv.7</div>
                         </div>
-                        <div class="cat-card locked" style="--chip-color:#10b981" id="gcardLaws">
+                        <div class="cat-card memory-game-card locked" style="--chip-color:#10b981" id="gcardLaws">
                             <div class="cat-icon">📜</div>
                             <div class="cat-name">قوانين وألغاز</div>
                             <div class="cat-progress"><div class="cat-progress-fill" style="width:0%"></div></div>
                             <div class="cat-stats" id="gcardLawsStats">🔒 Lv.10</div>
                         </div>
-                        <div class="cat-card" style="--chip-color:#f97316" onclick="openTrainingOpSheet()">
+                        <div class="cat-card memory-game-card" style="--chip-color:#f97316" onclick="openTrainingOpSheet()">
                             <div class="cat-icon">🎓</div>
                             <div class="cat-name">وضع التدريب</div>
                             <div class="cat-progress"><div class="cat-progress-fill" style="width:100%;background:linear-gradient(90deg,#f97316,#ffd54f);"></div></div>
                             <div class="cat-stats">بلا حدود • مجاني</div>
                         </div>
-                        <div class="cat-card" style="--chip-color:#06b6d4" onclick="openLaws()">
+                        <div class="cat-card memory-game-card" style="--chip-color:#06b6d4" onclick="openLaws()">
                             <div class="cat-icon">📚</div>
                             <div class="cat-name">القوانين والبديهيات</div>
                             <div class="cat-progress"><div class="cat-progress-fill" style="width:100%;background:linear-gradient(90deg,#06b6d4,#7c3aed);"></div></div>
@@ -1571,7 +1571,8 @@
             </div>
 
             <!-- التقييم العام -->
-            <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;">
+            
+              <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;">
                 <div style="font-size:0.82em;font-weight:900;color:var(--text);margin-bottom:12px;">⭐ التقييم العام</div>
                 <div class="rating-inner">
                     <div>
@@ -1917,4 +1918,4 @@
 
 </body>
 </html>
-          
+              
