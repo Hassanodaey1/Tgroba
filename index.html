@@ -461,10 +461,12 @@
                         </div>
                     </div>
                     <!-- ✅ §7.5 — زر "العب الآن" لبدء آخر وضع فوراً -->
-                    <button id="quickPlayBtn" onclick="quickPlay()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:20px;font-family:'Tajawal',sans-serif;font-size:1.2em;font-weight:900;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(124,58,237,0.35);transition:transform 0.15s,box-shadow 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
-                        <span style="font-size:1.3em;">▶</span>
-                        <span id="quickPlayLabel">العب الآن</span>
-                    </button>
+                    <div style="display:flex;justify-content:center;">
+                        <button id="quickPlayBtn" onclick="quickPlay()" style="padding:10px 28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:50px;font-family:'Tajawal',sans-serif;font-size:0.95em;font-weight:900;color:#fff;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.3);transition:transform 0.15s,box-shadow 0.15s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                            <span>▶</span>
+                            <span id="quickPlayLabel">العب الآن</span>
+                        </button>
+                    </div>
                     <!-- صندوق المكافأة اليومي — بنفس حجم تحدي اليوم -->
                     <div class="daily-banner daily-reward-banner box-available" id="dailyBoxCard" onclick="openDailyBox()">
                         <div class="daily-box-glow"></div>
