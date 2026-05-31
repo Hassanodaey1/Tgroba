@@ -46,6 +46,27 @@
                 check: () => (st.memoryPerfect || 0) >= 1, reward: 10 },
             { id: 'memory_streak', icon: '🔗', name: 'ذاكرة الأبطال', desc: 'أجب على 8+ إجابات صحيحة في وضع الذاكرة',
                 check: () => (st.memoryBest || 0) >= 8, reward: 8 },
+
+            /* ═══ 9.1 — إنجازات الأوضاع الجديدة ═══ */
+            { id: 'chain_master',  icon: '🔗', name: 'سيد السلسلة',
+              desc: 'أكمل سلسلة 10 أسئلة متتالية في وضع السلسلة',
+              check: () => (st.stats['chain']?.best || 0) >= 10, reward: 12 },
+
+            { id: 'sudden_hero',   icon: '⚡', name: 'بطل اللحظة',
+              desc: 'أجب على 10 أسئلة صحيحة في وضع ضد الساعة',
+              check: () => (st.stats['sudden']?.cor || 0) >= 10, reward: 15 },
+
+            { id: 'rocket_stage4', icon: '🚀', name: 'رحلة إلى النجوم',
+              desc: 'وصل لمرحلة العبقري في وضع الصاروخ',
+              check: () => (st._rocketMaxStage || 0) >= 4, reward: 20 },
+
+            { id: 'fill_perfect',  icon: '🔢', name: 'ملء الفراغ المثالي',
+              desc: 'أكمل لعبة التكميل بدون أخطاء',
+              check: () => (st._fillPerfect || 0) >= 1, reward: 8 },
+
+            { id: 'weekly_done',   icon: '🗓️', name: 'بطل الأسبوع',
+              desc: 'أكمل تحدي الأسبوع',
+              check: () => st.weeklyChallengePlayed === true, reward: 25 },
         ];
 
         function checkAchievements() {
@@ -118,8 +139,34 @@
             if (el) el.textContent = Object.values(BADGES).filter(b => b.cond()).map(b => b.icon).join('');
         }
 
+        /* ═══ 9.2 — مهمة ديناميكية حسب نقطة ضعف اللاعب ═══ */
+        function genDynamicTask() {
+            const stats = st.stats || {};
+            let weakest = 'add', weakestRate = 1;
+            Object.keys(stats).forEach(k => {
+                const s = stats[k];
+                if (s && s.att >= 5) {
+                    const rate = (s.cor || 0) / s.att;
+                    if (rate < weakestRate) { weakestRate = rate; weakest = k; }
+                }
+            });
+            const opNames = {
+                add: 'الجمع', sub: 'الطرح', mul: 'الضرب', div: 'القسمة',
+                addition: 'الجمع', subtraction: 'الطرح', multiplication: 'الضرب', division: 'القسمة',
+                table: 'جدول الضرب', algebra: 'الجبر', mix: 'العمليات المختلطة'
+            };
+            const opLabel = opNames[weakest] || weakest;
+            return {
+                id: 'tw', icon: '🎯',
+                name: `تحسين ${opLabel}`,
+                desc: `أجب على 10 أسئلة صحيحة في ${opLabel}`,
+                reward: 8, goal: 10, progress: 0, done: false,
+                targetOp: weakest
+            };
+        }
+
         function genDailyTasks() {
-            return [
+            const tasks = [
                 { id: 't1', icon: '🎯', name: 'أول إجابة', desc: 'أجب على سؤال واحد صحيح', reward: 1, goal: 1,
                     progress: 0, done: false },
                 { id: 't2', icon: '🔥', name: 'تتابع ×3', desc: '3 إجابات صحيحة متتالية', reward: 3, goal: 3,
@@ -133,6 +180,13 @@
                 { id: 't6', icon: '🌟', name: 'تحدي اليوم', desc: 'العب تحدي اليوم (١٠ أسئلة متدرجة)', reward: 3, goal: 1,
                     progress: 0, done: false },
             ];
+            /* أضف المهمة الديناميكية فقط إذا كان هناك بيانات كافية (5+ محاولات في موضوع ما) */
+            const statsData = st.stats || {};
+            const hasEnoughData = Object.values(statsData).some(s => s && s.att >= 5);
+            if (hasEnoughData) {
+                tasks.push(genDynamicTask());
+            }
+            return tasks;
         }
 
         function checkDailyReset() {
@@ -155,7 +209,7 @@
             }
         }
 
-        function updTask(type, amount = 1) {
+        function updTask(type, amount = 1, opKey = null) {
             checkDailyReset();
             const T = st.dailyTasks;
             let changed = false;
@@ -167,6 +221,16 @@
                             st.coins += t.reward;
                             changed = true; } }
                 });
+                /* ═══ 9.2 — تحديث المهمة الديناميكية إذا كانت العملية تطابق الهدف ═══ */
+                const tw = T.find(x => x.id === 'tw');
+                if (tw && !tw.done && opKey && tw.targetOp && (opKey === tw.targetOp || opKey.includes(tw.targetOp) || tw.targetOp.includes(opKey))) {
+                    tw.progress = Math.min(tw.goal, tw.progress + amount);
+                    if (tw.progress >= tw.goal) {
+                        tw.done = true;
+                        st.coins += tw.reward;
+                        changed = true;
+                    }
+                }
             }
             if (type === 'streak' && amount >= 3) { const t = T.find(x => x.id === 't2'); if (t && !t.done) { t.progress =
                         t.goal;
@@ -194,6 +258,11 @@
             else if (level < 4) filtered = tasksData.filter(t => ['t1', 't2', 't3'].includes(t.id));
             else if (level < 5) filtered = tasksData.filter(t => ['t1', 't2', 't3', 't4'].includes(t.id));
             else filtered = tasksData;
+            /* ═══ 9.2 — المهمة الديناميكية تظهر دائماً إذا وُجدت (بعد مستوى 2) ═══ */
+            const twTask = tasksData.find(t => t.id === 'tw');
+            if (twTask && level >= 2 && !filtered.find(t => t.id === 'tw')) {
+                filtered = [...filtered, twTask];
+            }
             const doneCount = filtered.filter(t => t.done).length;
             const pct = filtered.length ? Math.round((doneCount / filtered.length) * 100) : 0;
             const totalR = filtered.filter(t => t.done).reduce((s, t) => s + t.reward, 0);
