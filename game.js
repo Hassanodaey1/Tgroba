@@ -30,6 +30,16 @@
                 if (G.mode === 'memory') {
                     G._memCorrect = (G._memCorrect || 0) + 1;
                 }
+                /* ⚡ وضع ضد الساعة: تحديث العداد + إعادة الوقت لـ 10 ثوانٍ كاملة */
+                if (G.mode === 'sudden') {
+                    G._suddenScore = (G._suddenScore || 0) + 1;
+                    G.timeLeft = G.maxTime; /* إعادة الوقت لـ 10 — لا يتراكم */
+                    const pct2 = 100;
+                    const bt2 = document.getElementById('bigTimer');
+                    const tb2 = document.getElementById('timerBar');
+                    if (bt2) { bt2.textContent = G.maxTime; bt2.classList.remove('danger'); }
+                    if (tb2) { tb2.style.width = '100%'; tb2.classList.remove('danger'); }
+                }
                 /* 3.1: ربط الكسب بالصعوبة */
                 const _diffMult = { easy:0.4, medium:0.7, hard:1.0, genius:1.5 }[st.difficulty] || 0.4;
                 const _levelBonus = Math.min(0.5, Math.floor(st.level / 10) * 0.1);
@@ -43,7 +53,8 @@
                 if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
                 playSound('correct');
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
-                if (timerActive) {
+                if (timerActive && G.mode !== 'sudden') {
+                    /* أوضاع أخرى: +1 ثانية عند الإجابة الصحيحة */
                     G.timeLeft = Math.min(G.maxTime, G.timeLeft + 1);
                     const pct = (G.timeLeft / G.maxTime) * 100;
                     document.getElementById('timerBar').style.width = pct + '%';
@@ -119,6 +130,13 @@
                         showExplanation();
                         setTimeout(() => { if (!G.ended) endGame(); }, 1200);
                         return;
+                    } else if (G.mode === 'sudden') {
+                        /* ⚡ خطأ واحد = نهاية فورية */
+                        showFeedback(`💥 انتهى! وصلت لـ ${G._suddenScore || 0} سؤال`);
+                        playSound('wrong');
+                        showExplanation();
+                        setTimeout(() => { if (!G.ended) endGame(); }, 1200);
+                        return;
                     } else {
                         showFeedback('❌');
                         playSound('wrong');
@@ -140,7 +158,7 @@
             setTimeout(() => {
                 try {
                     if (G.ended) return;
-                    const _openModes2 = ['speed', 'survival', 'frenzy', 'chain'];
+                    const _openModes2 = ['speed', 'survival', 'frenzy', 'chain', 'sudden'];
                     if (!G.isTraining && !_openModes2.includes(G.mode) && G.currentQ >= G.totalQ) {
                         endGame();
                     } else if (!G.ended) {
@@ -220,7 +238,8 @@
                     marathon:   2.0,
                     impossible: 2.5,
                     memory:     1.4,  /* 🧠 وضع الذاكرة: مكافأة معتدلة */
-                    chain:      1.6   /* 🔗 وضع السلسلة: مكافأة جيدة */
+                    chain:      1.6,  /* 🔗 وضع السلسلة: مكافأة جيدة */
+                    sudden:     2.0   /* ⚡ ضد الساعة: مكافأة عالية للضغط */
                 }[G.mode] || 1.0;
                 G.coinsEarned = G.coinsEarned * _modeMult;
 
@@ -254,6 +273,18 @@
                     /* إخفاء شريط عداد السلسلة */
                     const _cbEl = document.getElementById('chainCounterBar');
                     if (_cbEl) _cbEl.style.display = 'none';
+                }
+
+                /* ════ وضع ضد الساعة: تتبع الإحصائيات والشارة ════ */
+                if (G.mode === 'sudden') {
+                    const _sScore = G._suddenScore || 0;
+                    if (_sScore > (st.suddenBest || 0)) {
+                        st.suddenBest = _sScore;
+                        if (_sScore >= 10 && !st.badge_sudden) {
+                            st.badge_sudden = true;
+                            setTimeout(() => showFeedback('⚡ شارة ضد الساعة! أول 10 أسئلة صحيحة!'), 800);
+                        }
+                    }
                 }
 
                 /* ════ وضع الذاكرة: تتبع الإحصائيات والشارة ════ */
@@ -390,7 +421,14 @@
                 const backBtnEl = document.getElementById('resultsBackBtn');
                 if (backBtnEl) {
                     const src = window._gameSource || 'home';
-                    if (src === 'play') {
+                    if (src === 'mindgame') {
+                        backBtnEl.textContent = '🧠 العودة لألعاب العقل';
+                        backBtnEl.onclick = function() {
+                            document.getElementById('resultsOverlay').classList.remove('active');
+                            goTab('play');
+                            setTimeout(() => { if (typeof openMindGame === 'function') openMindGame(); }, 150);
+                        };
+                    } else if (src === 'play') {
                         backBtnEl.textContent = '🎮 العودة للألعاب';
                         backBtnEl.onclick = function() {
                             document.getElementById('resultsOverlay').classList.remove('active');
@@ -512,7 +550,7 @@
         function loadQuestion() {
             try {
                 if (G.ended) return;
-                if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy') {
+                if (G.currentQ >= G.totalQ && !G.isTraining && G.mode !== 'speed' && G.mode !== 'survival' && G.mode !== 'frenzy' && G.mode !== 'sudden' && G.mode !== 'chain') {
                     endGame(); 
                     return;
                 }
@@ -635,6 +673,7 @@
                             G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
                             G.mode === 'memory' ? `🧠 السؤال ${G.currentQ} من ${G.totalQ}` :
                             G.mode === 'chain' ? `🔗 حلقة ${G._chainLen || 0}` :
+                            G.mode === 'sudden' ? `⚡ ${G._suddenScore || 0} صحيح` :
                             `السؤال ${G.currentQ} من ${G.totalQ}`;
                     }
                 }
@@ -645,6 +684,8 @@
                         statQ.textContent = G.correct;
                     } else if (G.mode === 'chain') {
                         statQ.textContent = `🔗 ${G._chainLen || 0}`;
+                    } else if (G.mode === 'sudden') {
+                        statQ.textContent = `⚡ ${G._suddenScore || 0}`;
                     } else {
                         statQ.textContent = `${G.currentQ}/${G.totalQ}`;
                     }
