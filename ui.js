@@ -424,6 +424,22 @@ function updateHomeStats() {
     const gs0 = document.getElementById('gcatStats0'), gs1 = document.getElementById('gcatStats1');
     if (gs0) gs0.textContent = `${cc.correct} / ${cc.total} إجابة`;
     if (gs1) gs1.textContent = `${cg} جلسة تحدي`;
+
+    /* 🧠 تحديث بطاقة الذاكرة */
+    const memStats  = document.getElementById('memoryCardStats');
+    const memProg   = document.getElementById('memoryCardProgress');
+    if (memStats) {
+        const best = st.memoryBest || 0;
+        if (best > 0) {
+            memStats.textContent = `أفضل: ${best}/10 • ${st.memoryPerfect ? '🏅 مثالي' : 'تذكّر وأجب'}`;
+        } else {
+            memStats.textContent = 'تذكّر وأجب • 3 ثوانٍ';
+        }
+    }
+    if (memProg) {
+        const pct = Math.min(100, ((st.memoryBest || 0) / 10) * 100);
+        memProg.style.width = pct + '%';
+    }
 }
 
 function renderHistory() {
