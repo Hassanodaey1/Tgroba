@@ -2,6 +2,13 @@
         /* ═══════════ CHECK ANSWER ═══════════ */
         function checkAnswer(btn) {
             if (G.answered || G.ended) return;
+            /* 🧠 وضع الذاكرة: تأكد من أن المرحلة hide (السؤال اختفى) */
+            if (G.mode === 'memory' && G._memPhase === 'show') return;
+            /* إلغاء مؤقت الذاكرة عند الإجابة */
+            if (G._memTimer) { clearTimeout(G._memTimer); G._memTimer = null; }
+            /* إزالة class الإخفاء */
+            const qt_mem = document.getElementById('questionText');
+            if (qt_mem) qt_mem.classList.remove('memory-hidden');
             G.answered = true;
             const val = parseFloat(btn.getAttribute('data-val'));
             document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
@@ -167,6 +174,14 @@
             if (G.ended) return;
             G.ended = true;
             clearGameTimer();
+            /* 🧠 تنظيف وضع الذاكرة عند انتهاء اللعبة */
+            if (G._memTimer) { clearTimeout(G._memTimer); G._memTimer = null; }
+            const _qtMem = document.getElementById('questionText');
+            if (_qtMem) _qtMem.classList.remove('memory-hidden');
+            const _mbEnd = document.getElementById('memoryCountdownBar');
+            if (_mbEnd) _mbEnd.style.display = 'none';
+            const _govEnd = document.getElementById('gameOverlay');
+            if (_govEnd) _govEnd.classList.remove('memory-active');
             if (!G.isTraining) {
                 const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
                 const _maxScore = _maxQ * 60;
@@ -180,7 +195,8 @@
                     survival:   1.3,
                     accuracy:   1.6,
                     marathon:   2.0,
-                    impossible: 2.5
+                    impossible: 2.5,
+                    memory:     1.4   /* 🧠 وضع الذاكرة: مكافأة معتدلة */
                 }[G.mode] || 1.0;
                 G.coinsEarned = G.coinsEarned * _modeMult;
 
@@ -195,6 +211,25 @@
                             impossible: '💀 شارة المستحيل'
                         };
                         setTimeout(() => showFeedback(`${G._challengeBadge} حصلت على ${badgeNames[G.mode] || 'شارة جديدة'}!`), 500);
+                    }
+                }
+                /* ════ وضع الذاكرة: تتبع الإحصائيات والشارة ════ */
+                if (G.mode === 'memory') {
+                    /* إلغاء أي مؤقت ذاكرة متبقٍّ */
+                    if (G._memTimer) { clearTimeout(G._memTimer); G._memTimer = null; }
+                    const qt_end = document.getElementById('questionText');
+                    if (qt_end) qt_end.classList.remove('memory-hidden');
+                    /* تحديث أفضل نتيجة */
+                    if (G.correct > (st.memoryBest || 0)) {
+                        st.memoryBest = G.correct;
+                    }
+                    /* مكافأة الدقة الكاملة */
+                    if (G.wrong === 0 && G.correct >= 5) {
+                        st.memoryPerfect = (st.memoryPerfect || 0) + 1;
+                        if (!st.badge_memory) {
+                            st.badge_memory = true;
+                            setTimeout(() => showFeedback('🧠 شارة الذاكرة الحديدية! أول إكمال مثالي!'), 800);
+                        }
                     }
                 }
                 G.correct     = Math.max(0, Math.min(Math.floor(G.correct),     _maxQ));
@@ -541,6 +576,7 @@
                         qNumEl.textContent = G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
                             G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
                             G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
+                            G.mode === 'memory' ? `🧠 السؤال ${G.currentQ} من ${G.totalQ}` :
                             `السؤال ${G.currentQ} من ${G.totalQ}`;
                     }
                 }
@@ -562,6 +598,59 @@
                         btn.onclick = () => checkAnswer(btn);
                         grid.appendChild(btn);
                     });
+                }
+
+                /* ════ وضع الذاكرة: إخفاء السؤال بعد 3 ثوانٍ ════ */
+                if (G.mode === 'memory') {
+                    /* إلغاء أي مؤقت سابق */
+                    if (G._memTimer) { clearTimeout(G._memTimer); G._memTimer = null; }
+
+                    const qt2 = document.getElementById('questionText');
+                    const hintEl2 = document.getElementById('questionHint');
+                    const memBar = document.getElementById('memoryCountdownBar');
+
+                    /* إظهار شريط العدّ التنازلي */
+                    if (memBar) {
+                        memBar.style.display = 'block';
+                        memBar.querySelector('.mem-bar-fill').style.transition = 'none';
+                        memBar.querySelector('.mem-bar-fill').style.width = '100%';
+                        /* تشغيل الانكماش بعد إطار واحد */
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                memBar.querySelector('.mem-bar-fill').style.transition =
+                                    `width ${G._memDelay}ms linear`;
+                                memBar.querySelector('.mem-bar-fill').style.width = '0%';
+                            });
+                        });
+                    }
+
+                    /* قفل أزرار الإجابة أثناء العرض */
+                    document.querySelectorAll('.answer-btn').forEach(b => {
+                        b.disabled = true;
+                        b.style.opacity = '0.4';
+                    });
+
+                    G._memPhase = 'show';
+                    G._memTimer = setTimeout(() => {
+                        if (G.ended || G.answered) return;
+                        G._memPhase = 'hide';
+
+                        /* إخفاء السؤال */
+                        if (qt2) {
+                            qt2.classList.add('memory-hidden');
+                            qt2.textContent = '🧠 ما هو الجواب؟';
+                        }
+                        if (hintEl2) hintEl2.textContent = 'تذكّر السؤال وأجب الآن!';
+                        if (memBar) memBar.style.display = 'none';
+
+                        /* تفعيل أزرار الإجابة */
+                        document.querySelectorAll('.answer-btn').forEach(b => {
+                            b.disabled = false;
+                            b.style.opacity = '1';
+                        });
+
+                        playSound('tick');
+                    }, G._memDelay);
                 }
             } catch(e) {
                 console.error("Fatal error in loadQuestion:", e);
