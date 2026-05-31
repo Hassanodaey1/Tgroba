@@ -1167,6 +1167,20 @@
             background: linear-gradient(135deg, rgba(6,182,212,0.2), rgba(124,58,237,0.12));
             border-color: rgba(6,182,212,0.4);
         }
+        /* المكافآت اليومية — نفس حجم تحدي اليوم لكن بلون ذهبي */
+        .daily-reward-banner {
+            background: linear-gradient(135deg, rgba(240,185,11,0.18), rgba(124,58,237,0.14)) !important;
+            border: 1.5px solid rgba(240,185,11,0.45) !important;
+            box-shadow: 0 0 18px rgba(240,185,11,0.15), inset 0 0 24px rgba(240,185,11,0.04);
+            animation: boxPulse 2s ease-in-out infinite;
+        }
+        .daily-reward-banner.box-opened {
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.08)) !important;
+            border-color: rgba(16,185,129,0.25) !important;
+            animation: none;
+            opacity: 0.75;
+            cursor: default;
+        }
         .daily-icon {
             font-size: 2em;
             flex-shrink: 0;
@@ -3613,12 +3627,13 @@ media (orientation: landscape) and (max-height: 500px) {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(6,182,212,0.06));
+    background: linear-gradient(135deg, rgba(var(--chip-rgb, 168,85,247), 0.1), rgba(6,182,212,0.06));
     border-radius: inherit;
     pointer-events: none;
+    transition: opacity 0.26s;
 }
-.memory-game-card:active {
-    transform: scale(0.96);
+.memory-game-card:active::before {
+    opacity: 2;
 }
 
 /* أيقونة الدماغ — تنبض بهدوء */
