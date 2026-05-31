@@ -91,7 +91,11 @@
                 /* ═══ مخزون المساعدات الدائم ═══ */
                 inventory: { skip: 0, heart: 0, remove: 0, hint: 0 },
                 /* ✅ FIX-ADREWARD: وقت آخر مكافأة إعلان — لمنع الغش (0 = لم يُستخدم بعد) */
-                _lastAdRewardTime: 0
+                _lastAdRewardTime: 0,
+                /* ═══ وضع الذاكرة ═══ */
+                memoryBest: 0,          /* أفضل عدد إجابات صحيحة في وضع الذاكرة */
+                memoryPerfect: 0,       /* عدد مرات إكمال الوضع بدون أخطاء */
+                badge_memory: false     /* شارة وضع الذاكرة */
             };
         }
 
@@ -178,6 +182,10 @@
             if (s.inventory.hint > 99) s.inventory.hint = 99;
             /* ✅ FIX-ADREWARD: تأكد من أن وقت المكافأة رقم صحيح */
             if (typeof s._lastAdRewardTime !== 'number' || s._lastAdRewardTime < 0) s._lastAdRewardTime = 0;
+            /* ═══ وضع الذاكرة ═══ */
+            if (typeof s.memoryBest    !== 'number' || s.memoryBest    < 0) s.memoryBest    = 0;
+            if (typeof s.memoryPerfect !== 'number' || s.memoryPerfect < 0) s.memoryPerfect = 0;
+            if (s.badge_memory === undefined) s.badge_memory = false;
             return s;
         }
 
