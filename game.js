@@ -217,13 +217,9 @@
         }
 
         function showExplanation() {
-            if (typeof showSmartExplanation === 'function') {
-                showSmartExplanation(G.currentExplanation, G.correctAnswer);
-            } else {
-                if (!G.currentExplanation) return;
-                document.getElementById('explanationArea').innerHTML =
-                    `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${G.correctAnswer}</strong><br>الشرح: ${G.currentExplanation}</div>`;
-            }
+            /* تم إلغاء عرض الشرح — الألوان على الأزرار تكفي */
+            var area = document.getElementById('explanationArea');
+            if (area) area.innerHTML = '';
         }
 
         /* ═══════════ END GAME ═══════════ */
