@@ -241,6 +241,11 @@ function _remember(q) {
 ═══════════════════════════════════════════════════════════════ */
 
 function genSmartQ(op, baseDiff) {
+    /* الأنواع المتقدمة الجديدة — تُعالَج مباشرة بـ genQ */
+    var _advOps = ['adv_roots','adv_log','adv_geo','adv_eq','adv_seq','adv_trig'];
+    if (_advOps.indexOf(op) >= 0) {
+        if (typeof genQ === 'function') return genQ(op, baseDiff || 'medium');
+    }
     var cfg  = _getLevelConfig();
     var diff = _resolveActualDiff(op, baseDiff || cfg.diff);
     var age  = (typeof st !== 'undefined') ? (st.age || _calcAge((st||{}).birthDate)) : 0;
