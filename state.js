@@ -101,7 +101,10 @@
                 badge_chain: false,     /* شارة وضع السلسلة */
                 /* ═══ وضع ضد الساعة ═══ */
                 suddenBest: 0,          /* أفضل عدد أسئلة صحيحة في وضع ضد الساعة */
-                badge_sudden: false     /* شارة وضع ضد الساعة */
+                badge_sudden: false,    /* شارة وضع ضد الساعة */
+                /* ═══ وضع الصاروخ ═══ */
+                _rocketMaxStage: 0,     /* أعلى مرحلة وصلها اللاعب (0=سهل ... 6=عبقري) */
+                badge_rocket: false     /* شارة وضع الصاروخ */
             };
         }
 
@@ -195,6 +198,10 @@
             /* ═══ وضع ضد الساعة ═══ */
             if (typeof s.suddenBest !== 'number' || s.suddenBest < 0) s.suddenBest = 0;
             if (s.badge_sudden === undefined) s.badge_sudden = false;
+            /* ═══ وضع الصاروخ ═══ */
+            if (typeof s._rocketMaxStage !== 'number' || s._rocketMaxStage < 0) s._rocketMaxStage = 0;
+            if (s._rocketMaxStage > 6) s._rocketMaxStage = 6;
+            if (s.badge_rocket === undefined) s.badge_rocket = false;
             return s;
         }
 
