@@ -26,6 +26,10 @@
                     const _cc = document.getElementById('chainCounterNum');
                     if (_cc) _cc.textContent = G._chainLen;
                 }
+                /* 🧠 وضع الذاكرة: تتبع الإجابات الصحيحة للإنجاز */
+                if (G.mode === 'memory') {
+                    G._memCorrect = (G._memCorrect || 0) + 1;
+                }
                 /* 3.1: ربط الكسب بالصعوبة */
                 const _diffMult = { easy:0.4, medium:0.7, hard:1.0, genius:1.5 }[st.difficulty] || 0.4;
                 const _levelBonus = Math.min(0.5, Math.floor(st.level / 10) * 0.1);
