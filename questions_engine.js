@@ -797,7 +797,8 @@ function showSmartExplanation(explanation, correctAnswer) {
 
 function getNextQuestion(op, diff) {
     /* العمليات الخاصة تبقى على genQ الأصلية */
-    if (op === 'table' || op === 'laws' || op === 'advanced') {
+    if (op === 'table' || op === 'laws' || op === 'advanced' ||
+        ['adv_roots','adv_log','adv_geo','adv_eq','adv_seq','adv_trig'].includes(op)) {
         if (typeof genQ === 'function') return genQ(op, diff);
     }
     return genSmartQ(op, diff);
