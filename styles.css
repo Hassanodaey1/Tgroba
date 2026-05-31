@@ -1195,6 +1195,74 @@
             padding: 4px 10px;
             border-radius: 20px;
         }
+        /* ══════════ تحدي الأسبوع ══════════ */
+        .weekly-challenge-card {
+            background: linear-gradient(135deg, rgba(6,182,212,0.18), rgba(124,58,237,0.12));
+            border: 1.5px solid rgba(6,182,212,0.4);
+            border-radius: 18px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.22s;
+            position: relative;
+            overflow: hidden;
+        }
+        .weekly-challenge-card.weekly-available {
+            cursor: pointer;
+            box-shadow: 0 0 18px rgba(6,182,212,0.15);
+        }
+        .weekly-challenge-card.weekly-available:active {
+            transform: scale(0.97);
+        }
+        .weekly-challenge-card.weekly-played {
+            opacity: 0.7;
+            cursor: default;
+        }
+        .weekly-ch-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(6,182,212,0.12) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .weekly-ch-icon {
+            font-size: 2em;
+            flex-shrink: 0;
+            animation: weeklyPulse 3s ease-in-out infinite;
+        }
+        .weekly-ch-icon.played {
+            animation: none;
+        }
+        @keyframes weeklyPulse {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.1); }
+        }
+        .weekly-ch-content {
+            flex: 1;
+        }
+        .weekly-ch-title {
+            font-size: 0.88em;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .weekly-ch-sub {
+            font-size: 0.68em;
+            color: var(--text2);
+            margin-top: 2px;
+        }
+        .weekly-ch-badge {
+            background: var(--accent2);
+            color: #fff;
+            font-size: 0.6em;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+        .weekly-ch-badge.played {
+            background: var(--border2);
+            color: var(--text2);
+        }
         .session-timer-card {
             background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(6, 182, 212, 0.1));
             border: 1px solid rgba(124, 58, 237, 0.3);
