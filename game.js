@@ -18,6 +18,14 @@
                 G.streak++;
                 if (G.streak > G.bestStreak) G.bestStreak = G.streak;
                 G.score += 10 + G.streak * 2;
+                /* 🔗 وضع السلسلة: تحديث القيمة التالية وعداد الحلقات */
+                if (G.mode === 'chain') {
+                    G._chainVal = G.correctAnswer;   /* الناتج يصبح مدخل السؤال التالي */
+                    G._chainLen = (G._chainLen || 0) + 1;
+                    /* تحديث عداد السلسلة في الواجهة */
+                    const _cc = document.getElementById('chainCounterNum');
+                    if (_cc) _cc.textContent = G._chainLen;
+                }
                 /* 3.1: ربط الكسب بالصعوبة */
                 const _diffMult = { easy:0.4, medium:0.7, hard:1.0, genius:1.5 }[st.difficulty] || 0.4;
                 const _levelBonus = Math.min(0.5, Math.floor(st.level / 10) * 0.1);
@@ -99,6 +107,14 @@
                             setTimeout(() => { if (!G.ended) endGame(); }, 700);
                             return;
                         }
+                    } else if (G.mode === 'chain') {
+                        /* 🔗 خطأ واحد = انقطاع السلسلة وانتهاء اللعبة */
+                        G._chainDone = true;
+                        showFeedback(`💔 انقطعت السلسلة عند ${G._chainLen || 0} حلقة!`);
+                        playSound('wrong');
+                        showExplanation();
+                        setTimeout(() => { if (!G.ended) endGame(); }, 1200);
+                        return;
                     } else {
                         showFeedback('❌');
                         playSound('wrong');
@@ -120,7 +136,7 @@
             setTimeout(() => {
                 try {
                     if (G.ended) return;
-                    const _openModes2 = ['speed', 'survival', 'frenzy'];
+                    const _openModes2 = ['speed', 'survival', 'frenzy', 'chain'];
                     if (!G.isTraining && !_openModes2.includes(G.mode) && G.currentQ >= G.totalQ) {
                         endGame();
                     } else if (!G.ended) {
@@ -182,6 +198,9 @@
             if (_mbEnd) _mbEnd.style.display = 'none';
             const _govEnd = document.getElementById('gameOverlay');
             if (_govEnd) _govEnd.classList.remove('memory-active');
+            /* 🔗 تنظيف وضع السلسلة */
+            const _cbEnd = document.getElementById('chainCounterBar');
+            if (_cbEnd) _cbEnd.style.display = 'none';
             if (!G.isTraining) {
                 const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
                 const _maxScore = _maxQ * 60;
@@ -196,7 +215,8 @@
                     accuracy:   1.6,
                     marathon:   2.0,
                     impossible: 2.5,
-                    memory:     1.4   /* 🧠 وضع الذاكرة: مكافأة معتدلة */
+                    memory:     1.4,  /* 🧠 وضع الذاكرة: مكافأة معتدلة */
+                    chain:      1.6   /* 🔗 وضع السلسلة: مكافأة جيدة */
                 }[G.mode] || 1.0;
                 G.coinsEarned = G.coinsEarned * _modeMult;
 
@@ -213,6 +233,25 @@
                         setTimeout(() => showFeedback(`${G._challengeBadge} حصلت على ${badgeNames[G.mode] || 'شارة جديدة'}!`), 500);
                     }
                 }
+                /* ════ وضع السلسلة: تتبع الإحصائيات والشارة ════ */
+                if (G.mode === 'chain') {
+                    const _chainScore = G._chainLen || 0;
+                    /* أفضل سلسلة */
+                    if (_chainScore > (st.chainBest || 0)) {
+                        st.chainBest = _chainScore;
+                        /* تحديث العرض */
+                        const _cbDisp = document.getElementById('chainBestDisplay');
+                        if (_cbDisp) _cbDisp.textContent = st.chainBest;
+                        if (_chainScore >= 10 && !st.badge_chain) {
+                            st.badge_chain = true;
+                            setTimeout(() => showFeedback('🔗 شارة السلسلة! أول سلسلة 10 حلقات!'), 800);
+                        }
+                    }
+                    /* إخفاء شريط عداد السلسلة */
+                    const _cbEl = document.getElementById('chainCounterBar');
+                    if (_cbEl) _cbEl.style.display = 'none';
+                }
+
                 /* ════ وضع الذاكرة: تتبع الإحصائيات والشارة ════ */
                 if (G.mode === 'memory') {
                     /* إلغاء أي مؤقت ذاكرة متبقٍّ */
@@ -386,7 +425,17 @@
                 'نعم، عد', 'استمرار', ok => {
                     if (ok) {
                         clearGameTimer();
-                        document.getElementById('gameOverlay').classList.remove('active');
+                        /* 🧠 تنظيف مؤقت الذاكرة عند الخروج */
+                        if (G._memTimer) { clearTimeout(G._memTimer); G._memTimer = null; }
+                        const _qtQ = document.getElementById('questionText');
+                        if (_qtQ) _qtQ.classList.remove('memory-hidden');
+                        const _mbQ = document.getElementById('memoryCountdownBar');
+                        if (_mbQ) _mbQ.style.display = 'none';
+                        const _govQ = document.getElementById('gameOverlay');
+                        if (_govQ) { _govQ.classList.remove('memory-active'); _govQ.classList.remove('active'); }
+                        /* 🔗 تنظيف شريط السلسلة عند الخروج */
+                        const _cbQ = document.getElementById('chainCounterBar');
+                        if (_cbQ) _cbQ.style.display = 'none';
                         document.getElementById('resultsOverlay').classList.remove('active');
                         if (!G.ended && !G.isTraining && (G.correct > 0 || G.wrong > 0)) {
                             endGame();
@@ -496,6 +545,10 @@
                                 q = genQ('advanced', st.difficulty);
                             } else if (G.op === 'laws') {
                                 q = genQ('laws', st.difficulty);
+                            } else if (G.mode === 'chain') {
+                                /* 🔗 وضع السلسلة: بناء السؤال من القيمة السابقة */
+                                q = genChainQ(G._chainVal);
+
                             } else if (G.mode === 'daily') {
                                 const dailyIdx = (G.dailyQIndex !== undefined) ? G.dailyQIndex : (G.currentQ - 1);
                                 q = genDailyQ(dailyIdx);
@@ -577,12 +630,21 @@
                             G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
                             G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
                             G.mode === 'memory' ? `🧠 السؤال ${G.currentQ} من ${G.totalQ}` :
+                            G.mode === 'chain' ? `🔗 حلقة ${G._chainLen || 0}` :
                             `السؤال ${G.currentQ} من ${G.totalQ}`;
                     }
                 }
                 
                 const statQ = document.getElementById('statQ');
-                if (statQ) statQ.textContent = (G.isTraining || G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy') ? G.correct : `${G.currentQ}/${G.totalQ}`;
+                if (statQ) {
+                    if (G.isTraining || G.mode === 'speed' || G.mode === 'survival' || G.mode === 'frenzy') {
+                        statQ.textContent = G.correct;
+                    } else if (G.mode === 'chain') {
+                        statQ.textContent = `🔗 ${G._chainLen || 0}`;
+                    } else {
+                        statQ.textContent = `${G.currentQ}/${G.totalQ}`;
+                    }
+                }
                 
                 renderVisualAid(q);
                 
@@ -656,4 +718,77 @@
                 console.error("Fatal error in loadQuestion:", e);
                 if (!G.ended) endGame();
             }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           🔗 مولّد أسئلة وضع السلسلة
+           كل سؤال يبدأ من ناتج السؤال السابق
+           العمليات: +، -، ×
+           القيم تبقى بين 2 و 200 لتجنب الأعداد الكبيرة جداً
+        ═══════════════════════════════════════════════════════════ */
+        function genChainQ(startVal) {
+            const chainLen = G._chainLen || 0;
+
+            /* اختر العملية بحسب طول السلسلة (تزيد صعوبةً تدريجياً) */
+            let opsPool;
+            if (chainLen < 3) {
+                opsPool = ['+', '+', '-'];          /* في البداية: جمع وطرح */
+            } else if (chainLen < 7) {
+                opsPool = ['+', '-', '×'];          /* المتوسط: أضف الضرب */
+            } else {
+                opsPool = ['+', '-', '×', '×'];     /* المتقدم: ضرب أكثر */
+            }
+            const op = opsPool[rnd(0, opsPool.length - 1)];
+
+            let a = startVal, b, ans;
+
+            if (op === '+') {
+                b = rnd(2, Math.min(20, Math.max(2, Math.floor(200 - a))));
+                if (b <= 0) b = 2;
+                ans = a + b;
+            } else if (op === '-') {
+                /* تأكد أن الناتج موجب >= 2 */
+                const maxSub = Math.max(2, a - 2);
+                b = rnd(1, Math.min(maxSub, 15));
+                ans = a - b;
+                if (ans < 2) { b = 1; ans = a - 1; }
+                if (ans < 2) { /* fallback إلى جمع */ b = rnd(2, 10); ans = a + b; return buildChainResult(a, '+', b, ans); }
+            } else { /* × */
+                /* قيّد الضرب لتجنب الأرقام الضخمة */
+                const maxFactor = a <= 10 ? 9 : a <= 20 ? 5 : a <= 50 ? 3 : 2;
+                b = rnd(2, maxFactor);
+                ans = a * b;
+                if (ans > 200) { /* fallback إلى جمع */ b = rnd(2, 10); ans = a + b; return buildChainResult(a, '+', b, ans); }
+            }
+
+            return buildChainResult(a, op, b, ans);
+        }
+
+        function buildChainResult(a, op, b, ans) {
+            const opSymbol = op === '+' ? '+' : op === '-' ? '−' : '×';
+            const text = `${a} ${opSymbol} ${b}`;
+            const hint = `ابدأ بـ ${a}`;
+            const explanation = `${a} ${opSymbol} ${b} = ${ans}`;
+
+            /* خيارات خاطئة ذكية */
+            const spread = Math.max(2, Math.ceil(Math.abs(ans) * 0.2) + 1);
+            const wr = new Set();
+            let safety = 0;
+            while (wr.size < 3 && safety < 200) {
+                safety++;
+                const off = rnd(-spread, spread);
+                const w = ans + off;
+                if (w !== ans && w >= 0 && Number.isInteger(w)) wr.add(w);
+            }
+            let extra = 1;
+            while (wr.size < 3) { wr.add(ans + extra * 2); extra++; }
+
+            return {
+                text,
+                hint,
+                answer: ans,
+                choices: shuffle([ans, ...wr]),
+                explanation,
+                catKey: op === '+' ? 'addition' : op === '-' ? 'subtraction' : 'multiplication'
+            };
         }
