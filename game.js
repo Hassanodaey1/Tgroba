@@ -26,6 +26,17 @@
                     const _cc = document.getElementById('chainCounterNum');
                     if (_cc) _cc.textContent = G._chainLen;
                 }
+                /* 🔥 وضع البقاء: تصعيد الصعوبة كل 10 إجابات صحيحة */
+                if (G.mode === 'survival' && G.correct > 0 && G.correct % 10 === 0) {
+                    const _prevLevel = G._survivalDiffLevel || 0;
+                    G._survivalDiffLevel = Math.min(_prevLevel + 1, 3);
+                    if (G._survivalDiffLevel > _prevLevel) {
+                        const _levelNames = ['سهل', 'متوسط', 'صعب', 'عبقري'];
+                        showFeedback(`📈 مستوى ${G._survivalDiffLevel + 1} — ${_levelNames[G._survivalDiffLevel]}!`);
+                        playSound('levelup');
+                        doConfetti();
+                    }
+                }
                 /* 🧠 وضع الذاكرة: تتبع الإجابات الصحيحة للإنجاز */
                 if (G.mode === 'memory') {
                     G._memCorrect = (G._memCorrect || 0) + 1;
@@ -637,6 +648,20 @@
                                 /* 🔗 وضع السلسلة: بناء السؤال من القيمة السابقة */
                                 q = genChainQ(G._chainVal);
 
+                            } else if (G.mode === 'survival') {
+                                /* 🔥 وضع البقاء: صعوبة متصاعدة حسب _survivalDiffLevel */
+                                const _survDiffs = ['easy', 'medium', 'hard', 'genius'];
+                                const _survDiff  = _survDiffs[Math.min(G._survivalDiffLevel || 0, 3)];
+                                /* تحديث عرض المستوى في رقم السؤال */
+                                const _survNames = ['🟢 سهل', '🟡 متوسط', '🟠 صعب', '🔴 عبقري'];
+                                const _survLabel = document.getElementById('survivalLevelLabel');
+                                if (_survLabel) _survLabel.textContent = _survNames[G._survivalDiffLevel || 0];
+                                if (typeof getNextQuestion === 'function') {
+                                    q = getNextQuestion(G.op, _survDiff);
+                                } else {
+                                    q = genQ(G.op, _survDiff);
+                                }
+
                             } else if (G.mode === 'rocket') {
                                 /* 🚀 وضع الصاروخ: الصعوبة تتصاعد كل 5 إجابات صحيحة */
                                 const _stageDiffs = ['easy', 'easy', 'medium', 'medium', 'hard', 'hard', 'genius'];
@@ -739,9 +764,10 @@
                     if (G.isTraining) {
                         qNumEl.textContent = `🎓 تدريب - ${G.correct+1}`;
                     } else {
+                        const _survLvlNames = ['سهل', 'متوسط', 'صعب', 'عبقري'];
                         qNumEl.textContent = G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
                             G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
-                            G.mode === 'survival' ? `❤️ ${G.livesLeft} قلوب` :
+                            G.mode === 'survival' ? `🔥 ${G.correct} صحيح • Lv.${(G._survivalDiffLevel||0)+1} ${_survLvlNames[G._survivalDiffLevel||0]}` :
                             G.mode === 'memory' ? `🧠 السؤال ${G.currentQ} من ${G.totalQ}` :
                             G.mode === 'chain' ? `🔗 حلقة ${G._chainLen || 0}` :
                             G.mode === 'sudden' ? `⚡ ${G._suddenScore || 0} صحيح` :
