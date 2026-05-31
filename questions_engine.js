@@ -779,6 +779,19 @@ function _gcd(a, b) {
 
 
 /* ═══════════════════════════════════════════════════════════════
+   ⑤ شرح تفاعلي خطوة بخطوة
+═══════════════════════════════════════════════════════════════ */
+
+function showSmartExplanation(explanation, correctAnswer) {
+    /* تم إلغاء عرض الشرح — الألوان على الأزرار تكفي */
+    var area = document.getElementById('explanationArea');
+    if (area) area.innerHTML = '';
+    /* تسجيل خطأ في AdaptiveAI */
+    if (typeof G !== 'undefined' && G.op) AdaptiveAI.record(G.op, false);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
    واجهة موحّدة — تُستدعى من loadQuestion بدلاً من genQ
 ═══════════════════════════════════════════════════════════════ */
 
