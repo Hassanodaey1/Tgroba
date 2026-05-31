@@ -1162,6 +1162,11 @@
         .daily-banner:active {
             transform: scale(0.97);
         }
+        /* تحدي الأسبوع — نفس الحجم لكن بلون أزرق مائل */
+        .daily-banner.weekly-variant {
+            background: linear-gradient(135deg, rgba(6,182,212,0.2), rgba(124,58,237,0.12));
+            border-color: rgba(6,182,212,0.4);
+        }
         .daily-icon {
             font-size: 2em;
             flex-shrink: 0;
