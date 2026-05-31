@@ -160,6 +160,16 @@
                 <div class="question-text" id="questionText">...</div>
                 <div class="question-hint" id="questionHint">ما هو الجواب؟</div>
             </div>
+            <!-- 🧠 شريط عدّ تنازلي لوضع الذاكرة — يُخفى في باقي الأوضاع -->
+            <div id="memoryCountdownBar" style="display:none;padding:0 4px 4px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                    <span style="font-size:0.68em;color:var(--text2);font-weight:700;">⏳ احفظ السؤال</span>
+                    <span style="font-size:0.68em;color:var(--accent2);font-weight:900;">3 ثوانٍ</span>
+                </div>
+                <div style="height:6px;background:var(--surface3);border-radius:99px;overflow:hidden;">
+                    <div class="mem-bar-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#a855f7,#06b6d4);border-radius:99px;transition:width 3s linear;"></div>
+                </div>
+            </div>
             <div class="visual-aid" id="visualAid"></div>
             <div class="answers-grid" id="answersGrid"></div>
             <div id="explanationArea"></div>
@@ -514,6 +524,15 @@
                             <div class="cat-name">القوانين والبديهيات</div>
                             <div class="cat-progress"><div class="cat-progress-fill" style="width:100%;background:linear-gradient(90deg,#06b6d4,#7c3aed);"></div></div>
                             <div class="cat-stats">مرجع • متاح دائماً</div>
+                        </div>
+                        <!-- 🧠 بطاقة الذاكرة -->
+                        <div class="cat-card memory-game-card" style="--chip-color:#a855f7" onclick="openMemoryGame()">
+                            <div class="cat-icon memory-card-icon-anim">🧠</div>
+                            <div class="cat-name">بطاقة الذاكرة</div>
+                            <div class="cat-progress">
+                                <div class="cat-progress-fill" id="memoryCardProgress" style="width:0%;background:linear-gradient(90deg,#a855f7,#06b6d4);"></div>
+                            </div>
+                            <div class="cat-stats" id="memoryCardStats">تذكّر وأجب • 3 ثوانٍ</div>
                         </div>
                     </div>
                 </div>
