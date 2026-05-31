@@ -519,6 +519,16 @@
                 G.timeLeft = 15;
                 lives = 0; /* لا قلوب */
                 G._challengeBadge = '💀';
+
+            } else if (mode === 'memory') {
+                /* 🧠 وضع الذاكرة: 10 أسئلة — تظهر 3 ثوانٍ ثم تختفي */
+                G.totalQ    = 10;
+                hasTimer    = false;
+                lives       = 3;
+                G._memDelay = 3000;      /* مدة عرض السؤال بالمللي ثانية */
+                G._memPhase = 'show';    /* 'show' → 'hide' → 'answer' */
+                G._memTimer = null;      /* معرّف setTimeout */
+                G._memCorrect = 0;       /* إجابات صحيحة لتتبع الإنجاز */
             }
 
             G.livesLeft = lives;
@@ -535,7 +545,8 @@
                 daily:      '🌟 تحدي اليوم',
                 accuracy:   '🎯 الدقة',
                 marathon:   '🏆 الماراثون',
-                impossible: '💀 المستحيل'
+                impossible: '💀 المستحيل',
+                memory:     '🧠 بطاقة الذاكرة'
             };
             document.getElementById('gameModeTitle').textContent = titles[mode] || 'كلاسيك';
             document.getElementById('statScore').textContent = 0;
@@ -583,7 +594,16 @@
             }
             updateGameCoinsDisplay();
             document.getElementById('resultsOverlay').classList.remove('active');
-            document.getElementById('gameOverlay').classList.add('active');
+            const _gameOv = document.getElementById('gameOverlay');
+            _gameOv.classList.add('active');
+            /* 🧠 class مميز لوضع الذاكرة */
+            if (mode === 'memory') {
+                _gameOv.classList.add('memory-active');
+            } else {
+                _gameOv.classList.remove('memory-active');
+                const _mb = document.getElementById('memoryCountdownBar');
+                if (_mb) _mb.style.display = 'none';
+            }
 
             /* 🎵 تطبيق الثيم الموسيقي المناسب لوضع اللعب */
             if (typeof setBgMoodForMode === 'function') setBgMoodForMode(mode);
