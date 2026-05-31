@@ -220,12 +220,17 @@
             /* عرض أفضل سلسلة للاعب */
             const bestChain  = st.chainBest  || 0;
             const bestSudden = st.suddenBest || 0;
+            const bestRocket = st._rocketMaxStage || 0;
             const chainBadge = bestChain >= 10
                 ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#f0b90b,#f97316);">×' + bestChain + '</div>'
                 : '<div class="mode-card-badge">جديد</div>';
             const suddenBadge = bestSudden >= 10
                 ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#ef4444,#f97316);">⚡' + bestSudden + '</div>'
                 : '<div class="mode-card-badge" style="background:#ef4444">حار</div>';
+            const rocketStageNames = ['سهل', 'سهل+', 'متوسط', 'متوسط+', 'صعب', 'صعب+', 'عبقري'];
+            const rocketBadge = bestRocket >= 4
+                ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#7c3aed,#06b6d4);">🚀 ' + rocketStageNames[bestRocket] + '</div>'
+                : '<div class="mode-card-badge" style="background:#7c3aed">جديد</div>';
 
             grid.innerHTML = `
                 <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','mix', null, false)">
@@ -245,6 +250,12 @@
                     <span class="mode-card-icon">⏱️</span>
                     <div class="mode-card-name">ضد الساعة</div>
                     <div class="mode-card-desc">10 ثوانٍ/سؤال • خطأ = نهاية • ×2.0💰${bestSudden > 0 ? ' • أفضلك: ' + bestSudden : ''}</div>
+                </div>
+                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('rocket','mix', null, false)" style="border:1px solid rgba(124,58,237,0.35);">
+                    ${rocketBadge}
+                    <span class="mode-card-icon">🚀</span>
+                    <div class="mode-card-name">الصاروخ</div>
+                    <div class="mode-card-desc">تصعيد تلقائي • 5 أسئلة/مرحلة • 3 قلوب${bestRocket > 0 ? ' • أعلى مرحلة: ' + rocketStageNames[bestRocket] : ''}</div>
                 </div>
             `;
             openSheet('opSheet');
