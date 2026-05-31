@@ -212,6 +212,7 @@
 
         /* 🧠 بطاقة العقل — فتح sheet ألعاب العقل */
         function openMindGame() {
+            window._gameSource = 'play';
             const grid  = document.getElementById('opModeGrid');
             const title = document.getElementById('opSheetTitle');
             title.textContent = '🧠 ألعاب العقل';
