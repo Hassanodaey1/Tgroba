@@ -779,37 +779,6 @@ function _gcd(a, b) {
 
 
 /* ═══════════════════════════════════════════════════════════════
-   ⑤ شرح تفاعلي خطوة بخطوة
-═══════════════════════════════════════════════════════════════ */
-
-function showSmartExplanation(explanation, correctAnswer) {
-    var area = document.getElementById('explanationArea');
-    if (!area) return;
-
-    var lines = (explanation || ('الجواب: ' + correctAnswer))
-        .split('\n').filter(function(l) { return l.trim(); });
-
-    var html = lines.map(function(line, i) {
-        if (i === 0)               return '<div class="exp-main">' + line + '</div>';
-        if (line.indexOf('✓') >= 0) return '<div class="exp-verify">✅ ' + line + '</div>';
-        if (line.match(/^الخطوة|^[①②③④⑤]|^\d+[:\-\.]/))
-                                   return '<div class="exp-step">➡ ' + line + '</div>';
-        if (line.indexOf('💡') >= 0) return '<div class="exp-tip">' + line + '</div>';
-        return '<div class="exp-detail">' + line + '</div>';
-    }).join('');
-
-    area.innerHTML =
-        '<div class="explanation-box smart-explanation">' +
-        '<div class="exp-answer">الإجابة الصحيحة: <strong>' + correctAnswer + '</strong></div>' +
-        '<div class="exp-steps">' + html + '</div>' +
-        '</div>';
-
-    /* تسجيل خطأ في AdaptiveAI */
-    if (typeof G !== 'undefined' && G.op) AdaptiveAI.record(G.op, false);
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
    واجهة موحّدة — تُستدعى من loadQuestion بدلاً من genQ
 ═══════════════════════════════════════════════════════════════ */
 
