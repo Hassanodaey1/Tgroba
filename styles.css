@@ -2460,40 +2460,33 @@
             transform: scale(0.94);
         }
         .answer-btn.correct {
-            background: rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.22);
             border-color: var(--green);
             color: var(--green);
-            box-shadow: 0 0 18px rgba(16, 185, 129, 0.28);
-            animation: correctPop 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 24px rgba(16, 185, 129, 0.45), 0 0 8px rgba(16, 185, 129, 0.2) inset;
+            animation: correctPulse 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .answer-btn.wrong {
-            background: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, 0.18);
             border-color: var(--red);
             color: var(--red);
-            animation: wrongShake 0.36s ease;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+            animation: wrongShake 0.4s ease;
         }
-        @keyframes correctPop {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.07);
-            }
-            100% {
-                transform: scale(1);
-            }
+        /* ✅ §7.1 — رسوم متحركة محسّنة للأزرار */
+        @keyframes correctPulse {
+            0%   { transform: scale(1); box-shadow: 0 0 0px rgba(16,185,129,0); }
+            40%  { transform: scale(1.09); box-shadow: 0 0 28px rgba(16,185,129,0.55); }
+            70%  { transform: scale(0.97); }
+            100% { transform: scale(1); box-shadow: 0 0 18px rgba(16,185,129,0.25); }
         }
         @keyframes wrongShake {
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-            25% {
-                transform: translateX(-7px);
-            }
-            75% {
-                transform: translateX(7px);
-            }
+            0%   { transform: translateX(0) rotate(0deg); }
+            15%  { transform: translateX(-8px) rotate(-1.5deg); }
+            35%  { transform: translateX(8px) rotate(1.5deg); }
+            55%  { transform: translateX(-5px) rotate(-0.8deg); }
+            75%  { transform: translateX(4px) rotate(0.5deg); }
+            100% { transform: translateX(0) rotate(0deg); }
         }
         .answer-btn:disabled {
             cursor: default;
