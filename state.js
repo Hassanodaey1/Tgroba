@@ -98,7 +98,10 @@
                 badge_memory: false,    /* شارة وضع الذاكرة */
                 /* ═══ وضع السلسلة ═══ */
                 chainBest: 0,           /* أطول سلسلة محققة */
-                badge_chain: false      /* شارة وضع السلسلة */
+                badge_chain: false,     /* شارة وضع السلسلة */
+                /* ═══ وضع ضد الساعة ═══ */
+                suddenBest: 0,          /* أفضل عدد أسئلة صحيحة في وضع ضد الساعة */
+                badge_sudden: false     /* شارة وضع ضد الساعة */
             };
         }
 
@@ -189,6 +192,9 @@
             if (typeof s.memoryBest    !== 'number' || s.memoryBest    < 0) s.memoryBest    = 0;
             if (typeof s.memoryPerfect !== 'number' || s.memoryPerfect < 0) s.memoryPerfect = 0;
             if (s.badge_memory === undefined) s.badge_memory = false;
+            /* ═══ وضع ضد الساعة ═══ */
+            if (typeof s.suddenBest !== 'number' || s.suddenBest < 0) s.suddenBest = 0;
+            if (s.badge_sudden === undefined) s.badge_sudden = false;
             return s;
         }
 
