@@ -275,15 +275,35 @@ function _pickOp(cfg, diff, age) {
     if (age > 0 && age <= 9)  return ['add','sub'][rnd(0,1)];
     if (age > 0 && age <= 11) return ['add','sub','mul'][rnd(0,2)];
 
-    /* استخدام قائمة العمليات المفتوحة للمستوى الحالي */
     var ops = cfg.ops;
+    var level = cfg.level || 1;
 
-    /* زيادة احتمال العمليات الأساسية على المستويات المنخفضة */
-    if (cfg.level <= 6) {
+    /* ✅ الإصلاح: ضمان ظهور العمليات المتقدمة في الألعاب المختلطة */
+
+    /* المستويات 1-6: أساسيات فقط */
+    if (level <= 6) {
         var basicPool = ['add','add','sub','sub','mul'].filter(function(o) {
             return ops.indexOf(o) >= 0;
         });
-        if (basicPool.length > 0 && rnd(0,2) === 0) return basicPool[rnd(0,basicPool.length-1)];
+        if (basicPool.length > 0) return basicPool[rnd(0, basicPool.length-1)];
+    }
+
+    /* المستويات 7-15: نسبة متقدمة 20% */
+    if (level >= 7 && level <= 15) {
+        var advPool7 = ['power','sqrt','equation_simple','percent','sequence'];
+        if (rnd(0,4) === 0) return advPool7[rnd(0, advPool7.length-1)];
+    }
+
+    /* المستويات 16-30: نسبة متقدمة 35% */
+    if (level >= 16 && level <= 30) {
+        var advPool16 = ['power','sqrt','algebra','equation_simple','percent','sequence','fraction_add','geo_area'];
+        if (rnd(0,2) === 0) return advPool16[rnd(0, advPool16.length-1)];
+    }
+
+    /* المستويات 31+: نسبة متقدمة 50% */
+    if (level >= 31) {
+        var advPool31 = ['power','sqrt','algebra','sequence','fraction_add','fraction_mul','geo_area','log_simple','equation_quad'];
+        if (rnd(0,1) === 0) return advPool31[rnd(0, advPool31.length-1)];
     }
 
     return ops[rnd(0, ops.length - 1)];
