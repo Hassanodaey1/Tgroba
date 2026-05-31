@@ -212,7 +212,7 @@
 
         /* 🧠 بطاقة العقل — فتح sheet ألعاب العقل */
         function openMindGame() {
-            window._gameSource = 'mindgame';    /* زر العودة يرجع لبطاقة العقل */
+            window._gameSource = 'mindgame';    /* زر العودة يرجع لبطاقة العقل — للذاكرة والسلسلة فقط */
             const grid  = document.getElementById('opModeGrid');
             const title = document.getElementById('opSheetTitle');
             title.textContent = '🧠 ألعاب العقل';
@@ -245,13 +245,13 @@
                     <div class="mode-card-name">السلسلة</div>
                     <div class="mode-card-desc">ناتج كل سؤال = مدخل التالي • خطأ = نهاية${bestChain > 0 ? ' • أفضلك: ' + bestChain : ''}</div>
                 </div>
-                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('sudden','mix', null, true)" style="border:1px solid rgba(239,68,68,0.35);">
+                <div class="mode-card" onclick="window._gameSource='play'; closeSheet('opSheet'); startGameWith('sudden','mix', null, true)" style="border:1px solid rgba(239,68,68,0.35);">
                     ${suddenBadge}
                     <span class="mode-card-icon">⏱️</span>
                     <div class="mode-card-name">ضد الساعة</div>
                     <div class="mode-card-desc">10 ثوانٍ/سؤال • خطأ = نهاية • ×2.0💰${bestSudden > 0 ? ' • أفضلك: ' + bestSudden : ''}</div>
                 </div>
-                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('rocket','mix', null, false)" style="border:1px solid rgba(124,58,237,0.35);">
+                <div class="mode-card" onclick="window._gameSource='play'; closeSheet('opSheet'); startGameWith('rocket','mix', null, false)" style="border:1px solid rgba(124,58,237,0.35);">
                     ${rocketBadge}
                     <span class="mode-card-icon">🚀</span>
                     <div class="mode-card-name">الصاروخ</div>
