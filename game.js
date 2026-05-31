@@ -217,9 +217,13 @@
         }
 
         function showExplanation() {
-            /* تم إلغاء عرض الشرح — الألوان على الأزرار تكفي */
-            var area = document.getElementById('explanationArea');
-            if (area) area.innerHTML = '';
+            if (typeof showSmartExplanation === 'function') {
+                showSmartExplanation(G.currentExplanation, G.correctAnswer);
+            } else {
+                if (!G.currentExplanation) return;
+                document.getElementById('explanationArea').innerHTML =
+                    `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${G.correctAnswer}</strong><br>الشرح: ${G.currentExplanation}</div>`;
+            }
         }
 
         /* ═══════════ END GAME ═══════════ */
@@ -640,6 +644,8 @@
                                 q = genQ('advanced', st.difficulty);
                             } else if (G.op === 'laws') {
                                 q = genQ('laws', st.difficulty);
+                            } else if (['adv_roots','adv_log','adv_geo','adv_eq','adv_seq','adv_trig'].includes(G.op)) {
+                                q = genQ(G.op, st.difficulty);
                             } else if (G.mode === 'chain') {
                                 /* 🔗 وضع السلسلة: بناء السؤال من القيمة السابقة */
                                 q = genChainQ(G._chainVal);
