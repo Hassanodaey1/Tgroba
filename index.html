@@ -107,6 +107,12 @@
         </div>
     </div>
 
+    <!-- ✅ §7.2 — شاشة العد التنازلي قبل بدء اللعبة -->
+    <div id="gameCountdownOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,20,0.88);z-index:9998;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+        <div id="countdownNum" style="font-size:7em;font-weight:900;font-family:'Tajawal',sans-serif;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(240,185,11,0.6);transition:transform 0.15s,opacity 0.15s;">3</div>
+        <div style="font-size:1.1em;color:var(--text2);font-family:'Tajawal',sans-serif;font-weight:700;letter-spacing:2px;">استعد...</div>
+    </div>
+
     <!-- GAME OVERLAY -->
     <div class="game-overlay" id="gameOverlay">
         <div class="game-header">
@@ -132,6 +138,10 @@
         </div>
         <div class="timer-bar-wrap">
             <div class="timer-bar-fill" id="timerBar" style="width:100%"></div>
+        </div>
+        <!-- ✅ §7.3 — شريط تقدم مرئي (يظهر فقط في الأوضاع المحدودة) -->
+        <div id="gameProgressBar" style="height:3px;background:var(--surface3);display:none;">
+            <div id="gameProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width 0.35s ease;border-radius:0 2px 2px 0;"></div>
         </div>
         <div class="game-body">
             <div class="game-stats-row">
@@ -450,6 +460,11 @@
                             </div>
                         </div>
                     </div>
+                    <!-- ✅ §7.5 — زر "العب الآن" لبدء آخر وضع فوراً -->
+                    <button id="quickPlayBtn" onclick="quickPlay()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:20px;font-family:'Tajawal',sans-serif;font-size:1.2em;font-weight:900;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(124,58,237,0.35);transition:transform 0.15s,box-shadow 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'" ontouchend="this.style.transform='scale(1)'">
+                        <span style="font-size:1.3em;">▶</span>
+                        <span id="quickPlayLabel">العب الآن</span>
+                    </button>
                     <!-- صندوق المكافأة اليومي — بنفس حجم تحدي اليوم -->
                     <div class="daily-banner daily-reward-banner box-available" id="dailyBoxCard" onclick="openDailyBox()">
                         <div class="daily-box-glow"></div>
