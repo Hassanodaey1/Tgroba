@@ -34,11 +34,13 @@
                 if (G.mode === 'sudden') {
                     G._suddenScore = (G._suddenScore || 0) + 1;
                     G.timeLeft = G.maxTime; /* إعادة الوقت لـ 10 — لا يتراكم */
-                    const pct2 = 100;
                     const bt2 = document.getElementById('bigTimer');
                     const tb2 = document.getElementById('timerBar');
                     if (bt2) { bt2.textContent = G.maxTime; bt2.classList.remove('danger'); }
                     if (tb2) { tb2.style.width = '100%'; tb2.classList.remove('danger'); }
+                    /* تحديث الشريط المرئي */
+                    const _sd = document.getElementById('suddenScoreDisplay');
+                    if (_sd) _sd.textContent = G._suddenScore;
                 }
                 /* 3.1: ربط الكسب بالصعوبة */
                 const _diffMult = { easy:0.4, medium:0.7, hard:1.0, genius:1.5 }[st.difficulty] || 0.4;
@@ -223,6 +225,9 @@
             /* 🔗 تنظيف وضع السلسلة */
             const _cbEnd = document.getElementById('chainCounterBar');
             if (_cbEnd) _cbEnd.style.display = 'none';
+            /* ⚡ تنظيف وضع ضد الساعة */
+            const _sbEnd = document.getElementById('suddenInfoBar');
+            if (_sbEnd) _sbEnd.style.display = 'none';
             if (!G.isTraining) {
                 const _maxQ     = (G.totalQ && G.totalQ < 9999) ? G.totalQ : 9999;
                 const _maxScore = _maxQ * 60;
@@ -478,6 +483,9 @@
                         /* 🔗 تنظيف شريط السلسلة عند الخروج */
                         const _cbQ = document.getElementById('chainCounterBar');
                         if (_cbQ) _cbQ.style.display = 'none';
+                        /* ⚡ تنظيف شريط ضد الساعة عند الخروج */
+                        const _sbQ = document.getElementById('suddenInfoBar');
+                        if (_sbQ) _sbQ.style.display = 'none';
                         document.getElementById('resultsOverlay').classList.remove('active');
                         if (!G.ended && !G.isTraining && (G.correct > 0 || G.wrong > 0)) {
                             endGame();
