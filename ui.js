@@ -425,15 +425,15 @@ function updateHomeStats() {
     if (gs0) gs0.textContent = `${cc.correct} / ${cc.total} إجابة`;
     if (gs1) gs1.textContent = `${cg} جلسة تحدي`;
 
-    /* 🧠 تحديث بطاقة الذاكرة */
+    /* 🧠 تحديث بطاقة العقل */
     const memStats  = document.getElementById('memoryCardStats');
     const memProg   = document.getElementById('memoryCardProgress');
     if (memStats) {
         const best = st.memoryBest || 0;
         if (best > 0) {
-            memStats.textContent = `أفضل: ${best}/10 • ${st.memoryPerfect ? '🏅 مثالي' : 'تذكّر وأجب'}`;
+            memStats.textContent = `أفضل ذاكرة: ${best}/10 • ${st.memoryPerfect ? '🏅 مثالي' : 'ألعاب العقل'}`;
         } else {
-            memStats.textContent = 'تذكّر وأجب • 3 ثوانٍ';
+            memStats.textContent = 'ألعاب العقل والذاكرة';
         }
     }
     if (memProg) {
