@@ -429,16 +429,26 @@ function updateHomeStats() {
     const memStats  = document.getElementById('memoryCardStats');
     const memProg   = document.getElementById('memoryCardProgress');
     if (memStats) {
-        const best = st.memoryBest || 0;
-        if (best > 0) {
-            memStats.textContent = `أفضل ذاكرة: ${best}/10 • ${st.memoryPerfect ? '🏅 مثالي' : 'ألعاب العقل'}`;
+        const memBest    = st.memoryBest  || 0;
+        const suddenBest = st.suddenBest  || 0;
+        const chainBest  = st.chainBest   || 0;
+        if (memBest > 0 || suddenBest > 0 || chainBest > 0) {
+            const parts = [];
+            if (memBest    > 0) parts.push(`🧠 ${memBest}/10`);
+            if (chainBest  > 0) parts.push(`🔗 ${chainBest}`);
+            if (suddenBest > 0) parts.push(`⚡ ${suddenBest}`);
+            memStats.textContent = parts.join(' • ');
         } else {
             memStats.textContent = 'ألعاب العقل والذاكرة';
         }
     }
     if (memProg) {
-        const pct = Math.min(100, ((st.memoryBest || 0) / 10) * 100);
-        memProg.style.width = pct + '%';
+        /* تقدم مركّب: أفضل من الأوضاع الثلاثة */
+        const memPct    = Math.min(100, ((st.memoryBest  || 0) / 10) * 100);
+        const chainPct  = Math.min(100, ((st.chainBest   || 0) / 20) * 100);
+        const suddenPct = Math.min(100, ((st.suddenBest  || 0) / 20) * 100);
+        const avgPct    = Math.round((memPct + chainPct + suddenPct) / 3);
+        memProg.style.width = avgPct + '%';
     }
 }
 
