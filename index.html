@@ -170,6 +170,25 @@
                     <div class="mem-bar-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#a855f7,#06b6d4);border-radius:99px;transition:width 3s linear;"></div>
                 </div>
             </div>
+            <!-- 🔗 شريط وضع السلسلة — يُخفى في باقي الأوضاع -->
+            <div id="chainCounterBar" style="display:none;padding:0 4px 6px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(249,115,22,0.08));border:1px solid rgba(240,185,11,0.3);border-radius:14px;padding:8px 14px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:1.3em;">🔗</span>
+                        <div>
+                            <div style="font-size:0.62em;color:var(--text2);font-weight:700;">طول السلسلة</div>
+                            <div style="font-size:1.4em;font-weight:900;color:#f0b90b;line-height:1;" id="chainCounterNum">0</div>
+                        </div>
+                    </div>
+                    <div style="text-align:left;">
+                        <div style="font-size:0.58em;color:var(--text3);">أفضل سلسلة</div>
+                        <div style="font-size:0.9em;font-weight:900;color:var(--text2);" id="chainBestDisplay">0</div>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:4px;">
+                    <span style="font-size:0.58em;color:var(--red);font-weight:700;">⚠️ خطأ واحد = انقطاع السلسلة!</span>
+                </div>
+            </div>
             <div class="visual-aid" id="visualAid"></div>
             <div class="answers-grid" id="answersGrid"></div>
             <div id="explanationArea"></div>
