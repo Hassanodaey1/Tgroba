@@ -558,6 +558,13 @@
                 G._rocketStageLabels = ['سهل', 'سهل+', 'متوسط', 'صعب', 'عبقري'];
                 /* تعيين الصعوبة الابتدائية = سهل بغض النظر عن اختيار اللاعب */
                 G._rocketDiff   = 'easy';
+
+            } else if (mode === 'weekly') {
+                /* 🗓️ تحدي الأسبوع: 15 سؤالاً متنوعة — مكافأة +15 عملة */
+                G.totalQ  = 15;
+                hasTimer  = false;
+                lives     = 3;
+                G._weeklyScore = 0;  /* عداد الإجابات الصحيحة لتحديد أفضل نتيجة */
             }
 
             G.livesLeft = lives;
@@ -572,6 +579,7 @@
                 survival:   '🔥 البقاء',
                 frenzy:     '💥 اندفاع',
                 daily:      '🌟 تحدي اليوم',
+                weekly:     '🗓️ تحدي الأسبوع',
                 accuracy:   '🎯 الدقة',
                 marathon:   '🏆 الماراثون',
                 impossible: '💀 المستحيل',
