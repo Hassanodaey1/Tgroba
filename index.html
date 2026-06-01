@@ -108,7 +108,7 @@
     </div>
 
     <!-- ✅ §7.2 — شاشة العد التنازلي قبل بدء اللعبة -->
-    <div id="gameCountdownOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,20,0.88);z-index:9998;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+    <div id="gameCountdownOverlay" style="position:fixed;inset:0;background:rgba(10,10,20,0.88);z-index:9998;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
         <div id="countdownNum" style="font-size:7em;font-weight:900;font-family:'Tajawal',sans-serif;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(240,185,11,0.6);transition:transform 0.15s,opacity 0.15s;">3</div>
         <div style="font-size:1.1em;color:var(--text2);font-family:'Tajawal',sans-serif;font-weight:700;letter-spacing:2px;">استعد...</div>
     </div>
@@ -1565,7 +1565,7 @@
             </div>
 
             <!-- شبكة الإحصائيات -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
                     <div style="font-size:1.8em;font-weight:900;color:var(--red);" id="stat_streak">×0</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى تتابع</div>
@@ -1737,7 +1737,7 @@
 <script src="game.js"></script>
 <script src="ui.js"></script>
 <script src="fixes_init.js"></script>
-<script src="questions_engine.js"></script> 
+<script src="questions_engine.js"></script>
 <script src="patches.js"></script>
 <script src="shop.js"></script>
 
