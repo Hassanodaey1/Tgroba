@@ -41,133 +41,251 @@
                 return { text, hint, answer: ans, choices, explanation, catKey: 'table' };
             }
             if (op === 'advanced') {
-                const advancedPool = ['power', 'sqrt', 'equation_simple', 'fraction_add', 'percent', 'sequence',
-                    'algebra', 'log_simple', 'trig_simple', 'area_circle'
+                /* ═══ بركة أسئلة متقدمة موسّعة — 20 نوع ═══ */
+                const advancedPool = [
+                    'power','power_law','sqrt','cbrt',
+                    'equation_simple','equation_two_step','equation_bracket',
+                    'fraction_add','fraction_diff','fraction_mul',
+                    'percent','percent_reverse','percent_change',
+                    'sequence_arith','sequence_geo',
+                    'log_simple','log_base',
+                    'trig_simple','trig_cos',
+                    'area_circle','area_tri','geo_pythagoras'
                 ];
                 let ch = advancedPool[rnd(0, advancedPool.length - 1)];
                 let a, b, ans, text, hint, explanation = '';
-                if (ch === 'power') { a = rnd(2, 6);
-                    b = rnd(2, 4);
+
+                if (ch === 'power') {
+                    a = rnd(2, 7); b = rnd(2, 4);
                     ans = Math.pow(a, b);
+                    const steps = Array.from({length:b}, ()=>a).join(' × ');
                     text = `${a}^${b}`;
-                    hint = `ما قيمة ${a} مرفوعاً للأس ${b}؟`;
-                    explanation = `${a}^${b} = ${ans}`; } else if (ch === 'sqrt') { const sq = [4, 9, 16, 25, 36,
-                        49, 64, 81, 100
-                    ];
-                    a = sq[rnd(0, sq.length - 1)];
-                    ans = Math.sqrt(a);
+                    hint = `اضرب ${a} في نفسه ${b} مرات`;
+                    explanation = `${a}^${b} = ${steps} = ${ans}`;
+
+                } else if (ch === 'power_law') {
+                    /* قانون الأسس: a^m × a^n = a^(m+n) */
+                    a = rnd(2,5); const m=rnd(1,3), n=rnd(1,3);
+                    ans = Math.pow(a, m+n);
+                    text = `${a}^${m} × ${a}^${n}`;
+                    hint = 'قانون الأسس: اجمع الأسس عند الضرب بنفس القاعدة';
+                    explanation = `${a}^${m} × ${a}^${n} = ${a}^(${m}+${n}) = ${a}^${m+n} = ${ans}`;
+
+                } else if (ch === 'sqrt') {
+                    const sq = [4,9,16,25,36,49,64,81,100,121,144,169,196,225];
+                    a = sq[rnd(0,sq.length-1)]; ans = Math.sqrt(a);
                     text = `√${a}`;
-                    hint = 'ما الجذر التربيعي؟';
-                    explanation = `√${a} = ${ans}`; } else if (ch === 'equation_simple') { a = rnd(5, 20);
-                    b = rnd(a + 1, a + 30);
-                    ans = b - a;
+                    hint = `أي عدد × نفسه = ${a}؟`;
+                    explanation = `√${a} = ${ans}\n✓ تحقق: ${ans} × ${ans} = ${a}`;
+
+                } else if (ch === 'cbrt') {
+                    const cb = [{n:8,r:2},{n:27,r:3},{n:64,r:4},{n:125,r:5},{n:216,r:6},{n:343,r:7}];
+                    const pick = cb[rnd(0,cb.length-1)]; a=pick.n; ans=pick.r;
+                    text = `∛${a}`;
+                    hint = `أي عدد × نفسه × نفسه = ${a}؟`;
+                    explanation = `∛${a} = ${ans}\n✓ تحقق: ${ans}³ = ${ans}×${ans}×${ans} = ${a}`;
+
+                } else if (ch === 'equation_simple') {
+                    a = rnd(4,20); ans = rnd(3,25); b = a + ans;
                     text = `س + ${a} = ${b}`;
-                    hint = 'ما قيمة س؟';
-                    explanation = `س = ${b} - ${a} = ${ans}`; } else if (ch === 'fraction_add') { let c = rnd(3, 9);
-                    let a2 = rnd(1, c - 1);
-                    let b2 = rnd(1, c - 1);
-                    const sumN = a2 + b2;
-                    function gcdF(x,y){return y===0?x:gcdF(y,x%y);}
-                    const g2 = gcdF(sumN, c);
-                    const fracStr = g2 === c ? String(sumN/c) : (sumN/g2 + '/' + c/g2);
-                    ans = sumN; /* رقمياً للمقارنة */
-                    text = `${a2}/${c} + ${b2}/${c}`;
-                    hint = 'اجمع البسطين (المقامات متساوية)';
-                    explanation = `${a2}/${c} + ${b2}/${c} = ${sumN}/${c}` + (g2 > 1 ? ` = ${fracStr}` : ''); } else if (ch === 'percent') { let pct = [
-                        10, 20, 25, 50
-                    ][rnd(0, 3)];
-                    a = rnd(1, 20) * 10;
-                    ans = Math.round(a * pct / 100);
+                    hint = 'اطرح الثابت من الطرفين لعزل س';
+                    explanation = `س + ${a} = ${b}\nالخطوة: اطرح ${a} من الطرفين\nس = ${b} − ${a} = ${ans}`;
+
+                } else if (ch === 'equation_two_step') {
+                    const coef=rnd(2,6); ans=rnd(2,10); const con=rnd(1,8); b=coef*ans+con;
+                    text = `${coef}س + ${con} = ${b}`;
+                    hint = 'أولاً اطرح الثابت، ثم اقسم على المعامل';
+                    explanation = `${coef}س + ${con} = ${b}\nالخطوة ①: اطرح ${con}: ${coef}س = ${b-con}\nالخطوة ②: اقسم على ${coef}: س = ${b-con}÷${coef} = ${ans}`;
+
+                } else if (ch === 'equation_bracket') {
+                    const k=rnd(2,5); ans=rnd(2,8); const c2=rnd(1,6);
+                    b = k*(ans+c2);
+                    text = `${k}(س + ${c2}) = ${b}`;
+                    hint = 'افتح القوس أو اقسم على المعامل أولاً';
+                    explanation = `${k}(س + ${c2}) = ${b}\nالخطوة ①: اقسم على ${k}: س + ${c2} = ${b/k}\nالخطوة ②: اطرح ${c2}: س = ${b/k} − ${c2} = ${ans}`;
+
+                } else if (ch === 'fraction_add') {
+                    /* كسور بمقام مشترك */
+                    const denom = rnd(3,9); const n1=rnd(1,denom-1); const n2=rnd(1,denom-1);
+                    const sumN = n1+n2;
+                    function gcdAdv(x,y){return y===0?x:gcdAdv(y,x%y);}
+                    const g3=gcdAdv(sumN,denom);
+                    const simplified = g3===denom ? String(sumN/denom) : (g3>1 ? `${sumN/g3}/${denom/g3}` : `${sumN}/${denom}`);
+                    ans = sumN;
+                    text = `${n1}/${denom} + ${n2}/${denom}`;
+                    hint = 'المقامات متساوية — اجمع البسطين فقط';
+                    explanation = `${n1}/${denom} + ${n2}/${denom} = (${n1}+${n2})/${denom} = ${sumN}/${denom}` + (g3>1?` = ${simplified}`:'');
+
+                } else if (ch === 'fraction_diff') {
+                    /* كسور بمقامات مختلفة */
+                    const d1=rnd(2,5); const d2=rnd(2,5); while(d2===d1){ } // مختلفان
+                    const n1=rnd(1,d1); const n2=rnd(1,d2-1>0?d2-1:1);
+                    function lcmAdv(a,b){function g(x,y){return y===0?x:g(y,x%y);} return a*b/g(a,b);}
+                    const lcm2=lcmAdv(d1,d2);
+                    const num=n1*(lcm2/d1)+n2*(lcm2/d2);
+                    function gcdA2(x,y){return y===0?x:gcdA2(y,x%y);}
+                    const g4=gcdA2(num,lcm2);
+                    ans = Math.round(num/lcm2*100)/100;
+                    text = `${n1}/${d1} + ${n2}/${d2}`;
+                    hint = `أوجد المقام المشترك (${lcm2}) ثم اجمع`;
+                    explanation = `المقام المشترك = ${lcm2}\n${n1}/${d1} = ${n1*(lcm2/d1)}/${lcm2}\n${n2}/${d2} = ${n2*(lcm2/d2)}/${lcm2}\nالمجموع = ${num}/${lcm2}` + (g4>1?` = ${num/g4}/${lcm2/g4}`:'');
+
+                } else if (ch === 'fraction_mul') {
+                    const n1=rnd(1,5); const d1=rnd(2,7); const n2=rnd(1,5); const d2=rnd(2,7);
+                    const np=n1*n2; const dp=d1*d2;
+                    function gcdFm(x,y){return y===0?x:gcdFm(y,x%y);}
+                    const gf=gcdFm(np,dp);
+                    ans = Math.round(np/dp*100)/100;
+                    text = `${n1}/${d1} × ${n2}/${d2}`;
+                    hint = 'اضرب البسطَين مع بعض، والمقامَين مع بعض';
+                    explanation = `(${n1}×${n2}) / (${d1}×${d2}) = ${np}/${dp}` + (gf>1?` = ${np/gf}/${dp/gf}`:'') + ` ≈ ${ans}`;
+
+                } else if (ch === 'percent') {
+                    const pcts=[10,20,25,50,75]; const pct=pcts[rnd(0,pcts.length-1)];
+                    a=rnd(2,20)*10; ans=Math.round(a*pct/100);
                     text = `${pct}% من ${a}`;
-                    hint = 'احسب النسبة المئوية';
-                    explanation = `${a} × ${pct}% = ${ans}`; } else if (ch === 'sequence') { a = rnd(1, 10);
-                    b = rnd(2, 8);
-                    text = `${a}, ${a+b}, ${a+2*b}, ?`;
-                    ans = a + 3 * b;
-                    hint = 'ما الرقم التالي في المتتالية؟';
-                    explanation = `الفرق = ${b}، الرقم التالي = ${ans}`; } else if (ch === 'log_simple') { a = rnd(2, 4);
-                    ans = a;
+                    hint = `اضرب ${a} × ${pct} ÷ 100`;
+                    const tip = pct===10?`💡 10% = اقسم على 10`:pct===50?`💡 50% = اقسم على 2`:pct===25?`💡 25% = اقسم على 4`:``;
+                    explanation = `${a} × ${pct}/100 = ${a*pct}/100 = ${ans}` + (tip?`\n${tip}`:``)
+
+                } else if (ch === 'percent_reverse') {
+                    /* ؟% من x = y → أوجد x */
+                    const pct2=[10,20,25,50][rnd(0,3)]; ans=rnd(2,20)*10;
+                    const result=Math.round(ans*pct2/100);
+                    text = `${pct2}% من ؟ = ${result}`;
+                    hint = 'اقسم النتيجة على النسبة المئوية';
+                    explanation = `النسبة: ${pct2}% من ؟ = ${result}\nالحل: ؟ = ${result} ÷ (${pct2}/100) = ${result} × 100/${pct2} = ${ans}`;
+
+                } else if (ch === 'percent_change') {
+                    const orig=rnd(4,15)*10; const chg=[10,20,25,50][rnd(0,3)]; const inc=rnd(0,1)===1;
+                    ans=inc ? orig+orig*chg/100 : orig-orig*chg/100;
+                    text = `${orig} ${inc?'زاد':'انخفض'} بنسبة ${chg}%، النتيجة = ؟`;
+                    hint = inc?`أضف (${chg}% × ${orig}) للأصل`:`اطرح (${chg}% × ${orig}) من الأصل`;
+                    explanation = `${chg}% من ${orig} = ${orig*chg/100}\nالنتيجة = ${orig} ${inc?'+':'-'} ${orig*chg/100} = ${ans}`;
+
+                } else if (ch === 'sequence_arith') {
+                    a=rnd(1,12); b=rnd(2,9);
+                    text = `${a}، ${a+b}، ${a+2*b}، ${a+3*b}، ؟`;
+                    ans = a+4*b;
+                    hint = `الفرق بين كل حدين متتاليين = ${b}`;
+                    explanation = `متتالية حسابية\nالفرق الثابت = ${a+b}−${a} = ${b}\nالحد التالي = ${a+3*b} + ${b} = ${ans}`;
+
+                } else if (ch === 'sequence_geo') {
+                    a=rnd(1,4); const r2=rnd(2,3);
+                    text = `${a}، ${a*r2}، ${a*r2*r2}، ${a*r2*r2*r2}، ؟`;
+                    ans = a*Math.pow(r2,4);
+                    hint = `كل حد يُضرب في ${r2}`;
+                    explanation = `متتالية هندسية\nالأساس = ${a*r2}÷${a} = ${r2}\nالحد التالي = ${a*r2*r2*r2} × ${r2} = ${ans}`;
+
+                } else if (ch === 'log_simple') {
+                    a=rnd(1,5); ans=a;
                     text = `log₁₀(10^${a})`;
-                    hint = `ما قيمة اللوغاريتم؟`;
-                    explanation = `log₁₀(10^${a}) = ${a}`; } else if (ch === 'trig_simple') { let degs = [0, 30,
-                        45, 60, 90
-                    ];
-                    let deg = degs[rnd(0, degs.length - 1)];
-                    let val = Math.round(Math.sin(deg * Math.PI / 180) * 10) / 10;
-                    ans = val;
-                    text = `جا(${deg}°)`;
-                    hint = `ما قيمة جيب الزاوية ${deg}°؟`;
-                    explanation = `جا(${deg}°) = ${val}`; } else if (ch === 'area_circle') { let r = rnd(3, 8);
-                    ans = Math.round(Math.PI * r * r);
+                    hint = 'القاعدة والأسية نفسهما → تُلغيان';
+                    explanation = `log₁₀(10^${a}) = ${a}\nالقاعدة: log_b(b^x) = x دائماً`;
+
+                } else if (ch === 'log_base') {
+                    const pairs=[[2,8,3,'log₂(8)'],[2,16,4,'log₂(16)'],[2,32,5,'log₂(32)'],[3,9,2,'log₃(9)'],[3,27,3,'log₃(27)'],[5,25,2,'log₅(25)'],[4,16,2,'log₄(16)']];
+                    const p=pairs[rnd(0,pairs.length-1)]; ans=p[2];
+                    text = `${p[3]}`;
+                    hint = `${p[0]}^x = ${p[1]}، أوجد x`;
+                    explanation = `${p[3]} = ${p[2]}\nلأن ${p[0]}^${p[2]} = ${p[1]}`;
+
+                } else if (ch === 'trig_simple') {
+                    const sinVals=[{d:0,v:0,f:'0'},{d:30,v:0.5,f:'½'},{d:45,v:0.71,f:'√2/2'},{d:60,v:0.87,f:'√3/2'},{d:90,v:1,f:'1'}];
+                    const sv=sinVals[rnd(0,sinVals.length-1)]; ans=sv.v;
+                    text = `جا(${sv.d}°)`;
+                    hint = 'قيم جيب الزاوية للزوايا الأساسية (30-45-60-90)';
+                    explanation = `جا(${sv.d}°) = ${sv.f} = ${sv.v}\n💡 جيب الزاوية = الضلع المقابل ÷ الوتر`;
+
+                } else if (ch === 'trig_cos') {
+                    const cosVals=[{d:0,v:1,f:'1'},{d:30,v:0.87,f:'√3/2'},{d:45,v:0.71,f:'√2/2'},{d:60,v:0.5,f:'½'},{d:90,v:0,f:'0'}];
+                    const cv=cosVals[rnd(0,cosVals.length-1)]; ans=cv.v;
+                    text = `جتا(${cv.d}°)`;
+                    hint = 'قيم جيب التمام للزوايا الأساسية';
+                    explanation = `جتا(${cv.d}°) = ${cv.f} = ${cv.v}\n💡 جيب التمام = الضلع المجاور ÷ الوتر`;
+
+                } else if (ch === 'area_circle') {
+                    const r=rnd(2,8); ans=Math.round(Math.PI*r*r);
                     text = `مساحة دائرة نصف قطرها ${r}`;
-                    hint = 'استخدم π≈3.14';
-                    explanation = `المساحة = π × ${r}² = ${ans}`; } else { a = rnd(2, 8);
-                    ans = rnd(2, 12);
-                    b = 2 * ans + a;
-                    text = `2س + ${a} = ${b}`;
-                    hint = 'ما قيمة س؟';
-                    explanation = `س = (${b} - ${a})/2 = ${ans}`; }
+                    hint = 'المساحة = π × نق²';
+                    explanation = `المساحة = π × ${r}²\n= 3.14 × ${r*r}\n≈ ${ans}`;
+
+                } else if (ch === 'area_tri') {
+                    const base=rnd(4,14); const h=rnd(3,10); ans=Math.round(base*h/2);
+                    text = `مساحة مثلث قاعدته ${base} وارتفاعه ${h}`;
+                    hint = 'المساحة = ½ × القاعدة × الارتفاع';
+                    explanation = `المساحة = ½ × ${base} × ${h}\n= ${base*h}/2\n= ${ans}`;
+
+                } else {
+                    /* geo_pythagoras */
+                    const pyPairs=[[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15]];
+                    const pp=pyPairs[rnd(0,pyPairs.length-1)]; ans=pp[2];
+                    text = `مثلث قائم أضلاعه ${pp[0]} و ${pp[1]}، ما الوتر؟`;
+                    hint = 'الوتر² = الضلع₁² + الضلع₂²';
+                    explanation = `الوتر² = ${pp[0]}² + ${pp[1]}²\n= ${pp[0]*pp[0]} + ${pp[1]*pp[1]}\n= ${pp[0]*pp[0]+pp[1]*pp[1]}\nالوتر = √${pp[0]*pp[0]+pp[1]*pp[1]} = ${pp[2]}`;
+                }
+
                 /* خيارات ذكية حسب نوع السؤال */
                 let choices;
-                if (ch === 'trig_simple') {
-                    /* قيم المثلثات: استخدم القيم الحقيقية فقط */
-                    const trigAllVals = [0, 0.5, 0.58, 0.71, 0.87, 1, 1.73];
-                    const wrong3 = [];
-                    for (const v of shuffle([...trigAllVals])) {
-                        if (v !== ans) { wrong3.push(v); if (wrong3.length === 3) break; }
-                    }
-                    choices = shuffle([ans, ...wrong3]);
-                } else if (ch === 'sqrt') {
-                    /* جذور تربيعية: خيارات قريبة من الجذر الصحيح */
-                    const w1 = ans + 1, w2 = ans - 1 > 0 ? ans - 1 : ans + 2, w3 = ans + 2;
-                    choices = shuffle([ans, w1, w2, w3]);
-                } else if (ch === 'fraction_add') {
-                    /* كسور: خيارات في نفس النطاق المعقول */
-                    const w1 = ans + 1, w2 = ans - 1 >= 0 ? ans - 1 : ans + 2, w3 = ans + 2;
-                    choices = shuffle([ans, w1, w2, w3]);
-                } else if (ch === 'area_circle') {
-                    /* مساحة: خيارات ضمن ±30% */
-                    const spread = Math.max(5, Math.round(ans * 0.2));
-                    choices = shuffle([ans, ans + spread, ans - spread > 0 ? ans - spread : ans + spread + 5, ans + spread * 2]);
+                const ansN = typeof ans === 'number' ? ans : parseFloat(String(ans));
+                if (ch==='trig_simple'||ch==='trig_cos') {
+                    const allTrig=[0,0.5,0.71,0.87,1];
+                    const wr3=[]; for(const v of shuffle([...allTrig])){if(v!==ansN){wr3.push(v);if(wr3.length===3)break;}}
+                    choices=shuffle([ansN,...wr3]);
+                } else if (ch==='fraction_diff'||ch==='fraction_mul') {
+                    const vals=[ansN+0.25,ansN-0.25,ansN+0.5,ansN+0.1].filter(v=>v>=0&&v!==ansN);
+                    const wr4=vals.slice(0,3); while(wr4.length<3) wr4.push(ansN+wr4.length*0.1+0.1);
+                    choices=shuffle([ansN,...wr4]);
                 } else {
-                    choices = shuffle([ans, ans + 1, ans - 1, ans + 2]);
+                    const sp=Math.max(2,Math.ceil(Math.abs(ansN)*0.2)+1);
+                    const wrS=new Set(); let sf=0;
+                    while(wrS.size<3&&sf<200){sf++;const o=rnd(-sp,sp);if(o!==0&&ansN+o>0)wrS.add(ansN+o);}
+                    while(wrS.size<3)wrS.add(ansN+wrS.size+1);
+                    choices=shuffle([ansN,...wrS]);
                 }
-                return { text, hint, answer: ans, choices, explanation, catKey: 'algebra' };
+                return { text, hint, answer: ansN, choices, explanation, catKey: 'algebra' };
             }
             /* ═══ أسس وجذور ═══ */
             if (op === 'adv_roots') {
-                const types = ['sqrt_easy','sqrt_hard','cbrt','power_simple','power_hard','nth_root'];
+                const types = ['sqrt_easy','sqrt_hard','cbrt','power_simple','power_hard','power_law','nth_root'];
                 const t = types[rnd(0, types.length-1)];
                 let a, b, ans, text, hint, explanation;
                 if (t === 'sqrt_easy') {
                     const sq = [4,9,16,25,36,49,64,81,100,121,144,169,196,225];
                     a = sq[rnd(0,sq.length-1)]; ans = Math.sqrt(a);
-                    text = `√${a} = ؟`; hint = 'ما الجذر التربيعي؟';
-                    explanation = `√${a} = ${ans} لأن ${ans}² = ${a}`;
+                    text = `√${a} = ؟`; hint = `أي عدد × نفسه = ${a}؟`;
+                    explanation = `√${a} = ${ans}\n✓ تحقق: ${ans} × ${ans} = ${ans*ans} = ${a}`;
                 } else if (t === 'sqrt_hard') {
                     const sq = [256,289,324,361,400,441,484,529,576,625];
                     a = sq[rnd(0,sq.length-1)]; ans = Math.sqrt(a);
-                    text = `√${a} = ؟`; hint = 'ما الجذر التربيعي؟';
-                    explanation = `√${a} = ${ans} لأن ${ans}² = ${a}`;
+                    text = `√${a} = ؟`; hint = 'فكّر في قريب من هذا العدد ومربّعه';
+                    explanation = `√${a} = ${ans}\n✓ تحقق: ${ans} × ${ans} = ${a}`;
                 } else if (t === 'cbrt') {
                     const cb = [[8,2],[27,3],[64,4],[125,5],[216,6],[343,7],[512,8]];
                     const pick = cb[rnd(0,cb.length-1)]; a=pick[0]; ans=pick[1];
-                    text = `∛${a} = ؟`; hint = 'ما الجذر التكعيبي؟';
-                    explanation = `∛${a} = ${ans} لأن ${ans}³ = ${a}`;
+                    text = `∛${a} = ؟`; hint = `أي عدد × نفسه × نفسه = ${a}؟`;
+                    explanation = `∛${a} = ${ans}\n✓ تحقق: ${ans}³ = ${ans}×${ans}×${ans} = ${a}`;
                 } else if (t === 'power_simple') {
                     a = rnd(2,9); b = rnd(2,3); ans = Math.pow(a,b);
+                    const steps = Array.from({length:b},()=>a).join(' × ');
                     text = `${a}^${b} = ؟`; hint = `اضرب ${a} في نفسه ${b} مرات`;
-                    explanation = `${a}^${b} = ${ans}`;
+                    explanation = `${a}^${b} = ${steps} = ${ans}`;
                 } else if (t === 'power_hard') {
-                    const bases = [[2,8,256],[2,9,512],[2,10,1024],[3,5,243],[3,6,729],[4,4,256],[5,4,625]];
+                    const bases = [[2,8,256,'2×2×2×2×2×2×2×2'],[2,9,512,'2⁹'],[2,10,1024,'2¹⁰'],[3,5,243,'3⁵'],[3,6,729,'3⁶'],[4,4,256,'4⁴'],[5,4,625,'5⁴']];
                     const p = bases[rnd(0,bases.length-1)];
                     text = `${p[0]}^${p[1]} = ؟`; ans = p[2]; hint = `قوة العدد ${p[0]}`;
-                    explanation = `${p[0]}^${p[1]} = ${p[2]}`;
+                    explanation = `${p[0]}^${p[1]} = ${p[2]}\n💡 احفظ: هذه من القوى الشائعة`;
+                } else if (t === 'power_law') {
+                    /* قانون: a^m × a^n = a^(m+n) */
+                    a = rnd(2,4); const m=rnd(1,3),n=rnd(1,3);
+                    ans = Math.pow(a,m+n);
+                    text = `${a}^${m} × ${a}^${n} = ؟`; hint = 'اجمع الأسس عند الضرب بنفس القاعدة';
+                    explanation = `القاعدة نفسها (${a}) → اجمع الأسس\n${a}^${m} × ${a}^${n} = ${a}^(${m}+${n}) = ${a}^${m+n} = ${ans}`;
                 } else {
-                    const opts = [[4,0.5,2,'√4'],[8,0.333,2,'∛8'],[16,0.25,2,'⁴√16'],[81,0.25,3,'⁴√81']];
+                    const opts = [[16,0.25,2,'⁴√16'],[81,0.25,3,'⁴√81'],[32,0.2,2,'⁵√32'],[64,1/3,4,'∛64']];
                     const pick = opts[rnd(0,opts.length-1)];
-                    text = `${pick[3]} = ؟`; ans = pick[3]==='⁴√16'?2:3; hint='جذر الأعداد';
-                    explanation = `${pick[3]} = ${ans}`;
+                    ans = pick[2]; text = `${pick[3]} = ؟`; hint='جذر عالي الدرجة';
+                    explanation = `${pick[3]} = ${pick[2]}\n✓ تحقق بالرفع للقوة المعاكسة`;
                 }
                 const wr = new Set(); let s=0;
                 while(wr.size<3 && s<200){s++; const o=rnd(-5,5); if(o!==0&&ans+o>0) wr.add(ans+o);}
@@ -177,31 +295,43 @@
 
             /* ═══ لوغاريتم ═══ */
             if (op === 'adv_log') {
-                const types = ['log10','log_base','ln_simple','log_prop','antilog'];
+                const types = ['log10','log_base','ln_simple','log_prop','antilog','log_eq','log_neg_power'];
                 const t = types[rnd(0,types.length-1)];
                 let ans, text, hint, explanation;
                 if (t === 'log10') {
                     const exp = rnd(1,5); ans = exp;
-                    text = `log₁₀(10^${exp}) = ؟`; hint = 'log₁₀(10^x) = x';
-                    explanation = `log₁₀(10^${exp}) = ${exp}`;
+                    text = `log₁₀(10^${exp}) = ؟`; hint = 'القاعدة والأسية نفسهما → تُلغيان';
+                    explanation = `log₁₀(10^${exp}) = ${exp}\n📌 القاعدة: log_b(b^x) = x دائماً`;
                 } else if (t === 'log_base') {
-                    const pairs = [[2,8,3,'log₂(8)'],[2,16,4,'log₂(16)'],[2,32,5,'log₂(32)'],[3,9,2,'log₃(9)'],[3,27,3,'log₃(27)'],[5,25,2,'log₅(25)'],[4,64,3,'log₄(64)']];
+                    const pairs = [[2,8,3,'log₂(8)'],[2,16,4,'log₂(16)'],[2,32,5,'log₂(32)'],[3,9,2,'log₃(9)'],[3,27,3,'log₃(27)'],[5,25,2,'log₅(25)'],[4,64,3,'log₄(64)'],[2,64,6,'log₂(64)'],[3,81,4,'log₃(81)']];
                     const p = pairs[rnd(0,pairs.length-1)];
-                    text = `${p[3]} = ؟`; ans = p[2]; hint = `${p[0]}^x = ${p[1]}`;
-                    explanation = `${p[3]} = ${p[2]} لأن ${p[0]}^${p[2]} = ${p[1]}`;
+                    text = `${p[3]} = ؟`; ans = p[2]; hint = `اسأل: ${p[0]}^x = ${p[1]}`;
+                    explanation = `${p[3]} = ${p[2]}\nلأن ${p[0]}^${p[2]} = ${p[1]}\n📌 log_b(a) = x تعني b^x = a`;
                 } else if (t === 'ln_simple') {
                     const opts = [[1,0,'ln(1)'],[Math.E,1,'ln(e)'],[Math.pow(Math.E,2),2,'ln(e²)'],[Math.pow(Math.E,3),3,'ln(e³)']];
                     const p = opts[rnd(0,opts.length-1)]; ans = p[1];
-                    text = `${p[2]} = ؟`; hint = 'ln(eˣ) = x';
-                    explanation = `${p[2]} = ${p[1]}`;
+                    text = `${p[2]} = ؟`; hint = 'ln = لوغاريتم بقاعدة e (≈2.718)';
+                    explanation = `${p[2]} = ${p[1]}\n📌 ln(eˣ) = x دائماً`;
                 } else if (t === 'log_prop') {
-                    const a = rnd(2,5); const b = rnd(2,5); ans = a+b;
-                    text = `log(10^${a} × 10^${b}) = ؟`; hint = 'log(a×b) = log(a)+log(b)';
-                    explanation = `log(10^${a}) + log(10^${b}) = ${a} + ${b} = ${ans}`;
+                    const a2 = rnd(1,4); const b2 = rnd(1,4); ans = a2+b2;
+                    text = `log₁₀(10^${a2} × 10^${b2}) = ؟`; hint = 'log(a×b) = log(a) + log(b)';
+                    explanation = `log(10^${a2} × 10^${b2})\n= log(10^${a2}) + log(10^${b2})\n= ${a2} + ${b2} = ${ans}`;
+                } else if (t === 'antilog') {
+                    const exp2 = rnd(1,4); ans = Math.pow(10,exp2);
+                    text = `إذا log(x) = ${exp2}، فـ x = ؟`; hint = 'x = 10^(log x)';
+                    explanation = `log(x) = ${exp2}\nx = 10^${exp2} = ${ans}\n📌 اللوغاريتم والأسية عمليتان معكوستان`;
+                } else if (t === 'log_eq') {
+                    /* log_b(x) = n → x = b^n */
+                    const base=[2,3,5][rnd(0,2)]; const n2=rnd(1,4);
+                    ans = Math.pow(base,n2);
+                    text = `log_${base}(x) = ${n2}، إذن x = ؟`; hint = `حوّل: ${base}^${n2} = ؟`;
+                    explanation = `log_${base}(x) = ${n2}\n→ x = ${base}^${n2} = ${ans}`;
                 } else {
-                    const exp = rnd(1,4); ans = Math.pow(10,exp);
-                    text = `إذا log(x) = ${exp}، فـ x = ؟`; hint = 'x = 10^(log x)';
-                    explanation = `x = 10^${exp} = ${ans}`;
+                    /* log نسبة */
+                    const vals=[[100,2,'log₁₀(100)'],[1000,3,'log₁₀(1000)'],[10000,4,'log₁₀(10000)'],[0.1,-1,'log₁₀(0.1)'],[0.01,-2,'log₁₀(0.01)']];
+                    const v=vals[rnd(0,vals.length-1)]; ans=v[1];
+                    text=`${v[2]} = ؟`; hint=`10^x = ${v[0]}`;
+                    explanation=`${v[2]} = ${v[1]}\nلأن 10^${v[1]} = ${v[0]}`;
                 }
                 const wr = new Set(); let s=0;
                 while(wr.size<3 && s<200){s++; const o=rnd(-3,3); if(o!==0) wr.add(ans+o);}
@@ -211,76 +341,107 @@
 
             /* ═══ هندسة ═══ */
             if (op === 'adv_geo') {
-                const types = ['area_rect','area_tri','area_circle','perim_rect','perim_circle','vol_cube','vol_cyl','pythagoras'];
+                const types = ['area_rect','area_tri','area_circle','area_trapezoid','perim_rect','perim_circle','perim_tri','vol_cube','vol_rect','vol_cyl','pythagoras','diagonal'];
                 const t = types[rnd(0,types.length-1)];
                 let ans, text, hint, explanation;
                 if (t === 'area_rect') {
                     const w=rnd(3,12),h=rnd(3,12); ans=w*h;
                     text=`مساحة مستطيل ${w}×${h} = ؟`; hint='المساحة = الطول × العرض';
-                    explanation=`${w} × ${h} = ${ans}`;
+                    explanation=`المساحة = الطول × العرض\n= ${w} × ${h} = ${ans}`;
                 } else if (t === 'area_tri') {
                     const b=rnd(4,14),h=rnd(3,10); ans=Math.round(b*h/2);
                     text=`مساحة مثلث قاعدة ${b} وارتفاع ${h} = ؟`; hint='المساحة = ½ × القاعدة × الارتفاع';
-                    explanation=`½ × ${b} × ${h} = ${ans}`;
+                    explanation=`المساحة = ½ × ${b} × ${h}\n= ${b*h}/2 = ${ans}`;
                 } else if (t === 'area_circle') {
                     const r=rnd(2,9); ans=Math.round(Math.PI*r*r);
-                    text=`مساحة دائرة نصف قطرها ${r} (π≈3.14) = ؟`; hint='المساحة = π × نق²';
-                    explanation=`3.14 × ${r}² = ${ans}`;
+                    text=`مساحة دائرة نصف قطرها ${r} = ؟`; hint='المساحة = π × نق²';
+                    explanation=`المساحة = π × r²\n= 3.14 × ${r}²\n= 3.14 × ${r*r}\n≈ ${ans}`;
+                } else if (t === 'area_trapezoid') {
+                    const a2=rnd(3,10),b2=rnd(a2+1,14),h2=rnd(3,8); ans=Math.round((a2+b2)*h2/2);
+                    text=`مساحة شبه منحرف قاعدتاه ${a2} و ${b2} وارتفاعه ${h2} = ؟`; hint='المساحة = ½ × (مجموع القاعدتين) × الارتفاع';
+                    explanation=`المساحة = ½ × (${a2}+${b2}) × ${h2}\n= ½ × ${a2+b2} × ${h2}\n= ${(a2+b2)*h2}/2 = ${ans}`;
                 } else if (t === 'perim_rect') {
                     const w=rnd(3,12),h=rnd(3,12); ans=2*(w+h);
                     text=`محيط مستطيل ${w}×${h} = ؟`; hint='المحيط = 2×(الطول+العرض)';
-                    explanation=`2×(${w}+${h}) = ${ans}`;
+                    explanation=`المحيط = 2×(الطول+العرض)\n= 2×(${w}+${h})\n= 2×${w+h} = ${ans}`;
                 } else if (t === 'perim_circle') {
                     const r=rnd(2,9); ans=Math.round(2*Math.PI*r);
-                    text=`محيط دائرة نصف قطرها ${r} (π≈3.14) = ؟`; hint='المحيط = 2×π×نق';
-                    explanation=`2×3.14×${r} = ${ans}`;
+                    text=`محيط دائرة نصف قطرها ${r} = ؟`; hint='المحيط = 2×π×نق';
+                    explanation=`المحيط = 2×π×r\n= 2×3.14×${r}\n= ${2*3.14*r}\n≈ ${ans}`;
+                } else if (t === 'perim_tri') {
+                    const a2=rnd(3,10),b2=rnd(3,10),c2=rnd(3,10); ans=a2+b2+c2;
+                    text=`محيط مثلث أضلاعه ${a2}، ${b2}، ${c2} = ؟`; hint='محيط المثلث = مجموع الأضلاع الثلاثة';
+                    explanation=`المحيط = ${a2} + ${b2} + ${c2} = ${ans}`;
                 } else if (t === 'vol_cube') {
                     const s=rnd(2,8); ans=s*s*s;
                     text=`حجم مكعب ضلعه ${s} = ؟`; hint='الحجم = الضلع³';
-                    explanation=`${s}³ = ${ans}`;
+                    explanation=`الحجم = الضلع³\n= ${s}³\n= ${s}×${s}×${s} = ${ans}`;
+                } else if (t === 'vol_rect') {
+                    const l=rnd(2,8),w2=rnd(2,7),h3=rnd(2,6); ans=l*w2*h3;
+                    text=`حجم متوازي مستطيلات أبعاده ${l}×${w2}×${h3} = ؟`; hint='الحجم = الطول×العرض×الارتفاع';
+                    explanation=`الحجم = ${l}×${w2}×${h3}\n= ${l*w2}×${h3} = ${ans}`;
                 } else if (t === 'vol_cyl') {
                     const r=rnd(2,5),h=rnd(3,8); ans=Math.round(Math.PI*r*r*h);
-                    text=`حجم أسطوانة نق=${r} وارتفاع=${h} (π≈3.14) = ؟`; hint='الحجم = π×نق²×الارتفاع';
-                    explanation=`3.14×${r}²×${h} = ${ans}`;
-                } else {
-                    const pairs=[[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15]];
+                    text=`حجم أسطوانة نق=${r} وارتفاع=${h} = ؟`; hint='الحجم = π×نق²×الارتفاع';
+                    explanation=`الحجم = π×r²×h\n= 3.14×${r}²×${h}\n= 3.14×${r*r}×${h}\n≈ ${ans}`;
+                } else if (t === 'pythagoras') {
+                    const pairs=[[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15],[7,24,25]];
                     const p=pairs[rnd(0,pairs.length-1)]; ans=p[2];
-                    text=`مثلث قائم أضلاعه ${p[0]} و ${p[1]}، ما الوتر؟`; hint='الوتر² = الضلع₁² + الضلع₂²';
-                    explanation=`√(${p[0]}²+${p[1]}²) = √${p[0]*p[0]+p[1]*p[1]} = ${p[2]}`;
+                    text=`مثلث قائم أضلاعه ${p[0]} و ${p[1]}، ما الوتر؟`; hint='نظرية فيثاغورس: الوتر² = مجموع مربعَي الضلعين';
+                    explanation=`الوتر² = ${p[0]}² + ${p[1]}²\n= ${p[0]*p[0]} + ${p[1]*p[1]}\n= ${p[0]*p[0]+p[1]*p[1]}\nالوتر = √${p[0]*p[0]+p[1]*p[1]} = ${p[2]}`;
+                } else {
+                    /* قطر المستطيل */
+                    const w3=rnd(3,10),h4=rnd(3,10); ans=Math.round(Math.sqrt(w3*w3+h4*h4)*10)/10;
+                    text=`قطر مستطيل ${w3}×${h4} = ؟`; hint='القطر² = الطول² + العرض²';
+                    explanation=`القطر² = ${w3}² + ${h4}²\n= ${w3*w3} + ${h4*h4} = ${w3*w3+h4*h4}\nالقطر = √${w3*w3+h4*h4} ≈ ${ans}`;
                 }
-                const wr=new Set(); let s=0;
-                while(wr.size<3&&s<300){s++; const o=rnd(-8,8); if(o!==0&&ans+o>0) wr.add(ans+o);}
-                while(wr.size<3) wr.add(ans+wr.size+2);
-                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
+                const wr3=new Set(); let s3=0;
+                while(wr3.size<3&&s3<300){s3++;const o=rnd(-8,8);if(o!==0&&ans+o>0)wr3.add(Math.round((ans+o)*10)/10);}
+                while(wr3.size<3) wr3.add(ans+wr3.size+2);
+                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr3]]), explanation, catKey:'algebra'};
             }
 
             /* ═══ معادلات ═══ */
             if (op === 'adv_eq') {
-                const types = ['linear1','linear2','two_var','quadratic_simple','system'];
+                const types = ['linear1','linear2','two_var','quadratic_simple','system','eq_frac','eq_bracket','eq_neg'];
                 const t = types[rnd(0,types.length-1)];
                 let ans, text, hint, explanation;
                 if (t === 'linear1') {
                     const a=rnd(2,9),b=rnd(1,15); ans=b;
-                    text=`س + ${a} = ${a+b}`; hint='اطرح من الطرفين';
-                    explanation=`س = ${a+b} - ${a} = ${b}`;
+                    text=`س + ${a} = ${a+b}`; hint='اطرح الثابت من الطرفين';
+                    explanation=`س + ${a} = ${a+b}\nاطرح ${a} من الطرفين:\nس = ${a+b} − ${a} = ${b}\n✓ تحقق: ${b}+${a} = ${a+b} ✓`;
                 } else if (t === 'linear2') {
                     const a=rnd(2,6),b=rnd(1,10); ans=b;
-                    text=`${a}س = ${a*b}`; hint='اقسم الطرفين على ${a}';
-                    explanation=`س = ${a*b} ÷ ${a} = ${b}`;
+                    text=`${a}س = ${a*b}`; hint='اقسم الطرفين على المعامل';
+                    explanation=`${a}س = ${a*b}\nاقسم الطرفين على ${a}:\nس = ${a*b} ÷ ${a} = ${b}\n✓ تحقق: ${a}×${b} = ${a*b} ✓`;
                 } else if (t === 'two_var') {
-                    const a=rnd(2,6),b=rnd(1,8); ans=b;
+                    const a=rnd(2,6),b=rnd(1,10); ans=b;
                     const c=rnd(1,5); const d=a*b+c;
-                    text=`${a}س + ${c} = ${d}`; hint='اطرح ثم اقسم';
-                    explanation=`${a}س = ${d-c} → س = ${b}`;
+                    text=`${a}س + ${c} = ${d}`; hint='الخطوتان: اطرح الثابت ثم اقسم';
+                    explanation=`${a}س + ${c} = ${d}\nالخطوة ①: اطرح ${c} → ${a}س = ${d-c}\nالخطوة ②: اقسم على ${a} → س = ${d-c}÷${a} = ${b}\n✓ تحقق: ${a}×${b}+${c} = ${d} ✓`;
                 } else if (t === 'quadratic_simple') {
                     const r=rnd(2,9); ans=r*r;
-                    text=`س² = ${r*r} → س = ؟`; hint='خذ الجذر التربيعي';
-                    explanation=`س = √${r*r} = ${r}`;
+                    text=`س² = ${r*r} → س = ؟`; hint='خذ الجذر التربيعي (القيمة الموجبة)';
+                    explanation=`س² = ${r*r}\nس = √${r*r} = ${r}\n✓ تحقق: ${r}² = ${r}×${r} = ${r*r} ✓`;
                     ans=r;
-                } else {
+                } else if (t === 'system') {
                     const x=rnd(2,8),y=rnd(2,8);
-                    text=`س+ص=${x+y} وس−ص=${x-y}، قيمة س = ؟`; ans=x; hint='اجمع المعادلتين';
-                    explanation=`2س = ${x+y+x-y} → س = ${x}`;
+                    text=`س+ص=${x+y} وس−ص=${x-y}، قيمة س = ؟`; ans=x; hint='اجمع المعادلتين لإلغاء ص';
+                    explanation=`المعادلة ①: س+ص=${x+y}\nالمعادلة ②: س−ص=${x-y}\nاجمعهما: 2س = ${x+y}+${x-y} = ${2*x}\nس = ${2*x}÷2 = ${x}`;
+                } else if (t === 'eq_frac') {
+                    /* س/k = n → س = k×n */
+                    const k=rnd(2,6); const n=rnd(2,10); ans=k*n;
+                    text=`س ÷ ${k} = ${n}`; hint='اضرب الطرفين في المقام';
+                    explanation=`س ÷ ${k} = ${n}\nاضرب الطرفين في ${k}:\nس = ${n} × ${k} = ${ans}\n✓ تحقق: ${ans}÷${k} = ${n} ✓`;
+                } else if (t === 'eq_bracket') {
+                    const k=rnd(2,5),add=rnd(1,6); ans=rnd(2,8); const rhs=k*(ans+add);
+                    text=`${k}(س + ${add}) = ${rhs}`; hint='افتح القوس أو اقسم على المعامل أولاً';
+                    explanation=`${k}(س + ${add}) = ${rhs}\nالطريقة: اقسم على ${k}:\nس + ${add} = ${rhs/k}\nس = ${rhs/k} − ${add} = ${ans}\n✓ تحقق: ${k}(${ans}+${add}) = ${k}×${ans+add} = ${rhs} ✓`;
+                } else {
+                    /* معادلة بسالب */
+                    const a=rnd(2,8); ans=rnd(1,10); const rhs2=a-ans;
+                    text=`${a} − س = ${rhs2}`; hint='أعزل س بإضافته لأحد الطرفين';
+                    explanation=`${a} − س = ${rhs2}\nأضف س للطرفين: ${a} = ${rhs2} + س\nس = ${a} − ${rhs2} = ${ans}\n✓ تحقق: ${a}−${ans} = ${rhs2} ✓`;
                 }
                 const wr=new Set(); let s=0;
                 while(wr.size<3&&s<200){s++; const o=rnd(-5,5); if(o!==0&&ans+o>0) wr.add(ans+o);}
@@ -290,72 +451,133 @@
 
             /* ═══ متتاليات ═══ */
             if (op === 'adv_seq') {
-                const types = ['arith','geo','squares','fib','mixed'];
+                const types = ['arith','arith_neg','geo','geo_frac','squares','cubes','fib','triangular','mixed'];
                 const t = types[rnd(0,types.length-1)];
                 let ans, text, hint, explanation;
                 if (t === 'arith') {
                     const a=rnd(1,10),d=rnd(2,9);
-                    text=`${a}، ${a+d}، ${a+2*d}، ${a+3*d}، ؟`; ans=a+4*d; hint='ابحث عن الفرق الثابت';
-                    explanation=`الفرق = ${d}، التالي = ${a+3*d}+${d} = ${ans}`;
+                    text=`${a}، ${a+d}، ${a+2*d}، ${a+3*d}، ؟`; ans=a+4*d;
+                    hint=`الفرق بين كل حدين = ${d}`;
+                    explanation=`متتالية حسابية\nالفرق الثابت d = ${a+d}−${a} = ${d}\nالحد الخامس = ${a+3*d} + ${d} = ${ans}`;
+                } else if (t === 'arith_neg') {
+                    const a=rnd(30,80),d=rnd(3,12);
+                    text=`${a}، ${a-d}، ${a-2*d}، ${a-3*d}، ؟`; ans=a-4*d;
+                    hint=`المتتالية تتناقص بفرق ثابت = ${d}`;
+                    explanation=`متتالية حسابية تنازلية\nd = −${d}\nالحد التالي = ${a-3*d} − ${d} = ${ans}`;
                 } else if (t === 'geo') {
                     const a=rnd(1,5),r=rnd(2,4);
-                    text=`${a}، ${a*r}، ${a*r*r}، ${a*r*r*r}، ؟`; ans=a*r*r*r*r; hint='ابحث عن الأساس المشترك';
-                    explanation=`الأساس = ${r}، التالي = ${a*r*r*r}×${r} = ${ans}`;
+                    text=`${a}، ${a*r}، ${a*r*r}، ${a*r*r*r}، ؟`; ans=a*r*r*r*r;
+                    hint=`كل حد يُضرب في ${r}`;
+                    explanation=`متتالية هندسية\nالأساس q = ${a*r}÷${a} = ${r}\nالحد الخامس = ${a*r*r*r} × ${r} = ${ans}`;
+                } else if (t === 'geo_frac') {
+                    const a=rnd(3,7)*16; // يقبل القسمة على 2 أربع مرات
+                    text=`${a}، ${a/2}، ${a/4}، ${a/8}، ؟`; ans=a/16;
+                    hint='كل حد يُقسم على 2 (ضرب في ½)';
+                    explanation=`متتالية هندسية\nالأساس q = ½\nالحد التالي = ${a/8} ÷ 2 = ${a/16}`;
                 } else if (t === 'squares') {
-                    const n=rnd(4,8);
-                    text=`1، 4، 9، 16، ... ما الحد رقم ${n}؟`; ans=n*n; hint='مربعات الأعداد الطبيعية';
-                    explanation=`الحد رقم ${n} = ${n}² = ${ans}`;
+                    const n=rnd(4,9);
+                    text=`1، 4، 9، 16، ... ما الحد رقم ${n}؟`; ans=n*n;
+                    hint='كل حد = مربع رقمه الترتيبي';
+                    explanation=`نمط المربعات: n²\n1²=1، 2²=4، 3²=9، ...\nالحد رقم ${n} = ${n}² = ${ans}`;
+                } else if (t === 'cubes') {
+                    const n=rnd(2,5);
+                    text=`1، 8، 27، 64، ؟`; ans=125;
+                    hint='كل حد = مكعب رقمه الترتيبي';
+                    explanation=`نمط المكعبات: n³\n1³=1، 2³=8، 3³=27، 4³=64\nالحد الخامس = 5³ = ${ans}`;
                 } else if (t === 'fib') {
                     const fibs=[1,1,2,3,5,8,13,21,34,55,89];
                     const s=rnd(0,6);
-                    text=`${fibs[s]}، ${fibs[s+1]}، ${fibs[s+2]}، ${fibs[s+3]}، ؟`; ans=fibs[s+4]; hint='كل عدد = مجموع العددين قبله';
-                    explanation=`${fibs[s+3]}+${fibs[s+2]} = ${ans} (فيبوناتشي)`;
+                    text=`${fibs[s]}، ${fibs[s+1]}، ${fibs[s+2]}، ${fibs[s+3]}، ؟`; ans=fibs[s+4];
+                    hint='كل حد = مجموع الحدين اللذين قبله مباشرة';
+                    explanation=`متتالية فيبوناتشي\n${fibs[s+2]} + ${fibs[s+3]} = ${ans}\n💡 الاكتشاف: ليوناردو فيبوناتشي (القرن 13م)`;
+                } else if (t === 'triangular') {
+                    /* أعداد مثلثية: 1, 3, 6, 10, 15, 21... */
+                    const tri=[1,3,6,10,15,21,28,36,45,55];
+                    const s=rnd(0,5);
+                    text=`${tri[s]}، ${tri[s+1]}، ${tri[s+2]}، ${tri[s+3]}، ؟`; ans=tri[s+4];
+                    hint='الفرق بين الحدود يزيد بمقدار 1';
+                    explanation=`أعداد مثلثية\nالفروق: ${tri[s+1]-tri[s]}، ${tri[s+2]-tri[s+1]}، ${tri[s+3]-tri[s+2]}، ${tri[s+4]-tri[s+3]}\nالحد التالي = ${tri[s+3]} + ${tri[s+4]-tri[s+3]} = ${ans}`;
                 } else {
-                    const a=rnd(2,8),d=rnd(3,7);
-                    const s=[a,a+d,a+2*d];
-                    text=`${s[0]}، ${s[1]}، ${s[2]}، ؟ (متتالية حسابية)`; ans=s[2]+d; hint=`الفرق = ${d}`;
-                    explanation=`الفرق = ${d}، التالي = ${s[2]}+${d} = ${ans}`;
+                    /* متتالية مختلطة أسية×حسابية */
+                    const a=rnd(2,5),d=rnd(2,5),r=rnd(2,3);
+                    text=`${a}، ${a+d}، ${a+2*d}، ${a+3*d}، ؟`; ans=a+4*d;
+                    hint='ابحث عن النمط';
+                    explanation=`الفرق الثابت = ${d}\nالحد التالي = ${a+3*d} + ${d} = ${ans}`;
                 }
-                const wr=new Set(); let s2=0;
-                while(wr.size<3&&s2<200){s2++; const o=rnd(-6,6); if(o!==0&&ans+o>0) wr.add(ans+o);}
-                while(wr.size<3) wr.add(ans+wr.size+2);
-                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
+                const sp=Math.max(3,Math.ceil(Math.abs(ans)*0.2));
+                const wr2=new Set(); let s2=0;
+                while(wr2.size<3&&s2<200){s2++;const o=rnd(-sp,sp);if(o!==0&&ans+o>0)wr2.add(ans+o);}
+                while(wr2.size<3) wr2.add(ans+wr2.size+2);
+                return {text, hint, answer:ans, choices:shuffle([ans,...[...wr2]]), explanation, catKey:'algebra'};
             }
 
             /* ═══ مثلثات ═══ */
             if (op === 'adv_trig') {
-                const types = ['sin_val','cos_val','tan_val','angle_from_sin','pythagorean_id'];
+                const types = ['sin_val','cos_val','tan_val','angle_from_sin','angle_from_cos','pythagorean_id','trig_compare'];
                 const t = types[rnd(0,types.length-1)];
                 let ans, text, hint, explanation;
-                const sinTable = {0:0, 30:0.5, 45:0.7, 60:0.9, 90:1};
-                const cosTable = {0:1, 30:0.9, 45:0.7, 60:0.5, 90:0};
-                const tanTable = {0:0, 30:0.6, 45:1, 60:1.7};
+
+                /* جداول دقيقة */
+                const sinVals = [
+                    {deg:0,  val:0,    frac:'0',     mem:'الزاوية الصفر → جا=0'},
+                    {deg:30, val:0.5,  frac:'½',     mem:'30° → جا=½'},
+                    {deg:45, val:0.71, frac:'√2/2',  mem:'45° → جا=جتا=√2/2≈0.71'},
+                    {deg:60, val:0.87, frac:'√3/2',  mem:'60° → جا=√3/2≈0.87'},
+                    {deg:90, val:1,    frac:'1',     mem:'90° → جا=1 (أعلى قيمة)'}
+                ];
+                const cosVals = [
+                    {deg:0,  val:1,    frac:'1',     mem:'0° → جتا=1 (أعلى قيمة)'},
+                    {deg:30, val:0.87, frac:'√3/2',  mem:'30° → جتا=√3/2≈0.87'},
+                    {deg:45, val:0.71, frac:'√2/2',  mem:'45° → جا=جتا'},
+                    {deg:60, val:0.5,  frac:'½',     mem:'60° → جتا=½'},
+                    {deg:90, val:0,    frac:'0',     mem:'90° → جتا=0'}
+                ];
+                const tanVals = [
+                    {deg:0,  val:0,    frac:'0',     mem:'ظا(0°) = 0'},
+                    {deg:30, val:0.58, frac:'1/√3',  mem:'ظا(30°) = 1/√3 ≈ 0.58'},
+                    {deg:45, val:1,    frac:'1',     mem:'ظا(45°) = 1'},
+                    {deg:60, val:1.73, frac:'√3',    mem:'ظا(60°) = √3 ≈ 1.73'}
+                ];
+
                 if (t === 'sin_val') {
-                    const degs=[0,30,45,60,90]; const d=degs[rnd(0,degs.length-1)];
-                    ans=sinTable[d]; text=`جا(${d}°) = ؟`; hint='قيم جيب التمام المعيارية';
-                    explanation=`جا(${d}°) = ${ans}`;
+                    const v = sinVals[rnd(0,sinVals.length-1)]; ans=v.val;
+                    text=`جا(${v.deg}°) = ؟`; hint='جيب الزاوية = الضلع المقابل ÷ الوتر';
+                    explanation=`جا(${v.deg}°) = ${v.frac} = ${v.val}\n💡 ${v.mem}`;
                 } else if (t === 'cos_val') {
-                    const degs=[0,30,45,60,90]; const d=degs[rnd(0,degs.length-1)];
-                    ans=cosTable[d]; text=`جتا(${d}°) = ؟`; hint='قيم جيب التمام المعيارية';
-                    explanation=`جتا(${d}°) = ${ans}`;
+                    const v = cosVals[rnd(0,cosVals.length-1)]; ans=v.val;
+                    text=`جتا(${v.deg}°) = ؟`; hint='جيب التمام = الضلع المجاور ÷ الوتر';
+                    explanation=`جتا(${v.deg}°) = ${v.frac} = ${v.val}\n💡 ${v.mem}`;
                 } else if (t === 'tan_val') {
-                    const degs=[0,30,45,60]; const d=degs[rnd(0,degs.length-1)];
-                    ans=tanTable[d]; text=`ظا(${d}°) = ؟`; hint='ظا = جا ÷ جتا';
-                    explanation=`ظا(${d}°) = ${ans}`;
+                    const v = tanVals[rnd(0,tanVals.length-1)]; ans=v.val;
+                    text=`ظا(${v.deg}°) = ؟`; hint='ظا = جا ÷ جتا';
+                    explanation=`ظا(${v.deg}°) = جا÷جتا = ${v.frac} = ${v.val}\n💡 ${v.mem}`;
                 } else if (t === 'angle_from_sin') {
-                    const pairs=[[0.5,30],[1,90],[0,0]]; const p=pairs[rnd(0,pairs.length-1)];
-                    text=`جا(س) = ${p[0]}، إذن س = ؟`; ans=p[1]; hint='استخدم جدول الزوايا القياسية';
-                    explanation=`جا⁻¹(${p[0]}) = ${p[1]}°`;
-                } else {
+                    const pairs=[[0,0,'جا(س) = 0'],[0.5,30,'جا(س) = ½'],[1,90,'جا(س) = 1'],[0.87,60,'جا(س) = √3/2']];
+                    const p=pairs[rnd(0,pairs.length-1)]; ans=p[1];
+                    text=`${p[2]}، إذن س = ؟°`; hint='ارجع للجدول واعكس الدالة';
+                    explanation=`${p[2]}\n→ س = جا⁻¹(${p[0]}) = ${p[1]}°\n💡 تذكر: جا(${p[1]}°) = ${p[0]}`;
+                } else if (t === 'angle_from_cos') {
+                    const pairs=[[1,0,'جتا(س) = 1'],[0.87,30,'جتا(س) = √3/2'],[0.5,60,'جتا(س) = ½'],[0,90,'جتا(س) = 0']];
+                    const p=pairs[rnd(0,pairs.length-1)]; ans=p[1];
+                    text=`${p[2]}، إذن س = ؟°`; hint='ارجع للجدول واعكس الدالة';
+                    explanation=`${p[2]}\n→ س = جتا⁻¹(${p[0]}) = ${p[1]}°\n💡 تذكر: جتا(${p[1]}°) = ${p[0]}`;
+                } else if (t === 'pythagorean_id') {
                     const degs=[30,45,60]; const d=degs[rnd(0,degs.length-1)];
-                    const sv=sinTable[d], cv=cosTable[d];
                     ans=1; text=`جا²(${d}°) + جتا²(${d}°) = ؟`; hint='الهوية المثلثية الأساسية';
-                    explanation=`جا²+جتا² = ${sv}²+${cv}² ≈ 1 دائماً`;
+                    const sv=sinVals.find(x=>x.deg===d); const cv=cosVals.find(x=>x.deg===d);
+                    explanation=`جا²(${d}°) + جتا²(${d}°)\n= (${sv.frac})² + (${cv.frac})²\n= دائماً = 1\n📌 هوية فيثاغورس: sin²θ + cos²θ = 1`;
+                } else {
+                    /* مقارنة قيم */
+                    const v1=sinVals[rnd(1,3)]; const v2=cosVals[rnd(1,3)];
+                    ans = v1.val > v2.val ? v1.val : v2.val;
+                    text=`أيهما أكبر: جا(${v1.deg}°) أم جتا(${v2.deg}°)؟`; hint='احسب كلا القيمتين';
+                    explanation=`جا(${v1.deg}°) = ${v1.val}\nجتا(${v2.deg}°) = ${v2.val}\nالأكبر = ${ans}`;
                 }
-                const wr=new Set(); const opts=[-0.5,0,0.5,0.7,0.9,1,1.7,30,45,60,90];
-                let tries=0;
-                while(wr.size<3&&tries<200){tries++; const o=opts[rnd(0,opts.length-1)]; if(o!==ans) wr.add(o);}
-                while(wr.size<3) wr.add(wr.size*0.1);
+
+                const allVals = [0, 0.5, 0.58, 0.71, 0.87, 1, 1.73, 30, 45, 60, 90];
+                const wr=new Set(); let tries=0;
+                while(wr.size<3&&tries<200){tries++; const o=allVals[rnd(0,allVals.length-1)]; if(o!==ans) wr.add(o);}
+                while(wr.size<3) wr.add(Math.round((ans+wr.size*0.1)*100)/100);
                 return {text, hint, answer:ans, choices:shuffle([ans,...[...wr]]), explanation, catKey:'algebra'};
             }
 
@@ -700,7 +922,6 @@
             G.customTable = customTable || null;
             G.askedQuestions = [];
             G._challengeBadge = null; /* شارة التحدي */
-            G._smartTipShown  = false; /* ✅ §7.4 */
             /* ✅ إعادة ضبط ذاكرة جدول الضرب لمنع التكرار */
             if (typeof genQ._tableUsed !== 'undefined') genQ._tableUsed = {};
             let hasTimer = false;
@@ -943,63 +1164,7 @@
             /* 🎒 تحديث شريط مخزون المساعدات */
             if (typeof _updateInventoryBar === 'function') _updateInventoryBar();
 
-            /* ✅ §7.2 — عدّ تنازلي قبل بدء اللعبة */
-            _startCountdownThenPlay();
-        }
-
-        /* ✅ §7.2 — عدّ تنازلي احترافي قبل بدء اللعبة */
-        function _startCountdownThenPlay() {
-            /* أوضاع سريعة لا تحتاج عداداً: تدريب، وضع تلقائي، frenzy */
-            const skipModes = ['frenzy', 'speed'];
-            if (G.isTraining || skipModes.includes(G.mode)) {
-                loadQuestion();
-                return;
-            }
-
-            const overlay = document.getElementById('gameCountdownOverlay');
-            const numEl   = document.getElementById('countdownNum');
-            if (!overlay || !numEl) { loadQuestion(); return; }
-
-            const emojis = { 3: '3', 2: '2', 1: '1' };
-            const colors = { 3: 'var(--gold)', 2: '#f97316', 1: 'var(--green)' };
-
-            overlay.style.display = 'flex';
-            let count = 3;
-
-            function tick() {
-                numEl.textContent = emojis[count] || count;
-                numEl.style.color = colors[count] || 'var(--text)';
-                /* نبضة بصرية */
-                numEl.style.transform = 'scale(1.4)';
-                numEl.style.opacity   = '0';
-                setTimeout(() => {
-                    numEl.style.transform = 'scale(1)';
-                    numEl.style.opacity   = '1';
-                }, 30);
-                if (typeof playSound === 'function') playSound('tick');
-                count--;
-                if (count > 0) {
-                    setTimeout(tick, 900);
-                } else {
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        loadQuestion();
-                    }, 700);
-                }
-            }
-            tick();
-        }
-
-        /* ✅ §7.5 — زر "العب الآن" يبدأ آخر وضع لعب فوراً */
-        function quickPlay() {
-            const mode = st.lastMode || 'classic';
-            const op   = st.lastOp   || 'mix';
-            const label = document.getElementById('quickPlayLabel');
-            if (label) label.textContent = 'جارٍ التحميل...';
-            setTimeout(() => {
-                window._gameSource = 'home';
-                startGameWith(mode, op, null, false);
-            }, 80);
+            loadQuestion();
         }
 
         function updateHeartsDisplay() {
@@ -2400,4 +2565,4 @@ function genExtendedLawQ() {
         explanation: q.explanation,
         catKey: 'mathlaws'
     };
-}
+   }
