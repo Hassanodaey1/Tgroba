@@ -1021,6 +1021,130 @@
     .comp-hero-icon-wrap { width: 55px; height: 55px; }
 }
 
+/* ═══════════════════════════════════════════════════
+   📱 RESPONSIVE FIX — بطاقة Hero على الشاشات الضيقة
+   يضمن ظهور زر "ابدأ التحدي" على جميع الأجهزة
+═══════════════════════════════════════════════════ */
+
+/* الشاشات الصغيرة عموديًا (ارتفاع أقل من 700px) */
+@media (max-height: 700px) {
+    .comp-hero-banner {
+        padding: 14px 14px 12px;
+    }
+    .comp-hero-icon-wrap {
+        width: 54px;
+        height: 54px;
+        margin-bottom: 2px;
+    }
+    .comp-hero-icon {
+        font-size: 1.8em;
+    }
+    .comp-hero-title {
+        font-size: 1.25em;
+    }
+    .comp-hero-sub {
+        font-size: 0.68em;
+        margin-bottom: 2px;
+    }
+    .comp-my-stats-row {
+        margin-top: 2px;
+    }
+    .comp-my-stat {
+        padding: 7px 4px;
+    }
+    .comp-my-stat-val {
+        font-size: 1.05em;
+    }
+    .comp-my-stat-lbl {
+        font-size: 0.52em;
+    }
+    .comp-start-btn {
+        margin-top: 10px;
+        padding: 13px 16px 11px;
+    }
+    .comp-start-btn-text {
+        font-size: 0.97em;
+    }
+    .comp-start-btn-sub {
+        font-size: 0.58em;
+    }
+}
+
+/* الشاشات الصغيرة جدًا عموديًا (ارتفاع أقل من 580px) */
+@media (max-height: 580px) {
+    .comp-hero-banner {
+        padding: 10px 12px 10px;
+        margin-top: 4px;
+    }
+    .comp-hero-icon-wrap {
+        width: 42px;
+        height: 42px;
+        margin-bottom: 0;
+    }
+    .comp-hero-icon {
+        font-size: 1.4em;
+    }
+    .comp-hero-ring {
+        inset: -3px;
+    }
+    .comp-hero-ring::after {
+        inset: 2px;
+    }
+    .comp-hero-title {
+        font-size: 1.05em;
+    }
+    .comp-hero-sub {
+        display: none; /* يخفي الـ subtitle لتوفير مساحة */
+    }
+    .comp-my-stats-row {
+        margin-top: 0px;
+    }
+    .comp-my-stat {
+        padding: 6px 2px;
+    }
+    .comp-my-stat-val {
+        font-size: 0.95em;
+    }
+    .comp-my-stat-divider {
+        height: 22px;
+    }
+    .comp-start-btn {
+        margin-top: 8px;
+        padding: 11px 14px 9px;
+        border-radius: 14px;
+    }
+    .comp-start-btn-text {
+        font-size: 0.9em;
+    }
+    .comp-start-btn-sub {
+        font-size: 0.55em;
+        margin-top: 1px;
+    }
+}
+
+/* الشاشات العريضة الصغيرة عرضًا (مثل ≤360px مثل Galaxy S5) */
+@media (max-width: 360px) {
+    .comp-hero-banner {
+        padding: 14px 10px 12px;
+    }
+    .comp-hero-title {
+        font-size: 1.3em;
+    }
+    .comp-my-stat-lbl {
+        font-size: 0.50em;
+    }
+    .comp-start-btn-sub {
+        font-size: 0.57em;
+    }
+}
+
+/* ضمان أن الـ competitionMainView قابل للتمرير دائمًا */
+#competitionMainView {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: calc(var(--nav-h, 68px) + 12px) !important;
+}
+
 /* ═══ Layout Fixes — معزولة عن styles.css العام ═══ */
 
 #page-leaderboard {
