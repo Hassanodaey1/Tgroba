@@ -503,7 +503,7 @@
                 const backBtnEl = document.getElementById('resultsBackBtn');
                 if (backBtnEl) {
                     const src = window._gameSource || 'home';
-                    if (src === 'mindgame' || src === 'play') {
+                    if (src === 'play') {
                         backBtnEl.textContent = '🎮 العودة للألعاب';
                         backBtnEl.onclick = function() {
                             document.getElementById('resultsOverlay').classList.remove('active');
