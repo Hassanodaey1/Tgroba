@@ -132,8 +132,18 @@ function _getLevelConfig() {
  */
 var _DIFF_ORDER = ['easy', 'medium', 'hard', 'genius'];
 
-function _resolveActualDiff(op, baseDiff) {
-    var lvlDiff    = baseDiff || 'easy';
+function _resolveActualDiff(op, baseDiff, strict) {
+    var lvlDiff = baseDiff || 'easy';
+
+    /*
+     * ✅ الإصلاح: وضع strict=true يعني أن الصعوبة المُمرَّرة صادرة من منطق
+     * تصعيد داخلي خاص (survival / rocket / sudden) ويجب احترامها كما هي
+     * دون تدخل st.difficulty أو AdaptiveAI — لأن هذه الأوضاع تدير
+     * تصعيدها بنفسها خطوة بخطوة.
+     * وضع strict=false (الافتراضي) يبقى كما كان: يأخذ الأعلى بين الثلاثة.
+     */
+    if (strict) return lvlDiff;
+
     var playerDiff = (typeof st !== 'undefined' && st.difficulty) ? st.difficulty : 'easy';
     var aiDiff     = (typeof AdaptiveAI !== 'undefined') ? AdaptiveAI.getDiff(op, lvlDiff) : lvlDiff;
 
@@ -240,14 +250,18 @@ function _remember(q) {
    الدالة الرئيسية — توليد سؤال ذكي مرتبط بالمستوى
 ═══════════════════════════════════════════════════════════════ */
 
-function genSmartQ(op, baseDiff) {
+function genSmartQ(op, baseDiff, strict) {
     /* الأنواع المتقدمة الجديدة — تُعالَج مباشرة بـ genQ */
     var _advOps = ['adv_roots','adv_log','adv_geo','adv_eq','adv_seq','adv_trig'];
     if (_advOps.indexOf(op) >= 0) {
         if (typeof genQ === 'function') return genQ(op, baseDiff || 'medium');
     }
     var cfg  = _getLevelConfig();
-    var diff = _resolveActualDiff(op, baseDiff || cfg.diff);
+    /*
+     * ✅ الإصلاح: strict=true → الصعوبة المُمرَّرة من وضع تصعيد داخلي
+     * (survival/rocket/sudden) تُستخدم كما هي بدون تدخل st.difficulty
+     */
+    var diff = _resolveActualDiff(op, baseDiff || cfg.diff, strict || false);
     var age  = (typeof st !== 'undefined') ? (st.age || _calcAge((st||{}).birthDate)) : 0;
 
     /* حماية الأطفال الصغار */
@@ -523,11 +537,19 @@ function _build(op, diff, cfg, age) {
             var num1= rnd(1, d1-1), num2 = rnd(1, d2-1);
             var rN  = num1*(lcm/d1) + num2*(lcm/d2);
             var g   = _gcd(rN, lcm);
-            ans     = Math.round(rN/lcm * 100) / 100;
+            /*
+             * ✅ الإصلاح: الإجابة ككسر مبسط (نص) وليس عدد عشري
+             * حتى تتطابق الخيارات مع شكل السؤال الذي يعرض كسراً
+             * - إذا قابل للتبسيط → مثل '5/6'
+             * - إذا عدد صحيح     → رقم مثل 2
+             */
+            var simpN = rN / g, simpD = lcm / g;
+            ans = (simpD === 1) ? simpN : (simpN + '/' + simpD);
             text    = `${num1}/${d1} + ${num2}/${d2}`;
             hint    = `أوجد المقام المشترك: ${lcm}`;
             explanation = `${num1}/${d1} + ${num2}/${d2}\nالمقام المشترك = ${lcm}\n= ${num1*(lcm/d1)}/${lcm} + ${num2*(lcm/d2)}/${lcm} = ${rN}/${lcm}`;
-            if (g > 1) explanation += ` = ${rN/g}/${lcm/g}`;
+            if (g > 1) explanation += ` = ${simpN}/${simpD}`;
+            if (simpD === 1) explanation += ` = ${simpN}`;
             catKey  = 'division';
             break;
         }
@@ -537,12 +559,16 @@ function _build(op, diff, cfg, age) {
             var fn1 = rnd(1,6), fd1 = rnd(2,8), fn2 = rnd(1,6), fd2 = rnd(2,8);
             var np  = fn1*fn2, dp = fd1*fd2;
             var fg  = _gcd(np,dp);
-            ans     = Math.round(np/dp * 100) / 100;
+            /*
+             * ✅ الإصلاح: الإجابة ككسر مبسط وليس عدد عشري
+             */
+            var mSimpN = np / fg, mSimpD = dp / fg;
+            ans = (mSimpD === 1) ? mSimpN : (mSimpN + '/' + mSimpD);
             text    = `${fn1}/${fd1} × ${fn2}/${fd2}`;
             hint    = 'اضرب البسطَين معاً والمقامَين معاً';
             explanation = `${fn1}/${fd1} × ${fn2}/${fd2} = ${np}/${dp}`;
-            if (fg > 1) explanation += ` = ${np/fg}/${dp/fg}`;
-            explanation += ` ≈ ${ans}`;
+            if (fg > 1) explanation += ` = ${mSimpN}/${mSimpD}`;
+            if (mSimpD === 1) explanation += ` = ${mSimpN}`;
             catKey  = 'division';
             break;
         }
@@ -682,6 +708,22 @@ function _build(op, diff, cfg, age) {
 ═══════════════════════════════════════════════════════════════ */
 
 function _smartChoices(correctAns, op, diff) {
+    /*
+     * ✅ الإصلاح: إذا كانت الإجابة كسراً نصياً (مثل '5/6')
+     * نُعيد خيارات كسرية مباشرةً من _commonMistakes ونتجاوز منطق الأرقام
+     */
+    if (typeof correctAns === 'string' && correctAns.indexOf('/') >= 0) {
+        var _fracWrongs = _commonMistakes(correctAns, op);
+        /* ضمان 3 خيارات خاطئة مختلفة عن الصحيحة */
+        var _fw = _fracWrongs.filter(function(x) { return x !== correctAns; }).slice(0, 3);
+        var _extra = 1;
+        while (_fw.length < 3) {
+            var _p = correctAns.split('/');
+            _fw.push((_p[0] - 0 + _extra) + '/' + _p[1]);
+            _extra++;
+        }
+        return shuffle([correctAns].concat(_fw.slice(0, 3)));
+    }
     var ans    = typeof correctAns === 'number' ? correctAns : parseFloat(correctAns);
     var wrongs = new Set();
     var safety = 0;
@@ -777,8 +819,26 @@ function _commonMistakes(ans, op) {
         case 'sqrt':
             r = [ans + 1, ans - 1, ans + 2, ans * 2];
             break;
-        case 'fraction_add': case 'fraction_simple': case 'fraction_mul':
-            r = [Math.round((ans + 0.5)*10)/10, Math.round((ans-0.5)*10)/10, ans*2, Math.round(ans/2*10)/10];
+        case 'fraction_add': case 'fraction_mul':
+            /*
+             * ✅ الإصلاح: الإجابة الآن نص كسر مثل '5/6' أو رقم صحيح مثل 2
+             * نُنشئ كسوراً خاطئة قريبة من الصحيح بتغيير البسط أو المقام
+             */
+            if (typeof ans === 'string' && ans.indexOf('/') >= 0) {
+                var _parts = ans.split('/');
+                var _n = parseInt(_parts[0]), _d = parseInt(_parts[1]);
+                r = [
+                    (_n+1) + '/' + _d,
+                    (_n > 1 ? (_n-1) : (_n+2)) + '/' + _d,
+                    _n + '/' + (_d+1)
+                ];
+            } else {
+                /* عدد صحيح */
+                r = [ans + 1, ans > 1 ? ans - 1 : ans + 2, ans + 2];
+            }
+            break;
+        case 'fraction_simple':
+            r = [ans + 1, ans > 1 ? ans - 1 : ans + 2, ans + 2];
             break;
         case 'algebra': case 'equation_simple': case 'equation_quad':
             r = [ans + 1, ans - 1, ans * 2, ans + 2];
@@ -820,13 +880,14 @@ function showSmartExplanation(explanation, correctAnswer) {
    واجهة موحّدة — تُستدعى من loadQuestion بدلاً من genQ
 ═══════════════════════════════════════════════════════════════ */
 
-function getNextQuestion(op, diff) {
+function getNextQuestion(op, diff, strict) {
     /* العمليات الخاصة تبقى على genQ الأصلية */
     if (op === 'table' || op === 'laws' || op === 'advanced' ||
         ['adv_roots','adv_log','adv_geo','adv_eq','adv_seq','adv_trig'].includes(op)) {
         if (typeof genQ === 'function') return genQ(op, diff);
     }
-    return genSmartQ(op, diff);
+    /* ✅ الإصلاح: تمرير strict لـ genSmartQ حتى تصل إلى _resolveActualDiff */
+    return genSmartQ(op, diff, strict || false);
 }
 
 
