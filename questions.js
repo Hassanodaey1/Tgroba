@@ -907,6 +907,8 @@
             st.lastOp = op;
             currentOp = op;
             saveSt();
+            /* ✅ FIX-QUICKPLAY: تحديث زر "العب الآن" فوراً عند بدء أي لعبة */
+            if (typeof updateQuickPlayLabel === 'function') updateQuickPlayLabel();
             G.mode = mode;
             G.op = op;
             G.score = 0;
