@@ -786,7 +786,7 @@ function _refreshQuickToolsPanel() {
                 '</div>';
         } else {
             html +=
-                '<div onclick="' + (canAfford ? "buyConsumable('" + tool.id + "');_refreshQuickToolsPanel();playSound('click');" : '') + '" ' +
+                '<div onclick="' + (canAfford ? "buyConsumable('" + tool.id + "');closeInGameShop();playSound('click');" : '') + '" ' +
                 'style="display:flex;align-items:center;gap:10px;' +
                 'background:' + (canAfford ? 'var(--surface2)' : 'var(--surface3)') + ';' +
                 'border:1.5px solid ' + (canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.18)') + ';' +
