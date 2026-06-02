@@ -3,6 +3,50 @@
    © 2026 Hassan Odaey
 ═══════════════════════════════════════════════════ */
 
+
+/* ═══════════════════════════════════════════════════════════
+   updateQuickPlayLabel — تحديث زر "العب الآن" فوراً
+   تُستدعى من: updateUI() + startGameWith() + تحميل الصفحة
+═══════════════════════════════════════════════════════════ */
+window.ALL_MODE_NAMES = {
+    /* الأوضاع الأساسية */
+    classic:    'كلاسيك',
+    daily:      'تحدي اليوم',
+    weekly:     'تحدي الأسبوع',
+    speed:      'السرعة',
+    frenzy:     'الاندفاع',
+    survival:   'البقاء',
+    /* ألعاب العقل */
+    memory:     'الذاكرة',
+    chain:      'السلسلة',
+    sudden:     'ضد الساعة',
+    rocket:     'الصاروخ',
+    /* التحديات */
+    accuracy:   'الدقة',
+    marathon:   'الماراثون',
+    impossible: 'المستحيل',
+    fill:       'التكميل',
+    /* الرياضيات المتقدمة */
+    adv_roots:  'الأسس والجذور',
+    adv_log:    'اللوغاريتم',
+    adv_geo:    'الهندسة',
+    adv_eq:     'المعادلات',
+    adv_seq:    'المتتاليات',
+    adv_trig:   'المثلثات',
+    /* أوضاع أخرى */
+    table:      'جدول الضرب',
+    training:   'التدريب',
+    laws:       'ألغاز رياضية'
+};
+
+function updateQuickPlayLabel() {
+    const el = document.getElementById('quickPlayLabel');
+    if (!el) return;
+    const mode = (typeof st !== 'undefined' && st.lastMode) ? st.lastMode : 'classic';
+    const name = window.ALL_MODE_NAMES[mode] || mode;
+    el.textContent = '▶ العب الآن — ' + name;
+}
+
 /* ─── إعدادات اللعبة ─── */
 function openGameSettings() {
     /* يُستخدم من داخل اللعبة — يوقف المؤقت ويفتح الشيت */
