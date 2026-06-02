@@ -721,14 +721,16 @@ function _refreshQuickToolsPanel() {
 
     /* ─── الأدوات الفورية للشراء أثناء اللعب ─── */
     var buyableTools = [
-        { id: 'skip_q',       icon: '⏭️', name: 'تخطّي سؤال',  price: 3,  desc: 'تخطَّ فوراً بدون خسارة' },
-        { id: 'remove_wrong', icon: '🗑️', name: 'حذف خيار',    price: 4,  desc: 'احذف إجابة خاطئة' },
-        { id: 'heart_pack_1', icon: '❤️', name: '+1 قلب',       price: 5,  desc: 'أضف قلبًا الآن' },
-        { id: 'heart_pack_3', icon: '💖', name: '+3 قلوب',      price: 12, desc: 'أضف 3 قلوب دفعة واحدة' },
+        { id: 'skip_q',       icon: '⏭️', name: 'تخطّي سؤال',  price: 12, desc: 'تخطَّ فوراً بدون خسارة' },
+        { id: 'remove_wrong', icon: '🗑️', name: 'حذف خيار',    price: 14, desc: 'احذف إجابة خاطئة' },
+        { id: 'heart_pack_1', icon: '❤️', name: '+1 قلب',       price: 15, desc: 'أضف قلبًا الآن' },
+        { id: 'heart_pack_3', icon: '💖', name: '+3 قلوب',      price: 40, desc: 'أضف 3 قلوب دفعة واحدة' },
     ];
     if (hasTimer) {
-        buyableTools.push({ id: 'time_plus10', icon: '⏰', name: '+10 ثواني', price: 5, desc: 'أضف وقتاً للمؤقت' });
+        buyableTools.push({ id: 'time_plus10', icon: '⏰', name: '+10 ثواني', price: 18, desc: 'أضف وقتاً للمؤقت' });
     }
+    /* قائمة العناصر المشتراة في هذه الجلسة — للقفل البصري */
+    var purchased = (typeof G !== 'undefined' && G && G._purchasedInstant) ? G._purchasedInstant : {};
 
     var html = '';
 
@@ -761,24 +763,46 @@ function _refreshQuickToolsPanel() {
     html += '<div style="display:flex;flex-direction:column;gap:7px;">';
 
     buyableTools.forEach(function(tool) {
-        var canAfford = coins >= tool.price;
-        html +=
-            '<div onclick="' + (canAfford ? "buyConsumable('" + tool.id + "');closeInGameShop();playSound('click');" : '') + '" ' +
-            'style="display:flex;align-items:center;gap:10px;' +
-            'background:' + (canAfford ? 'var(--surface2)' : 'var(--surface3)') + ';' +
-            'border:1.5px solid ' + (canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.18)') + ';' +
-            'border-radius:13px;padding:10px 12px;cursor:' + (canAfford ? 'pointer' : 'not-allowed') + ';' +
-            'opacity:' + (canAfford ? '1' : '0.6') + ';transition:opacity 0.15s;">' +
-                '<div style="font-size:1.55em;flex-shrink:0;">' + tool.icon + '</div>' +
-                '<div style="flex:1;">' +
-                    '<div style="font-size:0.78em;font-weight:900;color:var(--text);">' + tool.name + '</div>' +
-                    '<div style="font-size:0.62em;color:var(--text2);">' + tool.desc + '</div>' +
-                '</div>' +
-                '<div style="text-align:center;flex-shrink:0;">' +
-                    '<div style="font-size:0.82em;font-weight:900;color:' + (canAfford ? 'var(--gold)' : '#ef4444') + ';">' + tool.price + '💰</div>' +
-                    '<div style="font-size:0.56em;color:' + (canAfford ? 'var(--green)' : '#ef4444') + ';">' + (canAfford ? '✅' : '❌ لا يكفي') + '</div>' +
-                '</div>' +
-            '</div>';
+        var isLocked  = purchased[tool.id];
+        var canAfford = !isLocked && coins >= tool.price;
+
+        if (isLocked) {
+            /* ── بطاقة مقفلة بصرياً — مثل الأفاتارات المغلقة ── */
+            html +=
+                '<div style="display:flex;align-items:center;gap:10px;' +
+                'background:var(--surface3);' +
+                'border:1.5px solid rgba(255,255,255,0.08);' +
+                'border-radius:13px;padding:10px 12px;' +
+                'cursor:not-allowed;opacity:0.5;position:relative;">' +
+                    '<div style="position:relative;flex-shrink:0;width:32px;height:32px;">' +
+                        '<div style="font-size:1.55em;filter:grayscale(1);opacity:0.35;">' + tool.icon + '</div>' +
+                        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1em;">🔒</div>' +
+                    '</div>' +
+                    '<div style="flex:1;">' +
+                        '<div style="font-size:0.78em;font-weight:900;color:var(--text3);">' + tool.name + '</div>' +
+                        '<div style="font-size:0.62em;color:var(--text3);">' + tool.desc + '</div>' +
+                    '</div>' +
+                    '<div style="font-size:1.2em;color:rgba(255,255,255,0.12);">🔒</div>' +
+                '</div>';
+        } else {
+            html +=
+                '<div onclick="' + (canAfford ? "buyConsumable('" + tool.id + "');_refreshQuickToolsPanel();playSound('click');" : '') + '" ' +
+                'style="display:flex;align-items:center;gap:10px;' +
+                'background:' + (canAfford ? 'var(--surface2)' : 'var(--surface3)') + ';' +
+                'border:1.5px solid ' + (canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.18)') + ';' +
+                'border-radius:13px;padding:10px 12px;cursor:' + (canAfford ? 'pointer' : 'not-allowed') + ';' +
+                'opacity:' + (canAfford ? '1' : '0.6') + ';transition:opacity 0.15s;">' +
+                    '<div style="font-size:1.55em;flex-shrink:0;">' + tool.icon + '</div>' +
+                    '<div style="flex:1;">' +
+                        '<div style="font-size:0.78em;font-weight:900;color:var(--text);">' + tool.name + '</div>' +
+                        '<div style="font-size:0.62em;color:var(--text2);">' + tool.desc + '</div>' +
+                    '</div>' +
+                    '<div style="text-align:center;flex-shrink:0;">' +
+                        '<div style="font-size:0.82em;font-weight:900;color:' + (canAfford ? 'var(--gold)' : '#ef4444') + ';">' + tool.price + '💰</div>' +
+                        '<div style="font-size:0.56em;color:' + (canAfford ? 'var(--green)' : '#ef4444') + ';">' + (canAfford ? '✅' : '❌ لا يكفي') + '</div>' +
+                    '</div>' +
+                '</div>';
+        }
     });
 
     html += '</div></div>';
