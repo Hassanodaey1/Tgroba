@@ -19,10 +19,13 @@
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
+            } else {
+                database = firebase.database();
             }
         } catch (e) {
             console.warn('Firebase غير مهيأ، سيتم تعطيل لوحة المتصدرين:', e.message);
             database = null;
         }
-
-
+        /* ✅ FIX-DB: تعريض database على window حتى تستطيع
+           competition_logic.js و ui.js الوصول إليه عبر window.database */
+        window.database = database;
