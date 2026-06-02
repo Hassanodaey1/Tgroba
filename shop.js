@@ -13,29 +13,29 @@ const SHOP_CATALOG = {
     avatars: [
         { id: 'av_boy',    emoji: '👦',  price: 0,   label: 'ولد', gender: 'm', free: true },
         { id: 'av_girl',   emoji: '👧',  price: 0,   label: 'بنت', gender: 'f', free: true },
-        { id: 'av_astro',  emoji: '🧑‍🚀', price: 8,  label: 'رائد فضاء',  badge: '' },
-        { id: 'av_vamp',   emoji: '🧛',  price: 12,  label: 'مصاص دماء',  badge: '😈' },
-        { id: 'av_elf',    emoji: '🧝',  price: 10,  label: 'جني',         badge: '' },
-        { id: 'av_genie',  emoji: '🧞',  price: 15,  label: 'مارد علاء الدين', badge: '✨' },
-        { id: 'av_fox',    emoji: '🦊',  price: 9,   label: 'ثعلب ذكي',   badge: '' },
-        { id: 'av_tiger',  emoji: '🐯',  price: 10,  label: 'نمر',         badge: '' },
-        { id: 'av_lion',   emoji: '🦁',  price: 12,  label: 'أسد',         badge: '👑' },
-        { id: 'av_panda',  emoji: '🐼',  price: 8,   label: 'باندا',       badge: '' },
-        { id: 'av_unicorn',emoji: '🦄',  price: 18,  label: 'يونيكورن',    badge: '🌈', hot: true },
-        { id: 'av_dragon', emoji: '🐲',  price: 14,  label: 'تنين',        badge: '🔥' },
-        { id: 'av_eagle',  emoji: '🦅',  price: 8,   label: 'نسر',         badge: '' },
-        { id: 'av_wolf',   emoji: '🐺',  price: 10,  label: 'ذئب',         badge: '' },
-        { id: 'av_owl',    emoji: '🦉',  price: 9,   label: 'بومة',        badge: '' },
-        { id: 'av_grad',   emoji: '🧑‍🎓', price: 20,  label: 'خريج',        badge: '🎓', lvlReq: 5 },
-        { id: 'av_coder',  emoji: '🧑‍💻', price: 22,  label: 'مبرمج',       badge: '💻', lvlReq: 5 },
-        { id: 'av_sci',    emoji: '🧑‍🔬', price: 25,  label: 'عالم',        badge: '⚗️', lvlReq: 8 },
-        { id: 'av_prince', emoji: '🤴',  price: 35,  label: 'أمير',        badge: '👑', lvlReq: 10, hot: true },
-        { id: 'av_princess',emoji: '👸', price: 35,  label: 'أميرة',       badge: '👑', lvlReq: 10, hot: true },
-        { id: 'av_hero',   emoji: '🦸',  price: 30,  label: 'بطل خارق',   badge: '⚡', lvlReq: 8 },
-        { id: 'av_wizard', emoji: '🧙',  price: 28,  label: 'ساحر',        badge: '🪄', lvlReq: 7 },
-        { id: 'av_ninja',  emoji: '🥷',  price: 32,  label: 'نينجا',       badge: '⚔️', lvlReq: 10, new: true },
-        { id: 'av_robot',  emoji: '🤖',  price: 38,  label: 'روبوت',       badge: '🔩', lvlReq: 12, new: true },
-        { id: 'av_alien',  emoji: '👽',  price: 45,  label: 'فضائي',       badge: '🛸', lvlReq: 15, hot: true, new: true },
+        { id: 'av_astro',  emoji: '🧑‍🚀', price: 25,  label: 'رائد فضاء',  badge: '' },
+        { id: 'av_vamp',   emoji: '🧛',  price: 35,  label: 'مصاص دماء',  badge: '😈' },
+        { id: 'av_elf',    emoji: '🧝',  price: 30,  label: 'جني',         badge: '' },
+        { id: 'av_genie',  emoji: '🧞',  price: 45,  label: 'مارد علاء الدين', badge: '✨' },
+        { id: 'av_fox',    emoji: '🦊',  price: 28,  label: 'ثعلب ذكي',   badge: '' },
+        { id: 'av_tiger',  emoji: '🐯',  price: 30,  label: 'نمر',         badge: '' },
+        { id: 'av_lion',   emoji: '🦁',  price: 38,  label: 'أسد',         badge: '👑' },
+        { id: 'av_panda',  emoji: '🐼',  price: 25,  label: 'باندا',       badge: '' },
+        { id: 'av_unicorn',emoji: '🦄',  price: 55,  label: 'يونيكورن',    badge: '🌈', hot: true },
+        { id: 'av_dragon', emoji: '🐲',  price: 42,  label: 'تنين',        badge: '🔥' },
+        { id: 'av_eagle',  emoji: '🦅',  price: 25,  label: 'نسر',         badge: '' },
+        { id: 'av_wolf',   emoji: '🐺',  price: 30,  label: 'ذئب',         badge: '' },
+        { id: 'av_owl',    emoji: '🦉',  price: 28,  label: 'بومة',        badge: '' },
+        { id: 'av_grad',   emoji: '🧑‍🎓', price: 60,  label: 'خريج',        badge: '🎓', lvlReq: 5 },
+        { id: 'av_coder',  emoji: '🧑‍💻', price: 65,  label: 'مبرمج',       badge: '💻', lvlReq: 5 },
+        { id: 'av_sci',    emoji: '🧑‍🔬', price: 75,  label: 'عالم',        badge: '⚗️', lvlReq: 8 },
+        { id: 'av_prince', emoji: '🤴',  price: 100, label: 'أمير',        badge: '👑', lvlReq: 10, hot: true },
+        { id: 'av_princess',emoji: '👸', price: 100, label: 'أميرة',       badge: '👑', lvlReq: 10, hot: true },
+        { id: 'av_hero',   emoji: '🦸',  price: 90,  label: 'بطل خارق',   badge: '⚡', lvlReq: 8 },
+        { id: 'av_wizard', emoji: '🧙',  price: 80,  label: 'ساحر',        badge: '🪄', lvlReq: 7 },
+        { id: 'av_ninja',  emoji: '🥷',  price: 95,  label: 'نينجا',       badge: '⚔️', lvlReq: 10, new: true },
+        { id: 'av_robot',  emoji: '🤖',  price: 110, label: 'روبوت',       badge: '🔩', lvlReq: 12, new: true },
+        { id: 'av_alien',  emoji: '👽',  price: 130, label: 'فضائي',       badge: '🛸', lvlReq: 15, hot: true, new: true },
     ],
 
     /* ─── المستهلكات ─── */
@@ -45,28 +45,30 @@ const SHOP_CATALOG = {
             icon: '❤️',
             name: '+1 قلب',
             desc: 'أضف قلباً الآن في اللعبة',
-            price: 5,
+            price: 15,
             action: 'addHeart',
             gameOnly: true,
             urgency: true,
+            oneTimeGameOnly: true,
         },
         {
             id: 'heart_pack_3',
             icon: '💖',
             name: 'باقة 3 قلوب',
             desc: 'أضف 3 قلوب لاستمرار المشوار',
-            price: 12,
+            price: 40,
             action: 'addHearts',
             actionVal: 3,
             badge: 'قيمة',
             gameOnly: true,
+            oneTimeGameOnly: true,
         },
         {
             id: 'heart_store3',
             icon: '💗',
             name: 'احتياط 3 قلوب',
             desc: 'تُخزَّن في مخزونك وتُستخدم تلقائياً عند انتهاء القلوب',
-            price: 10,
+            price: 35,
             action: 'storeHeart',
             actionVal: 3,
             badge: 'ذكي',
@@ -77,16 +79,17 @@ const SHOP_CATALOG = {
             icon: '⏭️',
             name: 'تخطّي سؤال',
             desc: 'تخطَّ السؤال الصعب بدون خسارة',
-            price: 3,
+            price: 12,
             action: 'skipQuestion',
             gameOnly: true,
+            oneTimeGameOnly: true,
         },
         {
             id: 'skip_pack3',
             icon: '⏭️',
             name: 'باقة 3 تخطّيات',
             desc: 'احصل على 3 تخطّيات تُخزَّن وتُستخدم تلقائياً',
-            price: 7,
+            price: 28,
             action: 'storeSkip',
             actionVal: 3,
             badge: 'وفّر',
@@ -96,16 +99,17 @@ const SHOP_CATALOG = {
             icon: '🗑️',
             name: 'حذف خيار',
             desc: 'احذف إجابة خاطئة لتسهيل الاختيار',
-            price: 4,
+            price: 14,
             action: 'removeWrong',
             gameOnly: true,
+            oneTimeGameOnly: true,
         },
         {
             id: 'remove_pack3',
             icon: '🗑️',
             name: 'باقة 3 حذف خيار',
             desc: '3 استخدامات تُخزَّن في مخزونك',
-            price: 9,
+            price: 32,
             action: 'storeRemove',
             actionVal: 3,
             badge: 'وفّر',
@@ -115,18 +119,19 @@ const SHOP_CATALOG = {
             icon: '⏰',
             name: '+10 ثواني',
             desc: 'أضف 10 ثوان للمؤقت الآن',
-            price: 5,
+            price: 18,
             action: 'addTime',
             actionVal: 10,
             gameOnly: true,
             timerOnly: true,
+            oneTimeGameOnly: true,
         },
         {
             id: 'xp_boost_2x',
             icon: '⚡',
             name: 'مضاعف XP ×2',
             desc: 'ضاعف نقاط XP للجلسة القادمة',
-            price: 15,
+            price: 45,
             action: 'xpBoost',
             actionVal: 2,
             badge: 'شعبي',
@@ -137,7 +142,7 @@ const SHOP_CATALOG = {
             icon: '🚀',
             name: 'مضاعف XP ×3',
             desc: 'ثلاثة أضعاف XP للجلسة القادمة',
-            price: 30,
+            price: 90,
             action: 'xpBoost',
             actionVal: 3,
             badge: 'قوي',
@@ -158,7 +163,7 @@ const SHOP_CATALOG = {
             icon: '🛡️',
             name: 'درع الحماية',
             desc: 'احمِ تقدمك من الخسارة لجلسة كاملة',
-            price: 8,
+            price: 25,
             action: 'buyShield',
             badge: 'مستحسن',
         },
@@ -167,7 +172,7 @@ const SHOP_CATALOG = {
             icon: '💡',
             name: 'باقة 5 تلميحات',
             desc: 'احصل على تلميح مجاني 5 مرات',
-            price: 10,
+            price: 35,
             action: 'hintPack',
             actionVal: 5,
         },
@@ -426,6 +431,12 @@ function _renderConsumables(container) {
 function _buildConsumableCard(item) {
     const canAfford = st.coins >= item.price;
     const isAdReward = item.adReward;
+
+    /* حالة "تم الشراء" للعناصر الفورية مرة واحدة */
+    const isPurchasedOnce = item.oneTimeGameOnly && item.gameOnly &&
+                            typeof G !== 'undefined' && G && !G.ended &&
+                            G._purchasedInstant && G._purchasedInstant[item.id];
+
     /* ✅ FIX-ADREWARD: احسب حالة القيد الزمني لعناصر الإعلان */
     let adOnCooldown = false;
     let adCooldownLabel = '📺 شاهد';
@@ -439,29 +450,32 @@ function _buildConsumableCard(item) {
     }
 
     return `
-        <div onclick="buyConsumable('${item.id}');playSound('click');"
+        <div onclick="${isPurchasedOnce ? `showFeedback('⛔ تم استخدام هذه المساعدة في هذه الجلسة');playSound(\\'wrong\\');` : `buyConsumable('${item.id}');playSound('click');`}"
             style="
                 display:flex;align-items:center;gap:12px;
-                background:${item.urgency ? 'linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.05))' : 'var(--surface2)'};
-                border:1.5px solid ${item.urgency ? 'rgba(239,68,68,0.4)' : canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.2)'};
-                border-radius:14px;padding:12px 14px;cursor:pointer;
+                background:${isPurchasedOnce ? 'rgba(100,100,100,0.08)' : item.urgency ? 'linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.05))' : 'var(--surface2)'};
+                border:1.5px solid ${isPurchasedOnce ? 'rgba(120,120,120,0.2)' : item.urgency ? 'rgba(239,68,68,0.4)' : canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.2)'};
+                border-radius:14px;padding:12px 14px;cursor:${isPurchasedOnce ? 'not-allowed' : 'pointer'};
                 transition:all 0.18s ease;position:relative;overflow:hidden;
+                opacity:${isPurchasedOnce ? 0.55 : 1};
             ">
-            ${item.hot ? `<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--accent2));border-radius:14px 14px 0 0;"></div>` : ''}
+            ${item.hot && !isPurchasedOnce ? `<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--accent2));border-radius:14px 14px 0 0;"></div>` : ''}
             <div style="font-size:1.8em;flex-shrink:0;">${item.icon}</div>
             <div style="flex:1;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-                    <span style="font-size:0.82em;font-weight:900;color:var(--text);">${item.name}</span>
-                    ${item.badge ? `<span style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:0.55em;font-weight:900;padding:1px 6px;border-radius:7px;">${item.badge}</span>` : ''}
-                    ${item.hot ? `<span style="background:rgba(239,68,68,0.2);color:#ef4444;font-size:0.55em;padding:1px 5px;border-radius:6px;font-weight:700;">🔥 رائج</span>` : ''}
+                    <span style="font-size:0.82em;font-weight:900;color:${isPurchasedOnce ? 'var(--text3)' : 'var(--text)'};">${item.name}</span>
+                    ${isPurchasedOnce ? `<span style="background:rgba(120,120,120,0.2);color:var(--text3);font-size:0.55em;font-weight:900;padding:1px 6px;border-radius:7px;">✅ مستخدم</span>` : item.badge ? `<span style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:0.55em;font-weight:900;padding:1px 6px;border-radius:7px;">${item.badge}</span>` : ''}
+                    ${item.hot && !isPurchasedOnce ? `<span style="background:rgba(239,68,68,0.2);color:#ef4444;font-size:0.55em;padding:1px 5px;border-radius:6px;font-weight:700;">🔥 رائج</span>` : ''}
                 </div>
-                <div style="font-size:0.68em;color:var(--text2);">${item.desc}</div>
+                <div style="font-size:0.68em;color:var(--text2);">${isPurchasedOnce ? 'تم استخدام هذه المساعدة في هذه الجلسة — مرة واحدة فقط' : item.desc}</div>
             </div>
             <div style="text-align:center;flex-shrink:0;">
-                ${isAdReward
-                    ? `<div style="font-size:0.72em;font-weight:900;color:${adOnCooldown ? 'var(--text3)' : 'var(--green)'};">${adCooldownLabel}</div><div style="font-size:0.6em;color:var(--text3);">${adOnCooldown ? 'قريباً' : 'مجاني'}</div>`
-                    : `<div style="font-size:0.85em;font-weight:900;color:${canAfford ? 'var(--gold)' : '#ef4444'};">${item.price}💰</div>
-                       <div style="font-size:0.58em;color:${canAfford ? 'var(--green)' : '#ef4444'};">${canAfford ? '✅ يمكنك' : '❌ لا يكفي'}</div>`
+                ${isPurchasedOnce
+                    ? `<div style="font-size:0.72em;font-weight:900;color:var(--text3);">—</div>`
+                    : isAdReward
+                        ? `<div style="font-size:0.72em;font-weight:900;color:${adOnCooldown ? 'var(--text3)' : 'var(--green)'};">${adCooldownLabel}</div><div style="font-size:0.6em;color:var(--text3);">${adOnCooldown ? 'قريباً' : 'مجاني'}</div>`
+                        : `<div style="font-size:0.85em;font-weight:900;color:${canAfford ? 'var(--gold)' : '#ef4444'};">${item.price}💰</div>
+                           <div style="font-size:0.58em;color:${canAfford ? 'var(--green)' : '#ef4444'};">${canAfford ? '✅ يمكنك' : '❌ لا يكفي'}</div>`
                 }
             </div>
         </div>
@@ -545,6 +559,17 @@ function buyConsumable(id) {
     const item = SHOP_CATALOG.consumables.find(i => i.id === id);
     if (!item) return;
 
+    /* ─── قيد "مرة واحدة لكل جلسة" لعناصر شراء واستخدام فوري ─── */
+    if (item.oneTimeGameOnly && item.gameOnly) {
+        if (!G || G.ended) { showFeedback('⚠️ هذا العنصر يُستخدم داخل اللعبة فقط'); return; }
+        if (!G._purchasedInstant) G._purchasedInstant = {};
+        if (G._purchasedInstant[item.id]) {
+            showFeedback(`⛔ لا يمكن شراء "${item.name}" أكثر من مرة في الجلسة الواحدة`);
+            playSound('wrong');
+            return;
+        }
+    }
+
     if (item.adReward) {
         /* ✅ FIX-ADREWARD: قيد 24 ساعة لمنع الحصول على عملات مجانية بلا حدود */
         const _now = Date.now();
@@ -581,6 +606,12 @@ function buyConsumable(id) {
     showConfirm(`${item.icon} ${item.name}`, `${item.desc}\n\nالسعر: ${item.price} عملة`, 'اشترِ الآن', 'إلغاء', ok => {
         if (!ok) return;
         st.coins -= item.price;
+
+        /* تسجيل الشراء الفوري لمنع التكرار */
+        if (item.oneTimeGameOnly && item.gameOnly && G && !G.ended) {
+            if (!G._purchasedInstant) G._purchasedInstant = {};
+            G._purchasedInstant[item.id] = true;
+        }
 
         switch (item.action) {
             case 'addHeart':
@@ -804,7 +835,8 @@ function _showInsufficientCoinsOffer(needed, itemName) {
             <div style="font-size:0.72em;font-weight:700;color:var(--text2);margin-bottom:8px;text-align:right;">💡 كيف تكسب المزيد؟</div>
             <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;text-align:right;">
                 <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:0.68em;color:var(--text);">🏆 أنهِ <strong>المهام اليومية</strong> ← تصل إلى +21💰</div>
-                <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:0.68em;color:var(--text);">🎮 العب جلسات أكثر ← تكسب 0.4💰 لكل إجابة</div>
+                <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:0.68em;color:var(--text);">🎮 العب بصعوبة أعلى ← تكسب أكثر لكل إجابة</div>
+                <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:0.68em;color:var(--text);">🔥 حافظ على تتابع 10+ إجابات ← مكافأة إضافية</div>
                 <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:0.68em;color:var(--text);">🏅 افتح إنجازات ← تصل إلى +20💰 للإنجاز</div>
                 <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:8px 12px;font-size:0.68em;color:var(--accent2);cursor:pointer;" onclick="buyConsumable('coin_bonus');this.closest('[style*=fixed]').remove();">📺 شاهد إعلاناً ← +20💰 مجاناً</div>
             </div>
