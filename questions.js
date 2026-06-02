@@ -922,6 +922,8 @@
             G.customTable = customTable || null;
             G.askedQuestions = [];
             G._challengeBadge = null; /* شارة التحدي */
+            /* ✅ الإصلاح: إعادة ضبط ذاكرة التكرار عند كل لعبة جديدة (وليس التدريب فحسب) */
+            if (typeof clearSessionMemory === 'function') clearSessionMemory();
             /* ✅ إعادة ضبط ذاكرة جدول الضرب لمنع التكرار */
             if (typeof genQ._tableUsed !== 'undefined') genQ._tableUsed = {};
             let hasTimer = false;
