@@ -352,18 +352,7 @@ function updateUI() {
     const hxn = document.getElementById('homeXpNext'); if (hxn) hxn.textContent = `${st.xp} / ${st.xpToNext}`;
 
     /* ✅ §7.5 — تحديث نص زر "العب الآن" بالوضع الأخير */
-    const _qpl = document.getElementById('quickPlayLabel');
-    if (_qpl) {
-        const _modeNames = {
-            classic:'كلاسيك', daily:'تحدي اليوم', weekly:'تحدي الأسبوع',
-            speed:'سرعة', frenzy:'تسارع', survival:'بقاء',
-            memory:'الذاكرة', chain:'السلسلة', sudden:'ضد الساعة',
-            rocket:'الصاروخ', fill:'التكميل'
-        };
-        const _lastMode = st.lastMode || 'classic';
-        const _modeName = _modeNames[_lastMode] || _lastMode;
-        _qpl.textContent = `▶ العب الآن — ${_modeName}`;
-    }
+    updateQuickPlayLabel();
 
     if (_q('profileName')) _q('profileName').textContent = st.name;
     if (_q('profileLevel')) _q('profileLevel').textContent = `المستوى ${st.level} • ${ttl}`;
