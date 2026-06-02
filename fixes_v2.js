@@ -2570,4 +2570,4 @@ function genExtendedLawQ() {
         explanation: q.explanation,
         catKey: 'mathlaws'
     };
-   }
+}
