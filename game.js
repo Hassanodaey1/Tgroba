@@ -61,13 +61,13 @@
                     const _sd = document.getElementById('suddenScoreDisplay');
                     if (_sd) _sd.textContent = G._suddenScore;
                 }
-                /* 3.1: ربط الكسب بالصعوبة — معدل منخفض جداً لزيادة الصعوبة */
-                const _diffMult = { easy:0.08, medium:0.15, hard:0.25, genius:0.4 }[st.difficulty] || 0.08;
-                const _levelBonus = Math.min(0.1, Math.floor(st.level / 10) * 0.02);
+                /* 3.1: ربط الكسب بالصعوبة */
+                const _diffMult = { easy:0.4, medium:0.7, hard:1.0, genius:1.5 }[st.difficulty] || 0.4;
+                const _levelBonus = Math.min(0.5, Math.floor(st.level / 10) * 0.1);
                 G.coinsEarned += _diffMult + _levelBonus;
-                /* 3.3: مكافأة التتابع — فقط عند تتابع عالٍ جداً */
-                if (G.streak >= 10) {
-                    const _streakBonus = Math.floor(G.streak / 10) * 0.1;
+                /* 3.3: مكافأة التتابع */
+                if (G.streak >= 5) {
+                    const _streakBonus = Math.floor(G.streak / 5) * 0.2;
                     G.coinsEarned += _streakBonus;
                 }
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
@@ -503,14 +503,7 @@
                 const backBtnEl = document.getElementById('resultsBackBtn');
                 if (backBtnEl) {
                     const src = window._gameSource || 'home';
-                    if (src === 'mindgame') {
-                        backBtnEl.textContent = '🧠 العودة لألعاب العقل';
-                        backBtnEl.onclick = function() {
-                            document.getElementById('resultsOverlay').classList.remove('active');
-                            goTab('play');
-                            setTimeout(() => { if (typeof openMindGame === 'function') openMindGame(); }, 150);
-                        };
-                    } else if (src === 'play') {
+                    if (src === 'mindgame' || src === 'play') {
                         backBtnEl.textContent = '🎮 العودة للألعاب';
                         backBtnEl.onclick = function() {
                             document.getElementById('resultsOverlay').classList.remove('active');
