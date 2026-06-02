@@ -779,8 +779,8 @@ function showUrgentHeartOffer() {
     overlay.id = 'urgentOfferOverlay';
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);animation:fadeInBg 0.25s ease;';
 
-    const canAfford5  = st.coins >= 5;
-    const canAfford12 = st.coins >= 12;
+    const canAfford15 = st.coins >= 15;
+    const canAfford40 = st.coins >= 40;
 
     overlay.innerHTML = `
         <div style="
@@ -796,20 +796,20 @@ function showUrgentHeartOffer() {
                 <button onclick="buyUrgentItem('heart_pack_1')" style="
                     background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;
                     border:none;border-radius:14px;padding:12px 16px;font-size:0.82em;font-weight:900;
-                    cursor:${canAfford5 ? 'pointer' : 'not-allowed'};opacity:${canAfford5 ? 1 : 0.6};
+                    cursor:${canAfford15 ? 'pointer' : 'not-allowed'};opacity:${canAfford15 ? 1 : 0.6};
                     display:flex;justify-content:space-between;align-items:center;
                 ">
                     <span>❤️ +1 قلب</span>
-                    <span style="background:rgba(0,0,0,0.25);border-radius:8px;padding:2px 10px;">5💰</span>
+                    <span style="background:rgba(0,0,0,0.25);border-radius:8px;padding:2px 10px;">15💰</span>
                 </button>
                 <button onclick="buyUrgentItem('heart_pack_3')" style="
                     background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;
                     border:2px solid rgba(240,185,11,0.5);border-radius:14px;padding:12px 16px;
-                    font-size:0.82em;font-weight:900;cursor:${canAfford12 ? 'pointer' : 'not-allowed'};
-                    opacity:${canAfford12 ? 1 : 0.6};display:flex;justify-content:space-between;align-items:center;
+                    font-size:0.82em;font-weight:900;cursor:${canAfford40 ? 'pointer' : 'not-allowed'};
+                    opacity:${canAfford40 ? 1 : 0.6};display:flex;justify-content:space-between;align-items:center;
                 ">
                     <span>💖 +3 قلوب <span style="background:rgba(0,0,0,0.2);font-size:0.7em;padding:1px 5px;border-radius:5px;">قيمة!</span></span>
-                    <span style="background:rgba(0,0,0,0.25);border-radius:8px;padding:2px 10px;">12💰</span>
+                    <span style="background:rgba(0,0,0,0.25);border-radius:8px;padding:2px 10px;">40💰</span>
                 </button>
                 <button onclick="goTab('shop');_setShopTab('consumables');document.getElementById('urgentOfferOverlay')?.remove();playSound('click');" style="
                     background:var(--surface3);border:1px solid var(--border2);color:var(--text2);
@@ -832,7 +832,11 @@ function buyUrgentItem(id) {
     const overlay = document.getElementById('urgentOfferOverlay');
     if (overlay) overlay.remove();
     _shopState._urgentOfferShown = false;
-    buyConsumable(id);
+    if (typeof buyInstant === 'function') {
+        buyInstant(id);
+    } else {
+        buyConsumable(id);
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════
