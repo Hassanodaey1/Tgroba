@@ -786,7 +786,7 @@ function _refreshQuickToolsPanel() {
                 '</div>';
         } else {
             html +=
-                '<div onclick="' + (canAfford ? "buyConsumable('" + tool.id + "');closeInGameShop();playSound('click');" : '') + '" ' +
+                '<div onclick="' + (canAfford ? "buyInstant('" + tool.id + "');" : '') + '" ' +
                 'style="display:flex;align-items:center;gap:10px;' +
                 'background:' + (canAfford ? 'var(--surface2)' : 'var(--surface3)') + ';' +
                 'border:1.5px solid ' + (canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.18)') + ';' +
@@ -809,7 +809,76 @@ function _refreshQuickToolsPanel() {
     body.innerHTML = html;
 }
 
-/* ─── بناء بلاطة مخزون واحدة ─── */
+/* ═══════════════════════════════════════════════════════════════
+   شراء فوري أثناء اللعب — بدون نافذة تأكيد
+═══════════════════════════════════════════════════════════════ */
+function buyInstant(id) {
+    var item = SHOP_CATALOG.consumables.find(function(i) { return i.id === id; });
+    if (!item) return;
+    if (!G || G.ended) return;
+    if (!G._purchasedInstant) G._purchasedInstant = {};
+    if (G._purchasedInstant[id]) return;
+    if (st.coins < item.price) {
+        _showInsufficientCoinsOffer(item.price - st.coins, item.name);
+        return;
+    }
+
+    /* خصم العملات + تسجيل القفل */
+    st.coins -= item.price;
+    G._purchasedInstant[id] = true;
+
+    /* تطبيق التأثير فوراً */
+    switch (item.action) {
+        case 'addHeart':
+            G.livesLeft = Math.min(G.livesLeft + 1, 9);
+            if (typeof updateHeartsDisplay === 'function') updateHeartsDisplay();
+            break;
+        case 'addHearts':
+            G.livesLeft = Math.min(G.livesLeft + (item.actionVal || 3), 9);
+            if (typeof updateHeartsDisplay === 'function') updateHeartsDisplay();
+            break;
+        case 'skipQuestion':
+            if (!G.answered) {
+                G.answered = true;
+                setTimeout(function() { if (!G.ended) loadQuestion(); }, 200);
+            }
+            break;
+        case 'removeWrong':
+            if (!G.answered) {
+                var btns = Array.from(document.querySelectorAll('.answer-btn:not(:disabled)'));
+                var wrong = btns.filter(function(b) {
+                    return Math.abs(parseFloat(b.getAttribute('data-val')) - G.correctAnswer) >= 0.001;
+                });
+                if (wrong.length > 0) {
+                    var r = wrong[Math.floor(Math.random() * wrong.length)];
+                    r.style.opacity = '0.15';
+                    r.style.pointerEvents = 'none';
+                }
+            }
+            break;
+        case 'addTime':
+            if (G.hasTimer) {
+                G.timeLeft = Math.min(G.maxTime, G.timeLeft + (item.actionVal || 10));
+                var bar = document.getElementById('timerBar');
+                if (bar) bar.style.width = (G.timeLeft / G.maxTime * 100) + '%';
+                var bt = document.getElementById('bigTimer');
+                if (bt) bt.textContent = G.timeLeft;
+            }
+            break;
+    }
+
+    saveSt();
+    updateUI();
+    if (typeof updateGameCoinsDisplay === 'function') updateGameCoinsDisplay();
+    playSound('purchase');
+    showFeedback(item.icon + ' تم!');
+
+    /* إغلاق المتجر فوراً */
+    closeInGameShop();
+}
+window.buyInstant = buyInstant;
+
+
 function _buildInvTile(icon, label, count, type, active) {
     var onclick = active ? 'onclick="useHelper(\'' + type + '\');closeInGameShop();"' : '';
     return '<div ' + onclick + ' style="' +
