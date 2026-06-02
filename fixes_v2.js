@@ -223,35 +223,20 @@ window.showLbTab = function(tab) {
    الإصلاح 5: تحديث زر "العب الآن" عند تحميل الصفحة
 ══════════════════════════════════════════════════════════ */
 (function initQuickPlayLabel() {
+    /* تشغيل بعد اكتمال تحميل كل الـ scripts
+       updateQuickPlayLabel معرّفة في ui.js وتستخدم ALL_MODE_NAMES الكاملة */
     function _setLabel() {
-        var qpl = document.getElementById('quickPlayLabel');
-        if (!qpl) return;
-        if (typeof st === 'undefined') {
-            qpl.textContent = '▶ العب الآن';
-            return;
+        if (typeof updateQuickPlayLabel === 'function') {
+            updateQuickPlayLabel();
+        } else {
+            /* fallback إذا لم تُحمَّل ui.js بعد */
+            var el = document.getElementById('quickPlayLabel');
+            if (el && typeof st !== 'undefined' && st.lastMode) {
+                var n = (window.ALL_MODE_NAMES || {})[st.lastMode] || st.lastMode;
+                el.textContent = '▶ العب الآن — ' + n;
+            }
         }
-        var modeNames = {
-            classic:    'كلاسيك',
-            daily:      'تحدي اليوم',
-            weekly:     'تحدي الأسبوع',
-            speed:      'سرعة',
-            frenzy:     'تسارع',
-            survival:   'بقاء',
-            memory:     'الذاكرة',
-            chain:      'السلسلة',
-            sudden:     'ضد الساعة',
-            rocket:     'الصاروخ',
-            accuracy:   'الدقة',
-            marathon:   'الماراثون',
-            impossible: 'المستحيل',
-            fill:       'التكميل'
-        };
-        var mode     = st.lastMode || 'classic';
-        var modeName = modeNames[mode] || mode;
-        qpl.textContent = '▶ العب الآن — ' + modeName;
     }
-
-    /* تشغيل بعد اكتمال تحميل كل الـ scripts */
     if (document.readyState === 'complete') {
         _setLabel();
     } else {
