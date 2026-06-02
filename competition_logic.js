@@ -659,20 +659,17 @@ function showLbTab(tab) {
 
     // تحديث رأس الجدول
     const header = document.getElementById('lbScoreHeader');
-    if (header) header.textContent = tab === 'challenge' ? 'نقاط التحدي' : 'النقاط العامة';
+    if (header) header.textContent = tab === 'challenge' ? 'نقاط التحدي' : 'أفضل نقطة';
 
-    // استخدام Cache إن كان من نفس التبويب وحديثًا (أقل من 60 ثانية)
-    // وإلا إعادة التحميل من السيرفر
+    // تحديث Cache أو استخدامه
     if (_lbCache && _lbCacheType === tab && Date.now() - _lbCacheTime < 60000) {
-        const scoreKey = tab === 'challenge' ? 'challengeScore' : 'score';
+        const scoreKey = tab === 'challenge' ? 'challengeScore' : 'bestScore';
         renderLeaderboardList(
             document.getElementById('combinedLeaderboardList'),
             _lbCache,
             scoreKey
         );
     } else {
-        // مسح Cache القديم لضمان تحميل بيانات التبويب الجديد
-        _lbCache = null;
         loadCombinedLeaderboard();
     }
 }
@@ -689,10 +686,9 @@ function loadCombinedLeaderboard() {
     container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);font-size:0.8em;">⏳ جاري التحميل…</div>';
 
     const tab = _activeLbTab || 'challenge';
-
-    // ═══ تحديد المسار ومفتاح الترتيب حسب التبويب ═══
-    const refPath  = tab === 'challenge' ? 'challenge_leaderboard' : 'leaderboard';
-    const scoreKey = tab === 'challenge' ? 'challengeScore'        : 'score';
+    /* ✅ FIX: تبويب "النقاط" يقرأ من 'leaderboard' (bestScore) وليس challenge_leaderboard */
+    const refPath  = tab === 'general' ? 'leaderboard'          : 'challenge_leaderboard';
+    const scoreKey = tab === 'general' ? 'bestScore'            : 'challengeScore';
 
     try {
         window.database.ref(refPath)
@@ -708,8 +704,8 @@ function loadCombinedLeaderboard() {
                 _lbCacheTime = Date.now();
                 _lbCacheType = tab;
 
-                // تحديث إحصائياتي (فقط في تبويب التحدي)
-                if (tab === 'challenge') updateCompMyStats(players);
+                // تحديث إحصائياتي
+                updateCompMyStats(players);
 
                 if (players.length === 0) {
                     container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);font-size:0.82em;">لا توجد نتائج بعد — كن الأول! 🚀</div>';
