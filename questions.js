@@ -922,6 +922,7 @@
             G.customTable = customTable || null;
             G.askedQuestions = [];
             G._challengeBadge = null; /* شارة التحدي */
+            G._purchasedInstant = {}; /* ✅ إعادة ضبط قفل الشراء الفوري — لكل جلسة من جديد */
             /* ✅ الإصلاح: إعادة ضبط ذاكرة التكرار عند كل لعبة جديدة (وليس التدريب فحسب) */
             if (typeof clearSessionMemory === 'function') clearSessionMemory();
             /* ✅ إعادة ضبط ذاكرة جدول الضرب لمنع التكرار */
