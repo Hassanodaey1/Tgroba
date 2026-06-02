@@ -212,7 +212,7 @@
 
         /* 🧠 بطاقة العقل — فتح sheet ألعاب العقل */
         function openMindGame() {
-            window._gameSource = 'mindgame';    /* زر العودة يرجع لبطاقة العقل — للذاكرة والسلسلة فقط */
+            window._gameSource = 'play';    /* ✅ FIX: زر العودة يرجع لصفحة الألعاب دائماً */
             const grid  = document.getElementById('opModeGrid');
             const title = document.getElementById('opSheetTitle');
             title.textContent = '🧠 ألعاب العقل';
@@ -233,13 +233,13 @@
                 : '<div class="mode-card-badge" style="background:#7c3aed">جديد</div>';
 
             grid.innerHTML = `
-                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('memory','mix', null, false)">
+                <div class="mode-card" onclick="window._gameSource='play'; closeSheet('opSheet'); startGameWith('memory','mix', null, false)">
                     <div class="mode-card-badge">متاح</div>
                     <span class="mode-card-icon">🧠</span>
                     <div class="mode-card-name">الذاكرة</div>
                     <div class="mode-card-desc">10 أسئلة • تظهر 3 ثوانٍ ثم تختفي</div>
                 </div>
-                <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('chain','mix', null, false)" style="border:1px solid rgba(240,185,11,0.3);">
+                <div class="mode-card" onclick="window._gameSource='play'; closeSheet('opSheet'); startGameWith('chain','mix', null, false)" style="border:1px solid rgba(240,185,11,0.3);">
                     ${chainBadge}
                     <span class="mode-card-icon">🔗</span>
                     <div class="mode-card-name">السلسلة</div>
