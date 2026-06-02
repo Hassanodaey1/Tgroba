@@ -10,9 +10,17 @@
             const qt_mem = document.getElementById('questionText');
             if (qt_mem) qt_mem.classList.remove('memory-hidden');
             G.answered = true;
-            const val = parseFloat(btn.getAttribute('data-val'));
+            const val = btn.getAttribute('data-val');
             document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-            if (Math.abs(val - G.correctAnswer) < 0.001) {
+            /*
+             * ✅ الإصلاح: دعم مقارنة الكسور النصية (مثل '5/6') بالإضافة للأرقام
+             * - إذا كان G.correctAnswer نصاً (كسر) → نقارن كنصوص
+             * - وإلا → نقارن كأرقام كما كان
+             */
+            const _isCorrect = (typeof G.correctAnswer === 'string' && G.correctAnswer.indexOf('/') >= 0)
+                ? (val === String(G.correctAnswer))
+                : (Math.abs(parseFloat(val) - G.correctAnswer) < 0.001);
+            if (_isCorrect) {
                 btn.classList.add('correct');
                 G.correct++;
                 G.streak++;
@@ -95,7 +103,13 @@
                 showFloatXP(10 + G.streak * 2);
             } else {
                 btn.classList.add('wrong');
-                document.querySelectorAll('.answer-btn').forEach(b => { if (Math.abs(parseFloat(b.getAttribute('data-val')) - G.correctAnswer) < 0.001) b.classList.add('correct'); });
+                document.querySelectorAll('.answer-btn').forEach(b => {
+                    const _bVal = b.getAttribute('data-val');
+                    const _bCorrect = (typeof G.correctAnswer === 'string' && G.correctAnswer.indexOf('/') >= 0)
+                        ? (_bVal === String(G.correctAnswer))
+                        : (Math.abs(parseFloat(_bVal) - G.correctAnswer) < 0.001);
+                    if (_bCorrect) b.classList.add('correct');
+                });
                 G.wrong++;
                 G.streak = 0;
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
@@ -676,7 +690,8 @@
                                 const _survLabel = document.getElementById('survivalLevelLabel');
                                 if (_survLabel) _survLabel.textContent = _survNames[G._survivalDiffLevel || 0];
                                 if (typeof getNextQuestion === 'function') {
-                                    q = getNextQuestion(G.op, _survDiff);
+                                    /* ✅ strict=true: survival يدير تصعيده بنفسه */
+                                    q = getNextQuestion(G.op, _survDiff, true);
                                 } else {
                                     q = genQ(G.op, _survDiff);
                                 }
@@ -701,7 +716,8 @@
                                     playSound('levelup');
                                 }
                                 if (typeof getNextQuestion === 'function') {
-                                    q = getNextQuestion(G.op, G._rocketDiff);
+                                    /* ✅ strict=true: rocket يدير تصعيده بنفسه */
+                                    q = getNextQuestion(G.op, G._rocketDiff, true);
                                 } else {
                                     q = genQ(G.op, G._rocketDiff);
                                 }
