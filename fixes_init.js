@@ -3,6 +3,31 @@
    إصلاح جميع الدوال المفقودة + تهيئة التطبيق
 ═══════════════════════════════════════════════════════════════ */
 
+
+/* ═══════════════════════════════════════════════════════════════
+   ✅ FIX: دالة quickPlay — زر "العب الآن" في الصفحة الرئيسية
+   تُشغّل آخر وضع لعب محفوظ في st.lastMode
+═══════════════════════════════════════════════════════════════ */
+window.quickPlay = function() {
+    try {
+        const mode = (typeof st !== 'undefined' && st.lastMode) ? st.lastMode : 'classic';
+        const op   = (typeof st !== 'undefined' && st.lastOp)   ? st.lastOp   : 'mix';
+        window._gameSource = 'home';
+
+        if (typeof startGameWith !== 'function') {
+            if (typeof showFeedback === 'function') showFeedback('⚠️ جاري التحميل، حاول مجدداً');
+            return;
+        }
+
+        const noTimer  = ['memory','chain','rocket','survival','daily','weekly'];
+        const hasTimer = !noTimer.includes(mode);
+        startGameWith(mode, op, null, hasTimer);
+    } catch(e) {
+        console.error('[quickPlay]', e);
+        if (typeof showFeedback === 'function') showFeedback('⚠️ حدث خطأ، حاول مجدداً');
+    }
+};
+
 /* ─── مستوى الصوت ─── */
 function initVolumeSliders() {
     if (typeof st.soundVolume !== 'number') st.soundVolume = 80;
