@@ -449,33 +449,58 @@ function _buildConsumableCard(item) {
         }
     }
 
+    if (isPurchasedOnce) {
+        /* ─── بطاقة مقفلة بصرياً — مثل الأفاتارات المغلقة تماماً ─── */
+        return `
+            <div style="
+                display:flex;align-items:center;gap:12px;
+                background:var(--surface3);
+                border:1.5px solid rgba(255,255,255,0.08);
+                border-radius:14px;padding:12px 14px;
+                cursor:not-allowed;position:relative;overflow:hidden;
+                opacity:0.5;
+            ">
+                <!-- طبقة القفل فوق الأيقونة -->
+                <div style="position:relative;flex-shrink:0;width:36px;height:36px;">
+                    <div style="font-size:1.8em;filter:grayscale(1);opacity:0.4;">${item.icon}</div>
+                    <div style="
+                        position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                        font-size:1.1em;
+                    ">🔒</div>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:0.82em;font-weight:900;color:var(--text3);">${item.name}</div>
+                    <div style="font-size:0.65em;color:var(--text3);margin-top:2px;">${item.desc}</div>
+                </div>
+                <div style="font-size:1.4em;color:rgba(255,255,255,0.15);">🔒</div>
+            </div>
+        `;
+    }
+
     return `
-        <div onclick="${isPurchasedOnce ? `showFeedback('⛔ تم استخدام هذه المساعدة في هذه الجلسة');playSound(\\'wrong\\');` : `buyConsumable('${item.id}');playSound('click');`}"
+        <div onclick="buyConsumable('${item.id}');playSound('click');"
             style="
                 display:flex;align-items:center;gap:12px;
-                background:${isPurchasedOnce ? 'rgba(100,100,100,0.08)' : item.urgency ? 'linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.05))' : 'var(--surface2)'};
-                border:1.5px solid ${isPurchasedOnce ? 'rgba(120,120,120,0.2)' : item.urgency ? 'rgba(239,68,68,0.4)' : canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.2)'};
-                border-radius:14px;padding:12px 14px;cursor:${isPurchasedOnce ? 'not-allowed' : 'pointer'};
+                background:${item.urgency ? 'linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.05))' : 'var(--surface2)'};
+                border:1.5px solid ${item.urgency ? 'rgba(239,68,68,0.4)' : canAfford ? 'var(--border2)' : 'rgba(239,68,68,0.2)'};
+                border-radius:14px;padding:12px 14px;cursor:pointer;
                 transition:all 0.18s ease;position:relative;overflow:hidden;
-                opacity:${isPurchasedOnce ? 0.55 : 1};
             ">
-            ${item.hot && !isPurchasedOnce ? `<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--accent2));border-radius:14px 14px 0 0;"></div>` : ''}
+            ${item.hot ? `<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--accent2));border-radius:14px 14px 0 0;"></div>` : ''}
             <div style="font-size:1.8em;flex-shrink:0;">${item.icon}</div>
             <div style="flex:1;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-                    <span style="font-size:0.82em;font-weight:900;color:${isPurchasedOnce ? 'var(--text3)' : 'var(--text)'};">${item.name}</span>
-                    ${isPurchasedOnce ? `<span style="background:rgba(120,120,120,0.2);color:var(--text3);font-size:0.55em;font-weight:900;padding:1px 6px;border-radius:7px;">✅ مستخدم</span>` : item.badge ? `<span style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:0.55em;font-weight:900;padding:1px 6px;border-radius:7px;">${item.badge}</span>` : ''}
-                    ${item.hot && !isPurchasedOnce ? `<span style="background:rgba(239,68,68,0.2);color:#ef4444;font-size:0.55em;padding:1px 5px;border-radius:6px;font-weight:700;">🔥 رائج</span>` : ''}
+                    <span style="font-size:0.82em;font-weight:900;color:var(--text);">${item.name}</span>
+                    ${item.badge ? `<span style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:0.55em;font-weight:900;padding:1px 6px;border-radius:7px;">${item.badge}</span>` : ''}
+                    ${item.hot ? `<span style="background:rgba(239,68,68,0.2);color:#ef4444;font-size:0.55em;padding:1px 5px;border-radius:6px;font-weight:700;">🔥 رائج</span>` : ''}
                 </div>
-                <div style="font-size:0.68em;color:var(--text2);">${isPurchasedOnce ? 'تم استخدام هذه المساعدة في هذه الجلسة — مرة واحدة فقط' : item.desc}</div>
+                <div style="font-size:0.68em;color:var(--text2);">${item.desc}</div>
             </div>
             <div style="text-align:center;flex-shrink:0;">
-                ${isPurchasedOnce
-                    ? `<div style="font-size:0.72em;font-weight:900;color:var(--text3);">—</div>`
-                    : isAdReward
-                        ? `<div style="font-size:0.72em;font-weight:900;color:${adOnCooldown ? 'var(--text3)' : 'var(--green)'};">${adCooldownLabel}</div><div style="font-size:0.6em;color:var(--text3);">${adOnCooldown ? 'قريباً' : 'مجاني'}</div>`
-                        : `<div style="font-size:0.85em;font-weight:900;color:${canAfford ? 'var(--gold)' : '#ef4444'};">${item.price}💰</div>
-                           <div style="font-size:0.58em;color:${canAfford ? 'var(--green)' : '#ef4444'};">${canAfford ? '✅ يمكنك' : '❌ لا يكفي'}</div>`
+                ${isAdReward
+                    ? `<div style="font-size:0.72em;font-weight:900;color:${adOnCooldown ? 'var(--text3)' : 'var(--green)'};">${adCooldownLabel}</div><div style="font-size:0.6em;color:var(--text3);">${adOnCooldown ? 'قريباً' : 'مجاني'}</div>`
+                    : `<div style="font-size:0.85em;font-weight:900;color:${canAfford ? 'var(--gold)' : '#ef4444'};">${item.price}💰</div>
+                       <div style="font-size:0.58em;color:${canAfford ? 'var(--green)' : '#ef4444'};">${canAfford ? '✅ يمكنك' : '❌ لا يكفي'}</div>`
                 }
             </div>
         </div>
@@ -561,13 +586,9 @@ function buyConsumable(id) {
 
     /* ─── قيد "مرة واحدة لكل جلسة" لعناصر شراء واستخدام فوري ─── */
     if (item.oneTimeGameOnly && item.gameOnly) {
-        if (!G || G.ended) { showFeedback('⚠️ هذا العنصر يُستخدم داخل اللعبة فقط'); return; }
+        if (!G || G.ended) { return; }
         if (!G._purchasedInstant) G._purchasedInstant = {};
-        if (G._purchasedInstant[item.id]) {
-            showFeedback(`⛔ لا يمكن شراء "${item.name}" أكثر من مرة في الجلسة الواحدة`);
-            playSound('wrong');
-            return;
-        }
+        if (G._purchasedInstant[item.id]) { return; }
     }
 
     if (item.adReward) {
