@@ -794,42 +794,78 @@
             </div>
         </div>
 
-        <!-- ══ لوحة الصدارة ══ -->
-        <div style="margin-top:12px;">
-            <div class="comp-lb-tabs">
-                <button class="comp-lb-tab-btn" onclick="openLbOverlay('challenge')">
-                    <span class="comp-lb-tab-icon">⚔️</span>
-                    <span class="comp-lb-tab-label">التحدي</span>
-                    <span class="comp-lb-tab-arrow">›</span>
-                </button>
-                <button class="comp-lb-tab-btn" onclick="openLbOverlay('general')">
-                    <span class="comp-lb-tab-icon">📊</span>
-                    <span class="comp-lb-tab-label">النقاط</span>
-                    <span class="comp-lb-tab-arrow">›</span>
-                </button>
-            </div>
+        <!-- ══ أزرار لوحة الصدارة ══ -->
+        <div class="comp-lb-btns-row" style="margin-top:12px;">
+            <button class="comp-lb-open-btn" onclick="openLbSheet('challenge')">
+                <span class="comp-lb-open-btn-icon">⚔️</span>
+                <div class="comp-lb-open-btn-texts">
+                    <span class="comp-lb-open-btn-title">لائحة التحدي</span>
+                    <span class="comp-lb-open-btn-sub">نقاط التحدي السريع</span>
+                </div>
+                <span class="comp-lb-open-btn-arrow">‹</span>
+            </button>
+            <button class="comp-lb-open-btn comp-lb-open-btn--general" onclick="openLbSheet('general')">
+                <span class="comp-lb-open-btn-icon">📊</span>
+                <div class="comp-lb-open-btn-texts">
+                    <span class="comp-lb-open-btn-title">لائحة النقاط</span>
+                    <span class="comp-lb-open-btn-sub">النقاط العامة للاعبين</span>
+                </div>
+                <span class="comp-lb-open-btn-arrow">‹</span>
+            </button>
         </div>
 
     </div><!-- /competitionMainView -->
 
-    <!-- ══ Overlay لائحة الصدارة ══ -->
-    <div id="lbOverlay" style="display:none;position:absolute;inset:0;z-index:30;background:var(--bg);flex-direction:column;overflow:hidden;">
-        <div class="lb-overlay-header">
-            <button class="lb-overlay-back" onclick="closeLbOverlay()">‹</button>
-            <span class="lb-overlay-title" id="lbOverlayTitle">لائحة الصدارة</span>
-            <button class="lb-overlay-refresh" onclick="refreshLbOverlay()" id="lbRefreshBtn">
-                <span id="lbRefreshIcon">↻</span>
+    <!-- ══════════════════════════════════════════
+         Sheet لائحة التحدي
+    ══════════════════════════════════════════ -->
+    <div id="lbSheetChallenge" class="lb-sheet challenge-overlay" style="display:none;">
+        <div class="lb-sheet-header">
+            <button class="lb-sheet-header-btn lb-sheet-refresh-btn" onclick="refreshLbSheet('challenge')" title="تحديث">
+                <span>↻</span>
+            </button>
+            <div class="lb-sheet-title">⚔️ لائحة التحدي</div>
+            <button class="lb-sheet-header-btn lb-sheet-close-btn" onclick="closeLbSheet('challenge')" title="إغلاق">
+                <span>✕</span>
             </button>
         </div>
-        <div class="lb-overlay-body">
-            <div class="comp-lb-card" style="border-radius:16px;overflow:hidden;">
+        <div class="lb-sheet-body">
+            <div class="comp-lb-card" style="border-radius:0;border-left:0;border-right:0;border-top:0;">
                 <div class="lb-row lb-header">
                     <span>المرتبة</span>
                     <span>اللاعب</span>
                     <span>Lv.</span>
-                    <span id="lbOverlayScoreHeader">النقاط</span>
+                    <span>نقاط التحدي</span>
                 </div>
-                <div id="lbOverlayList" style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;">
+                <div id="lbListChallenge" class="lb-sheet-list">
+                    <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         Sheet لائحة النقاط العامة
+    ══════════════════════════════════════════ -->
+    <div id="lbSheetGeneral" class="lb-sheet challenge-overlay" style="display:none;">
+        <div class="lb-sheet-header">
+            <button class="lb-sheet-header-btn lb-sheet-refresh-btn" onclick="refreshLbSheet('general')" title="تحديث">
+                <span>↻</span>
+            </button>
+            <div class="lb-sheet-title">📊 لائحة النقاط</div>
+            <button class="lb-sheet-header-btn lb-sheet-close-btn" onclick="closeLbSheet('general')" title="إغلاق">
+                <span>✕</span>
+            </button>
+        </div>
+        <div class="lb-sheet-body">
+            <div class="comp-lb-card" style="border-radius:0;border-left:0;border-right:0;border-top:0;">
+                <div class="lb-row lb-header">
+                    <span>المرتبة</span>
+                    <span>اللاعب</span>
+                    <span>Lv.</span>
+                    <span>النقاط العامة</span>
+                </div>
+                <div id="lbListGeneral" class="lb-sheet-list">
                     <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
                 </div>
             </div>
