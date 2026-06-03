@@ -1006,20 +1006,7 @@
 .cgr-btn-secondary:active { background: rgba(255,255,255,0.09); }
 
 /* ══ Responsive adjustments ══ */
-@media (max-height: 680px) {
-    .cga-question-text { font-size: 2.2em; }
-    .cga-body { gap: 8px; padding: 8px 12px 10px; }
-    .cga-answers-grid .answer-btn { padding: 13px 8px; }
-    .comp-hero-banner { padding: 18px 14px 14px; }
-    .cdo-number { font-size: 5em; }
-}
 
-@media (max-height: 580px) {
-    .cga-question-text { font-size: 1.9em; }
-    .cga-body { gap: 6px; padding: 6px 10px 8px; }
-    .cga-answers-grid .answer-btn { padding: 10px 6px; font-size: 1.15em; }
-    .comp-hero-icon-wrap { width: 55px; height: 55px; }
-}
 
 /* ═══ Layout Fixes — معزولة عن styles.css العام ═══ */
 
@@ -1153,9 +1140,11 @@
     color: rgba(255, 255, 255, 0.6) !important;
 }
 
-/* ══ عنوان "مهام التحدي" — اللون في responsive.css ══ */
+/* ══ عنوان "مهام التحدي" — بارز بلون عكسي ══ */
 .challenge-tasks-title,
 #page-leaderboard .comp-section-title {
+    color: var(--accent2) !important;
+    text-shadow: 0 0 12px rgba(6,182,212,0.50);
     font-weight: 900;
     font-size: 0.95em;
     letter-spacing: 0.3px;
