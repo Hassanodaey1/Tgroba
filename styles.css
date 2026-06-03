@@ -83,13 +83,9 @@
             cursor: pointer;
         }
 
-        /* ═══ عنوان الصفحة الموحد ═══ */
+        /* ═══ عنوان الصفحة الموحد — محذوف لتوسيع المساحة ═══ */
         .page-title-header {
-            text-align: center;
-            padding: 18px 0 20px;
-            font-size: 1.6em;
-            font-weight: 900;
-            color: var(--text);
+            display: none;
         }
 
         /* ═══ إطار ذهبي خفيف على جميع المستطيلات والأزرار ما عدا شريط التنقل ═══ */
