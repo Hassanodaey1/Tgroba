@@ -1148,33 +1148,17 @@
 .comp-section-title {
     color: #ffffff !important;
 }
-/* الثيم الفاتح */
-html.light-mode .comp-section-title {
-    color: #0a0f1e !important;
-}
 
 .comp-section-sub {
     color: rgba(255, 255, 255, 0.6) !important;
 }
-html.light-mode .comp-section-sub {
-    color: rgba(10, 15, 30, 0.6) !important;
-}
 
-/* ══ عنوان "مهام التحدي" — لون عكسي حسب الثيم ══ */
-/* الثيم الداكن (افتراضي): أبيض */
+/* ══ عنوان "مهام التحدي" — اللون في responsive.css ══ */
 .challenge-tasks-title,
 #page-leaderboard .comp-section-title {
-    color: #ffffff !important;
-    text-shadow: 0 0 12px rgba(6,182,212,0.40);
     font-weight: 900;
     font-size: 0.95em;
     letter-spacing: 0.3px;
-}
-/* الثيم الفاتح: أسود */
-html.light-mode .challenge-tasks-title,
-html.light-mode #page-leaderboard .comp-section-title {
-    color: #0a0f1e !important;
-    text-shadow: none;
 }
 
 /* ══ التبويبات غير النشطة ══ */
@@ -1324,64 +1308,4 @@ html.light-mode #page-leaderboard .comp-section-title {
 @keyframes lbSlideIn {
     from { transform:translateY(30px); opacity:0; }
     to   { transform:translateY(0);    opacity:1; }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   📱 إصلاح الوضع الأفقي — آيباد وتابلت (landscape)
-   يمنع خروج "ابدأ التحدي" وبقية العناصر عن حدود الشاشة
-═══════════════════════════════════════════════════════════ */
-
-/* آيباد أفقي (landscape) — الارتفاع ≤ 768px */
-@media (orientation: landscape) and (max-height: 768px) and (min-width: 600px) {
-
-    /* المنافسة تتمرر بحرية */
-    #page-leaderboard {
-        overflow: hidden !important;
-    }
-
-    #competitionMainView {
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        /* padding-bottom يشمل شريط التنقل السفلي */
-        padding-bottom: calc(var(--nav-h, 68px) + 20px) !important;
-        height: 100% !important;
-        max-height: 100% !important;
-    }
-
-    /* تصغير الـ Hero Banner */
-    .comp-hero-banner {
-        padding: 12px 14px 10px !important;
-        margin-top: 4px !important;
-    }
-
-    .comp-hero-icon-wrap {
-        width: 48px !important;
-        height: 48px !important;
-        margin-bottom: 2px !important;
-    }
-
-    .comp-hero-icon { font-size: 1.5em !important; }
-    .comp-hero-title { font-size: 1.1em !important; }
-    .comp-hero-sub { font-size: 0.62em !important; margin-bottom: 2px !important; }
-
-    .comp-my-stat { padding: 6px 4px !important; }
-    .comp-my-stat-val { font-size: 1em !important; }
-
-    /* الزر الرئيسي */
-    .comp-start-btn {
-        margin-top: 8px !important;
-        padding: 11px 14px 9px !important;
-    }
-    .comp-start-btn-text { font-size: 0.95em !important; }
-    .comp-start-btn-sub  { font-size: 0.58em !important; }
-
-    /* قسم المهام وأزرار لوحة الصدارة */
-    .comp-section-header { padding: 9px 14px !important; }
-    .comp-lb-tab-btn { padding: 10px 12px !important; }
-
-    /* عنوان الصفحة */
-    #page-leaderboard .page-title-header {
-        padding: 10px 0 12px !important;
-        font-size: 1.3em !important;
-    }
 }
