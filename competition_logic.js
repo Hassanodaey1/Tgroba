@@ -659,11 +659,11 @@ function showLbTab(tab) {
 
     // تحديث رأس الجدول
     const header = document.getElementById('lbScoreHeader');
-    if (header) header.textContent = tab === 'challenge' ? 'نقاط التحدي' : 'النقاط العامة';
+    if (header) header.textContent = tab === 'challenge' ? 'نقاط التحدي' : 'أفضل نقطة';
 
     // تحديث Cache أو استخدامه
     if (_lbCache && _lbCacheType === tab && Date.now() - _lbCacheTime < 60000) {
-        const scoreKey = tab === 'challenge' ? 'challengeScore' : 'score';
+        const scoreKey = tab === 'challenge' ? 'challengeScore' : 'bestScore';
         renderLeaderboardList(
             document.getElementById('combinedLeaderboardList'),
             _lbCache,
@@ -686,8 +686,8 @@ function loadCombinedLeaderboard() {
     container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);font-size:0.8em;">⏳ جاري التحميل…</div>';
 
     const tab = _activeLbTab || 'challenge';
-    const refPath = tab === 'challenge' ? 'challenge_leaderboard' : 'challenge_leaderboard';
-    const scoreKey = 'challengeScore';
+    const refPath  = tab === 'general' ? 'leaderboard'          : 'challenge_leaderboard';
+    const scoreKey = tab === 'general' ? 'bestScore'            : 'challengeScore';
 
     try {
         window.database.ref(refPath)
@@ -776,29 +776,23 @@ function initCompetitionPage() {
 //     initCompetitionPage();
 // }
 
-/* ══════════════════════════════════════
-   أزرار لائحة الصدارة — Overlay
-   openLbOverlay / closeLbOverlay / refreshLbOverlay
-══════════════════════════════════════ */
-let _lbOverlayType = 'challenge';
 
-function openLbOverlay(type) {
-    _lbOverlayType = type || 'challenge';
+/* ═══════════════════════════════════════════════════════════
+   ✅ Overlay لائحة الصدارة — فتح / إغلاق / تحديث
+═══════════════════════════════════════════════════════════ */
 
-    // تحديث العنوان
-    const titleEl = document.getElementById('lbOverlayTitle');
-    if (titleEl) titleEl.textContent = type === 'challenge' ? '⚔️ لائحة التحدي' : '📊 لائحة النقاط';
+let _lbOverlayTab = 'challenge';
 
-    // تحديث رأس عمود النقاط
-    const headerEl = document.getElementById('lbOverlayScoreHeader');
-    if (headerEl) headerEl.textContent = type === 'challenge' ? 'نقاط التحدي' : 'النقاط العامة';
-
-    // إظهار الـ overlay
+function openLbOverlay(tab) {
+    _lbOverlayTab = tab || 'challenge';
     const overlay = document.getElementById('lbOverlay');
-    if (overlay) overlay.style.display = 'flex';
-
-    // جلب البيانات
-    _loadLbOverlayData();
+    const title   = document.getElementById('lbOverlayTitle');
+    const header  = document.getElementById('lbOverlayScoreHeader');
+    if (!overlay) return;
+    if (title)  title.textContent  = tab === 'challenge' ? '⚔️ لائحة التحدي' : '📊 لائحة النقاط';
+    if (header) header.textContent = tab === 'challenge' ? 'نقاط التحدي'    : 'أفضل نقطة';
+    overlay.style.display = 'flex';
+    _fetchLbOverlay();
 }
 
 function closeLbOverlay() {
@@ -807,101 +801,59 @@ function closeLbOverlay() {
 }
 
 function refreshLbOverlay() {
-    // تأثير دوران أيقونة ↻
-    const icon = document.getElementById('lbRefreshIcon');
-    const btn  = document.getElementById('lbRefreshBtn');
-    if (icon) {
-        icon.style.transition = 'transform 0.6s ease';
-        icon.style.transform  = 'rotate(360deg)';
-        setTimeout(() => {
-            icon.style.transition = 'none';
-            icon.style.transform  = 'rotate(0deg)';
-        }, 650);
+    const btn = document.getElementById('lbRefreshBtn');
+    if (btn) {
+        btn.classList.add('spinning');
+        setTimeout(() => btn.classList.remove('spinning'), 650);
     }
-    if (btn) btn.disabled = true;
-
-    // إعادة الجلب مع تجاهل الكاش
-    _lbCache     = null;
-    _lbCacheTime = 0;
-    _loadLbOverlayData(() => { if (btn) btn.disabled = false; });
+    _fetchLbOverlay();
 }
 
-function _loadLbOverlayData(callback) {
+function _fetchLbOverlay() {
     const container = document.getElementById('lbOverlayList');
-    if (!container) { if (callback) callback(); return; }
-
+    if (!container) return;
     if (!window.database) {
-        container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:0.82em;">⚠️ غير متصل بقاعدة البيانات</div>';
-        if (callback) callback();
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">⚠️ غير متصل بقاعدة البيانات</div>';
         return;
     }
-
     container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.8em;">⏳ جاري التحميل…</div>';
-
-    const type     = _lbOverlayType || 'challenge';
-    const refPath  = type === 'general' ? 'leaderboard' : 'challenge_leaderboard';
-    const scoreKey = type === 'general' ? 'score' : 'challengeScore';
-
+    const isChallenge = _lbOverlayTab === 'challenge';
+    const refPath  = isChallenge ? 'challenge_leaderboard' : 'leaderboard';
+    const scoreKey = isChallenge ? 'challengeScore'        : 'bestScore';
     try {
         window.database.ref(refPath)
             .orderByChild(scoreKey)
             .limitToLast(50)
-            .once('value', snapshot => {
+            .once('value', function(snapshot) {
                 const players = [];
-                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                players.sort((a, b) => (b[scoreKey] || 0) - (a[scoreKey] || 0));
-
+                snapshot.forEach(function(child) {
+                    players.push(Object.assign({ id: child.key }, child.val()));
+                });
+                players.sort((a, b) => (b[scoreKey]||0) - (a[scoreKey]||0));
                 if (players.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">لا توجد نتائج بعد — كن الأول! 🚀</div>';
-                    if (callback) callback();
+                    container.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.82em;">لا توجد نتائج بعد — كن الأول! 🚀</div>';
                     return;
                 }
-
-                _renderLbOverlayRows(container, players, scoreKey);
-                try { updateCompMyStats(players); } catch(e) {}
-                if (callback) callback();
+                const medals = ['🥇','🥈','🥉'];
+                const myKey  = (typeof st !== 'undefined' && st.serialNumber)
+                               ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g,'_') : null;
+                let html = '';
+                players.forEach((p, idx) => {
+                    const isMe = p.id === myKey;
+                    const rank = idx < 3 ? medals[idx] : (idx+1);
+                    html += '<div class="lb-row'+(isMe?' lb-row-me':'')+'">'
+                        +'<span>'+rank+'</span>'
+                        +'<span>'+(p.avatar||'🧑')+' '+(p.name||'لاعب')+'</span>'
+                        +'<span>'+(p.level||1)+'</span>'
+                        +'<span style="color:var(--gold);font-weight:900;">'+(p[scoreKey]||0)+'</span>'
+                        +'</div>';
+                });
+                container.innerHTML = html;
             })
             .catch(() => {
-                container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);font-size:0.8em;">⚠️ فشل التحميل — تحقق من الاتصال</div>';
-                if (callback) callback();
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.8em;">⚠️ فشل التحميل</div>';
             });
     } catch(e) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);font-size:0.8em;">⚠️ خطأ في الاتصال</div>';
-        if (callback) callback();
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.8em;">⚠️ خطأ</div>';
     }
 }
-
-function _renderLbOverlayRows(container, players, scoreKey) {
-    const medals = ['🥇', '🥈', '🥉'];
-    const myKey  = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
-
-    let html = '';
-    players.forEach((p, idx) => {
-        const isMe = p.id === myKey;
-        const rank = idx < 3 ? medals[idx] : (idx + 1);
-        html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}">`
-            + `<span>${rank}</span>`
-            + `<span>${p.avatar || '🧑'} ${p.name || 'لاعب'}</span>`
-            + `<span>${p.level || 1}</span>`
-            + `<span style="color:var(--gold);font-weight:900;">${p[scoreKey] || 0}</span>`
-            + `</div>`;
-    });
-
-    container.innerHTML = html || '<div style="text-align:center;padding:16px;color:var(--text2);">لا توجد نتائج</div>';
-
-    // تمرير تلقائي لصف اللاعب الحالي
-    if (myKey) {
-        setTimeout(() => {
-            const myRow = container.querySelector('.lb-row-me');
-            if (myRow) myRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 150);
-    }
-}
-
-// إغلاق بزر Escape
-document.addEventListener('keydown', e => {
-    const overlay = document.getElementById('lbOverlay');
-    if (e.key === 'Escape' && overlay && overlay.style.display !== 'none') {
-        closeLbOverlay();
-    }
-});
