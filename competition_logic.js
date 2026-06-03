@@ -749,15 +749,28 @@ function openLbSheet(type) {
     const sheet = document.getElementById(sheetId);
     if (!sheet) return;
     try { playSound('click'); } catch(e) {}
+
     sheet.style.display = 'flex';
-    // تأثير الدخول
     sheet.style.opacity = '0';
-    sheet.style.transform = 'translateY(30px)';
+
+    // نحرك الـ panel من الأسفل للأعلى
+    const panel = sheet.querySelector('.lb-sheet-panel');
+    if (panel) {
+        panel.style.transition = 'none';
+        panel.style.transform = 'translateY(100%)';
+    }
+
     requestAnimationFrame(() => {
-        sheet.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-        sheet.style.opacity = '1';
-        sheet.style.transform = 'translateY(0)';
+        requestAnimationFrame(() => {
+            sheet.style.transition = 'opacity 0.25s ease';
+            sheet.style.opacity = '1';
+            if (panel) {
+                panel.style.transition = 'transform 0.32s cubic-bezier(0.34, 1.2, 0.64, 1)';
+                panel.style.transform = 'translateY(0)';
+            }
+        });
     });
+
     loadLbSheetData(type, false);
 }
 
@@ -766,15 +779,24 @@ function closeLbSheet(type) {
     const sheet = document.getElementById(sheetId);
     if (!sheet) return;
     try { playSound('click'); } catch(e) {}
-    sheet.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+
+    const panel = sheet.querySelector('.lb-sheet-panel');
+    if (panel) {
+        panel.style.transition = 'transform 0.25s ease';
+        panel.style.transform = 'translateY(100%)';
+    }
+    sheet.style.transition = 'opacity 0.25s ease';
     sheet.style.opacity = '0';
-    sheet.style.transform = 'translateY(20px)';
+
     setTimeout(() => {
         sheet.style.display = 'none';
-        sheet.style.transform = '';
-        sheet.style.transition = '';
         sheet.style.opacity = '';
-    }, 220);
+        sheet.style.transition = '';
+        if (panel) {
+            panel.style.transform = '';
+            panel.style.transition = '';
+        }
+    }, 260);
 }
 
 function refreshLbSheet(type) {
