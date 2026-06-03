@@ -797,27 +797,44 @@
         <!-- ══ لوحة الصدارة ══ -->
         <div style="margin-top:12px;">
             <div class="comp-lb-tabs">
-                <button class="comp-lb-tab active" id="lbTabChallenge" onclick="showLbTab('challenge')">⚔️ التحدي</button>
-                <button class="comp-lb-tab" id="lbTabGeneral" onclick="showLbTab('general')">📊 النقاط</button>
+                <button class="comp-lb-tab-btn" onclick="openLbOverlay('challenge')">
+                    <span class="comp-lb-tab-icon">⚔️</span>
+                    <span class="comp-lb-tab-label">التحدي</span>
+                    <span class="comp-lb-tab-arrow">›</span>
+                </button>
+                <button class="comp-lb-tab-btn" onclick="openLbOverlay('general')">
+                    <span class="comp-lb-tab-icon">📊</span>
+                    <span class="comp-lb-tab-label">النقاط</span>
+                    <span class="comp-lb-tab-arrow">›</span>
+                </button>
             </div>
+        </div>
 
-            <div class="comp-lb-card">
-                <!-- رأس الجدول -->
+    </div><!-- /competitionMainView -->
+
+    <!-- ══ Overlay لائحة الصدارة ══ -->
+    <div id="lbOverlay" style="display:none;position:absolute;inset:0;z-index:30;background:var(--bg);flex-direction:column;overflow:hidden;">
+        <div class="lb-overlay-header">
+            <button class="lb-overlay-back" onclick="closeLbOverlay()">‹</button>
+            <span class="lb-overlay-title" id="lbOverlayTitle">لائحة الصدارة</span>
+            <button class="lb-overlay-refresh" onclick="refreshLbOverlay()" id="lbRefreshBtn">
+                <span id="lbRefreshIcon">↻</span>
+            </button>
+        </div>
+        <div class="lb-overlay-body">
+            <div class="comp-lb-card" style="border-radius:16px;overflow:hidden;">
                 <div class="lb-row lb-header">
                     <span>المرتبة</span>
                     <span>اللاعب</span>
                     <span>Lv.</span>
-                    <span id="lbScoreHeader">نقاط التحدي</span>
+                    <span id="lbOverlayScoreHeader">النقاط</span>
                 </div>
-                <!-- القائمة -->
-                <div id="combinedLeaderboardList" style="max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;">
-                    <div style="text-align:center;padding:20px;color:var(--text2);">جاري التحميل...</div>
+                <div id="lbOverlayList" style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;">
+                    <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
                 </div>
             </div>
-            <p class="comp-lb-hint">✨ مرّر لأسفل لعرض المزيد</p>
         </div>
-
-    </div><!-- /competitionMainView -->
+    </div>
 
 
     <!-- ══════════════════════════════════════════
