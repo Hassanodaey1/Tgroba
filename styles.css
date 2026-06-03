@@ -3471,3 +3471,28 @@
 #memoryCountdownBar .mem-bar-fill {
     box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
 }
+
+/* ═══════════════════════════════════════════════════════
+   📋 نافذة مهام الفئة — Category Sheet Overlay
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes slideUpSheet {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+#categorySheetOverlay {
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+#categorySheetOverlay.active {
+    display: flex;
+}
+
+/* أزرار الفئة — تأثير hover */
+#page-achieve [onclick^="openCategorySheet"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
