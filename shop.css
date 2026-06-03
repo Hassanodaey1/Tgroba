@@ -17,10 +17,11 @@
 
 /* ─── حاوية المتجر ─── */
 #shopItemsContainer {
-    max-height: calc(100vh - 160px);
+    flex: 1;
     overflow-y: auto;
-    padding: 0 2px;
+    padding: 0 2px 4px;
     scroll-behavior: smooth;
+    min-height: 0;
 }
 #shopItemsContainer::-webkit-scrollbar {
     width: 3px;
@@ -121,15 +122,16 @@ html.light-mode #avatarShopGrid > div {
 
 /* ─── تحسين شريط التمرير للمتجر ─── */
 #page-shop .page-content {
-    padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 10px);
+    padding-bottom: 0;
 }
 
 /* ─── صفحة المتجر الكاملة ─── */
 #page-shop {
     display: none;
     flex-direction: column;
-    overflow-y: auto;
-    padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 2px);
+    overflow-y: hidden;
+    padding-bottom: 0 !important;
+    gap: 8px !important;
 }
 #page-shop.active {
     display: flex;
