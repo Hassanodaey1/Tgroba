@@ -819,26 +819,28 @@
     <!-- ══════════════════════════════════════════
          Sheet لائحة التحدي
     ══════════════════════════════════════════ -->
-    <div id="lbSheetChallenge" class="lb-sheet challenge-overlay" style="display:none;">
-        <div class="lb-sheet-header">
-            <button class="lb-sheet-header-btn lb-sheet-refresh-btn" onclick="refreshLbSheet('challenge')" title="تحديث">
-                <span>↻</span>
-            </button>
-            <div class="lb-sheet-title">⚔️ لائحة التحدي</div>
-            <button class="lb-sheet-header-btn lb-sheet-close-btn" onclick="closeLbSheet('challenge')" title="إغلاق">
-                <span>✕</span>
-            </button>
-        </div>
-        <div class="lb-sheet-body">
-            <div class="comp-lb-card" style="border-radius:0;border-left:0;border-right:0;border-top:0;">
-                <div class="lb-row lb-header">
-                    <span>المرتبة</span>
-                    <span>اللاعب</span>
-                    <span>Lv.</span>
-                    <span>نقاط التحدي</span>
-                </div>
-                <div id="lbListChallenge" class="lb-sheet-list">
-                    <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
+    <div id="lbSheetChallenge" class="lb-sheet challenge-overlay" style="display:none;" onclick="if(event.target===this)closeLbSheet('challenge')">
+        <div class="lb-sheet-panel">
+            <div class="lb-sheet-header">
+                <button class="lb-sheet-header-btn lb-sheet-refresh-btn" onclick="refreshLbSheet('challenge')" title="تحديث">
+                    <span>↻</span>
+                </button>
+                <div class="lb-sheet-title">⚔️ لائحة التحدي</div>
+                <button class="lb-sheet-header-btn lb-sheet-close-btn" onclick="closeLbSheet('challenge')" title="إغلاق">
+                    <span>✕</span>
+                </button>
+            </div>
+            <div class="lb-sheet-body">
+                <div class="comp-lb-card">
+                    <div class="lb-row lb-header">
+                        <span>المرتبة</span>
+                        <span>اللاعب</span>
+                        <span>Lv.</span>
+                        <span>نقاط التحدي</span>
+                    </div>
+                    <div id="lbListChallenge" class="lb-sheet-list">
+                        <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -847,26 +849,28 @@
     <!-- ══════════════════════════════════════════
          Sheet لائحة النقاط العامة
     ══════════════════════════════════════════ -->
-    <div id="lbSheetGeneral" class="lb-sheet challenge-overlay" style="display:none;">
-        <div class="lb-sheet-header">
-            <button class="lb-sheet-header-btn lb-sheet-refresh-btn" onclick="refreshLbSheet('general')" title="تحديث">
-                <span>↻</span>
-            </button>
-            <div class="lb-sheet-title">📊 لائحة النقاط</div>
-            <button class="lb-sheet-header-btn lb-sheet-close-btn" onclick="closeLbSheet('general')" title="إغلاق">
-                <span>✕</span>
-            </button>
-        </div>
-        <div class="lb-sheet-body">
-            <div class="comp-lb-card" style="border-radius:0;border-left:0;border-right:0;border-top:0;">
-                <div class="lb-row lb-header">
-                    <span>المرتبة</span>
-                    <span>اللاعب</span>
-                    <span>Lv.</span>
-                    <span>النقاط العامة</span>
-                </div>
-                <div id="lbListGeneral" class="lb-sheet-list">
-                    <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
+    <div id="lbSheetGeneral" class="lb-sheet challenge-overlay" style="display:none;" onclick="if(event.target===this)closeLbSheet('general')">
+        <div class="lb-sheet-panel">
+            <div class="lb-sheet-header">
+                <button class="lb-sheet-header-btn lb-sheet-refresh-btn" onclick="refreshLbSheet('general')" title="تحديث">
+                    <span>↻</span>
+                </button>
+                <div class="lb-sheet-title">📊 لائحة النقاط</div>
+                <button class="lb-sheet-header-btn lb-sheet-close-btn" onclick="closeLbSheet('general')" title="إغلاق">
+                    <span>✕</span>
+                </button>
+            </div>
+            <div class="lb-sheet-body">
+                <div class="comp-lb-card">
+                    <div class="lb-row lb-header">
+                        <span>المرتبة</span>
+                        <span>اللاعب</span>
+                        <span>Lv.</span>
+                        <span>النقاط العامة</span>
+                    </div>
+                    <div id="lbListGeneral" class="lb-sheet-list">
+                        <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1986,4 +1990,4 @@
 </body>
 </html>
           
-         
+        
