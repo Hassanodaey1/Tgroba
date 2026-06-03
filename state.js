@@ -51,6 +51,8 @@
                 catChallenges: { games: 0 },
                 dailyTasks: [],
                 dailyDate: todayStr(),
+                categoryTasks: null,
+                categoryTasksDate: '',
                 /* إحصائيات يومية */
                 dailyStats: { correct: 0, wrong: 0, games: 0, date: todayStr() },
                 /* إحصائيات أسبوعية */
@@ -165,6 +167,9 @@
             if (!s.dailyStats || s.dailyStats.date !== todayStr()) {
                 s.dailyStats = { correct: 0, wrong: 0, games: 0, date: todayStr() };
             }
+            /* ═══ مهام الفئات المصنّفة ═══ */
+            if (!s.categoryTasks || typeof s.categoryTasks !== 'object') s.categoryTasks = null;
+            if (typeof s.categoryTasksDate !== 'string') s.categoryTasksDate = '';
             if (!s.weeklyStats || s.weeklyStats.week !== weekStr()) {
                 s.weeklyStats = { correct: 0, wrong: 0, games: 0, bestStreak: 0, week: weekStr() };
             }
