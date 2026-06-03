@@ -641,45 +641,28 @@
                         </div>
                     </div>
 
-                    <!-- قسم المهام اليومية — زر Overlay -->
-                    <button class="section-overlay-btn tasks-btn" onclick="openSectionOverlay('tasks')">
-                        <span class="section-overlay-btn-icon">📝</span>
-                        <div class="section-overlay-btn-text">
-                            <span class="section-overlay-btn-title">المهام اليومية</span>
-                            <span class="section-overlay-btn-sub" id="tasksBtnSub">تتجدد يومياً</span>
+                    <!-- قسم المهام اليومية — زر + قائمة قابلة للتمرير -->
+                    <div style="flex-shrink:0;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:14px;padding:11px 16px;cursor:pointer;user-select:none;" onclick="toggleSection('tasksSection','tasksChevron')">
+                            <span style="font-size:0.88em;font-weight:900;color:#000;">📝 المهام اليومية</span>
+                            <span id="tasksChevron" style="font-size:1em;color:#000;transition:transform 0.3s;">▲</span>
                         </div>
-                        <span class="section-overlay-btn-arrow">›</span>
-                    </button>
-
-                    <!-- قسم الإنجازات — زر Overlay -->
-                    <button class="section-overlay-btn achieve-btn" onclick="openSectionOverlay('achieve')">
-                        <span class="section-overlay-btn-icon">🏆</span>
-                        <div class="section-overlay-btn-text">
-                            <span class="section-overlay-btn-title">الإنجازات</span>
-                            <span class="section-overlay-btn-sub" id="achieveBtnSub">0/18 مكتمل</span>
-                        </div>
-                        <span class="section-overlay-btn-arrow">›</span>
-                    </button>
-
-                    <!-- Hidden lists (used by JS) -->
-                    <div id="tasksSection" style="display:none;">
-                        <div id="tasksList"></div>
                     </div>
-                    <div id="achieveSection" style="display:none;">
-                        <div id="achieveList"></div>
-                        <div id="achieveCompleteReward" style="display:none;"></div>
+                    <div id="tasksSection" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:8px;padding:2px 1px 4px;">
+                        <div id="tasksList" style="display:flex;flex-direction:column;gap:8px;"></div>
                     </div>
 
-    <!-- ══ Overlay المهام اليومية ══ -->
-    <div id="sectionOverlay" style="display:none;position:absolute;inset:0;z-index:30;background:var(--bg);flex-direction:column;overflow:hidden;">
-        <div class="lb-overlay-header">
-            <button class="lb-overlay-back" onclick="closeSectionOverlay()">‹</button>
-            <span class="lb-overlay-title" id="sectionOverlayTitle">المهام اليومية</span>
-            <div style="width:38px;"></div>
-        </div>
-        <div class="lb-overlay-body" id="sectionOverlayBody">
-        </div>
-    </div>
+                    <!-- قسم الإنجازات — زر + قائمة قابلة للتمرير -->
+                    <div style="flex-shrink:0;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:11px 16px;cursor:pointer;user-select:none;" onclick="toggleSection('achieveSection','achieveChevron')">
+                            <span style="font-size:0.88em;font-weight:900;color:var(--text);">🏆 الإنجازات <span id="achievePct" style="color:var(--accent2);font-size:0.85em;">0/18</span></span>
+                            <span id="achieveChevron" style="font-size:1em;color:var(--text3);transition:transform 0.3s;">▼</span>
+                        </div>
+                    </div>
+                    <div id="achieveSection" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;display:flex;flex-direction:column;gap:8px;padding:0 1px;">
+                        <div id="achieveList" style="display:flex;flex-direction:column;gap:8px;padding-top:4px;"></div>
+                        <div id="achieveCompleteReward" style="display:none;text-align:center;padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:14px;font-size:0.8em;color:var(--green);">🎉 أحسنت! أكملت جميع الإنجازات • +5💰</div>
+                    </div>
                 </div>
 
                 <!-- SETTINGS PAGE -->
@@ -797,18 +780,18 @@
             </button>
         </div>
 
-        <!-- ══ مهام التحدي اليومية — زر Overlay ══ -->
-        <button class="section-overlay-btn challenge-tasks-btn" style="margin-top:12px;" onclick="openSectionOverlay('challenge-tasks')">
-            <span class="section-overlay-btn-icon">⚔️</span>
-            <div class="section-overlay-btn-text">
-                <span class="section-overlay-btn-title">مهام اليوم</span>
-                <span class="section-overlay-btn-sub">5 مهام تتجدد يومياً</span>
+        <!-- ══ مهام التحدي اليومية ══ -->
+        <div class="comp-section-card" style="margin-top:12px;">
+            <div class="comp-section-header" onclick="toggleSection('challengeTasksBody','challengeTasksChevron')">
+                <div>
+                    <div class="comp-section-title">⚔️ مهام اليوم</div>
+                    <div class="comp-section-sub">5 مهام تتجدد يومياً</div>
+                </div>
+                <span id="challengeTasksChevron" class="comp-chevron">▼</span>
             </div>
-            <span class="section-overlay-btn-arrow">›</span>
-        </button>
-        <!-- Hidden list (used by JS) -->
-        <div id="challengeTasksBody" style="display:none;">
-            <div id="challengeDailyTasksList"></div>
+            <div id="challengeTasksBody" style="display:none;max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
+                <div style="padding:4px 4px 10px;display:flex;flex-direction:column;gap:7px;" id="challengeDailyTasksList"></div>
+            </div>
         </div>
 
         <!-- ══ لوحة الصدارة ══ -->
@@ -1582,7 +1565,7 @@
             </div>
 
             <!-- شبكة الإحصائيات -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
                     <div style="font-size:1.8em;font-weight:900;color:var(--red);" id="stat_streak">×0</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى تتابع</div>
