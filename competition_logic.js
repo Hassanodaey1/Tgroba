@@ -764,7 +764,13 @@ function initCompetitionPage() {
     loadCombinedLeaderboard();
 
     // مهام التحدي اليومية
-    try { if (typeof renderChallengeTasks === 'function') renderChallengeTasks(); } catch(e) {}
+    try {
+        if (typeof renderChallengeTasks === 'function') {
+            renderChallengeTasks();
+        } else if (typeof renderChallengeDailyTasks === 'function') {
+            renderChallengeDailyTasks();
+        }
+    } catch(e) {}
 }
 
 /* ══════════════════════════════════════
