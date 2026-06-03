@@ -778,97 +778,88 @@ function initCompetitionPage() {
 
 
 /* ═══════════════════════════════════════════════════════════
-   ✅ Overlay لائحة الصدارة — فتح / إغلاق / تحديث
+   ✅ Overlay الأقسام: مهام / إنجازات / مهام التحدي
 ═══════════════════════════════════════════════════════════ */
 
-let _lbOverlayTab = 'challenge';
+function openSectionOverlay(type) {
+    const overlay = document.getElementById('sectionOverlay');
+    const title   = document.getElementById('sectionOverlayTitle');
+    const body    = document.getElementById('sectionOverlayBody');
+    if (!overlay || !body) return;
 
-function openLbOverlay(tab) {
-    _lbOverlayTab = tab || 'challenge';
+    body.innerHTML = '';
 
-    const overlay  = document.getElementById('lbOverlay');
-    const title    = document.getElementById('lbOverlayTitle');
-    const header   = document.getElementById('lbOverlayScoreHeader');
+    if (type === 'tasks') {
+        if (title) title.textContent = '📝 المهام اليومية';
+        /* نسخ محتوى tasksList */
+        const src = document.getElementById('tasksList');
+        if (src && src.innerHTML.trim()) {
+            const clone = src.cloneNode(true);
+            clone.style.display = 'flex';
+            clone.style.flexDirection = 'column';
+            clone.style.gap = '8px';
+            body.appendChild(clone);
+        } else {
+            body.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.85em;">لا توجد مهام بعد — العب لتفعيلها! 🎮</div>';
+        }
 
-    if (!overlay) return;
+    } else if (type === 'achieve') {
+        if (title) title.textContent = '🏆 الإنجازات';
+        /* نسخ محتوى achieveList */
+        const src = document.getElementById('achieveList');
+        if (src && src.innerHTML.trim()) {
+            const clone = src.cloneNode(true);
+            clone.style.display = 'flex';
+            clone.style.flexDirection = 'column';
+            clone.style.gap = '8px';
+            body.appendChild(clone);
+        } else {
+            body.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.85em;">لا توجد إنجازات بعد — العب لفتحها! 🏆</div>';
+        }
+        /* مكافأة الإكمال */
+        const reward = document.getElementById('achieveCompleteReward');
+        if (reward && reward.style.display !== 'none') {
+            const rClone = reward.cloneNode(true);
+            rClone.style.display = 'block';
+            rClone.style.marginTop = '8px';
+            body.appendChild(rClone);
+        }
 
-    /* اسم اللائحة */
-    if (title)  title.textContent  = tab === 'challenge' ? '⚔️ لائحة التحدي' : '📊 لائحة النقاط';
-    if (header) header.textContent = tab === 'challenge' ? 'نقاط التحدي'    : 'أفضل نقطة';
+    } else if (type === 'challenge-tasks') {
+        if (title) title.textContent = '⚔️ مهام التحدي';
+        const src = document.getElementById('challengeDailyTasksList');
+        if (src && src.innerHTML.trim()) {
+            const clone = src.cloneNode(true);
+            clone.style.display = 'flex';
+            clone.style.flexDirection = 'column';
+            clone.style.gap = '8px';
+            clone.style.padding = '0';
+            body.appendChild(clone);
+        } else {
+            body.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.85em;">لا توجد مهام بعد — ابدأ التحدي! ⚔️</div>';
+        }
+    }
 
-    /* إظهار الـ Overlay */
     overlay.style.display = 'flex';
-
-    /* تحميل البيانات */
-    _fetchLbOverlay();
 }
 
-function closeLbOverlay() {
-    const overlay = document.getElementById('lbOverlay');
+function closeSectionOverlay() {
+    const overlay = document.getElementById('sectionOverlay');
     if (overlay) overlay.style.display = 'none';
 }
 
-function refreshLbOverlay() {
-    /* أنيميشن الدوران */
-    const btn = document.getElementById('lbRefreshBtn');
-    if (btn) {
-        btn.classList.add('spinning');
-        setTimeout(() => btn.classList.remove('spinning'), 650);
-    }
-    _fetchLbOverlay();
+/* تحديث النص الفرعي لزر المهام عند تغيّر العداد */
+function updateTasksBtnSub() {
+    const sub = document.getElementById('tasksBtnSub');
+    if (!sub || typeof st === 'undefined') return;
+    const done  = (typeof getTasksDone  === 'function') ? getTasksDone()  : 0;
+    const total = (typeof getTasksTotal === 'function') ? getTasksTotal() : 0;
+    sub.textContent = total > 0 ? (done + '/' + total + ' مكتملة') : 'تتجدد يومياً';
 }
 
-function _fetchLbOverlay() {
-    const container = document.getElementById('lbOverlayList');
-    if (!container) return;
-
-    if (!window.database) {
-        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">⚠️ غير متصل بقاعدة البيانات</div>';
-        return;
-    }
-
-    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.8em;">⏳ جاري التحميل…</div>';
-
-    const isChallenge = _lbOverlayTab === 'challenge';
-    const refPath  = isChallenge ? 'challenge_leaderboard' : 'leaderboard';
-    const scoreKey = isChallenge ? 'challengeScore'        : 'bestScore';
-
-    try {
-        window.database.ref(refPath)
-            .orderByChild(scoreKey)
-            .limitToLast(50)
-            .once('value', function(snapshot) {
-                const players = [];
-                snapshot.forEach(function(child) {
-                    players.push(Object.assign({ id: child.key }, child.val()));
-                });
-                players.sort(function(a, b) { return (b[scoreKey] || 0) - (a[scoreKey] || 0); });
-
-                if (players.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.82em;">لا توجد نتائج بعد — كن الأول! 🚀</div>';
-                    return;
-                }
-
-                const medals = ['🥇','🥈','🥉'];
-                const myKey  = (typeof st !== 'undefined' && st.serialNumber)
-                               ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
-                let html = '';
-                players.forEach(function(p, idx) {
-                    const isMe = p.id === myKey;
-                    const rank = idx < 3 ? medals[idx] : (idx + 1);
-                    html += '<div class="lb-row' + (isMe ? ' lb-row-me' : '') + '">'
-                        + '<span>' + rank + '</span>'
-                        + '<span>' + (p.avatar || '🧑') + ' ' + (p.name || 'لاعب') + '</span>'
-                        + '<span>' + (p.level || 1) + '</span>'
-                        + '<span style="color:var(--gold);font-weight:900;">' + (p[scoreKey] || 0) + '</span>'
-                        + '</div>';
-                });
-                container.innerHTML = html;
-            })
-            .catch(function() {
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.8em;">⚠️ فشل التحميل — تحقق من الاتصال</div>';
-            });
-    } catch(e) {
-        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.8em;">⚠️ خطأ</div>';
-    }
+/* تحديث النص الفرعي لزر الإنجازات */
+function updateAchieveBtnSub() {
+    const sub = document.getElementById('achieveBtnSub');
+    const pct = document.getElementById('achievePct');
+    if (sub && pct) sub.textContent = pct.textContent + ' مكتمل';
 }
