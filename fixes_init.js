@@ -174,6 +174,18 @@ function generateAndShowSerial() {
 
     if (st.bgOn) document.addEventListener('click', () => startBg(), { once: true });
 
+    /* ✅ تهيئة المتجر عند التحميل — shop.js يُحمَّل بعدنا */
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            try { if (typeof renderShop === 'function') renderShop(); } catch(e) {}
+        }, 800);
+    });
+
+    /* ✅ alias للدالة المفقودة في competition_logic.js */
+    window.renderChallengeTasks = function() {
+        try { if (typeof renderChallengeDailyTasks === 'function') renderChallengeDailyTasks(); } catch(e) {}
+    };
+
     /* إخفاء شاشة البداية */
     setTimeout(() => {
         const ss = document.getElementById('splashScreen');
