@@ -742,7 +742,7 @@
     <!-- ══════════════════════════════════════════
          الواجهة الرئيسية للمنافسة (Welcome View)
     ══════════════════════════════════════════ -->
-    <div id="competitionMainView" style="display:flex;flex-direction:column;gap:0;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 20px;box-sizing:border-box;">
+    <div id="competitionMainView" style="display:flex;flex-direction:column;gap:0;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 16px;">
 
         <!-- Hero Banner -->
         <div class="comp-hero-banner">
@@ -790,32 +790,51 @@
                 <span id="challengeTasksChevron" class="comp-chevron">▼</span>
             </div>
             <div id="challengeTasksBody" style="display:none;max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
-                <div style="padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;" id="challengeDailyTasksList"></div>
+                <div style="padding:4px 4px 10px;display:flex;flex-direction:column;gap:7px;" id="challengeDailyTasksList"></div>
             </div>
         </div>
 
         <!-- ══ لوحة الصدارة ══ -->
         <div style="margin-top:12px;">
             <div class="comp-lb-tabs">
-                <button class="comp-lb-tab active" id="lbTabChallenge" onclick="showLbTab('challenge')">⚔️ التحدي</button>
-                <button class="comp-lb-tab" id="lbTabGeneral" onclick="showLbTab('general')">📊 النقاط</button>
+                <button class="comp-lb-tab-btn" onclick="openLbOverlay('challenge')">
+                    <span class="comp-lb-tab-icon">⚔️</span>
+                    <span class="comp-lb-tab-label">التحدي</span>
+                    <span class="comp-lb-tab-arrow">›</span>
+                </button>
+                <button class="comp-lb-tab-btn" onclick="openLbOverlay('general')">
+                    <span class="comp-lb-tab-icon">📊</span>
+                    <span class="comp-lb-tab-label">النقاط</span>
+                    <span class="comp-lb-tab-arrow">›</span>
+                </button>
             </div>
+        </div>
 
-            <div class="comp-lb-card">
-                <!-- رأس الجدول -->
+    <!-- ══ Overlay لائحة الصدارة ══ -->
+    <div id="lbOverlay" style="display:none;position:absolute;inset:0;z-index:30;background:var(--bg);flex-direction:column;overflow:hidden;">
+        <!-- رأس الـ Overlay -->
+        <div class="lb-overlay-header">
+            <button class="lb-overlay-back" onclick="closeLbOverlay()">‹</button>
+            <span class="lb-overlay-title" id="lbOverlayTitle">لائحة الصدارة</span>
+            <button class="lb-overlay-refresh" onclick="refreshLbOverlay()" id="lbRefreshBtn">
+                <span id="lbRefreshIcon">↻</span>
+            </button>
+        </div>
+        <!-- جدول البيانات -->
+        <div class="lb-overlay-body">
+            <div class="comp-lb-card" style="border-radius:16px;overflow:hidden;">
                 <div class="lb-row lb-header">
                     <span>المرتبة</span>
                     <span>اللاعب</span>
                     <span>Lv.</span>
-                    <span id="lbScoreHeader">نقاط التحدي</span>
+                    <span id="lbOverlayScoreHeader">النقاط</span>
                 </div>
-                <!-- القائمة -->
-                <div id="combinedLeaderboardList" style="max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;">
-                    <div style="text-align:center;padding:20px;color:var(--text2);">جاري التحميل...</div>
+                <div id="lbOverlayList" style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;">
+                    <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
                 </div>
             </div>
-            <p class="comp-lb-hint">✨ مرّر لأسفل لعرض المزيد</p>
         </div>
+    </div>
 
     </div><!-- /competitionMainView -->
 
@@ -1565,7 +1584,7 @@
             </div>
 
             <!-- شبكة الإحصائيات -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
                     <div style="font-size:1.8em;font-weight:900;color:var(--red);" id="stat_streak">×0</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى تتابع</div>
@@ -1739,8 +1758,8 @@
 <script src="fixes_init.js"></script>
 <script src="questions_engine.js"></script>
 <script src="patches.js"></script>
-<script src="shop.js"></script> 
-    
+<script src="shop.js"></script>
+
     <!-- HO Math Splash Animation v3 -->
     <script>
     (function() {
