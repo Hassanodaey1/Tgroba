@@ -712,8 +712,8 @@
                         <div style="font-size:0.8em;font-weight:900;color:var(--red);margin-bottom:6px;">⚠️ منطقة الخطر</div>
                         <div style="font-size:0.68em;color:var(--text2);margin-bottom:12px;">هذه الإجراءات لا يمكن التراجع عنها</div>
                         <div style="display:flex;flex-direction:column;gap:8px;">
-                            <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات </button>
-                            <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄  البدء من الصفر </button>
+                            <button class="reset-stats-btn" onclick="confirmResetStats()">📊 تصفير الإحصائيات فقط</button>
+                            <button class="reset-complete-btn" onclick="confirmResetComplete(true)">🔄 البدء من جديد (حذف كل شيء)</button>
                         </div>
                     </div>
 
@@ -774,7 +774,7 @@
         <div class="comp-bottom-bar">
             <button class="comp-bottom-btn" onclick="openChallengeTasksOverlay()">
                 <span class="comp-bottom-btn-icon">📋</span>
-                <span class="comp-bottom-btn-label">مهام لعبة التحدي</span>
+                <span class="comp-bottom-btn-label">مهام التحدي</span>
                 <span class="comp-bottom-btn-badge" id="challengeTasksBtnProgress">0/5</span>
             </button>
             <button class="comp-bottom-btn" onclick="openLbOverlay('challenge')">
@@ -784,7 +784,7 @@
             </button>
             <button class="comp-bottom-btn" onclick="openLbOverlay('general')">
                 <span class="comp-bottom-btn-icon">📊</span>
-                <span class="comp-bottom-btn-label">لائحة الصدارة للعاب العامة </span>
+                <span class="comp-bottom-btn-label">لائحة الصدارة للألعاب العامة</span>
                 <span class="comp-bottom-btn-arrow">›</span>
             </button>
         </div>
@@ -1562,7 +1562,7 @@
             </div>
 
             <!-- شبكة الإحصائيات -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
                     <div style="font-size:1.8em;font-weight:900;color:var(--red);" id="stat_streak">×0</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى تتابع</div>
