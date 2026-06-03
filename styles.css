@@ -748,6 +748,12 @@
             overflow-y: hidden;
             padding-bottom: 10px;
         }
+        /* ═══ المتجر — يمتد على كامل الصفحة ═══ */
+        #page-shop {
+            overflow-y: hidden !important;
+            padding-bottom: 4px !important;
+            gap: 8px !important;
+        }
         .page.active {
             display: flex;
             animation: pageIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
