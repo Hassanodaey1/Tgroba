@@ -731,10 +731,11 @@
     <!-- ══════════════════════════════════════════
          الواجهة الرئيسية للمنافسة (Welcome View)
     ══════════════════════════════════════════ -->
-    <div id="competitionMainView" style="display:flex;flex-direction:column;gap:0;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 16px;">
+    <!-- الهيكل الجديد: Hero يتمدد + شريط أزرار ثابت في الأسفل -->
+    <div id="competitionMainView" class="comp-main-layout">
 
-        <!-- Hero Banner -->
-        <div class="comp-hero-banner">
+        <!-- Hero Banner — يتمدد ليملأ المساحة -->
+        <div class="comp-hero-banner comp-hero-expanded">
             <div class="comp-hero-bg-sparks" id="compHeroBgSparks"></div>
             <div class="comp-hero-content">
                 <div class="comp-hero-icon-wrap">
@@ -769,49 +770,35 @@
             </button>
         </div>
 
-        <!-- ══ مهام التحدي — زر يفتح overlay ══ -->
-        <button class="challenge-tasks-btn" onclick="openChallengeTasksOverlay()" style="margin-top:12px;">
-            <div class="challenge-tasks-btn-right">
-                <span class="challenge-tasks-btn-icon">⚔️</span>
-                <div>
-                    <div class="challenge-tasks-btn-title">مهام التحدي</div>
-                    <div class="challenge-tasks-btn-sub">5 تحديات تتجدد يومياً</div>
-                </div>
-            </div>
-            <div class="challenge-tasks-btn-meta">
-                <span class="challenge-tasks-btn-progress" id="challengeTasksBtnProgress">0/5</span>
-                <span class="challenge-tasks-btn-arrow">›</span>
-            </div>
-        </button>
+        <!-- ══ شريط الأزرار الثلاثة — ثابت في الأسفل ══ -->
+        <div class="comp-bottom-bar">
+            <button class="comp-bottom-btn" onclick="openChallengeTasksOverlay()">
+                <span class="comp-bottom-btn-icon">📋</span>
+                <span class="comp-bottom-btn-label">مهام التحدي</span>
+                <span class="comp-bottom-btn-badge" id="challengeTasksBtnProgress">0/5</span>
+            </button>
+            <button class="comp-bottom-btn" onclick="openLbOverlay('challenge')">
+                <span class="comp-bottom-btn-icon">⚔️</span>
+                <span class="comp-bottom-btn-label">التحدي</span>
+                <span class="comp-bottom-btn-arrow">›</span>
+            </button>
+            <button class="comp-bottom-btn" onclick="openLbOverlay('general')">
+                <span class="comp-bottom-btn-icon">📊</span>
+                <span class="comp-bottom-btn-label">النقاط</span>
+                <span class="comp-bottom-btn-arrow">›</span>
+            </button>
+        </div>
 
         <!-- ══ Overlay مهام التحدي ══ -->
         <div id="challengeTasksOverlay" style="display:none;position:absolute;inset:0;z-index:30;background:var(--bg);flex-direction:column;overflow:hidden;">
-            <!-- هيدر الـ overlay -->
             <div class="cto-header">
                 <button class="cto-back-btn" onclick="closeChallengeTasksOverlay()">‹</button>
                 <span class="cto-title">⚔️ مهام التحدي</span>
                 <div style="width:36px;"></div>
             </div>
-            <!-- المحتوى -->
             <div class="cto-body">
                 <div class="cto-desc">أكمل المهام واجمع المكافآت • تتجدد يومياً</div>
                 <div id="challengeDailyTasksList" style="display:flex;flex-direction:column;gap:10px;"></div>
-            </div>
-        </div>
-
-        <!-- ══ لوحة الصدارة ══ -->
-        <div style="margin-top:12px;">
-            <div class="comp-lb-tabs">
-                <button class="comp-lb-tab-btn" onclick="openLbOverlay('challenge')">
-                    <span class="comp-lb-tab-icon">⚔️</span>
-                    <span class="comp-lb-tab-label">التحدي</span>
-                    <span class="comp-lb-tab-arrow">›</span>
-                </button>
-                <button class="comp-lb-tab-btn" onclick="openLbOverlay('general')">
-                    <span class="comp-lb-tab-icon">📊</span>
-                    <span class="comp-lb-tab-label">النقاط</span>
-                    <span class="comp-lb-tab-arrow">›</span>
-                </button>
             </div>
         </div>
 
@@ -1575,7 +1562,7 @@
             </div>
 
             <!-- شبكة الإحصائيات -->
-           <div <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div style="background:var(--surface2);border:1px solid var(--gold-border);border-radius:18px;padding:16px;text-align:center;">
                     <div style="font-size:1.8em;font-weight:900;color:var(--red);" id="stat_streak">×0</div>
                     <div style="font-size:0.65em;color:var(--text2);margin-top:4px;">أعلى تتابع</div>
