@@ -741,9 +741,124 @@ function renderLeaderboardList(container, players, scoreKey) {
 }
 
 /* ══════════════════════════════════════
-   تهيئة عند فتح صفحة المنافسة
-   (تُستدعى من goTab في navigation.js)
+   لوحة الصدارة — Sheet سريعة
 ══════════════════════════════════════ */
+
+function openLbSheet(type) {
+    const sheetId = type === 'challenge' ? 'lbSheetChallenge' : 'lbSheetGeneral';
+    const sheet = document.getElementById(sheetId);
+    if (!sheet) return;
+    try { playSound('click'); } catch(e) {}
+    sheet.style.display = 'flex';
+    // تأثير الدخول
+    sheet.style.opacity = '0';
+    sheet.style.transform = 'translateY(30px)';
+    requestAnimationFrame(() => {
+        sheet.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        sheet.style.opacity = '1';
+        sheet.style.transform = 'translateY(0)';
+    });
+    loadLbSheetData(type, false);
+}
+
+function closeLbSheet(type) {
+    const sheetId = type === 'challenge' ? 'lbSheetChallenge' : 'lbSheetGeneral';
+    const sheet = document.getElementById(sheetId);
+    if (!sheet) return;
+    try { playSound('click'); } catch(e) {}
+    sheet.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    sheet.style.opacity = '0';
+    sheet.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+        sheet.style.display = 'none';
+        sheet.style.transform = '';
+        sheet.style.transition = '';
+        sheet.style.opacity = '';
+    }, 220);
+}
+
+function refreshLbSheet(type) {
+    try { playSound('click'); } catch(e) {}
+    // تأثير دوران زر التحديث
+    const btnId = type === 'challenge' ? 'lbSheetChallenge' : 'lbSheetGeneral';
+    const sheet = document.getElementById(btnId);
+    const refreshBtn = sheet ? sheet.querySelector('.lb-sheet-refresh-btn span') : null;
+    if (refreshBtn) {
+        refreshBtn.style.transition = 'transform 0.5s ease';
+        refreshBtn.style.transform = 'rotate(360deg)';
+        setTimeout(() => { refreshBtn.style.transform = ''; }, 500);
+    }
+    loadLbSheetData(type, true);
+}
+
+function loadLbSheetData(type, forceRefresh) {
+    const listId = type === 'challenge' ? 'lbListChallenge' : 'lbListGeneral';
+    const container = document.getElementById(listId);
+    if (!container) return;
+
+    if (!window.database) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:24px;font-size:0.82em;">⚠️ غير متصل بقاعدة البيانات</div>';
+        return;
+    }
+
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.85em;">⏳ جاري التحميل…</div>';
+
+    const refPath = 'challenge_leaderboard';
+    const scoreKey = type === 'challenge' ? 'challengeScore' : 'score';
+
+    try {
+        window.database.ref(refPath)
+            .orderByChild(type === 'challenge' ? 'challengeScore' : 'challengeScore')
+            .limitToLast(100)
+            .once('value', snapshot => {
+                const players = [];
+                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+
+                if (type === 'challenge') {
+                    players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
+                } else {
+                    players.sort((a, b) => (b.score || b.challengeScore || 0) - (a.score || a.challengeScore || 0));
+                }
+
+                // تحديث إحصائياتي إذا كانت لائحة التحدي
+                if (type === 'challenge') updateCompMyStats(players);
+
+                if (players.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.85em;">لا توجد نتائج بعد — كن الأول! 🚀</div>';
+                    return;
+                }
+
+                renderLbSheetList(container, players, type === 'challenge' ? 'challengeScore' : 'score');
+            }).catch(() => {
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.82em;">⚠️ فشل التحميل، حاول مجدداً</div>';
+            });
+    } catch(e) {
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.82em;">⚠️ خطأ في الاتصال</div>';
+    }
+}
+
+function renderLbSheetList(container, players, scoreKey) {
+    if (!container) return;
+    const medals = ['🥇','🥈','🥉'];
+    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
+
+    let html = '';
+    players.forEach((p, idx) => {
+        const isMe = p.id === myKey;
+        const rank = idx < 3 ? medals[idx] : `#${idx + 1}`;
+        const scoreVal = p[scoreKey] || p.challengeScore || 0;
+        html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}">`
+            + `<span>${rank}</span>`
+            + `<span>${p.avatar || '🧑'} ${p.name || 'لاعب'}</span>`
+            + `<span>${p.level || 1}</span>`
+            + `<span style="color:var(--gold);font-weight:900;">${scoreVal}</span>`
+            + `</div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+
 function initCompetitionPage() {
     // تأكد من إظهار الواجهة الرئيسية فقط
     ['challengeCountdownOverlay','challengeGameArea','challengeResultArea'].forEach(id => {
@@ -760,8 +875,11 @@ function initCompetitionPage() {
     // جسيمات الـ Hero
     initCompHeroSparks();
 
-    // تحميل لوحة الصدارة
-    loadCombinedLeaderboard();
+    // إغلاق أي sheet مفتوحة عند العودة
+    ['lbSheetChallenge','lbSheetGeneral'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.display = 'none'; el.style.transform = ''; el.style.opacity = ''; }
+    });
 
     // مهام التحدي اليومية
     try { if (typeof renderChallengeTasks === 'function') renderChallengeTasks(); } catch(e) {}
