@@ -95,7 +95,7 @@
                         if (G.streak >= 3) s.first++;
                     } catch(e) { console.warn("stats error", e); }
                 }
-                try { updTask('correct'); } catch(e) { console.warn("updTask correct error", e); }
+                try { updTask('correct', 1, G.currentCatKey || null); } catch(e) { console.warn("updTask correct error", e); }
                 if (G.streak >= 3) { try { updTask('streak', G.streak); } catch(e) { console.warn("updTask streak error", e); } }
                 if (!G.isTraining) { try { recordDailyStat('correct'); } catch(e) { console.warn("recordDailyStat error", e); } }
                 if (G.streak >= 5) doConfetti();
