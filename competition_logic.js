@@ -100,7 +100,7 @@ function triggerSwordsAndLaunch() {
 
     // 2) الستارة تُغلق (بعد 250ms — في ذروة الانفراج)
     setTimeout(() => {
-        curtain.style.display = 'flex';
+        curtain.classList.add('curtain-active');
         curtain.classList.remove('curtain-open');
         curtain.classList.add('curtain-close');
     }, 250);
@@ -118,8 +118,7 @@ function triggerSwordsAndLaunch() {
 
     // 5) نخفي الستارة ونعيد الحالة
     setTimeout(() => {
-        curtain.style.display = 'none';
-        curtain.classList.remove('curtain-open', 'curtain-close');
+        curtain.classList.remove('curtain-active', 'curtain-open', 'curtain-close');
         btn.classList.remove('swords-open');
         delete btn.dataset.animating;
     }, 1300);
