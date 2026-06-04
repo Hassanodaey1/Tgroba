@@ -178,6 +178,108 @@ const SHOP_CATALOG = {
         },
     ],
 
+    /* ─── الإطارات ─── */
+    frames: [
+        {
+            id: 'frame_default',
+            label: 'افتراضي',
+            price: 0,
+            free: true,
+            css: 'conic-gradient(var(--gold), var(--accent), var(--accent2), var(--gold))',
+            preview: '🟡',
+            desc: 'الإطار الذهبي الافتراضي',
+        },
+        {
+            id: 'frame_fire',
+            label: 'ناري 🔥',
+            price: 30,
+            css: 'conic-gradient(#ff4500, #ff8c00, #ffd700, #ff8c00, #ff4500)',
+            animated: true,
+            preview: '🔥',
+            desc: 'إطار ناري متوهج',
+            hot: true,
+        },
+        {
+            id: 'frame_ocean',
+            label: 'المحيط 🌊',
+            price: 28,
+            css: 'conic-gradient(#0ea5e9, #06b6d4, #67e8f9, #0284c7, #0ea5e9)',
+            animated: true,
+            preview: '🌊',
+            desc: 'إطار أزرق كالمحيط',
+        },
+        {
+            id: 'frame_galaxy',
+            label: 'مجرّة 🌌',
+            price: 45,
+            css: 'conic-gradient(#7c3aed, #a855f7, #ec4899, #f97316, #7c3aed)',
+            animated: true,
+            preview: '🌌',
+            desc: 'إطار كوني متدرج',
+            hot: true,
+        },
+        {
+            id: 'frame_emerald',
+            label: 'زمرّدي 💚',
+            price: 32,
+            css: 'conic-gradient(#059669, #10b981, #6ee7b7, #059669)',
+            animated: true,
+            preview: '💚',
+            desc: 'إطار أخضر زمردي',
+        },
+        {
+            id: 'frame_ruby',
+            label: 'ياقوت ❤️',
+            price: 35,
+            css: 'conic-gradient(#dc2626, #ef4444, #fca5a5, #dc2626)',
+            animated: true,
+            preview: '❤️',
+            desc: 'إطار أحمر ياقوتي',
+        },
+        {
+            id: 'frame_gold_star',
+            label: 'نجم ذهبي ⭐',
+            price: 50,
+            css: 'conic-gradient(#f0b90b, #fde68a, #f59e0b, #fde68a, #f0b90b)',
+            animated: true,
+            preview: '⭐',
+            desc: 'إطار ذهبي لامع',
+            new: true,
+        },
+        {
+            id: 'frame_diamond',
+            label: 'ماسي 💎',
+            price: 70,
+            css: 'conic-gradient(#e0f2fe, #bae6fd, #7dd3fc, #38bdf8, #0ea5e9, #38bdf8, #e0f2fe)',
+            animated: true,
+            preview: '💎',
+            desc: 'إطار ماسي يلمع',
+            new: true,
+            hot: true,
+        },
+        {
+            id: 'frame_rainbow',
+            label: 'قوس قزح 🌈',
+            price: 80,
+            css: 'conic-gradient(#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#6366f1,#a855f7,#ef4444)',
+            animated: true,
+            preview: '🌈',
+            desc: 'إطار قوس قزح الأسطوري',
+            hot: true,
+        },
+        {
+            id: 'frame_champion',
+            label: 'البطل 🏆',
+            price: 100,
+            css: 'conic-gradient(#f0b90b, #fff7ae, #f0b90b, #b45309, #f0b90b)',
+            animated: true,
+            preview: '🏆',
+            desc: 'إطار الأبطال الحصري',
+            lvlReq: 10,
+            new: true,
+        },
+    ],
+
     /* ─── الحزم الكبيرة ─── */
     bundles: [
         {
@@ -268,6 +370,7 @@ function _renderShopTabs() {
     if (!tabs) return;
     const tabDefs = [
         { key: 'avatars',      icon: '🧑',  label: 'رموز' },
+        { key: 'frames',       icon: '🖼️',  label: 'إطارات', badge: 'جديد!' },
         { key: 'consumables',  icon: '⚡',  label: 'مستهلكات' },
         { key: 'bundles',      icon: '🎁',  label: 'حزم', badge: 'وفّر!' },
     ];
@@ -298,6 +401,7 @@ function _renderActiveShopTab() {
     if (!container) return;
     switch (_shopState.activeTab) {
         case 'avatars':     _renderAvatarGrid(container); break;
+        case 'frames':      _renderFramesGrid(container); break;
         case 'consumables': _renderConsumables(container); break;
         case 'bundles':     _renderBundles(container);    break;
     }
@@ -403,8 +507,154 @@ function selectEmojiFromShop(emoji) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ③ عرض المستهلكات
+   ③ عرض الإطارات
 ═══════════════════════════════════════════════════════════════ */
+function _renderFramesGrid(container) {
+    const activeFrame = st.activeFrame || 'frame_default';
+    const owned = st.ownedFrames || ['frame_default'];
+
+    container.innerHTML = `
+        <div style="padding:10px 0 6px;">
+            <div style="font-size:0.7em;color:var(--text2);text-align:center;margin-bottom:4px;">
+                🖼️ الإطار يظهر حول صورتك في كل مكان
+            </div>
+            <div style="text-align:center;margin-bottom:12px;">
+                <div class="frame-preview-big" id="framePreviewBig">
+                    <div class="frame-preview-ring" id="framePreviewRing"></div>
+                    <div class="frame-preview-inner">${st.avatar || '🧑'}</div>
+                </div>
+                <div style="font-size:0.65em;color:var(--text2);margin-top:6px;">معاينة الإطار الحالي</div>
+            </div>
+            <div id="framesShopGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"></div>
+        </div>
+    `;
+
+    // تطبيق الإطار الحالي على المعاينة
+    _applyFrameToElement('framePreviewRing', activeFrame);
+
+    const grid = document.getElementById('framesShopGrid');
+    if (!grid) return;
+
+    grid.innerHTML = SHOP_CATALOG.frames.map(frame => {
+        const isOwned   = owned.includes(frame.id);
+        const isActive  = activeFrame === frame.id;
+        const isLocked  = !isOwned && frame.lvlReq && st.level < frame.lvlReq;
+        const canAfford = st.coins >= frame.price;
+
+        const badges = [];
+        if (frame.hot) badges.push(`<span class="frame-badge frame-badge-hot">🔥 رائج</span>`);
+        if (frame.new) badges.push(`<span class="frame-badge frame-badge-new">✨ جديد</span>`);
+
+        let actionBtn = '';
+        if (isActive) {
+            actionBtn = `<div class="frame-card-status frame-status-active">✅ مفعّل</div>`;
+        } else if (isOwned) {
+            actionBtn = `<div class="frame-card-status frame-status-owned">تفعيل</div>`;
+        } else if (isLocked) {
+            actionBtn = `<div class="frame-card-status frame-status-locked">🔒 Lv.${frame.lvlReq}</div>`;
+        } else {
+            actionBtn = `<div class="frame-card-status ${canAfford ? 'frame-status-buy' : 'frame-status-broke'}">${frame.price}💰</div>`;
+        }
+
+        const onclick = isActive ? ''
+            : isOwned  ? `activateFrame('${frame.id}')`
+            : isLocked ? `showFeedback('🔒 يفتح عند المستوى ${frame.lvlReq}')`
+            : `buyFrame('${frame.id}',${frame.price},'${frame.label}')`;
+
+        return `
+            <div class="frame-card ${isActive ? 'frame-card-active' : isOwned ? 'frame-card-owned' : ''}"
+                 onclick="${onclick};playSound('click');"
+                 style="opacity:${isLocked ? 0.55 : 1};cursor:${isLocked ? 'not-allowed' : 'pointer'};">
+                ${badges.length ? `<div class="frame-card-badges">${badges.join('')}</div>` : ''}
+                <div class="frame-card-preview">
+                    <div class="frame-mini-ring frame-ring-${frame.id}" id="fring_${frame.id}"></div>
+                    <div class="frame-mini-inner">${st.avatar || '🧑'}</div>
+                </div>
+                <div class="frame-card-label">${frame.label}</div>
+                <div class="frame-card-desc">${frame.desc}</div>
+                ${actionBtn}
+            </div>
+        `;
+    }).join('');
+
+    // تطبيق CSS لكل إطار في الشبكة
+    SHOP_CATALOG.frames.forEach(frame => {
+        _applyFrameToElement(`fring_${frame.id}`, frame.id);
+    });
+}
+
+function _applyFrameToElement(elementId, frameId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const frame = SHOP_CATALOG.frames.find(f => f.id === frameId);
+    if (!frame) return;
+    el.style.background = frame.css;
+    if (frame.animated) {
+        el.style.animation = 'spin 3s linear infinite';
+    }
+}
+
+function buyFrame(frameId, price, label) {
+    if (!st.ownedFrames) st.ownedFrames = ['frame_default'];
+    if (st.ownedFrames.includes(frameId)) {
+        activateFrame(frameId);
+        return;
+    }
+    if (st.coins < price) {
+        _showInsufficientCoinsOffer(price - st.coins, label);
+        return;
+    }
+    showConfirm('🖼️ شراء إطار', `شراء إطار "${label}" بـ ${price} عملة؟`, 'نعم اشترِ', 'إلغاء', ok => {
+        if (!ok) return;
+        st.coins -= price;
+        if (!st.ownedFrames) st.ownedFrames = ['frame_default'];
+        st.ownedFrames.push(frameId);
+        st.activeFrame = frameId;
+        saveSt();
+        playSound('purchase');
+        _applyActiveFrameGlobally();
+        renderShop();
+        updateUI();
+        showFeedback(`🎉 تم شراء الإطار وتفعيله!`);
+    });
+}
+
+function activateFrame(frameId) {
+    if (!st.ownedFrames) st.ownedFrames = ['frame_default'];
+    if (!st.ownedFrames.includes(frameId)) return;
+    st.activeFrame = frameId;
+    saveSt();
+    playSound('click');
+    _applyActiveFrameGlobally();
+    renderShop();
+    showFeedback('✅ تم تفعيل الإطار!');
+}
+
+function _applyActiveFrameGlobally() {
+    const frameId = st.activeFrame || 'frame_default';
+    const frame   = SHOP_CATALOG.frames.find(f => f.id === frameId);
+    if (!frame) return;
+
+    const ringIds = ['headerAvatarRing', 'profileAvatarRingMain'];
+    ringIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.background = frame.css;
+        el.style.animation  = frame.animated ? 'spin 3s linear infinite' : 'spin 4s linear infinite';
+    });
+
+    // تطبيق على avatar-ring و profile-avatar-ring عبر class
+    document.querySelectorAll('.avatar-ring, .profile-avatar-ring').forEach(el => {
+        el.style.background = frame.css;
+        el.style.animation  = frame.animated ? 'spin 3s linear infinite' : 'spin 4s linear infinite';
+    });
+}
+
+window.buyFrame      = buyFrame;
+window.activateFrame = activateFrame;
+window._applyActiveFrameGlobally = _applyActiveFrameGlobally;
+
+
 function _renderConsumables(container) {
     const inGame = typeof G !== 'undefined' && !G.ended &&
                    document.getElementById('gameOverlay') &&
@@ -1009,6 +1259,10 @@ window.addEventListener('load', function () {
         if (st._hintsRemaining) {
             _shopState.hintsRemaining = st._hintsRemaining;
         }
+        // تطبيق الإطار المحفوظ على كل الحلقات
+        setTimeout(() => {
+            try { _applyActiveFrameGlobally(); } catch(e) {}
+        }, 500);
     }
 });
 
