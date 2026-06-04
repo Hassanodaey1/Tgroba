@@ -780,10 +780,50 @@
         <div class="comp-hero-banner comp-hero-expanded">
             <div class="comp-hero-bg-sparks" id="compHeroBgSparks"></div>
             <div class="comp-hero-content">
-                <button class="comp-hero-icon-wrap" onclick="launchChallengeCountdown()" id="compStartBtn">
+                <button class="comp-hero-icon-wrap" onclick="triggerSwordsAndLaunch()" id="compStartBtn">
                     <div class="comp-hero-ring"></div>
-                    <span class="comp-hero-icon">⚔️</span>
+                    <!-- سيف أيسر -->
+                    <svg class="hero-sword hero-sword-left" viewBox="0 0 24 80" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="bladeGradL" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#c0c0c0"/>
+                                <stop offset="50%" style="stop-color:#ffffff"/>
+                                <stop offset="100%" style="stop-color:#8a8a8a"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- النصل -->
+                        <polygon points="12,2 15,60 12,65 9,60" fill="url(#bladeGradL)" />
+                        <!-- حارس اليد -->
+                        <rect x="4" y="60" width="16" height="4" rx="2" fill="#f0b90b"/>
+                        <!-- المقبض -->
+                        <rect x="10" y="64" width="4" height="13" rx="2" fill="#8B4513"/>
+                        <!-- رأس المقبض -->
+                        <ellipse cx="12" cy="78" rx="4" ry="2.5" fill="#f0b90b"/>
+                    </svg>
+                    <!-- سيف أيمن -->
+                    <svg class="hero-sword hero-sword-right" viewBox="0 0 24 80" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="bladeGradR" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#8a8a8a"/>
+                                <stop offset="50%" style="stop-color:#ffffff"/>
+                                <stop offset="100%" style="stop-color:#c0c0c0"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- النصل -->
+                        <polygon points="12,2 15,60 12,65 9,60" fill="url(#bladeGradR)" />
+                        <!-- حارس اليد -->
+                        <rect x="4" y="60" width="16" height="4" rx="2" fill="#f0b90b"/>
+                        <!-- المقبض -->
+                        <rect x="10" y="64" width="4" height="13" rx="2" fill="#8B4513"/>
+                        <!-- رأس المقبض -->
+                        <ellipse cx="12" cy="78" rx="4" ry="2.5" fill="#f0b90b"/>
+                    </svg>
                 </button>
+                <!-- ستارة الانتقال -->
+                <div id="swordsCurtain" class="swords-curtain" style="display:none;">
+                    <div class="curtain-left"></div>
+                    <div class="curtain-right"></div>
+                </div>
                 <div class="comp-hero-title">نداء التحدي</div>
                 <div class="comp-hero-sub">تحدّ نفسك وتسلّق لوحة الصدارة</div>
                 <!-- إحصائياتي -->
@@ -1516,7 +1556,7 @@
                     if (q('spStatStreak'))    q('spStatStreak').textContent   = '×' + st.bestStreak;
                     if (q('spStatCoins'))     q('spStatCoins').textContent    = st.coins;
                     /* الصورة/الأفاتار */
-                    const simg = q('spProfileAvatarImg');
+                   const simg = q('spProfileAvatarImg');
                     if (simg) {
                         if (st.profilePhoto) {
                             simg.style.backgroundImage   = 'url("' + st.profilePhoto + '")';
@@ -1567,7 +1607,7 @@
             playSound && playSound('click');
         }
 
-       function closeSettingsSubPage(overlayId) {
+        function closeSettingsSubPage(overlayId) {
             const el = document.getElementById(overlayId);
             if (el) el.style.display = 'none';
             playSound && playSound('click');
@@ -2004,3 +2044,4 @@
 </html>
           
          
+                      
