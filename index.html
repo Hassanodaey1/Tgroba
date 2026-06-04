@@ -819,11 +819,7 @@
                         <ellipse cx="12" cy="78" rx="4" ry="2.5" fill="#f0b90b"/>
                     </svg>
                 </button>
-                <!-- ستارة الانتقال -->
-                <div id="swordsCurtain" class="swords-curtain">
-                    <div class="curtain-left"></div>
-                    <div class="curtain-right"></div>
-                </div>
+
                 <div class="comp-hero-title">نداء التحدي</div>
                 <div class="comp-hero-sub">تحدّ نفسك وتسلّق لوحة الصدارة</div>
                 <!-- إحصائياتي -->
@@ -1569,7 +1565,7 @@
                         }
                     }
                     /* الرقم التسلسلي */
-                    const snd = q('serialNumberDisplay');
+                   const snd = q('serialNumberDisplay');
                     if (snd) snd.textContent = st.serialNumber || 'احفظ الملف الشخصي أولاً';
                 }
             }
@@ -2040,8 +2036,12 @@
         </div>
     </div>
 
+<!-- ستارة السيوف — خارج كل شيء لتغطي الشاشة كاملة -->
+<div id="swordsCurtain" class="swords-curtain">
+    <div class="curtain-left"></div>
+    <div class="curtain-right"></div>
+</div>
 </body>
 </html>
           
          
-           
