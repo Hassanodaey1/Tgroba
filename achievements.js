@@ -139,7 +139,63 @@
             if (el) el.textContent = Object.values(BADGES).filter(b => b.cond()).map(b => b.icon).join('');
         }
 
-        /* ═══ 9.2 — مهمة ديناميكية حسب نقطة ضعف اللاعب ═══ */
+        /* ═══════════════════════════════════════════════════════
+           📋 مهام مصنّفة — CATEGORY_TASKS
+           كل فئة تحتوي على مهام يومية مخصصة
+           الأنواع المدعومة في updTask:
+             correct | streak | game | daily | weekly
+             play_memory | play_rocket | play_sudden | play_fill | play_hard
+             chain_q | sudden_q
+             + opKey يُمرَّر من game.js لتمييز العملية
+           ═══════════════════════════════════════════════════════ */
+
+        const CATEGORY_TASKS = {
+            ops: [
+                { id: 'op1', icon: '➕', name: 'سيد الجمع',     desc: 'أجب على 8 أسئلة جمع صحيحة',     reward: 2, goal: 8,  progress: 0, done: false, type: 'ops_add' },
+                { id: 'op2', icon: '➖', name: 'قاهر الطرح',    desc: 'أجب على 8 أسئلة طرح صحيحة',     reward: 2, goal: 8,  progress: 0, done: false, type: 'ops_sub' },
+                { id: 'op3', icon: '✖️', name: 'أبو الضرب',     desc: 'أجب على 8 أسئلة ضرب صحيحة',     reward: 3, goal: 8,  progress: 0, done: false, type: 'ops_mul' },
+                { id: 'op4', icon: '➗', name: 'عين القسمة',    desc: 'أجب على 8 أسئلة قسمة صحيحة',    reward: 3, goal: 8,  progress: 0, done: false, type: 'ops_div' },
+                { id: 'op5', icon: '🔢', name: 'جدول الأبطال',  desc: 'أجب على 10 أسئلة جدول ضرب',    reward: 3, goal: 10, progress: 0, done: false, type: 'ops_table' },
+                { id: 'op6', icon: '🔀', name: 'شاطر المزج',    desc: 'أجب على 15 سؤالاً مختلطاً',     reward: 4, goal: 15, progress: 0, done: false, type: 'correct' },
+                { id: 'op7', icon: '🏃', name: 'جلستان كاملتان',desc: 'أنهِ جلستَي لعب كاملتَين',       reward: 2, goal: 2,  progress: 0, done: false, type: 'game' },
+                { id: 'op8', icon: '🎯', name: 'أول 3 إجابات',  desc: 'أجب على 3 أسئلة صحيحة لتبدأ',  reward: 1, goal: 3,  progress: 0, done: false, type: 'correct' },
+            ],
+            challenges: [
+                { id: 'ch1', icon: '🌟', name: 'تحدي اليوم',       desc: 'العب تحدي اليوم (١٠ أسئلة)',      reward: 3, goal: 1,  progress: 0, done: false, type: 'daily' },
+                { id: 'ch2', icon: '🔥', name: 'تتابع ×3',          desc: '3 إجابات صحيحة متتالية',          reward: 2, goal: 3,  progress: 0, done: false, type: 'streak3' },
+                { id: 'ch3', icon: '💥', name: 'تتابع ×5',          desc: '5 إجابات صحيحة متتالية',          reward: 4, goal: 5,  progress: 0, done: false, type: 'streak5' },
+                { id: 'ch4', icon: '⚡', name: 'الصاعق',            desc: 'العب وضع ضد الساعة مرة واحدة',   reward: 3, goal: 1,  progress: 0, done: false, type: 'play_sudden' },
+                { id: 'ch5', icon: '🔗', name: 'سلسلة لا تنكسر',   desc: 'أجب على 5 أسئلة في وضع السلسلة', reward: 3, goal: 5,  progress: 0, done: false, type: 'chain_q' },
+                { id: 'ch6', icon: '🗓️', name: 'بطل الأسبوع',      desc: 'شارك في تحدي الأسبوع',            reward: 5, goal: 1,  progress: 0, done: false, type: 'weekly' },
+                { id: 'ch7', icon: '🎯', name: '10 إجابات صحيحة',   desc: 'أجب على 10 أسئلة صحيحة',          reward: 3, goal: 10, progress: 0, done: false, type: 'correct' },
+            ],
+            advanced: [
+                { id: 'adv1', icon: '📐', name: 'الجبر الحاضر',    desc: 'أجب على 5 أسئلة جبر صحيحة',        reward: 4, goal: 5,  progress: 0, done: false, type: 'ops_algebra' },
+                { id: 'adv2', icon: '🧮', name: 'منطق رياضي',      desc: 'أجب على 10 أسئلة صحيحة',           reward: 3, goal: 10, progress: 0, done: false, type: 'correct' },
+                { id: 'adv3', icon: '🚀', name: 'وضع الصاروخ',     desc: 'العب وضع الصاروخ مرة كاملة',       reward: 5, goal: 1,  progress: 0, done: false, type: 'play_rocket' },
+                { id: 'adv4', icon: '💎', name: '25 إجابة',        desc: 'أجب على 25 سؤالاً صحيحاً',         reward: 5, goal: 25, progress: 0, done: false, type: 'correct' },
+                { id: 'adv5', icon: '🏆', name: 'مستوى صعب',       desc: 'العب على مستوى صعب أو أعلى',       reward: 4, goal: 1,  progress: 0, done: false, type: 'play_hard' },
+                { id: 'adv6', icon: '📊', name: '3 جلسات اليوم',   desc: 'أكمل 3 جلسات لعب اليوم',           reward: 3, goal: 3,  progress: 0, done: false, type: 'game' },
+            ],
+            mind: [
+                { id: 'mn1', icon: '🧠', name: 'لعبة ذاكرة',      desc: 'العب وضع بطاقة الذاكرة مرة',      reward: 3, goal: 1,  progress: 0, done: false, type: 'play_memory' },
+                { id: 'mn2', icon: '🔗', name: 'سلسلة العقل',     desc: 'أجب على 8 أسئلة في وضع السلسلة', reward: 4, goal: 8,  progress: 0, done: false, type: 'chain_q' },
+                { id: 'mn3', icon: '🎯', name: 'تركيز مطلق',      desc: '5 إجابات صحيحة متتالية بلا خطأ',  reward: 4, goal: 5,  progress: 0, done: false, type: 'streak5' },
+                { id: 'mn4', icon: '⚡', name: 'سرعة البرق',       desc: '5 أسئلة صحيحة في ضد الساعة',     reward: 4, goal: 5,  progress: 0, done: false, type: 'sudden_q' },
+                { id: 'mn5', icon: '🌀', name: 'تحدي الفراغ',      desc: 'العب وضع ملء الفراغ مرة كاملة',  reward: 3, goal: 1,  progress: 0, done: false, type: 'play_fill' },
+            ]
+        };
+
+        /* meta بيانات العرض لكل فئة */
+        const CATEGORY_META = {
+            ops:          { label: 'مهام العمليات على الأعداد',  icon: '🔢', c1: '#f0b90b', c2: '#f59e0b' },
+            challenges:   { label: 'مهام التحديات',              icon: '⚔️', c1: '#7c3aed', c2: '#a855f7' },
+            advanced:     { label: 'مهام الرياضيات المتقدمة',   icon: '📐', c1: '#06b6d4', c2: '#0ea5e9' },
+            mind:         { label: 'مهام العقل',                 icon: '🧠', c1: '#10b981', c2: '#34d399' },
+            achievements: { label: 'الإنجازات',                  icon: '🏆', c1: '#f59e0b', c2: '#fbbf24' }
+        };
+
+        /* ═══ مهمة ديناميكية حسب نقطة ضعف اللاعب ═══ */
         function genDynamicTask() {
             const stats = st.stats || {};
             let weakest = 'add', weakestRate = 1;
@@ -156,114 +212,53 @@
                 table: 'جدول الضرب', algebra: 'الجبر', mix: 'العمليات المختلطة'
             };
             const opLabel = opNames[weakest] || weakest;
+            /* تُضاف المهمة الديناميكية إلى فئة ops */
             return {
-                id: 'tw', icon: '🎯',
-                name: `تحسين ${opLabel}`,
+                id: 'tw', icon: '🎯', name: `تحسين ${opLabel}`,
                 desc: `أجب على 10 أسئلة صحيحة في ${opLabel}`,
-                reward: 8, goal: 10, progress: 0, done: false,
-                targetOp: weakest
+                reward: 5, goal: 10, progress: 0, done: false,
+                type: 'ops_dyn', targetOp: weakest
             };
         }
 
-        /* ═══════════════════════════════════════════════════════
-           📋 مهام مصنّفة — كل فئة لها مهام خاصة
-           الفئات: ops | challenges | advanced | mind | achievements
-           ═══════════════════════════════════════════════════════ */
-
-        const CATEGORY_TASKS = {
-            ops: [
-                { id: 'op1', icon: '➕', name: 'سيد الجمع', desc: 'أجب على 8 أسئلة جمع صحيحة', reward: 2, goal: 8, progress: 0, done: false, type: 'ops_add' },
-                { id: 'op2', icon: '➖', name: 'قاهر الطرح', desc: 'أجب على 8 أسئلة طرح صحيحة', reward: 2, goal: 8, progress: 0, done: false, type: 'ops_sub' },
-                { id: 'op3', icon: '✖️', name: 'أبو الضرب', desc: 'أجب على 8 أسئلة ضرب صحيحة', reward: 3, goal: 8, progress: 0, done: false, type: 'ops_mul' },
-                { id: 'op4', icon: '➗', name: 'عين القسمة', desc: 'أجب على 8 أسئلة قسمة صحيحة', reward: 3, goal: 8, progress: 0, done: false, type: 'ops_div' },
-                { id: 'op5', icon: '🔢', name: 'جدول الأبطال', desc: 'أجب على 10 أسئلة جدول ضرب', reward: 3, goal: 10, progress: 0, done: false, type: 'ops_table' },
-                { id: 'op6', icon: '🔀', name: 'شاطر المزج', desc: 'أجب على 15 سؤالاً مختلطاً', reward: 4, goal: 15, progress: 0, done: false, type: 'ops_mix' },
-                { id: 'op7', icon: '🏃', name: 'جلستان كاملتان', desc: 'أنهِ جلستَي لعب كاملتَين', reward: 2, goal: 2, progress: 0, done: false, type: 'game' },
-                { id: 'op8', icon: '🎯', name: 'أول 3 إجابات', desc: 'أجب على 3 أسئلة صحيحة لتبدأ', reward: 1, goal: 3, progress: 0, done: false, type: 'correct' },
-            ],
-            challenges: [
-                { id: 'ch1', icon: '🌟', name: 'تحدي اليوم', desc: 'العب تحدي اليوم (١٠ أسئلة متدرجة)', reward: 3, goal: 1, progress: 0, done: false, type: 'daily' },
-                { id: 'ch2', icon: '🔥', name: 'تتابع ×3', desc: '3 إجابات صحيحة متتالية', reward: 3, goal: 3, progress: 0, done: false, type: 'streak3' },
-                { id: 'ch3', icon: '💥', name: 'تتابع ×5', desc: '5 إجابات صحيحة متتالية', reward: 5, goal: 5, progress: 0, done: false, type: 'streak5' },
-                { id: 'ch4', icon: '⚡', name: 'الصاعق', desc: 'العب وضع ضد الساعة مرة واحدة', reward: 3, goal: 1, progress: 0, done: false, type: 'play_sudden' },
-                { id: 'ch5', icon: '🔗', name: 'سلسلة لا تنكسر', desc: 'العب وضع السلسلة وأكمل 5 أسئلة', reward: 3, goal: 5, progress: 0, done: false, type: 'chain_q' },
-                { id: 'ch6', icon: '🗓️', name: 'بطل الأسبوع', desc: 'شارك في تحدي الأسبوع', reward: 5, goal: 1, progress: 0, done: false, type: 'weekly' },
-                { id: 'ch7', icon: '🎯', name: 'دقة عالية', desc: 'أجب على 10 أسئلة بدقة 80%+', reward: 4, goal: 10, progress: 0, done: false, type: 'accuracy' },
-            ],
-            advanced: [
-                { id: 'adv1', icon: '📐', name: 'الجبر الحاضر', desc: 'أجب على 5 أسئلة جبر صحيحة', reward: 4, goal: 5, progress: 0, done: false, type: 'ops_algebra' },
-                { id: 'adv2', icon: '🧮', name: 'منطق رياضي', desc: 'أجب على 10 أسئلة متقدمة', reward: 5, goal: 10, progress: 0, done: false, type: 'correct' },
-                { id: 'adv3', icon: '🚀', name: 'وضع الصاروخ', desc: 'العب وضع الصاروخ مرة كاملة', reward: 5, goal: 1, progress: 0, done: false, type: 'play_rocket' },
-                { id: 'adv4', icon: '💎', name: '25 إجابة', desc: 'أجب على 25 سؤالاً صحيحاً', reward: 6, goal: 25, progress: 0, done: false, type: 'correct' },
-                { id: 'adv5', icon: '🏆', name: 'مستوى صعب', desc: 'العب على مستوى صعب أو أعلى', reward: 4, goal: 1, progress: 0, done: false, type: 'play_hard' },
-                { id: 'adv6', icon: '📊', name: 'إحصاء اليوم', desc: 'أكمل 3 جلسات لعب اليوم', reward: 4, goal: 3, progress: 0, done: false, type: 'game' },
-            ],
-            mind: [
-                { id: 'mn1', icon: '🧠', name: 'لعبة ذاكرة', desc: 'العب وضع بطاقة الذاكرة مرة واحدة', reward: 3, goal: 1, progress: 0, done: false, type: 'play_memory' },
-                { id: 'mn2', icon: '🔗', name: 'سلسلة العقل', desc: 'أجب على 8 أسئلة في وضع السلسلة', reward: 4, goal: 8, progress: 0, done: false, type: 'chain_q' },
-                { id: 'mn3', icon: '🎯', name: 'تركيز مطلق', desc: 'أجب على 5 صحيحة متتالية بدون خطأ', reward: 5, goal: 5, progress: 0, done: false, type: 'streak5' },
-                { id: 'mn4', icon: '⚡', name: 'سرعة البرق', desc: 'أجب على 5 أسئلة في وضع ضد الساعة', reward: 4, goal: 5, progress: 0, done: false, type: 'sudden_q' },
-                { id: 'mn5', icon: '🌀', name: 'تحدي التركيز', desc: 'العب وضع التكميل (ملء الفراغ)', reward: 3, goal: 1, progress: 0, done: false, type: 'play_fill' },
-            ]
-        };
+        /* ═══ توليد وتجديد مهام الفئات ═══ */
+        function _buildCategoryTasks() {
+            const cats = {};
+            Object.keys(CATEGORY_TASKS).forEach(cat => {
+                cats[cat] = CATEGORY_TASKS[cat].map(t => Object.assign({}, t));
+            });
+            /* أضف المهمة الديناميكية إلى فئة ops إذا كان هناك بيانات كافية */
+            const hasEnoughData = Object.values(st.stats || {}).some(s => s && s.att >= 5);
+            if (hasEnoughData) {
+                cats.ops.push(genDynamicTask());
+            }
+            return cats;
+        }
 
         function genDailyTasks() {
-            /* المهام الأساسية العامة — تظهر في الصفحة الرئيسية */
-            const tasks = [
-                { id: 't1', icon: '🎯', name: 'أول إجابة', desc: 'أجب على سؤال واحد صحيح', reward: 1, goal: 1, progress: 0, done: false, type: 'correct' },
-                { id: 't2', icon: '🔥', name: 'تتابع ×3', desc: '3 إجابات صحيحة متتالية', reward: 2, goal: 3, progress: 0, done: false, type: 'streak3' },
-                { id: 't3', icon: '⚡', name: '10 إجابات صحيحة', desc: 'أجب على 10 أسئلة صحيحة', reward: 3, goal: 10, progress: 0, done: false, type: 'correct' },
-                { id: 't4', icon: '🏃', name: 'جلستان كاملتان', desc: 'أنهِ جلستَي لعب كاملتَين', reward: 2, goal: 2, progress: 0, done: false, type: 'game' },
-                { id: 't5', icon: '💎', name: '25 إجابة', desc: 'أجب على 25 سؤالاً صحيحاً', reward: 5, goal: 25, progress: 0, done: false, type: 'correct' },
-                { id: 't6', icon: '🌟', name: 'تحدي اليوم', desc: 'العب تحدي اليوم (١٠ أسئلة متدرجة)', reward: 2, goal: 1, progress: 0, done: false, type: 'daily' },
-            ];
-            /* أضف المهمة الديناميكية فقط إذا كان هناك بيانات كافية */
-            const statsData = st.stats || {};
-            const hasEnoughData = Object.values(statsData).some(s => s && s.att >= 5);
-            if (hasEnoughData) {
-                tasks.push(genDynamicTask());
-            }
-            /* إنشاء مهام الفئات المصنّفة */
-            if (!st.categoryTasks || st.categoryTasksDate !== todayStr()) {
-                st.categoryTasks = {};
-                Object.keys(CATEGORY_TASKS).forEach(cat => {
-                    st.categoryTasks[cat] = JSON.parse(JSON.stringify(CATEGORY_TASKS[cat]));
-                });
-                st.categoryTasksDate = todayStr();
-            }
-            return tasks;
+            /* مصفوفة فارغة — المهام الآن في categoryTasks فقط */
+            return [];
         }
 
         function checkDailyReset() {
             const today = todayStr();
-            if (st.dailyDate !== today || !st.dailyTasks || st.dailyTasks.length === 0) {
-                st.dailyTasks = genDailyTasks();
+            /* تجديد المهام العامة (مصفوفة فارغة للتوافق) */
+            if (st.dailyDate !== today || !st.dailyTasks) {
+                st.dailyTasks = [];
                 st.dailyDate  = today;
-                saveSt();
             }
             /* تجديد مهام الفئات إذا تغيّر اليوم */
             if (!st.categoryTasks || st.categoryTasksDate !== today) {
-                st.categoryTasks = {};
-                Object.keys(CATEGORY_TASKS).forEach(cat => {
-                    st.categoryTasks[cat] = JSON.parse(JSON.stringify(CATEGORY_TASKS[cat]));
-                });
+                st.categoryTasks     = _buildCategoryTasks();
                 st.categoryTasksDate = today;
                 saveSt();
             }
-            /* تحقق من بنية المهام العامة */
-            if (Array.isArray(st.dailyTasks)) {
-                st.dailyTasks.forEach(t => {
-                    if (typeof t.done !== 'boolean') t.done = false;
-                    if (typeof t.progress !== 'number' || t.progress < 0) t.progress = 0;
-                    if (t.progress > (t.goal || 1)) t.progress = t.goal || 1;
-                });
-            }
-            /* تحقق من بنية مهام الفئات */
+            /* صحّح بنية مهام الفئات الموجودة */
             if (st.categoryTasks && typeof st.categoryTasks === 'object') {
-                Object.values(st.categoryTasks).forEach(catArr => {
-                    if (!Array.isArray(catArr)) return;
-                    catArr.forEach(t => {
-                        if (typeof t.done !== 'boolean') t.done = false;
+                Object.values(st.categoryTasks).forEach(arr => {
+                    if (!Array.isArray(arr)) return;
+                    arr.forEach(t => {
+                        if (typeof t.done     !== 'boolean') t.done     = false;
                         if (typeof t.progress !== 'number' || t.progress < 0) t.progress = 0;
                         if (t.progress > (t.goal || 1)) t.progress = t.goal || 1;
                     });
@@ -271,112 +266,122 @@
             }
         }
 
-        function updTask(type, amount = 1, opKey = null) {
+        /* ═══════════════════════════════════════════════════════
+           updTask — نقطة الدخول الرئيسية لتحديث المهام
+           يُستدعى من game.js عند كل حدث
+           الحجج:
+             type   — نوع الحدث (correct | streak | game | daily | weekly | play_* | chain_q | sudden_q)
+             amount — كمية التقدم (افتراضي 1)
+             opKey  — مفتاح العملية من G.currentCatKey (addition | subtraction | ...)
+           ═══════════════════════════════════════════════════════ */
+        function updTask(type, amount, opKey) {
+            amount = (typeof amount === 'number') ? amount : 1;
+            opKey  = opKey || null;
             checkDailyReset();
-            const T = st.dailyTasks;
+
+            if (!st.categoryTasks) return;
             let changed = false;
 
-            /* ═══ تحديث المهام العامة ═══ */
-            if (type === 'correct') {
-                T.filter(t => ['t1','t3','t5'].includes(t.id)).forEach(t => {
-                    if (!t.done) { t.progress = Math.min(t.goal, t.progress + amount); if (t.progress >= t.goal) { t.done = true; st.coins += t.reward; changed = true; } }
-                });
-                const tw = T.find(x => x.id === 'tw');
-                if (tw && !tw.done && opKey && tw.targetOp && (opKey === tw.targetOp || opKey.includes(tw.targetOp) || tw.targetOp.includes(opKey))) {
-                    tw.progress = Math.min(tw.goal, tw.progress + amount);
-                    if (tw.progress >= tw.goal) { tw.done = true; st.coins += tw.reward; changed = true; }
-                }
-            }
-            if (type === 'streak' && amount >= 3) { const t = T.find(x => x.id === 't2'); if (t && !t.done) { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; } }
-            if (type === 'game')  { const t = T.find(x => x.id === 't4'); if (t && !t.done) { t.progress = Math.min(t.goal, t.progress + 1); if (t.progress >= t.goal) { t.done = true; st.coins += t.reward; changed = true; } } }
-            if (type === 'daily') { const t = T.find(x => x.id === 't6'); if (t && !t.done) { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; } }
+            /* خريطة opKey → type الداخلي */
+            const OP_MAP = {
+                addition:       'ops_add',
+                subtraction:    'ops_sub',
+                multiplication: 'ops_mul',
+                division:       'ops_div',
+                table:          'ops_table',
+                algebra:        'ops_algebra',
+                /* مختصرات قديمة */
+                add: 'ops_add', sub: 'ops_sub', mul: 'ops_mul', div: 'ops_div'
+            };
 
-            /* ═══ تحديث مهام الفئات المصنّفة ═══ */
-            if (st.categoryTasks && typeof st.categoryTasks === 'object') {
-                Object.values(st.categoryTasks).forEach(catArr => {
-                    if (!Array.isArray(catArr)) return;
-                    catArr.forEach(t => {
-                        if (t.done) return;
-                        const tt = t.type || '';
-                        /* تحقق من التطابق وتحديث التقدم */
-                        if (type === 'correct' && tt === 'correct') { t.progress = Math.min(t.goal, t.progress + amount); if (t.progress >= t.goal) { t.done = true; st.coins += t.reward; changed = true; } return; }
-                        if (type === 'correct' && opKey) {
-                            const opMap = { ops_add:['add','addition'], ops_sub:['sub','subtraction'], ops_mul:['mul','multiplication'], ops_div:['div','division'], ops_table:['table'], ops_algebra:['algebra'], ops_mix:['mix'] };
-                            if (opMap[tt] && opMap[tt].some(k => opKey === k || opKey.includes(k))) {
-                                t.progress = Math.min(t.goal, t.progress + amount); if (t.progress >= t.goal) { t.done = true; st.coins += t.reward; changed = true; }
-                            }
+            Object.values(st.categoryTasks).forEach(arr => {
+                if (!Array.isArray(arr)) return;
+                arr.forEach(t => {
+                    if (t.done) return;
+                    const tt = t.type || '';
+                    let hit = false;
+
+                    if (type === 'correct') {
+                        /* مهام العمليات بـ opKey */
+                        if (opKey && OP_MAP[opKey] && tt === OP_MAP[opKey]) hit = true;
+                        /* مهمة ديناميكية */
+                        if (tt === 'ops_dyn' && opKey && t.targetOp) {
+                            const tgt = t.targetOp;
+                            if (opKey === tgt || OP_MAP[opKey] === OP_MAP[tgt] ||
+                                opKey.includes(tgt) || tgt.includes(opKey)) hit = true;
                         }
-                        if (type === 'game'   && tt === 'game')   { t.progress = Math.min(t.goal, t.progress+1); if (t.progress >= t.goal) { t.done=true; st.coins+=t.reward; changed=true; } }
-                        if (type === 'daily'  && tt === 'daily')  { t.progress = t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'streak' && tt === 'streak3' && amount>=3) { t.progress=t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'streak' && tt === 'streak5' && amount>=5) { t.progress=t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'weekly'      && tt === 'weekly')      { t.progress=t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'play_memory' && tt === 'play_memory') { t.progress=t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'play_rocket' && tt === 'play_rocket') { t.progress=t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'play_sudden' && tt === 'play_sudden') { t.progress=t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'play_fill'   && tt === 'play_fill')   { t.progress=t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'play_hard'   && tt === 'play_hard')   { t.progress=t.goal; t.done=true; st.coins+=t.reward; changed=true; }
-                        if (type === 'chain_q' && tt === 'chain_q') { t.progress = Math.min(t.goal, t.progress+amount); if (t.progress>=t.goal) { t.done=true; st.coins+=t.reward; changed=true; } }
-                        if (type === 'sudden_q' && tt === 'sudden_q') { t.progress = Math.min(t.goal, t.progress+amount); if (t.progress>=t.goal) { t.done=true; st.coins+=t.reward; changed=true; } }
-                        if (type === 'accuracy' && tt === 'accuracy') { t.progress = Math.min(t.goal, t.progress+amount); if (t.progress>=t.goal) { t.done=true; st.coins+=t.reward; changed=true; } }
-                    });
-                });
-            }
+                        /* أي مهمة نوعها 'correct' تُحسب لكل إجابة صحيحة */
+                        if (tt === 'correct') hit = true;
+                    }
 
-            if (changed) playSound('levelup');
+                    if (type === 'streak') {
+                        if (tt === 'streak3' && amount >= 3) { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                        if (tt === 'streak5' && amount >= 5) { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    }
+
+                    /* أحداث الجلسة والألعاب */
+                    if (type === 'game'        && tt === 'game')        hit = true;
+                    if (type === 'daily'       && tt === 'daily')       hit = true;
+                    if (type === 'weekly'      && tt === 'weekly')      { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_memory' && tt === 'play_memory') { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_rocket' && tt === 'play_rocket') { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_sudden' && tt === 'play_sudden') { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_fill'   && tt === 'play_fill')   { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_hard'   && tt === 'play_hard')   { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'chain_q'     && tt === 'chain_q')     hit = true;
+                    if (type === 'sudden_q'    && tt === 'sudden_q')    hit = true;
+
+                    if (hit) {
+                        t.progress = Math.min(t.goal, t.progress + amount);
+                        if (t.progress >= t.goal) { t.done = true; st.coins += t.reward; changed = true; }
+                    }
+                });
+            });
+
+            if (changed) { try { playSound('levelup'); } catch(e){} }
             saveSt();
             renderTasks();
         }
+
+        /* ═══ حساب ملخص كل فئات المهام معاً (للبطاقات الثلاث في رأس الصفحة) ═══ */
+        function calcAllCatStats() {
+            let done = 0, total = 0, earned = 0;
+            if (!st.categoryTasks) return { done, total, earned };
+            Object.values(st.categoryTasks).forEach(arr => {
+                if (!Array.isArray(arr)) return;
+                arr.forEach(t => { total++; if (t.done) { done++; earned += t.reward; } });
+            });
+            return { done, total, earned };
+        }
+
+        /* ═══ renderTasks — يحدّث البطاقات الثلاث في رأس صفحة المهام ═══ */
         function renderTasksFiltered() {
-            const level = st.level;
-            const tasksData = st.dailyTasks;
-            let filtered = tasksData;
-            if (level < 2) filtered = tasksData.filter(t => ['t1', 't2'].includes(t.id));
-            else if (level < 4) filtered = tasksData.filter(t => ['t1', 't2', 't3'].includes(t.id));
-            else if (level < 5) filtered = tasksData.filter(t => ['t1', 't2', 't3', 't4'].includes(t.id));
-            else filtered = tasksData;
-            /* ═══ 9.2 — المهمة الديناميكية تظهر دائماً إذا وُجدت (بعد مستوى 2) ═══ */
-            const twTask = tasksData.find(t => t.id === 'tw');
-            if (twTask && level >= 2 && !filtered.find(t => t.id === 'tw')) {
-                filtered = [...filtered, twTask];
-            }
-            const doneCount = filtered.filter(t => t.done).length;
-            const pct = filtered.length ? Math.round((doneCount / filtered.length) * 100) : 0;
-            const totalR = filtered.filter(t => t.done).reduce((s, t) => s + t.reward, 0);
-            const tasksContainer = document.getElementById('tasksList');
-            if (tasksContainer) {
-                tasksContainer.innerHTML = filtered.map(t => {
-                    const p = Math.min(100, Math.round((t.progress / t.goal) * 100));
-                    return `<div class="task-item ${t.done?'done':''}">
-                        <div class="task-item-icon">${t.icon}</div>
-                        <div class="task-item-info"><div class="task-item-name">${t.name}</div><div class="task-item-desc">${t.desc}</div><div class="task-prog-bar"><div class="task-prog-fill" style="width:${p}%"></div></div></div>
-                        <div class="task-right"><div class="task-reward">${t.done?'✅':`+${t.reward}💰`}</div>${t.done?'':`<div class="task-prog-txt">${t.progress}/${t.goal}</div>`}</div>
-                    </div>`;
-                }).join('');
-            }
-            document.getElementById('tasksDone').textContent = doneCount;
-            document.getElementById('tasksTotal').textContent = filtered.length;
-            document.getElementById('tasksCoins').textContent = totalR + '💰';
-            document.getElementById('tasksPct').textContent = pct + '%';
-            document.getElementById('tasksBarFill').style.width = pct + '%';
-            const _pts = document.getElementById('profileTaskStatus'); if(_pts) _pts.textContent = `${doneCount} / ${filtered.length} ›`;
+            checkDailyReset();
+            const { done, total, earned } = calcAllCatStats();
+            const pct = total ? Math.round((done / total) * 100) : 0;
+
+            const el_done  = document.getElementById('tasksDone');
+            const el_total = document.getElementById('tasksTotal');
+            const el_coins = document.getElementById('tasksCoins');
+            const el_pct   = document.getElementById('tasksPct');
+            const el_bar   = document.getElementById('tasksBarFill');
+
+            if (el_done)  el_done.textContent  = done;
+            if (el_total) el_total.textContent  = total;
+            if (el_coins) el_coins.textContent  = earned + '💰';
+            if (el_pct)   el_pct.textContent    = pct + '%';
+            if (el_bar)   el_bar.style.width    = pct + '%';
+
+            /* تحديث profileTaskStatus إذا وُجد */
+            const _pts = document.getElementById('profileTaskStatus');
+            if (_pts) _pts.textContent = `${done} / ${total} ›`;
         }
         var renderTasks = renderTasksFiltered;
         window.renderTasks = renderTasksFiltered;
 
         /* ═══════════════════════════════════════════════════════
-           📋 نافذة مهام الفئة — Category Task Sheet
-           تُفتح عند النقر على أي زر من الأزرار الخمسة
+           📋 نافذة مهام الفئة السريعة
            ═══════════════════════════════════════════════════════ */
-
-        const CATEGORY_META = {
-            ops:          { label: 'مهام العمليات على الأعداد', icon: '🔢', color: '#f0b90b', color2: '#f59e0b' },
-            challenges:   { label: 'مهام التحديات',              icon: '⚔️', color: '#7c3aed', color2: '#a855f7' },
-            advanced:     { label: 'مهام الرياضيات المتقدمة',   icon: '📐', color: '#06b6d4', color2: '#0ea5e9' },
-            mind:         { label: 'مهام العقل',                 icon: '🧠', color: '#10b981', color2: '#34d399' },
-            achievements: { label: 'الإنجازات',                  icon: '🏆', color: '#f59e0b', color2: '#fbbf24' }
-        };
-
         function openCategorySheet(cat) {
             checkDailyReset();
             const meta = CATEGORY_META[cat];
@@ -385,107 +390,86 @@
             if (!overlay) return;
 
             /* رأس النافذة */
-            const headerEl = document.getElementById('catSheetHeader');
-            if (headerEl) {
-                headerEl.style.background = `linear-gradient(135deg, ${meta.color}, ${meta.color2})`;
-                headerEl.querySelector('.cat-sheet-title').textContent = meta.icon + ' ' + meta.label;
+            const hdr = document.getElementById('catSheetHeader');
+            if (hdr) {
+                hdr.style.background = 'linear-gradient(135deg,' + meta.c1 + ',' + meta.c2 + ')';
+                const ttl = hdr.querySelector('.cat-sheet-title');
+                if (ttl) ttl.textContent = meta.icon + ' ' + meta.label;
             }
 
-            /* محتوى النافذة */
             const body = document.getElementById('catSheetBody');
             if (!body) return;
 
             if (cat === 'achievements') {
-                /* عرض الإنجازات */
-                const total = ACHIEVEMENTS_DEF.length;
-                const doneCount = (st.achievementsUnlocked || []).length;
-                const pct = Math.round((doneCount / total) * 100);
-                body.innerHTML = `
-                    <div style="display:flex;gap:10px;margin-bottom:12px;">
-                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;">
-                            <div style="font-size:1.4em;font-weight:900;color:var(--gold);">${doneCount}</div>
-                            <div style="font-size:0.6em;color:var(--text2);">مكتملة</div>
-                        </div>
-                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;">
-                            <div style="font-size:1.4em;font-weight:900;color:var(--accent2);">${total}</div>
-                            <div style="font-size:0.6em;color:var(--text2);">إجمالي</div>
-                        </div>
-                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;">
-                            <div style="font-size:1.4em;font-weight:900;color:var(--green);">${pct}%</div>
-                            <div style="font-size:0.6em;color:var(--text2);">تقدّم</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:8px;">
-                    ${ACHIEVEMENTS_DEF.map(a => {
-                        const done = (st.achievementsUnlocked || []).includes(a.id) || a.check();
-                        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:${done?'rgba(16,185,129,0.08)':'var(--surface2)'};border:1px solid ${done?'rgba(16,185,129,0.3)':'var(--border2)'};">
-                            <div style="font-size:1.5em;${done?'':'filter:grayscale(1);opacity:0.4'}">${a.icon}</div>
-                            <div style="flex:1;">
-                                <div style="font-size:0.8em;font-weight:700;color:${done?'var(--text)':'var(--text2)'};">${a.name}</div>
-                                <div style="font-size:0.63em;color:var(--text2);margin-top:2px;">${a.desc}</div>
-                            </div>
-                            <div style="font-size:0.8em;font-weight:900;color:${done?'var(--green)':'var(--text3)'};">${done?'✅':'🔒 +'+a.reward+'💰'}</div>
-                        </div>`;
-                    }).join('')}
-                    </div>`;
+                /* ═══ عرض الإنجازات ═══ */
+                const totalA  = ACHIEVEMENTS_DEF.length;
+                const doneA   = (st.achievementsUnlocked || []).length;
+                const pctA    = Math.round((doneA / totalA) * 100);
+                body.innerHTML =
+                    '<div style="display:flex;gap:10px;margin-bottom:14px;">' +
+                        '<div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:1.4em;font-weight:900;color:var(--gold);">' + doneA + '</div><div style="font-size:0.6em;color:var(--text2);">مكتملة</div></div>' +
+                        '<div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:1.4em;font-weight:900;color:var(--accent2);">' + totalA + '</div><div style="font-size:0.6em;color:var(--text2);">إجمالي</div></div>' +
+                        '<div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:1.4em;font-weight:900;color:var(--green);">' + pctA + '%</div><div style="font-size:0.6em;color:var(--text2);">تقدّم</div></div>' +
+                    '</div>' +
+                    '<div style="display:flex;flex-direction:column;gap:8px;">' +
+                    ACHIEVEMENTS_DEF.map(function(a) {
+                        var done = (st.achievementsUnlocked || []).includes(a.id) || (function(){ try{ return a.check(); }catch(e){ return false; } }());
+                        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:' + (done?'rgba(16,185,129,0.08)':'var(--surface2)') + ';border:1px solid ' + (done?'rgba(16,185,129,0.3)':'var(--border2)') + ';">' +
+                            '<div style="font-size:1.5em;' + (done?'':'filter:grayscale(1);opacity:0.4') + '">' + a.icon + '</div>' +
+                            '<div style="flex:1;"><div style="font-size:0.8em;font-weight:700;color:' + (done?'var(--text)':'var(--text2)') + ';">' + a.name + '</div><div style="font-size:0.63em;color:var(--text2);margin-top:2px;">' + a.desc + '</div></div>' +
+                            '<div style="font-size:0.8em;font-weight:900;color:' + (done?'var(--green)':'var(--text3)') + ';">' + (done?'✅':'🔒 +'+a.reward+'💰') + '</div>' +
+                        '</div>';
+                    }).join('') +
+                    '</div>';
             } else {
-                /* عرض مهام الفئة */
-                const tasks = (st.categoryTasks && st.categoryTasks[cat]) ? st.categoryTasks[cat] : CATEGORY_TASKS[cat] || [];
-                const done = tasks.filter(t => t.done).length;
-                const total = tasks.length;
-                const pct = total ? Math.round((done/total)*100) : 0;
-                const earned = tasks.filter(t=>t.done).reduce((s,t)=>s+t.reward,0);
+                /* ═══ عرض مهام الفئة ═══ */
+                var tasks = (st.categoryTasks && st.categoryTasks[cat]) ? st.categoryTasks[cat] : (CATEGORY_TASKS[cat] || []);
+                var doneC  = tasks.filter(function(t){ return t.done; }).length;
+                var totalC = tasks.length;
+                var pctC   = totalC ? Math.round((doneC/totalC)*100) : 0;
+                var earnedC= tasks.filter(function(t){ return t.done; }).reduce(function(s,t){ return s+t.reward; }, 0);
 
-                body.innerHTML = `
-                    <div style="display:flex;gap:10px;margin-bottom:12px;">
-                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;">
-                            <div style="font-size:1.4em;font-weight:900;color:var(--gold);">${done}/${total}</div>
-                            <div style="font-size:0.6em;color:var(--text2);">مكتملة</div>
-                        </div>
-                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;">
-                            <div style="font-size:1.4em;font-weight:900;color:var(--green);">${earned}💰</div>
-                            <div style="font-size:0.6em;color:var(--text2);">مكسوبة</div>
-                        </div>
-                        <div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;">
-                            <div style="font-size:1.4em;font-weight:900;color:var(--accent2);">${pct}%</div>
-                            <div style="font-size:0.6em;color:var(--text2);">تقدّم</div>
-                        </div>
-                    </div>
-                    <div style="background:var(--surface2);border-radius:10px;height:6px;overflow:hidden;margin-bottom:14px;">
-                        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${meta.color},${meta.color2});border-radius:10px;transition:width 0.5s;"></div>
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:8px;">
-                    ${tasks.map(t => {
-                        const p = Math.min(100, t.goal>0 ? Math.round((t.progress/t.goal)*100) : 0);
-                        return `<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;background:${t.done?'rgba(16,185,129,0.08)':'var(--surface2)'};border:1px solid ${t.done?'rgba(16,185,129,0.3)':'var(--border2)'};">
-                            <div style="font-size:1.4em;">${t.icon}</div>
-                            <div style="flex:1;">
-                                <div style="font-size:0.8em;font-weight:700;color:var(--text);margin-bottom:3px;">${t.name}</div>
-                                <div style="font-size:0.63em;color:var(--text2);margin-bottom:5px;">${t.desc}</div>
-                                <div style="height:4px;background:var(--border2);border-radius:4px;overflow:hidden;">
-                                    <div style="height:100%;width:${p}%;background:linear-gradient(90deg,${meta.color},${meta.color2});border-radius:4px;transition:width 0.4s;"></div>
-                                </div>
-                            </div>
-                            <div style="text-align:center;min-width:42px;">
-                                <div style="font-size:0.85em;font-weight:900;color:${t.done?'var(--green)':'var(--gold)'};">${t.done?'✅':'+'+t.reward+'💰'}</div>
-                                ${t.done?'':'<div style="font-size:0.6em;color:var(--text3);">${t.progress}/${t.goal}</div>'}
-                            </div>
-                        </div>`;
-                    }).join('')}
-                    </div>`;
+                body.innerHTML =
+                    '<div style="display:flex;gap:10px;margin-bottom:12px;">' +
+                        '<div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:1.4em;font-weight:900;color:var(--gold);">' + doneC + '/' + totalC + '</div><div style="font-size:0.6em;color:var(--text2);">مكتملة</div></div>' +
+                        '<div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:1.4em;font-weight:900;color:var(--green);">' + earnedC + '💰</div><div style="font-size:0.6em;color:var(--text2);">مكسوبة</div></div>' +
+                        '<div style="flex:1;background:var(--surface2);border:1px solid var(--gold-border);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:1.4em;font-weight:900;color:var(--accent2);">' + pctC + '%</div><div style="font-size:0.6em;color:var(--text2);">تقدّم</div></div>' +
+                    '</div>' +
+                    '<div style="background:var(--surface2);border-radius:10px;height:6px;overflow:hidden;margin-bottom:14px;"><div style="height:100%;width:' + pctC + '%;background:linear-gradient(90deg,' + meta.c1 + ',' + meta.c2 + ');border-radius:10px;transition:width 0.5s;"></div></div>' +
+                    '<div style="display:flex;flex-direction:column;gap:8px;">' +
+                    tasks.map(function(t) {
+                        var p = t.goal > 0 ? Math.min(100, Math.round((t.progress/t.goal)*100)) : 0;
+                        return '<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;background:' + (t.done?'rgba(16,185,129,0.08)':'var(--surface2)') + ';border:1px solid ' + (t.done?'rgba(16,185,129,0.3)':'var(--border2)') + ';">' +
+                            '<div style="font-size:1.4em;">' + t.icon + '</div>' +
+                            '<div style="flex:1;">' +
+                                '<div style="font-size:0.8em;font-weight:700;color:var(--text);margin-bottom:3px;">' + t.name + '</div>' +
+                                '<div style="font-size:0.63em;color:var(--text2);margin-bottom:5px;">' + t.desc + '</div>' +
+                                '<div style="height:4px;background:var(--border2);border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + p + '%;background:linear-gradient(90deg,' + meta.c1 + ',' + meta.c2 + ');border-radius:4px;"></div></div>' +
+                            '</div>' +
+                            '<div style="text-align:center;min-width:44px;">' +
+                                '<div style="font-size:0.88em;font-weight:900;color:' + (t.done?'var(--green)':'var(--gold)') + ';">' + (t.done?'✅':'+'+t.reward+'💰') + '</div>' +
+                                (t.done ? '' : '<div style="font-size:0.6em;color:var(--text3);">' + t.progress + '/' + t.goal + '</div>') +
+                            '</div>' +
+                        '</div>';
+                    }).join('') +
+                    '</div>';
             }
+
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
         function closeCategorySheet() {
-            const overlay = document.getElementById('categorySheetOverlay');
+            var overlay = document.getElementById('categorySheetOverlay');
             if (overlay) overlay.classList.remove('active');
             document.body.style.overflow = '';
         }
 
-        window.openCategorySheet = openCategorySheet;
+        window.openCategorySheet  = openCategorySheet;
         window.closeCategorySheet = closeCategorySheet;
+
+
+        function updCountdown() {
             const now = new Date(),
                 midnight = new Date(now);
             midnight.setHours(24, 0, 0, 0);
