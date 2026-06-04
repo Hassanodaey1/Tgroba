@@ -123,7 +123,11 @@
     inset: 0;
     z-index: 9999;
     pointer-events: none;
-    display: flex !important;
+    display: none;
+}
+
+.swords-curtain.curtain-active {
+    display: flex;
 }
 
 .curtain-left,
