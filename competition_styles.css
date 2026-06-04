@@ -54,8 +54,8 @@
 
 .comp-hero-icon-wrap {
     position: relative;
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,7 +64,95 @@
     border: none;
     padding: 0;
     cursor: pointer;
+    outline: none;
 }
+
+/* ══ السيوف ══ */
+.hero-sword {
+    position: absolute;
+    width: 28px;
+    height: 72px;
+    z-index: 2;
+    filter: drop-shadow(0 0 6px rgba(240,185,11,0.7));
+    transition: none;
+}
+
+.hero-sword-left {
+    transform: rotate(-20deg) translateX(-8px);
+    transform-origin: center bottom;
+    animation: swordIdleLeft 2.5s ease-in-out infinite alternate;
+}
+
+.hero-sword-right {
+    transform: rotate(20deg) translateX(8px) scaleX(-1);
+    transform-origin: center bottom;
+    animation: swordIdleRight 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes swordIdleLeft {
+    from { filter: drop-shadow(0 0 5px rgba(240,185,11,0.5)); transform: rotate(-20deg) translateX(-8px) scale(1); }
+    to   { filter: drop-shadow(0 0 14px rgba(240,185,11,1));  transform: rotate(-17deg) translateX(-8px) scale(1.04); }
+}
+@keyframes swordIdleRight {
+    from { filter: drop-shadow(0 0 5px rgba(240,185,11,0.5)); transform: rotate(20deg) translateX(8px) scaleX(-1) scale(1); }
+    to   { filter: drop-shadow(0 0 14px rgba(240,185,11,1));  transform: rotate(17deg) translateX(8px) scaleX(-1) scale(1.04); }
+}
+
+/* حالة الانفراج عند الضغط */
+.comp-hero-icon-wrap.swords-open .hero-sword-left {
+    animation: swordSlashLeft 0.55s cubic-bezier(0.22,1,0.36,1) forwards !important;
+}
+.comp-hero-icon-wrap.swords-open .hero-sword-right {
+    animation: swordSlashRight 0.55s cubic-bezier(0.22,1,0.36,1) forwards !important;
+}
+
+@keyframes swordSlashLeft {
+    0%   { transform: rotate(-20deg) translateX(-8px) scale(1); filter: drop-shadow(0 0 8px rgba(240,185,11,0.7)); }
+    30%  { transform: rotate(-5deg) translateX(-4px) scale(1.12); filter: drop-shadow(0 0 22px rgba(255,255,255,1)); }
+    100% { transform: rotate(-60deg) translateX(-70px) scale(0.85); opacity: 0.2; filter: drop-shadow(0 0 4px rgba(240,185,11,0.3)); }
+}
+@keyframes swordSlashRight {
+    0%   { transform: rotate(20deg) translateX(8px) scaleX(-1) scale(1); filter: drop-shadow(0 0 8px rgba(240,185,11,0.7)); }
+    30%  { transform: rotate(5deg) translateX(4px) scaleX(-1) scale(1.12); filter: drop-shadow(0 0 22px rgba(255,255,255,1)); }
+    100% { transform: rotate(60deg) translateX(70px) scaleX(-1) scale(0.85); opacity: 0.2; filter: drop-shadow(0 0 4px rgba(240,185,11,0.3)); }
+}
+
+/* ══ ستارة الانتقال ══ */
+.swords-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex !important;
+}
+
+.curtain-left,
+.curtain-right {
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(135deg, #0d0620 0%, #1a0a2e 60%, #0a0118 100%);
+}
+
+.curtain-left  { transform-origin: left center; }
+.curtain-right { transform-origin: right center; }
+
+.swords-curtain.curtain-close .curtain-left {
+    animation: curtainCloseLeft 0.35s ease-in forwards;
+}
+.swords-curtain.curtain-close .curtain-right {
+    animation: curtainCloseRight 0.35s ease-in forwards;
+}
+.swords-curtain.curtain-open .curtain-left {
+    animation: curtainOpenLeft 0.55s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+.swords-curtain.curtain-open .curtain-right {
+    animation: curtainOpenRight 0.55s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+
+@keyframes curtainCloseLeft  { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes curtainCloseRight { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes curtainOpenLeft   { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes curtainOpenRight  { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
 .comp-hero-ring {
     position: absolute;
