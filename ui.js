@@ -412,6 +412,8 @@ function updateUI() {
     try { if (typeof updateSerialNumberDisplay === 'function') updateSerialNumberDisplay(); } catch(e) {}
     /* تطبيق الصورة الشخصية */
     try { applyProfilePhoto(); } catch(e) {}
+    /* تطبيق الإطار المحفوظ على كل الحلقات */
+    try { if (typeof _applyActiveFrameGlobally === 'function') _applyActiveFrameGlobally(); } catch(e) {}
 }
 
 function updateHomeStats() {
