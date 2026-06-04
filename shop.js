@@ -368,6 +368,12 @@ function _renderShopHeader() {
 function _renderShopTabs() {
     const tabs = document.getElementById('shopTabsRow');
     if (!tabs) return;
+    // تمكين التمرير الأفقي عند وجود 4 تبويبات
+    tabs.style.overflowX = 'auto';
+    tabs.style.overflowY = 'hidden';
+    tabs.style.flexWrap  = 'nowrap';
+    tabs.style.paddingBottom = '2px';
+    tabs.style.scrollbarWidth = 'none';
     const tabDefs = [
         { key: 'avatars',      icon: '🧑',  label: 'رموز' },
         { key: 'frames',       icon: '🖼️',  label: 'إطارات', badge: 'جديد!' },
@@ -378,7 +384,8 @@ function _renderShopTabs() {
         <button class="shop-tab-btn${_shopState.activeTab === t.key ? ' active' : ''}"
                 onclick="_setShopTab('${t.key}');playSound('click');"
                 style="
-                    flex:1;padding:8px 4px;border-radius:12px;font-size:0.72em;font-weight:800;
+                    flex:0 0 auto;padding:8px 14px;border-radius:12px;font-size:0.72em;font-weight:800;
+                    white-space:nowrap;
                     background:${_shopState.activeTab === t.key ? 'var(--gold)' : 'var(--surface3)'};
                     color:${_shopState.activeTab === t.key ? '#000' : 'var(--text2)'};
                     border:1px solid ${_shopState.activeTab === t.key ? 'var(--gold)' : 'var(--border2)'};
