@@ -484,15 +484,19 @@ function endChallengeGame() {
         if (database) {
             database.ref('challenge_leaderboard')
                 .orderByChild('challengeScore')
-                .limitToLast(50)
+                .limitToLast(200)
                 .once('value', snapshot => {
                     const players = [];
                     snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
                     players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
                     const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
                     const myIdx = myKey ? players.findIndex(p => p.id === myKey) : -1;
+                    // تحديث نتيجة اللعبة
                     const rankEl = document.getElementById('cgrRank');
                     if (rankEl) rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
+                    // تحديث hero stats أيضاً
+                    _lbCache = players; _lbCacheTime = Date.now(); _lbCacheType = 'challenge';
+                    updateCompMyStats(players);
                 }).catch(() => {});
         }
     }, 1200);
@@ -753,17 +757,17 @@ function initCompetitionPage() {
     const main = document.getElementById('competitionMainView');
     if (main) main.style.display = 'flex';
 
-    // تحديث أفضل نتيجة
+    // تحديث أفضل نتيجة فوراً
     const bestEl = document.getElementById('challengeBestDisplay');
     if (bestEl) bestEl.textContent = st.challengeBestScore || 0;
+
+    // تحديث المرتبة والمنافسين من Firebase مباشرة
+    _fetchCompHeroStats();
 
     // جسيمات الـ Hero
     initCompHeroSparks();
 
-    // تحميل لوحة الصدارة
-    loadCombinedLeaderboard();
-
-    // مهام التحدي اليومية
+    // مهام التحدي
     try {
         if (typeof renderChallengeTasks === 'function') {
             renderChallengeTasks();
@@ -771,6 +775,43 @@ function initCompetitionPage() {
             renderChallengeDailyTasks();
         }
     } catch(e) {}
+}
+
+/* جلب إحصائيات Hero (المرتبة + عدد المنافسين) مباشرة من Firebase */
+function _fetchCompHeroStats() {
+    const rankEl  = document.getElementById('compMyRank');
+    const totalEl = document.getElementById('compTotalPlayers');
+
+    // إذا كان عندنا cache حديث نستخدمه فوراً
+    if (_lbCache && _lbCacheType === 'challenge' && (Date.now() - _lbCacheTime) < 60000) {
+        updateCompMyStats(_lbCache);
+        return;
+    }
+
+    if (!window.database) return;
+
+    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
+
+    window.database.ref('challenge_leaderboard')
+        .orderByChild('challengeScore')
+        .limitToLast(200)
+        .once('value', snapshot => {
+            const players = [];
+            snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+            players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
+
+            // حفظ في cache
+            _lbCache     = players;
+            _lbCacheTime = Date.now();
+            _lbCacheType = 'challenge';
+
+            // تحديث العناصر
+            if (totalEl) totalEl.textContent = players.length || '—';
+            if (myKey && rankEl) {
+                const myIdx = players.findIndex(p => p.id === myKey);
+                rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
+            }
+        }).catch(() => {});
 }
 
 /* ══════════════════════════════════════
