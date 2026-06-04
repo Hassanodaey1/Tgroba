@@ -86,6 +86,45 @@ function updateCompMyStats(playersData) {
 /* ══════════════════════════════════════
    العد التنازلي قبل البدء
 ══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   تأثير السيوف → ثم تشغيل اللعبة
+══════════════════════════════════════ */
+function triggerSwordsAndLaunch() {
+    const btn     = document.getElementById('compStartBtn');
+    const curtain = document.getElementById('swordsCurtain');
+    if (!btn || btn.dataset.animating) return;
+    btn.dataset.animating = '1';
+
+    // 1) السيفان يتفرقان
+    btn.classList.add('swords-open');
+
+    // 2) الستارة تُغلق (بعد 250ms — في ذروة الانفراج)
+    setTimeout(() => {
+        curtain.style.display = 'flex';
+        curtain.classList.remove('curtain-open');
+        curtain.classList.add('curtain-close');
+    }, 250);
+
+    // 3) نشغّل اللعبة خلف الستارة المغلقة
+    setTimeout(() => {
+        launchChallengeCountdown();
+    }, 550);
+
+    // 4) الستارة تنفتح لتكشف عن اللعبة
+    setTimeout(() => {
+        curtain.classList.remove('curtain-close');
+        curtain.classList.add('curtain-open');
+    }, 700);
+
+    // 5) نخفي الستارة ونعيد الحالة
+    setTimeout(() => {
+        curtain.style.display = 'none';
+        curtain.classList.remove('curtain-open', 'curtain-close');
+        btn.classList.remove('swords-open');
+        delete btn.dataset.animating;
+    }, 1300);
+}
+
 function launchChallengeCountdown() {
     const mainView = document.getElementById('competitionMainView');
     const overlay  = document.getElementById('challengeCountdownOverlay');
