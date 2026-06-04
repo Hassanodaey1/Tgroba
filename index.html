@@ -780,10 +780,10 @@
         <div class="comp-hero-banner comp-hero-expanded">
             <div class="comp-hero-bg-sparks" id="compHeroBgSparks"></div>
             <div class="comp-hero-content">
-                <div class="comp-hero-icon-wrap">
+                <button class="comp-hero-icon-wrap" onclick="launchChallengeCountdown()" id="compStartBtn">
                     <div class="comp-hero-ring"></div>
                     <span class="comp-hero-icon">⚔️</span>
-                </div>
+                </button>
                 <div class="comp-hero-title">نداء التحدي</div>
                 <div class="comp-hero-sub">تحدّ نفسك وتسلّق لوحة الصدارة</div>
                 <!-- إحصائياتي -->
@@ -804,12 +804,7 @@
                     </div>
                 </div>
             </div>
-            <!-- زر البدء الرئيسي -->
-            <button class="comp-start-btn" onclick="launchChallengeCountdown()" id="compStartBtn">
-                <span class="comp-start-btn-glow"></span>
-                <span class="comp-start-btn-text">⚔️ ابدأ التحدي</span>
-                <span class="comp-start-btn-sub">60 ثانية • +1ث لكل صواب • -2ث لكل خطأ</span>
-            </button>
+
         </div>
 
         <!-- ══ شريط الأزرار الثلاثة — ثابت في الأسفل ══ -->
@@ -1572,7 +1567,7 @@
             playSound && playSound('click');
         }
 
-        function closeSettingsSubPage(overlayId) {
+       function closeSettingsSubPage(overlayId) {
             const el = document.getElementById(overlayId);
             if (el) el.style.display = 'none';
             playSound && playSound('click');
