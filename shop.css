@@ -14,6 +14,7 @@
 .shop-tab-btn:active {
     transform: scale(0.96);
 }
+#shopTabsRow::-webkit-scrollbar { display: none; }
 
 /* ─── حاوية المتجر ─── */
 #shopItemsContainer {
