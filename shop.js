@@ -1,4 +1,3 @@
-
 /* ═══════════════════════════════════════════════════════════════
    HO Math — نظام المتجر الاحترافي v2.0
    © 2026 Hassan Odaey
@@ -501,7 +500,9 @@ function buyFrame(frameId) {
 
     if (frame.price === 0) {
         st.ownedFrames.push(frameId);
+        st.activeFrame = frameId;
         saveSt(); playSound('purchase');
+        _applyActiveFrameGlobally();
         _renderActiveShopTab(); updateUI();
         showFeedback('🎉 تم الحصول على الإطار!');
         return;
@@ -516,6 +517,7 @@ function buyFrame(frameId) {
         st.ownedFrames.push(frameId);
         st.activeFrame = frameId;
         saveSt(); playSound('purchase');
+        _applyActiveFrameGlobally();
         _renderActiveShopTab(); updateUI();
         showFeedback(`🎉 تم شراء وتفعيل إطار ${frame.label}!`);
     });
@@ -524,13 +526,51 @@ function buyFrame(frameId) {
 function selectFrame(frameId) {
     if (!st.ownedFrames || !st.ownedFrames.includes(frameId)) return;
     st.activeFrame = frameId;
-    saveSt(); updateUI();
+    saveSt();
+    _applyActiveFrameGlobally();
+    updateUI();
     _renderActiveShopTab();
     playSound('click');
     const frame = FRAMES_CATALOG.find(f => f.id === frameId);
     showFeedback(`✅ تم تفعيل الإطار ${frame ? frame.label : ''}`);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   تطبيق الإطار النشط على جميع عناصر الأفاتار في الواجهة
+   تُستدعى من updateUI() في ui.js
+═══════════════════════════════════════════════════════════════ */
+function _applyActiveFrameGlobally() {
+    const frameId = st.activeFrame || 'frame_none';
+    const frame   = FRAMES_CATALOG.find(f => f.id === frameId);
+    const borderCSS = (frame && frame.css !== 'none') ? frame.css : '';
+
+    /* قائمة جميع عناصر الأفاتار في الواجهة */
+    const avatarIds = [
+        'profileAvatarImg',
+        'spProfileAvatarImg',
+        'headerAvatar',
+    ];
+
+    avatarIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.border        = borderCSS;
+        el.style.boxSizing     = 'border-box';
+        /* إضافة overflow:hidden لضمان ظهور الإطار مع الصور */
+        el.style.overflow      = 'hidden';
+        /* إطار مضيء (glow) للإطارات المميزة */
+        if (frame && frame.css && frame.css !== 'none') {
+            /* استخراج اللون من css string مثل "3px solid #f97316" */
+            const colorMatch = frame.css.match(/#[0-9a-fA-F]{3,6}|var\(--\w[\w-]*\)/);
+            const glowColor  = colorMatch ? colorMatch[0] : 'transparent';
+            el.style.boxShadow = `0 0 0 2px ${glowColor}44`;
+        } else {
+            el.style.boxShadow = '';
+        }
+    });
+}
+
+window._applyActiveFrameGlobally = _applyActiveFrameGlobally;
 window.buyFrame    = buyFrame;
 window.selectFrame = selectFrame;
 
