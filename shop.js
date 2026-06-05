@@ -1,3 +1,4 @@
+
 /* ═══════════════════════════════════════════════════════════════
    HO Math — نظام المتجر الاحترافي v2.0
    © 2026 Hassan Odaey
@@ -274,13 +275,6 @@ function _renderShopTabs() {
         { key: 'bundles',     icon: '🎁',  label: 'حزم', badge: 'وفّر!' },
     ];
 
-    /* تفعيل السكرول الأفقي على الحاوية */
-    tabs.style.overflowX = 'scroll';
-    tabs.style.overflowY = 'visible';
-    tabs.style.flexWrap  = 'nowrap';
-    tabs.style.webkitOverflowScrolling = 'touch';
-    tabs.style.scrollbarWidth = 'none';
-
     tabs.innerHTML = tabDefs.map(t => {
         const active = _shopState.activeTab === t.key;
         const badge  = t.badge
@@ -288,7 +282,7 @@ function _renderShopTabs() {
             : '';
         return `<button class="shop-tab-btn${active ? ' active' : ''}"
             onclick="_setShopTab('${t.key}');playSound('click');"
-            style="flex:0 0 auto;width:calc(25% - 4px);padding:7px 2px;border-radius:12px;font-size:0.62em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;overflow:visible;"
+            style="flex:1;min-width:0;padding:7px 2px;border-radius:12px;font-size:0.62em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;overflow:visible;"
         >${t.icon} ${t.label}${badge}</button>`;
     }).join('');
 }
@@ -304,6 +298,7 @@ function _renderActiveShopTab() {
     if (!container) return;
     switch (_shopState.activeTab) {
         case 'avatars':     _renderAvatarGrid(container); break;
+        case 'frames':      _renderFrames(container);     break;
         case 'consumables': _renderConsumables(container); break;
         case 'bundles':     _renderBundles(container);    break;
     }
@@ -407,6 +402,137 @@ function selectEmojiFromShop(emoji) {
     playSound('click');
     showFeedback(`✅ تم تفعيل ${emoji}`);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   كتالوج الإطارات
+═══════════════════════════════════════════════════════════════ */
+var FRAMES_CATALOG = [
+    { id: 'frame_none',    label: 'بدون إطار',  css: 'none',                 price: 0,   free: true },
+    { id: 'frame_gold',    label: 'ذهبي',        css: '3px solid var(--gold)', price: 15  },
+    { id: 'frame_silver',  label: 'فضي',         css: '3px solid #b0b8c8',     price: 10  },
+    { id: 'frame_fire',    label: '🔥 ناري',     css: '3px solid #f97316',     price: 25, hot: true },
+    { id: 'frame_ocean',   label: '🌊 محيطي',   css: '3px solid #06b6d4',     price: 20  },
+    { id: 'frame_galaxy',  label: '🌌 مجرّة',   css: '3px solid #7c3aed',     price: 30, hot: true },
+    { id: 'frame_rainbow', label: '🌈 قوس قزح', css: '3px solid #10b981',     price: 35, hot: true },
+    { id: 'frame_red',     label: '❤️ أحمر',    css: '3px solid #ef4444',     price: 18  },
+    { id: 'frame_champion',label: '🏆 بطل',      css: '4px double var(--gold)', price: 50, lvlReq: 5  },
+    { id: 'frame_neon',    label: '💚 نيون',     css: '3px solid #22d3ee',     price: 28  },
+    { id: 'frame_royal',   label: '👑 ملكي',     css: '4px double #a855f7',    price: 60, lvlReq: 8, hot: true },
+    { id: 'frame_legend',  label: '⭐ أسطوري',   css: '4px double #f59e0b',    price: 80, lvlReq: 12, hot: true },
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   ③ عرض الإطارات
+═══════════════════════════════════════════════════════════════ */
+function _renderFrames(container) {
+    if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
+    const currentFrame = st.activeFrame || 'frame_none';
+
+    container.innerHTML = `
+        <div style="padding:10px 0 6px;">
+            <div style="font-size:0.68em;color:var(--text2);text-align:center;margin-bottom:12px;padding:8px;background:rgba(240,185,11,0.08);border-radius:10px;border:1px solid rgba(240,185,11,0.2);">
+                🖼️ الإطارات تظهر حول أيقونتك في الملف الشخصي والمنافسات
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="framesGrid"></div>
+        </div>
+    `;
+
+    const grid = container.querySelector('#framesGrid');
+    if (!grid) return;
+
+    grid.innerHTML = FRAMES_CATALOG.map(frame => {
+        const owned     = st.ownedFrames.includes(frame.id);
+        const active    = currentFrame === frame.id;
+        const locked    = !owned && frame.lvlReq && st.level < frame.lvlReq;
+        const canAfford = st.coins >= (frame.price || 0);
+        const isFree    = frame.price === 0;
+
+        const borderStyle = frame.css === 'none' ? '2px dashed rgba(255,255,255,0.15)' : frame.css;
+        const previewStyle = `width:48px;height:48px;border-radius:50%;border:${borderStyle};display:flex;align-items:center;justify-content:center;font-size:1.6em;margin:0 auto 6px;background:var(--surface3);${active ? 'box-shadow:0 0 10px rgba(240,185,11,0.4);' : ''}`;
+
+        let bottomContent = '';
+        if (owned) {
+            bottomContent = active
+                ? `<div style="font-size:0.55em;color:var(--green);font-weight:900;">✅ مفعّل</div>`
+                : `<div style="font-size:0.55em;color:var(--text2);font-weight:700;">اضغط للتفعيل</div>`;
+        } else if (locked) {
+            bottomContent = `<div style="font-size:0.55em;color:var(--orange);">🔒 Lv.${frame.lvlReq}</div>`;
+        } else if (isFree) {
+            bottomContent = `<div style="font-size:0.55em;color:var(--green);font-weight:900;">مجاني!</div>`;
+        } else {
+            bottomContent = `<div style="font-size:0.6em;font-weight:900;color:${canAfford ? 'var(--gold)' : 'var(--red)'};">${frame.price}💰</div>`;
+        }
+
+        const hotBadge = frame.hot
+            ? `<span style="position:absolute;top:-6px;left:0;right:0;display:flex;justify-content:center;"><span style="background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;font-size:0.5em;padding:1px 5px;border-radius:5px;font-weight:900;">🔥 رائج</span></span>`
+            : '';
+
+        const clickFn = owned
+            ? `selectFrame('${frame.id}')`
+            : locked
+                ? `showFeedback('🔒 يفتح عند المستوى ${frame.lvlReq}')`
+                : `buyFrame('${frame.id}')`;
+
+        return `
+            <div onclick="${clickFn};playSound('click');"
+                style="
+                    background:${active ? 'linear-gradient(135deg,rgba(240,185,11,0.18),rgba(240,185,11,0.08))' : owned ? 'var(--surface2)' : 'var(--surface3)'};
+                    border:2px solid ${active ? 'var(--gold)' : owned ? 'rgba(16,185,129,0.4)' : locked ? 'rgba(255,255,255,0.08)' : canAfford || isFree ? 'var(--border2)' : 'rgba(239,68,68,0.25)'};
+                    border-radius:14px;padding:10px 6px 8px;text-align:center;
+                    cursor:${locked ? 'not-allowed' : 'pointer'};
+                    position:relative;transition:all 0.18s ease;
+                    opacity:${locked ? 0.6 : 1};
+                    ${active ? 'box-shadow:0 0 12px rgba(240,185,11,0.3);' : ''}
+                ">
+                ${hotBadge}
+                <div style="${previewStyle}">${st.avatar || '🧑'}</div>
+                <div style="font-size:0.6em;font-weight:700;color:var(--text);margin-bottom:3px;">${frame.label}</div>
+                ${bottomContent}
+            </div>
+        `;
+    }).join('');
+}
+
+function buyFrame(frameId) {
+    const frame = FRAMES_CATALOG.find(f => f.id === frameId);
+    if (!frame) return;
+    if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
+    if (st.ownedFrames.includes(frameId)) { selectFrame(frameId); return; }
+
+    if (frame.price === 0) {
+        st.ownedFrames.push(frameId);
+        saveSt(); playSound('purchase');
+        _renderActiveShopTab(); updateUI();
+        showFeedback('🎉 تم الحصول على الإطار!');
+        return;
+    }
+    if (st.coins < frame.price) {
+        _showInsufficientCoinsOffer(frame.price - st.coins, frame.label);
+        return;
+    }
+    showConfirm('🖼️ شراء إطار', `شراء إطار "${frame.label}" بـ ${frame.price} عملة؟`, 'نعم اشتري', 'إلغاء', ok => {
+        if (!ok) return;
+        st.coins -= frame.price;
+        st.ownedFrames.push(frameId);
+        st.activeFrame = frameId;
+        saveSt(); playSound('purchase');
+        _renderActiveShopTab(); updateUI();
+        showFeedback(`🎉 تم شراء وتفعيل إطار ${frame.label}!`);
+    });
+}
+
+function selectFrame(frameId) {
+    if (!st.ownedFrames || !st.ownedFrames.includes(frameId)) return;
+    st.activeFrame = frameId;
+    saveSt(); updateUI();
+    _renderActiveShopTab();
+    playSound('click');
+    const frame = FRAMES_CATALOG.find(f => f.id === frameId);
+    showFeedback(`✅ تم تفعيل الإطار ${frame ? frame.label : ''}`);
+}
+
+window.buyFrame    = buyFrame;
+window.selectFrame = selectFrame;
 
 /* ═══════════════════════════════════════════════════════════════
    ③ عرض المستهلكات
