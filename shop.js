@@ -403,29 +403,180 @@ function selectEmojiFromShop(emoji) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   كتالوج الإطارات
+   كتالوج الإطارات — SVG ديكورية v2.0
 ═══════════════════════════════════════════════════════════════ */
 var FRAMES_CATALOG = [
-    { id: 'frame_none',    label: 'بدون إطار',  css: 'none',                 price: 0,   free: true },
-    { id: 'frame_gold',    label: 'ذهبي',        css: '3px solid var(--gold)', price: 15  },
-    { id: 'frame_silver',  label: 'فضي',         css: '3px solid #b0b8c8',     price: 10  },
-    { id: 'frame_fire',    label: '🔥 ناري',     css: '3px solid #f97316',     price: 25, hot: true },
-    { id: 'frame_ocean',   label: '🌊 محيطي',   css: '3px solid #06b6d4',     price: 20  },
-    { id: 'frame_galaxy',  label: '🌌 مجرّة',   css: '3px solid #7c3aed',     price: 30, hot: true },
-    { id: 'frame_rainbow', label: '🌈 قوس قزح', css: '3px solid #10b981',     price: 35, hot: true },
-    { id: 'frame_red',     label: '❤️ أحمر',    css: '3px solid #ef4444',     price: 18  },
-    { id: 'frame_champion',label: '🏆 بطل',      css: '4px double var(--gold)', price: 50, lvlReq: 5  },
-    { id: 'frame_neon',    label: '💚 نيون',     css: '3px solid #22d3ee',     price: 28  },
-    { id: 'frame_royal',   label: '👑 ملكي',     css: '4px double #a855f7',    price: 60, lvlReq: 8, hot: true },
-    { id: 'frame_legend',  label: '⭐ أسطوري',   css: '4px double #f59e0b',    price: 80, lvlReq: 12, hot: true },
+    {
+        id: 'frame_none',
+        label: 'بدون إطار',
+        price: 0,
+        free: true,
+        svgContent: () => '',
+    },
+    {
+        id: 'frame_calculator',
+        label: '🔢 أرقام',
+        price: 15,
+        svgContent: () => {
+            const items = ['1','2','3','+','×','÷','=','%','π','∞','√','7'];
+            return items.map((char, i) => {
+                const angle = (i / items.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 56 * Math.cos(rad);
+                const y = 65 + 56 * Math.sin(rad);
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="900" fill="#f0b90b" font-family="monospace" transform="rotate(${angle+90}, ${x}, ${y})">${char}</text>`;
+            }).join('') +
+            `<circle cx="65" cy="65" r="53" fill="none" stroke="#f0b90b" stroke-width="2.5" stroke-dasharray="4 3" opacity="0.5"/>`;
+        },
+    },
+    {
+        id: 'frame_tools',
+        label: '📐 أدوات',
+        price: 20,
+        svgContent: () => {
+            const icons = ['✏️','📐','📏','📚','🖊️','📓','✏️','📐'];
+            return icons.map((icon, i) => {
+                const angle = (i / icons.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 54 * Math.cos(rad);
+                const y = 65 + 54 * Math.sin(rad);
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11" transform="rotate(${angle+90}, ${x}, ${y})">${icon}</text>`;
+            }).join('') +
+            `<circle cx="65" cy="65" r="51" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.6"/>
+             <circle cx="65" cy="65" r="57" fill="none" stroke="#06b6d4" stroke-width="1" stroke-dasharray="2 4" opacity="0.3"/>`;
+        },
+    },
+    {
+        id: 'frame_equations',
+        label: '➕ معادلات',
+        price: 25,
+        svgContent: () => {
+            const items = ['a²','b²','=','c²','∑','∫','Δ','∓','≠','≈','∝','∞'];
+            return items.map((char, i) => {
+                const angle = (i / items.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 55 * Math.cos(rad);
+                const y = 65 + 55 * Math.sin(rad);
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="700" fill="#10b981" font-family="serif" transform="rotate(${angle+90}, ${x}, ${y})">${char}</text>`;
+            }).join('') +
+            `<circle cx="65" cy="65" r="52" fill="none" stroke="#10b981" stroke-width="2.5" opacity="0.6"/>
+             <circle cx="65" cy="65" r="59" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="1 5" opacity="0.3"/>`;
+        },
+    },
+    {
+        id: 'frame_stars',
+        label: '⭐ نجوم',
+        price: 18,
+        svgContent: () => {
+            const items = ['⭐','5','🌟','10','⭐','15','🌟','20'];
+            return items.map((icon, i) => {
+                const angle = (i / items.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 54 * Math.cos(rad);
+                const y = 65 + 54 * Math.sin(rad);
+                if (isNaN(icon)) {
+                    return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="12">${icon}</text>`;
+                }
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="7" font-weight="900" fill="#f59e0b" font-family="monospace">${icon}</text>`;
+            }).join('') +
+            `<circle cx="65" cy="65" r="51" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0.5"/>`;
+        },
+    },
+    {
+        id: 'frame_geometry',
+        label: '📐 هندسة',
+        price: 30,
+        hot: true,
+        svgContent: () => {
+            const shapes = [
+                `<polygon points="65,11 72,24 58,24" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
+                `<circle cx="119" cy="65" r="7" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
+                `<rect x="54" y="106" width="22" height="14" rx="3" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
+                `<circle cx="11" cy="65" r="7" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
+                `<polygon points="38,30 45,43 31,43" fill="none" stroke="#a855f7" stroke-width="1.5"/>`,
+                `<polygon points="92,88 99,101 85,101" fill="none" stroke="#a855f7" stroke-width="1.5"/>`,
+                `<rect x="15" y="38" width="14" height="10" rx="2" fill="none" stroke="#a855f7" stroke-width="1.5"/>`,
+                `<rect x="100" y="82" width="14" height="10" rx="2" fill="none" stroke="#a855f7" stroke-width="1.5"/>`,
+            ];
+            return shapes.join('') +
+            `<circle cx="65" cy="65" r="53" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5 3" opacity="0.5"/>`;
+        },
+    },
+    {
+        id: 'frame_champion',
+        label: '🏆 بطل',
+        price: 50,
+        lvlReq: 5,
+        svgContent: () => {
+            const items = ['🏆','1','🥇','★','🏆','∞','🥇','★'];
+            return items.map((icon, i) => {
+                const angle = (i / items.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 54 * Math.cos(rad);
+                const y = 65 + 54 * Math.sin(rad);
+                const isSpecial = isNaN(icon.replace('★',''));
+                if (isSpecial || icon === '★') {
+                    return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="${icon === '★' ? '14' : '13'}" fill="${icon === '★' ? '#f0b90b' : ''}">${icon}</text>`;
+                }
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="900" fill="#f0b90b">${icon}</text>`;
+            }).join('') +
+            `<circle cx="65" cy="65" r="51" fill="none" stroke="#f0b90b" stroke-width="3" opacity="0.7"/>
+             <circle cx="65" cy="65" r="57" fill="none" stroke="#f0b90b" stroke-width="1" stroke-dasharray="2 3" opacity="0.3"/>`;
+        },
+    },
+    {
+        id: 'frame_science',
+        label: '🔬 علوم',
+        price: 35,
+        hot: true,
+        svgContent: () => {
+            const items = ['🔬','⚗️','🔭','🧪','⚛️','🧲','🔬','⚗️'];
+            return items.map((icon, i) => {
+                const angle = (i / items.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 54 * Math.cos(rad);
+                const y = 65 + 54 * Math.sin(rad);
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="12" transform="rotate(${angle+90}, ${x}, ${y})">${icon}</text>`;
+            }).join('') +
+            `<circle cx="65" cy="65" r="51" fill="none" stroke="#22d3ee" stroke-width="2" opacity="0.5"/>`;
+        },
+    },
+    {
+        id: 'frame_legend',
+        label: '⭐ أسطوري',
+        price: 80,
+        lvlReq: 12,
+        hot: true,
+        svgContent: () => {
+            const items = ['π','e','∞','√','∑','∫','Δ','φ','α','β','γ','θ'];
+            const outer = items.map((char, i) => {
+                const angle = (i / items.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 57 * Math.cos(rad);
+                const y = 65 + 57 * Math.sin(rad);
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="900" font-family="serif" fill="url(#goldGrad${i})" transform="rotate(${angle+90}, ${x}, ${y})">${char}</text>`;
+            }).join('');
+            return `<defs>
+                <linearGradient id="goldGrad0" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f0b90b"/>
+                    <stop offset="50%" stop-color="#fff5b0"/>
+                    <stop offset="100%" stop-color="#e5a800"/>
+                </linearGradient>
+            </defs>` + outer.replace(/url\(#goldGrad\d+\)/g, 'url(#goldGrad0)') +
+            `<circle cx="65" cy="65" r="53" fill="none" stroke="url(#goldGrad0)" stroke-width="3" opacity="0.8"/>
+             <circle cx="65" cy="65" r="59" fill="none" stroke="#f0b90b" stroke-width="1" stroke-dasharray="1 4" opacity="0.4"/>
+             <circle cx="65" cy="65" r="48" fill="none" stroke="#f0b90b" stroke-width="0.5" opacity="0.2"/>`;
+        },
+    },
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   ③ عرض الإطارات
+   ③ عرض الإطارات — SVG v2.0
 ═══════════════════════════════════════════════════════════════ */
 function _renderFrames(container) {
     if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
     const currentFrame = st.activeFrame || 'frame_none';
+    const avatarEmoji  = st.avatar || '🧑';
 
     container.innerHTML = `
         <div style="padding:10px 0 6px;">
@@ -446,8 +597,12 @@ function _renderFrames(container) {
         const canAfford = st.coins >= (frame.price || 0);
         const isFree    = frame.price === 0;
 
-        const borderStyle = frame.css === 'none' ? '2px dashed rgba(255,255,255,0.15)' : frame.css;
-        const previewStyle = `width:48px;height:48px;border-radius:50%;border:${borderStyle};display:flex;align-items:center;justify-content:center;font-size:1.6em;margin:0 auto 6px;background:var(--surface3);${active ? 'box-shadow:0 0 10px rgba(240,185,11,0.4);' : ''}`;
+        /* معاينة SVG مصغّرة */
+        const svgPreview = `
+            <div style="position:relative;width:60px;height:60px;margin:0 auto 6px;">
+                <div style="position:absolute;inset:0;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:1.6em;overflow:hidden;${active ? 'box-shadow:0 0 10px rgba(240,185,11,0.4);' : ''}">${avatarEmoji}</div>
+                <svg style="position:absolute;inset:-8px;width:calc(100% + 16px);height:calc(100% + 16px);pointer-events:none;" viewBox="0 0 130 130">${frame.svgContent()}</svg>
+            </div>`;
 
         let bottomContent = '';
         if (owned) {
@@ -484,7 +639,7 @@ function _renderFrames(container) {
                     ${active ? 'box-shadow:0 0 12px rgba(240,185,11,0.3);' : ''}
                 ">
                 ${hotBadge}
-                <div style="${previewStyle}">${st.avatar || '🧑'}</div>
+                ${svgPreview}
                 <div style="font-size:0.6em;font-weight:700;color:var(--text);margin-bottom:3px;">${frame.label}</div>
                 ${bottomContent}
             </div>
@@ -536,13 +691,13 @@ function selectFrame(frameId) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   تطبيق الإطار النشط على جميع عناصر الأفاتار في الواجهة
+   تطبيق الإطار النشط على جميع عناصر الأفاتار في الواجهة — SVG v2.0
    تُستدعى من updateUI() في ui.js
 ═══════════════════════════════════════════════════════════════ */
 function _applyActiveFrameGlobally() {
     const frameId = st.activeFrame || 'frame_none';
     const frame   = FRAMES_CATALOG.find(f => f.id === frameId);
-    const borderCSS = (frame && frame.css !== 'none') ? frame.css : '';
+    const svgHTML = (frame && frame.svgContent) ? frame.svgContent() : '';
 
     /* قائمة جميع عناصر الأفاتار في الواجهة */
     const avatarIds = [
@@ -554,19 +709,38 @@ function _applyActiveFrameGlobally() {
     avatarIds.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        el.style.border        = borderCSS;
-        el.style.boxSizing     = 'border-box';
-        /* إضافة overflow:hidden لضمان ظهور الإطار مع الصور */
-        el.style.overflow      = 'hidden';
-        /* إطار مضيء (glow) للإطارات المميزة */
-        if (frame && frame.css && frame.css !== 'none') {
-            /* استخراج اللون من css string مثل "3px solid #f97316" */
-            const colorMatch = frame.css.match(/#[0-9a-fA-F]{3,6}|var\(--\w[\w-]*\)/);
-            const glowColor  = colorMatch ? colorMatch[0] : 'transparent';
-            el.style.boxShadow = `0 0 0 2px ${glowColor}44`;
-        } else {
-            el.style.boxShadow = '';
+
+        /* إزالة border القديم */
+        el.style.border    = '';
+        el.style.boxShadow = '';
+
+        /* إضافة SVG overlay أو تحديثه */
+        const wrapperId = id + '_frameWrapper';
+        let wrapper = document.getElementById(wrapperId);
+
+        if (!svgHTML) {
+            /* بدون إطار — إزالة SVG إن وجد */
+            if (wrapper) wrapper.remove();
+            el.style.position = '';
+            return;
         }
+
+        /* تأكّد أن الأب relative */
+        const parent = el.parentElement;
+        if (parent) parent.style.position = 'relative';
+
+        /* إنشاء أو تحديث SVG overlay */
+        if (!wrapper) {
+            wrapper = document.createElement('div');
+            wrapper.id = wrapperId;
+            wrapper.style.cssText = `
+                position:absolute;inset:-8px;
+                width:calc(100% + 16px);height:calc(100% + 16px);
+                pointer-events:none;z-index:10;
+            `;
+            if (parent) parent.appendChild(wrapper);
+        }
+        wrapper.innerHTML = `<svg style="width:100%;height:100%;" viewBox="0 0 130 130">${svgHTML}</svg>`;
     });
 }
 
