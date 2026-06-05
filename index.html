@@ -812,7 +812,7 @@
             <button class="comp-bottom-btn" onclick="openChallengeTasksOverlay()">
                 <span class="comp-bottom-btn-icon">📋</span>
                 <span class="comp-bottom-btn-label">مهام التحدي</span>
-                <span class="comp-bottom-btn-badge" id="challengeTasksBtnProgress">0/12</span>
+                <span class="comp-bottom-btn-badge" id="challengeTasksBtnProgress">0/5</span>
             </button>
             <button class="comp-bottom-btn" onclick="openLbOverlay('challenge')">
                 <span class="comp-bottom-btn-icon">⚔️</span>
@@ -1019,7 +1019,7 @@
 
 
                     <!-- تبويبات المتجر -->
-                    <div id="shopTabsRow" style="display:flex;gap:6px;margin-bottom:4px;flex-shrink:0;"></div>
+                    <div id="shopTabsRow" style="display:flex;gap:6px;margin-bottom:10px;flex-shrink:0;overflow-x:auto;overflow-y:visible;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-top:8px;"></div>
 
                     <!-- محتوى المتجر -->
                     <div id="shopItemsContainer" style="flex:1;min-height:0;"></div>
@@ -1683,18 +1683,11 @@
 
         /* ═══ مهام التحدي اليومية ═══ */
         var CHALLENGE_TASKS = [
-            { icon:'⚡', name:'الانطلاقة',   desc:'اجمع 5 نقاط في التحدي',    target:5,   reward:2  },
-            { icon:'🔥', name:'المبتدئ',     desc:'اجمع 10 نقاط في التحدي',   target:10,  reward:3  },
-            { icon:'💪', name:'المتحمس',     desc:'اجمع 20 نقطة في التحدي',   target:20,  reward:5  },
-            { icon:'🎯', name:'المركّز',     desc:'اجمع 35 نقطة في التحدي',   target:35,  reward:7  },
-            { icon:'🏅', name:'المقاتل',     desc:'اجمع 50 نقطة في التحدي',   target:50,  reward:10 },
-            { icon:'⚔️', name:'المحترف',    desc:'اجمع 70 نقطة في التحدي',   target:70,  reward:14 },
-            { icon:'🌟', name:'النخبة',      desc:'اجمع 90 نقطة في التحدي',   target:90,  reward:18 },
-            { icon:'🦁', name:'الفارس',      desc:'اجمع 115 نقطة في التحدي',  target:115, reward:24 },
-            { icon:'💎', name:'الماسي',      desc:'اجمع 145 نقطة في التحدي',  target:145, reward:30 },
-            { icon:'🔱', name:'البطل',       desc:'اجمع 180 نقطة في التحدي',  target:180, reward:40 },
-            { icon:'👑', name:'الأسطورة',    desc:'اجمع 220 نقطة في التحدي',  target:220, reward:55 },
-            { icon:'🏆', name:'الخالد',      desc:'اجمع 270 نقطة في التحدي',  target:270, reward:75 }
+            { icon:'⚡', name:'المبتدئ',   desc:'اجمع 5 نقاط في التحدي',  target:5,  reward:2  },
+            { icon:'🔥', name:'المتحمس',   desc:'اجمع 15 نقطة في التحدي', target:15, reward:4  },
+            { icon:'💪', name:'المقاتل',   desc:'اجمع 30 نقطة في التحدي', target:30, reward:6  },
+            { icon:'🏅', name:'المحترف',   desc:'اجمع 50 نقطة في التحدي', target:50, reward:10 },
+            { icon:'👑', name:'الأسطورة',  desc:'اجمع 80 نقطة في التحدي', target:80, reward:20 }
         ];
 
         function renderChallengeDailyTasks() {
@@ -1736,8 +1729,8 @@
             var done = CHALLENGE_TASKS.filter(function(t){ return score >= t.target; }).length;
             var el = document.getElementById('challengeTasksBtnProgress');
             if (el) {
-                el.textContent = done + '/12';
-                el.style.color = done === 12 ? 'var(--green)' : 'var(--gold)';
+                el.textContent = done + '/5';
+                el.style.color = done === 5 ? 'var(--green)' : 'var(--gold)';
             }
         }
 
@@ -2011,4 +2004,3 @@
 </html>
           
          
-     
