@@ -266,16 +266,33 @@ function _renderShopHeader() {
 function _renderShopTabs() {
     const tabs = document.getElementById('shopTabsRow');
     if (!tabs) return;
+
+    /* ── سكرول أفقي سلس ── */
+    tabs.style.overflowX               = 'auto';
+    tabs.style.overflowY               = 'visible';
+    tabs.style.flexWrap                = 'nowrap';
+    tabs.style.webkitOverflowScrolling = 'touch';
+    tabs.style.scrollbarWidth          = 'none';
+    tabs.style.paddingTop              = '8px';
+    tabs.style.paddingBottom           = '4px';
+
     const tabDefs = [
-        { key: 'avatars',     icon: '\u{1F9D1}', label: '\u0631\u0645\u0648\u0632' },
-        { key: 'frames',      icon: '\u{1F5BC}\uFE0F', label: '\u0625\u0637\u0627\u0631\u0627\u062A', badge: '\u062C\u062F\u064A\u062F!' },
-        { key: 'consumables', icon: '\u26A1', label: '\u0645\u0633\u062A\u0647\u0644\u0643\u0627\u062A' },
-        { key: 'bundles',     icon: '\u{1F381}', label: '\u062D\u0632\u0645', badge: '\u0648\u0641\u0651\u0631!' },
+        { key: 'avatars',     icon: '🧑',  label: 'رموز' },
+        { key: 'frames',      icon: '🖼️', label: 'إطارات', badge: 'جديد!' },
+        { key: 'consumables', icon: '⚡',  label: 'مستهلكات' },
+        { key: 'bundles',     icon: '🎁',  label: 'حزم', badge: 'وفّر!' },
     ];
+
+    /* عرض كل زر = ربع الشاشة تقريباً — يظهر 3.5 زر على الشاشة */
     tabs.innerHTML = tabDefs.map(t => {
         const active = _shopState.activeTab === t.key;
-        const badgeHtml = t.badge ? '<span style="position:absolute;top:-9px;right:-6px;background:#ef4444;color:#fff;font-size:0.6em;font-weight:900;padding:2px 6px;border-radius:8px;white-space:nowrap;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.4);">' + t.badge + '</span>' : '';
-        return '<button class="shop-tab-btn' + (active ? ' active' : '') + '" onclick="_setShopTab(\'' + t.key + '\');playSound(\'click\');" style="flex:0 0 auto;width:calc(25vw - 6px);min-width:70px;max-width:96px;padding:9px 2px;border-radius:12px;font-size:0.7em;font-weight:800;white-space:nowrap;text-align:center;margin-top:4px;background:' + (active ? 'var(--gold)' : 'var(--surface3)') + ';color:' + (active ? '#000' : 'var(--text2)') + ';border:1.5px solid ' + (active ? 'var(--gold)' : 'var(--border2)') + ';position:relative;transition:all 0.18s ease;overflow:visible;">' + t.icon + ' ' + t.label + badgeHtml + '</button>';
+        const badge  = t.badge
+            ? `<span style="position:absolute;top:-9px;right:-4px;background:#ef4444;color:#fff;font-size:0.58em;font-weight:900;padding:2px 6px;border-radius:8px;white-space:nowrap;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.5);">${t.badge}</span>`
+            : '';
+        return `<button class="shop-tab-btn${active ? ' active' : ''}"
+            onclick="_setShopTab('${t.key}');playSound('click');"
+            style="flex:0 0 auto;width:calc(25vw - 5px);min-width:68px;max-width:110px;padding:8px 4px;border-radius:12px;font-size:0.72em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;overflow:visible;"
+        >${t.icon} ${t.label}${badge}</button>`;
     }).join('');
 }
 
