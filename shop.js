@@ -274,6 +274,13 @@ function _renderShopTabs() {
         { key: 'bundles',     icon: '🎁',  label: 'حزم', badge: 'وفّر!' },
     ];
 
+    /* تفعيل السكرول الأفقي على الحاوية */
+    tabs.style.overflowX = 'scroll';
+    tabs.style.overflowY = 'visible';
+    tabs.style.flexWrap  = 'nowrap';
+    tabs.style.webkitOverflowScrolling = 'touch';
+    tabs.style.scrollbarWidth = 'none';
+
     tabs.innerHTML = tabDefs.map(t => {
         const active = _shopState.activeTab === t.key;
         const badge  = t.badge
@@ -281,7 +288,7 @@ function _renderShopTabs() {
             : '';
         return `<button class="shop-tab-btn${active ? ' active' : ''}"
             onclick="_setShopTab('${t.key}');playSound('click');"
-            style="flex:1;min-width:0;padding:7px 2px;border-radius:12px;font-size:0.62em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;overflow:visible;"
+            style="flex:0 0 auto;width:calc(25% - 4px);padding:7px 2px;border-radius:12px;font-size:0.62em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;overflow:visible;"
         >${t.icon} ${t.label}${badge}</button>`;
     }).join('');
 }
