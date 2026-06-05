@@ -214,20 +214,17 @@ html.light-mode #avatarShopGrid > div {
     animation: invPop 0.3s ease;
 }
 
-/* ─── صف تبويبات المتجر — سكرول أفقي مع إخفاء الشريط ─── */
+/* ─── صف تبويبات المتجر ─── */
 #shopTabsRow {
     display: flex !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
     padding-top: 8px;
     padding-bottom: 4px;
-    gap: 6px;
     width: 100%;
     box-sizing: border-box;
 }
-#shopTabsRow::-webkit-scrollbar {
-    display: none;
-}
+#shopTabsRow::-webkit-scrollbar { display: none; }
