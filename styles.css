@@ -736,7 +736,7 @@
             position: absolute;
             inset: 0;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: clip; /* clip بدل hidden — يمنع scroll الصفحة لكن يسمح للعناصر الداخلية بالسكرول */
             padding: 10px 14px 24px;
             display: none;
             flex-direction: column;
