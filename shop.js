@@ -266,32 +266,22 @@ function _renderShopHeader() {
 function _renderShopTabs() {
     const tabs = document.getElementById('shopTabsRow');
     if (!tabs) return;
-
-    /* ── سكرول أفقي سلس ── */
-    tabs.style.overflowX               = 'auto';
-    tabs.style.overflowY               = 'visible';
-    tabs.style.flexWrap                = 'nowrap';
-    tabs.style.webkitOverflowScrolling = 'touch';
-    tabs.style.scrollbarWidth          = 'none';
-    tabs.style.paddingTop              = '8px';
-    tabs.style.paddingBottom           = '4px';
-
     const tabDefs = [
         { key: 'avatars',     icon: '🧑',  label: 'رموز' },
         { key: 'frames',      icon: '🖼️', label: 'إطارات', badge: 'جديد!' },
         { key: 'consumables', icon: '⚡',  label: 'مستهلكات' },
         { key: 'bundles',     icon: '🎁',  label: 'حزم', badge: 'وفّر!' },
     ];
-
-    /* عرض كل زر = ربع الشاشة تقريباً — يظهر 3.5 زر على الشاشة */
+    /* عرض كل زر = نصف المساحة ناقص الفجوة → يظهر 2 ويُمرَّر للباقي */
+    const btnW = 'calc(50% - 7px)';
     tabs.innerHTML = tabDefs.map(t => {
         const active = _shopState.activeTab === t.key;
         const badge  = t.badge
-            ? `<span style="position:absolute;top:-9px;right:-4px;background:#ef4444;color:#fff;font-size:0.58em;font-weight:900;padding:2px 6px;border-radius:8px;white-space:nowrap;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.5);">${t.badge}</span>`
+            ? `<span style="position:absolute;top:-8px;right:-4px;background:#ef4444;color:#fff;font-size:0.58em;font-weight:900;padding:2px 6px;border-radius:8px;white-space:nowrap;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.4);">${t.badge}</span>`
             : '';
         return `<button class="shop-tab-btn${active ? ' active' : ''}"
             onclick="_setShopTab('${t.key}');playSound('click');"
-            style="flex:0 0 auto;width:calc(25vw - 5px);min-width:68px;max-width:110px;padding:8px 4px;border-radius:12px;font-size:0.72em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;overflow:visible;"
+            style="flex:0 0 ${btnW};padding:9px 4px;border-radius:12px;font-size:0.76em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;overflow:visible;"
         >${t.icon} ${t.label}${badge}</button>`;
     }).join('');
 }
