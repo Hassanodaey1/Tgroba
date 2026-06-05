@@ -1019,7 +1019,7 @@
 
 
                     <!-- تبويبات المتجر -->
-                    <div id="shopTabsRow" style="display:flex;gap:6px;margin-bottom:4px;flex-shrink:0;overflow:visible;"></div>
+                    <div id="shopTabsRow" style="display:flex;gap:5px;margin-bottom:8px;flex-shrink:0;flex-wrap:nowrap;overflow:visible;padding-top:6px;"></div>
 
                     <!-- محتوى المتجر -->
                     <div id="shopItemsContainer" style="flex:1;min-height:0;"></div>
@@ -1567,7 +1567,7 @@
             playSound && playSound('click');
         }
 
-       function closeSettingsSubPage(overlayId) {
+      function closeSettingsSubPage(overlayId) {
             const el = document.getElementById(overlayId);
             if (el) el.style.display = 'none';
             playSound && playSound('click');
