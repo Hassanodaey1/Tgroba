@@ -369,30 +369,31 @@ function _renderShopTabs() {
     const tabs = document.getElementById('shopTabsRow');
     if (!tabs) return;
 
-    // سكرول أفقي سلس
-    tabs.style.cssText += ';overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;';
+    tabs.style.display                 = 'flex';
+    tabs.style.flexWrap                = 'nowrap';
+    tabs.style.overflowX               = 'auto';
+    tabs.style.overflowY               = 'hidden';
+    tabs.style.gap                     = '6px';
+    tabs.style.paddingBottom           = '2px';
+    tabs.style.webkitOverflowScrolling = 'touch';
+    tabs.style.scrollbarWidth          = 'none';
 
     const tabDefs = [
-        { key: 'avatars',      icon: '🧑',  label: 'رموز' },
-        { key: 'frames',       icon: '🖼️',  label: 'إطارات', badge: 'جديد!' },
-        { key: 'consumables',  icon: '⚡',  label: 'مستهلكات' },
-        { key: 'bundles',      icon: '🎁',  label: 'حزم', badge: 'وفّر!' },
+        { key: 'avatars',     icon: '🧑', label: 'رموز' },
+        { key: 'frames',      icon: '🖼️', label: 'إطارات', badge: 'جديد!' },
+        { key: 'consumables', icon: '⚡', label: 'مستهلكات' },
+        { key: 'bundles',     icon: '🎁', label: 'حزم', badge: 'وفّر!' },
     ];
-    tabs.innerHTML = tabDefs.map(t => `
-        <button class="shop-tab-btn${_shopState.activeTab === t.key ? ' active' : ''}"
-                onclick="_setShopTab('${t.key}');playSound('click');"
-                style="
-                    flex:0 0 22%;min-width:72px;padding:8px 4px;border-radius:12px;
-                    font-size:0.72em;font-weight:800;white-space:nowrap;
-                    background:${_shopState.activeTab === t.key ? 'var(--gold)' : 'var(--surface3)'};
-                    color:${_shopState.activeTab === t.key ? '#000' : 'var(--text2)'};
-                    border:1px solid ${_shopState.activeTab === t.key ? 'var(--gold)' : 'var(--border2)'};
-                    position:relative;transition:all 0.18s ease;
-                ">
+
+    tabs.innerHTML = tabDefs.map(t => {
+        const active = _shopState.activeTab === t.key;
+        return `<button class="shop-tab-btn${active ? ' active' : ''}"
+            onclick="_setShopTab('${t.key}');playSound('click');"
+            style="flex:0 0 calc(30% - 2px);padding:8px 4px;border-radius:12px;font-size:0.72em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;">
             ${t.icon} ${t.label}
-            ${t.badge ? `<span style="position:absolute;top:-6px;right:-4px;background:#ef4444;color:#fff;font-size:0.62em;font-weight:900;padding:1px 5px;border-radius:8px;">${t.badge}</span>` : ''}
-        </button>
-    `).join('');
+            ${t.badge ? `<span style="position:absolute;top:-6px;right:-2px;background:#ef4444;color:#fff;font-size:0.6em;font-weight:900;padding:1px 5px;border-radius:8px;white-space:nowrap;">${t.badge}</span>` : ''}
+        </button>`;
+    }).join('');
 }
 
 function _setShopTab(tab) {
