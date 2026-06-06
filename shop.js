@@ -695,49 +695,71 @@ function selectFrame(frameId) {
    تُستدعى من updateUI() في ui.js
 ═══════════════════════════════════════════════════════════════ */
 function _applyActiveFrameGlobally() {
-    const frameId = st.activeFrame || 'frame_none';
-    const frame   = FRAMES_CATALOG.find(f => f.id === frameId);
-    const svgHTML = (frame && frame.svgContent) ? frame.svgContent() : '';
+    const frameId  = st.activeFrame || 'frame_none';
+    const frame    = FRAMES_CATALOG.find(f => f.id === frameId);
+    const svgHTML  = (frame && frame.svgContent) ? frame.svgContent() : '';
+    const hasFrame = !!svgHTML;
 
-    /* قائمة جميع عناصر الأفاتار في الواجهة */
-    const avatarIds = [
-        'profileAvatarImg',
-        'spProfileAvatarImg',
-        'headerAvatar',
+    /* ─── خريطة: id الأفاتار → id الحلقة الأصلية المجاورة ─── */
+    const avatarMap = [
+        {
+            avatarId : 'headerAvatar',
+            ringClass: 'avatar-ring',        /* الحلقة في .avatar-wrap */
+            ringSelector: '.avatar-wrap .avatar-ring',
+        },
+        {
+            avatarId : 'spProfileAvatarImg',
+            ringClass: 'profile-avatar-ring', /* الحلقة في #spProfileAvatarWrap */
+            ringSelector: '#spProfileAvatarWrap .profile-avatar-ring',
+        },
+        {
+            avatarId : 'profileAvatarImg',
+            ringClass: null,                  /* هذا العنصر stub بدون حلقة خاصة */
+            ringSelector: null,
+        },
     ];
 
-    avatarIds.forEach(id => {
-        const el = document.getElementById(id);
+    avatarMap.forEach(({ avatarId, ringSelector }) => {
+        const el = document.getElementById(avatarId);
         if (!el) return;
 
-        /* إزالة border القديم */
+        /* ① إخفاء / إظهار الحلقة الأصلية */
+        if (ringSelector) {
+            const ring = document.querySelector(ringSelector);
+            if (ring) ring.style.visibility = hasFrame ? 'hidden' : '';
+        }
+
+        /* ② إزالة border قديم */
         el.style.border    = '';
         el.style.boxShadow = '';
 
-        /* إضافة SVG overlay أو تحديثه */
-        const wrapperId = id + '_frameWrapper';
+        const wrapperId = avatarId + '_frameWrapper';
         let wrapper = document.getElementById(wrapperId);
 
-        if (!svgHTML) {
-            /* بدون إطار — إزالة SVG إن وجد */
+        if (!hasFrame) {
+            /* بدون إطار — إزالة SVG overlay إن وجد */
             if (wrapper) wrapper.remove();
-            el.style.position = '';
             return;
         }
 
-        /* تأكّد أن الأب relative */
+        /* ③ تأكّد أن الأب relative */
         const parent = el.parentElement;
-        if (parent) parent.style.position = 'relative';
+        if (parent && getComputedStyle(parent).position === 'static') {
+            parent.style.position = 'relative';
+        }
 
-        /* إنشاء أو تحديث SVG overlay */
+        /* ④ إنشاء أو تحديث SVG overlay */
         if (!wrapper) {
             wrapper = document.createElement('div');
             wrapper.id = wrapperId;
-            wrapper.style.cssText = `
-                position:absolute;inset:-8px;
-                width:calc(100% + 16px);height:calc(100% + 16px);
-                pointer-events:none;z-index:10;
-            `;
+            wrapper.style.cssText = [
+                'position:absolute',
+                'inset:-8px',
+                'width:calc(100% + 16px)',
+                'height:calc(100% + 16px)',
+                'pointer-events:none',
+                'z-index:10',
+            ].join(';');
             if (parent) parent.appendChild(wrapper);
         }
         wrapper.innerHTML = `<svg style="width:100%;height:100%;" viewBox="0 0 130 130">${svgHTML}</svg>`;
