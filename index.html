@@ -22,27 +22,26 @@
     <meta name="format-detection" content="telephone=no">
     <title>HO Math - تحديات الرياضيات</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
-<script src="js/core/firebase.js"></script>
-<script src="js/core/state.js"></script>
-<script src="js/core/utils.js"></script>
-<script src="js/engine/audio.js"></script>
-<script src="js/engine/questions.js"></script>
-<script src="js/engine/q_engine.js"></script>
-<script src="js/engine/game.js"></script>
-<script src="js/pages/nav.js"></script>
-<script src="js/pages/achievements.js"></script>
-<script src="js/pages/competition.js"></script>
-<script src="js/pages/shop.js"></script>
-<script src="js/pages/settings.js"></script>
-<script src="js/pages/init.js"></script>
     <!-- Styles -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/competition.css">
-    <link rel="stylesheet" >
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
+    <script src="js/core/firebase.js"></script>
+    <script src="js/core/state.js"></script>
+    <script src="js/core/utils.js"></script>
+    <script src="js/engine/audio.js"></script>
+    <script src="js/engine/questions.js"></script>
+    <script src="js/engine/q_engine.js"></script>
+    <script src="js/engine/game.js"></script>
+    <script src="js/pages/nav.js"></script>
+    <script src="js/pages/achievements.js"></script>
+    <script src="js/pages/competition.js"></script>
+    <script src="js/pages/shop.js"></script>
+    <script src="js/pages/settings.js"></script>
+    <script src="js/pages/init.js"></script>
 </head>
 <body>
 
@@ -1553,7 +1552,7 @@
             }
 
             /* ── الصوتيات: مزامنة القيم من st مباشرة ── */
-            if (overlayId === 'subPageAudioOverlay') {
+           if (overlayId === 'subPageAudioOverlay') {
                 if (typeof st !== 'undefined') {
                     const q = id => document.getElementById(id);
                     if (q('soundStatus'))    q('soundStatus').textContent    = st.soundOn ? 'مفعّل' : 'مطفأ';
