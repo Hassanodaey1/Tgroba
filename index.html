@@ -1682,21 +1682,33 @@ function closeSettingsSubPage(overlayId) {
 
         /* ═══ مهام التحدي اليومية ═══ */
         var CHALLENGE_TASKS = [
-            { icon:'⚡', name:'المبتدئ',   desc:'اجمع 5 نقاط في التحدي',  target:5,  reward:2  },
-            { icon:'🔥', name:'المتحمس',   desc:'اجمع 15 نقطة في التحدي', target:15, reward:4  },
-            { icon:'💪', name:'المقاتل',   desc:'اجمع 30 نقطة في التحدي', target:30, reward:6  },
-            { icon:'🏅', name:'المحترف',   desc:'اجمع 50 نقطة في التحدي', target:50, reward:10 },
-            { icon:'👑', name:'الأسطورة',  desc:'اجمع 80 نقطة في التحدي', target:80, reward:20 }
+            /* ── مجموعة ١: أفضل نتيجة — متدرجة الصعوبة ── */
+            { icon:'⚡', name:'أول خطوة',      desc:'اجمع 5 نقاط في التحدي',       target:5,   type:'best',  reward:2  },
+            { icon:'🔥', name:'آخذ حرارة',     desc:'اجمع 20 نقطة في التحدي',      target:20,  type:'best',  reward:5  },
+            { icon:'💪', name:'المقاتل',        desc:'اجمع 40 نقطة في التحدي',      target:40,  type:'best',  reward:8  },
+            { icon:'🏅', name:'المحترف',        desc:'اجمع 65 نقطة في التحدي',      target:65,  type:'best',  reward:12 },
+            { icon:'🏆', name:'قمة الأداء',     desc:'اجمع 90 نقطة في التحدي',      target:90,  type:'best',  reward:20 },
+            /* ── مجموعة ٢: عدد الألعاب ── */
+            { icon:'🎮', name:'أول جولة',       desc:'العب التحدي لأول مرة',         target:1,   type:'games', reward:3  },
+            { icon:'🔄', name:'مثابر',           desc:'العب التحدي 3 مرات',           target:3,   type:'games', reward:6  },
+            { icon:'💫', name:'متعطش للتحدي',   desc:'العب التحدي 7 مرات',           target:7,   type:'games', reward:10 },
+            /* ── مجموعة ٣: مستوى اللاعب ── */
+            { icon:'📈', name:'صاعد',            desc:'ابلغ المستوى 5 في اللعبة',     target:5,   type:'level', reward:8  },
+            { icon:'👑', name:'الأسطورة',        desc:'ابلغ المستوى 10 في اللعبة',    target:10,  type:'level', reward:18 },
         ];
 
         function renderChallengeDailyTasks() {
             var list = document.getElementById('challengeDailyTasksList');
             if (!list) return;
-            var score = (typeof st !== 'undefined') ? (st.challengeBestScore || 0) : 0;
+            var best   = (typeof st !== 'undefined') ? (st.challengeBestScore   || 0) : 0;
+            var games  = (typeof st !== 'undefined') ? (st.challengeGamesPlayed || 0) : 0;
+            var level  = (typeof st !== 'undefined') ? (st.level                || 1) : 1;
             updateChallengeTasksBtn();
+
             list.innerHTML = CHALLENGE_TASKS.map(function(t) {
-                var prog = Math.min(100, Math.round((score / t.target) * 100));
-                var done = score >= t.target;
+                var current = t.type === 'games' ? games : t.type === 'level' ? level : best;
+                var prog = Math.min(100, Math.round((current / t.target) * 100));
+                var done = current >= t.target;
                 return '<div class="task-item' + (done ? ' done' : '') + '">' +
                     '<div class="task-item-icon">' + t.icon + '</div>' +
                     '<div class="task-item-info">' +
@@ -1706,7 +1718,7 @@ function closeSettingsSubPage(overlayId) {
                     '</div>' +
                     '<div class="task-right">' +
                         '<div class="task-reward">+' + t.reward + '💰</div>' +
-                        '<div class="task-prog-txt">' + Math.min(score, t.target) + '/' + t.target + '</div>' +
+                        '<div class="task-prog-txt">' + Math.min(current, t.target) + '/' + t.target + '</div>' +
                         (done ? '<div style="font-size:0.7em;color:var(--green);">✅</div>' : '') +
                     '</div>' +
                 '</div>';
@@ -1724,12 +1736,18 @@ function closeSettingsSubPage(overlayId) {
             if (ov) ov.style.display = 'none';
         }
         function updateChallengeTasksBtn() {
-            var score = (typeof st !== 'undefined') ? (st.challengeBestScore || 0) : 0;
-            var done = CHALLENGE_TASKS.filter(function(t){ return score >= t.target; }).length;
+            var best   = (typeof st !== 'undefined') ? (st.challengeBestScore   || 0) : 0;
+            var games  = (typeof st !== 'undefined') ? (st.challengeGamesPlayed || 0) : 0;
+            var level  = (typeof st !== 'undefined') ? (st.level                || 1) : 1;
+            var total  = CHALLENGE_TASKS.length;
+            var done   = CHALLENGE_TASKS.filter(function(t) {
+                var cur = t.type === 'games' ? games : t.type === 'level' ? level : best;
+                return cur >= t.target;
+            }).length;
             var el = document.getElementById('challengeTasksBtnProgress');
             if (el) {
-                el.textContent = done + '/5';
-                el.style.color = done === 5 ? 'var(--green)' : 'var(--gold)';
+                el.textContent = done + '/' + total;
+                el.style.color = done === total ? 'var(--green)' : 'var(--gold)';
             }
         }
 
