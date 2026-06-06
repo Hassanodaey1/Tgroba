@@ -700,21 +700,18 @@ function _applyActiveFrameGlobally() {
     const svgHTML  = (frame && frame.svgContent) ? frame.svgContent() : '';
     const hasFrame = !!svgHTML;
 
-    /* ─── خريطة: id الأفاتار → id الحلقة الأصلية المجاورة ─── */
+    /* ─── خريطة: الأفاتار → الحلقة البنفسجية المجاورة ─── */
     const avatarMap = [
         {
-            avatarId : 'headerAvatar',
-            ringClass: 'avatar-ring',        /* الحلقة في .avatar-wrap */
+            avatarId:     'headerAvatar',
             ringSelector: '.avatar-wrap .avatar-ring',
         },
         {
-            avatarId : 'spProfileAvatarImg',
-            ringClass: 'profile-avatar-ring', /* الحلقة في #spProfileAvatarWrap */
+            avatarId:     'spProfileAvatarImg',
             ringSelector: '#spProfileAvatarWrap .profile-avatar-ring',
         },
         {
-            avatarId : 'profileAvatarImg',
-            ringClass: null,                  /* هذا العنصر stub بدون حلقة خاصة */
+            avatarId:     'profileAvatarImg',
             ringSelector: null,
         },
     ];
@@ -723,13 +720,13 @@ function _applyActiveFrameGlobally() {
         const el = document.getElementById(avatarId);
         if (!el) return;
 
-        /* ① إخفاء / إظهار الحلقة الأصلية */
+        /* ① إخفاء الحلقة البنفسجية الدوّارة عند وجود إطار، وإظهارها عند إزالته */
         if (ringSelector) {
             const ring = document.querySelector(ringSelector);
-            if (ring) ring.style.visibility = hasFrame ? 'hidden' : '';
+            if (ring) ring.style.display = hasFrame ? 'none' : '';
         }
 
-        /* ② إزالة border قديم */
+        /* ② إزالة أي border قديم */
         el.style.border    = '';
         el.style.boxShadow = '';
 
@@ -742,7 +739,7 @@ function _applyActiveFrameGlobally() {
             return;
         }
 
-        /* ③ تأكّد أن الأب relative */
+        /* ③ تأكّد أن الأب position:relative */
         const parent = el.parentElement;
         if (parent && getComputedStyle(parent).position === 'static') {
             parent.style.position = 'relative';
@@ -752,14 +749,7 @@ function _applyActiveFrameGlobally() {
         if (!wrapper) {
             wrapper = document.createElement('div');
             wrapper.id = wrapperId;
-            wrapper.style.cssText = [
-                'position:absolute',
-                'inset:-8px',
-                'width:calc(100% + 16px)',
-                'height:calc(100% + 16px)',
-                'pointer-events:none',
-                'z-index:10',
-            ].join(';');
+            wrapper.style.cssText = 'position:absolute;inset:-8px;width:calc(100% + 16px);height:calc(100% + 16px);pointer-events:none;z-index:10;';
             if (parent) parent.appendChild(wrapper);
         }
         wrapper.innerHTML = `<svg style="width:100%;height:100%;" viewBox="0 0 130 130">${svgHTML}</svg>`;
