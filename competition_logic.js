@@ -419,10 +419,10 @@ function endChallengeGame() {
     _cgScoreInternal = CG.score;
 
     const isNewRecord = CG.score > (st.challengeBestScore || 0);
-    if (isNewRecord) {
-        st.challengeBestScore = CG.score;
-        saveSt();
-    }
+    if (isNewRecord) st.challengeBestScore = CG.score;
+    /* عداد عدد مرات لعب التحدي */
+    st.challengeGamesPlayed = (st.challengeGamesPlayed || 0) + 1;
+    saveSt();
 
     // مزامنة Firebase
     syncChallengeScore(CG.score);
@@ -782,15 +782,27 @@ function _fetchCompHeroStats() {
     const rankEl  = document.getElementById('compMyRank');
     const totalEl = document.getElementById('compTotalPlayers');
 
-    // إذا كان عندنا cache حديث نستخدمه فوراً
+    /* إذا لا يوجد serialNumber — اعرض نص واضح */
+    if (!st.serialNumber) {
+        if (rankEl)  rankEl.textContent  = 'غير مسجّل';
+        if (totalEl) totalEl.textContent = '—';
+        return;
+    }
+
+    /* استخدام الـ cache إذا كان حديثاً */
     if (_lbCache && _lbCacheType === 'challenge' && (Date.now() - _lbCacheTime) < 60000) {
         updateCompMyStats(_lbCache);
         return;
     }
 
-    if (!window.database) return;
+    if (!window.database) {
+        if (rankEl && rankEl.textContent === '—') rankEl.textContent = '...';
+        return;
+    }
 
-    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
+    const myKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    if (rankEl) rankEl.textContent = '...';
 
     window.database.ref('challenge_leaderboard')
         .orderByChild('challengeScore')
@@ -800,18 +812,25 @@ function _fetchCompHeroStats() {
             snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
             players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
 
-            // حفظ في cache
             _lbCache     = players;
             _lbCacheTime = Date.now();
             _lbCacheType = 'challenge';
 
-            // تحديث العناصر
             if (totalEl) totalEl.textContent = players.length || '—';
-            if (myKey && rankEl) {
-                const myIdx = players.findIndex(p => p.id === myKey);
-                rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
+
+            const myIdx = players.findIndex(p => p.id === myKey);
+            if (rankEl) {
+                if (myIdx >= 0) {
+                    rankEl.textContent = '#' + (myIdx + 1);
+                } else {
+                    /* اللاعب مسجّل لكن لم يلعب تحدياً بعد */
+                    rankEl.textContent = 'العب أولاً';
+                    rankEl.style.fontSize = '0.7em';
+                }
             }
-        }).catch(() => {});
+        }).catch(() => {
+            if (rankEl && rankEl.textContent === '...') rankEl.textContent = '—';
+        });
 }
 
 /* ══════════════════════════════════════
