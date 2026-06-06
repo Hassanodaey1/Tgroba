@@ -1,0 +1,840 @@
+/* ═══════════════════════════════════════════════════════════════════
+   HO Math — Responsive System
+   يغطي: هاتف صغير (320px) → هاتف عادي → هاتف كبير → تابلت صغير
+          → تابلت كبير → وضع أفقي لكل الأحجام
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 1 — CSS VARIABLES: قيم متغيرة حسب حجم الشاشة
+═══════════════════════════════════════════════════════════════════ */
+
+/* الهاتف الصغير ≤ 360px */
+@media (max-width: 360px) {
+  :root {
+    --nav-h: 60px;
+    --fs-base: 14px;
+    --page-px: 10px;
+    --card-radius: 14px;
+    --btn-py: 11px;
+  }
+}
+
+/* الهاتف العادي 361–430px */
+@media (min-width: 361px) and (max-width: 430px) {
+  :root {
+    --nav-h: 64px;
+    --fs-base: 15px;
+    --page-px: 14px;
+    --card-radius: 16px;
+    --btn-py: 13px;
+  }
+}
+
+/* الهاتف الكبير 431–599px */
+@media (min-width: 431px) and (max-width: 599px) {
+  :root {
+    --nav-h: 66px;
+    --fs-base: 15.5px;
+    --page-px: 16px;
+    --card-radius: 18px;
+    --btn-py: 14px;
+  }
+}
+
+/* التابلت الصغير 600–767px */
+@media (min-width: 600px) and (max-width: 767px) {
+  :root {
+    --nav-h: 68px;
+    --fs-base: 16px;
+    --page-px: 20px;
+    --card-radius: 20px;
+    --btn-py: 15px;
+  }
+}
+
+/* التابلت الكبير ≥ 768px */
+@media (min-width: 768px) {
+  :root {
+    --nav-h: 70px;
+    --fs-base: 16px;
+    --page-px: 24px;
+    --card-radius: 22px;
+    --btn-py: 15px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 2 — APP WRAPPER: الحاوية الرئيسية
+═══════════════════════════════════════════════════════════════════ */
+
+/* هاتف صغير جداً */
+@media (max-width: 320px) {
+  .app-wrapper {
+    max-width: 100%;
+    height: 100dvh;
+    border-radius: 0;
+  }
+}
+
+/* تابلت عمودي */
+@media (min-width: 600px) and (orientation: portrait) {
+  .app-wrapper {
+    max-width: 540px;
+    margin: 0 auto;
+    height: 100dvh;
+    border-radius: 0;
+  }
+}
+
+/* تابلت كبير عمودي */
+@media (min-width: 768px) and (orientation: portrait) {
+  .app-wrapper {
+    max-width: 600px;
+    height: calc(100dvh - 32px);
+    margin: 16px auto;
+    border-radius: 28px;
+  }
+}
+
+/* الوضع الأفقي — هاتف (ارتفاع ≤ 500px) */
+@media (orientation: landscape) and (max-height: 500px) {
+  .app-wrapper {
+    max-width: 100%;
+    width: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    margin: 0;
+  }
+}
+
+/* الوضع الأفقي — هاتف متوسط (501–600px) */
+@media (orientation: landscape) and (min-height: 501px) and (max-height: 600px) {
+  .app-wrapper {
+    max-width: 96%;
+    height: 95dvh;
+    margin: 2.5dvh auto;
+    border-radius: 20px;
+  }
+}
+
+/* الوضع الأفقي — تابلت (ارتفاع ≥ 601px) */
+@media (orientation: landscape) and (min-height: 601px) and (min-width: 768px) {
+  .app-wrapper {
+    max-width: 740px;
+    height: calc(100dvh - 32px);
+    margin: 16px auto;
+    border-radius: 28px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 3 — TOP HEADER: الهيدر العلوي
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .top-header { padding: 8px 10px 6px; min-height: 50px; }
+  .avatar-wrap { width: 36px; height: 36px; }
+  .avatar-inner { font-size: 1.1em; }
+  .player-name { font-size: 0.78em; }
+  .player-sub { font-size: 0.58em; }
+  .counter-pill { padding: 0 8px; font-size: 1.1em; }
+  .icon-pill { width: 32px; height: 32px; border-radius: 10px; }
+  .th-left { gap: 6px; max-width: 52%; }
+}
+
+@media (min-width: 600px) {
+  .top-header { padding: 14px 20px 10px; min-height: 62px; }
+  .avatar-wrap { width: 46px; height: 46px; }
+  .avatar-inner { font-size: 1.6em; }
+  .player-name { font-size: 1em; }
+  .player-sub { font-size: 0.72em; }
+  .counter-pill { padding: 0 14px; font-size: 1.4em; }
+  .icon-pill { width: 40px; height: 40px; border-radius: 13px; }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .top-header { padding: 6px 12px 5px; min-height: 44px; }
+  .avatar-wrap { width: 34px; height: 34px; }
+  .player-name { font-size: 0.75em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 4 — BOTTOM NAVIGATION: شريط التنقل
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .bottom-nav {
+    padding: 3px 0 calc(var(--safe-bottom) + 3px);
+    min-height: calc(60px + var(--safe-bottom));
+  }
+  .nav-item-icon { width: 28px; height: 28px; font-size: 0.82em; border-radius: 9px; }
+  .nav-item-label { font-size: 0.44em; }
+  .nav-center-btn { width: 44px; height: 44px; border-radius: 14px; font-size: 1.2em; }
+  .nav-center { margin-top: -16px; }
+}
+
+@media (min-width: 600px) {
+  .bottom-nav {
+    padding: 8px 0 calc(var(--safe-bottom) + 6px);
+    min-height: calc(72px + var(--safe-bottom));
+  }
+  .nav-item-icon { width: 40px; height: 40px; font-size: 1.2em; border-radius: 14px; }
+  .nav-item-label { font-size: 0.62em; }
+  .nav-center-btn { width: 58px; height: 58px; border-radius: 20px; font-size: 1.7em; }
+  .nav-center { margin-top: -22px; }
+}
+
+/* الأفقي: ضغط شريط التنقل */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bottom-nav {
+    padding: 2px 0 calc(var(--safe-bottom) + 2px);
+    min-height: calc(48px + var(--safe-bottom));
+  }
+  .nav-item-icon { width: 26px; height: 26px; font-size: 0.78em; }
+  .nav-item-label { font-size: 0.42em; }
+  .nav-center-btn { width: 38px; height: 38px; font-size: 1em; }
+  .nav-center { margin-top: -12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 5 — PAGES: الصفحات العامة
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .page { padding: 8px 10px 20px; gap: 10px; }
+  .page-title-header { padding: 12px 0 14px; font-size: 1.3em; }
+}
+
+@media (min-width: 600px) {
+  .page { padding: 14px 20px 28px; gap: 16px; }
+  .page-title-header { padding: 22px 0 24px; font-size: 1.75em; }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .page { padding: 6px 12px 14px; gap: 8px; }
+  .page-title-header { padding: 8px 0 10px; font-size: 1.15em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 6 — HOME PAGE: الصفحة الرئيسية
+═══════════════════════════════════════════════════════════════════ */
+
+/* بطاقة اللاعب */
+@media (max-width: 360px) {
+  .home-player-xp-card { padding: 11px 12px 10px; gap: 7px; border-radius: 16px; }
+  .home-player-name-full { font-size: 0.95em; max-width: 55%; }
+  .home-player-level-tag { font-size: 0.58em; padding: 2px 7px; }
+  .home-xp-bar-wrap { height: 6px; }
+  .home-xp-text { font-size: 0.64em; }
+  .home-xp-next { font-size: 0.56em; }
+}
+
+@media (min-width: 600px) {
+  .home-player-xp-card { padding: 18px 20px 16px; gap: 12px; border-radius: 22px; }
+  .home-player-name-full { font-size: 1.45em; max-width: 68%; }
+  .home-player-level-tag { font-size: 0.78em; padding: 4px 13px; }
+  .home-xp-bar-wrap { height: 10px; }
+  .home-xp-text { font-size: 0.78em; }
+  .home-xp-next { font-size: 0.68em; }
+}
+
+/* البطاقات الفئوية */
+@media (max-width: 360px) {
+  .cat-grid { gap: 7px; }
+  .cat-card { padding: 11px 10px; border-radius: 14px; }
+  .cat-icon { font-size: 1.6em; }
+  .cat-name { font-size: 0.7em; }
+  .cat-stats { font-size: 0.54em; }
+}
+
+@media (min-width: 600px) {
+  .cat-grid { gap: 12px; }
+  .cat-card { padding: 18px 15px; border-radius: 20px; }
+  .cat-icon { font-size: 2.2em; }
+  .cat-name { font-size: 0.88em; }
+  .cat-stats { font-size: 0.66em; }
+}
+
+/* بطاقات اللعب */
+@media (max-width: 360px) {
+  .game-cat-card { padding: 14px; border-radius: 18px; gap: 7px; }
+  .gcard-icon { font-size: 1.9em; }
+  .gcard-name { font-size: 0.88em; }
+  .gcard-desc { font-size: 0.64em; }
+}
+
+@media (min-width: 600px) {
+  .game-cat-card { padding: 22px; border-radius: 24px; gap: 12px; }
+  .gcard-icon { font-size: 2.6em; }
+  .gcard-name { font-size: 1.1em; }
+  .gcard-desc { font-size: 0.78em; }
+}
+
+/* البانر اليومي والأسبوعي */
+@media (max-width: 360px) {
+  .daily-banner, .weekly-challenge-card, .daily-box-card { padding: 11px 13px; border-radius: 14px; }
+  .daily-icon, .weekly-ch-icon, .daily-box-icon { font-size: 1.75em; }
+  .daily-title, .weekly-ch-title, .daily-box-title { font-size: 0.8em; }
+  .daily-sub, .weekly-ch-sub, .daily-box-sub { font-size: 0.62em; }
+}
+
+@media (min-width: 600px) {
+  .daily-banner, .weekly-challenge-card, .daily-box-card { padding: 18px 20px; border-radius: 20px; gap: 16px; }
+  .daily-icon, .weekly-ch-icon, .daily-box-icon { font-size: 2.4em; }
+  .daily-title, .weekly-ch-title, .daily-box-title { font-size: 1em; }
+  .daily-sub, .weekly-ch-sub, .daily-box-sub { font-size: 0.74em; }
+}
+
+/* الوضع الأفقي على هاتف */
+@media (orientation: landscape) and (max-height: 500px) {
+  .cat-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .cat-card { padding: 10px 8px; }
+  .cat-icon { font-size: 1.5em; }
+  .home-player-xp-card { padding: 8px 12px; gap: 5px; }
+  .home-xp-bar-wrap { height: 5px; }
+  .daily-banner, .weekly-challenge-card { padding: 10px 12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 7 — GAME OVERLAY: واجهة اللعبة
+═══════════════════════════════════════════════════════════════════ */
+
+/* هاتف صغير */
+@media (max-width: 360px) {
+  .game-header { padding: calc(var(--safe-top) + 8px) 12px 8px; }
+  .game-title { font-size: 0.78em; }
+  .game-score-pill { font-size: 0.65em; padding: 4px 7px; }
+  .game-back-btn { width: 30px; height: 30px; border-radius: 8px; font-size: 0.9em; }
+
+  .game-body { padding: 8px 10px 10px; gap: 8px; }
+  .game-stats-row { gap: 7px; }
+  .game-stat { padding: 7px 5px; border-radius: 10px; }
+  .game-stat-num { font-size: 1.05em; }
+  .game-stat-label { font-size: 0.52em; }
+
+  .question-card { padding: 18px 13px 16px; border-radius: 18px; }
+  .question-text { font-size: clamp(1.4em, 7vw, 2.2em); }
+  .question-number { font-size: 0.58em; }
+
+  .answers-grid { gap: 7px; }
+  .answer-btn { padding: 12px 6px; border-radius: 13px; font-size: clamp(0.82em, 4vw, 1.1em) !important; }
+
+  .helpers-bar { gap: 5px; }
+  .helper-btn { padding: 8px 4px; border-radius: 11px; }
+  .helper-btn-icon { font-size: 1.1em; }
+  .helper-btn-label { font-size: 0.48em; }
+  .helper-btn-cost { font-size: 0.46em; top: -5px; right: -5px; padding: 1px 4px; }
+
+  .big-timer { font-size: 1.85em; }
+  .return-home-btn { padding: 9px; font-size: 0.74em; }
+}
+
+/* تابلت */
+@media (min-width: 600px) {
+  .game-header { padding: calc(var(--safe-top) + 14px) 20px 12px; }
+  .game-title { font-size: 1em; }
+  .game-score-pill { font-size: 0.8em; padding: 6px 12px; }
+  .game-back-btn { width: 38px; height: 38px; border-radius: 12px; font-size: 1.1em; }
+
+  .game-body { padding: 14px 20px 18px; gap: 14px; }
+  .game-stats-row { max-width: min(420px, 100%); gap: 12px; }
+  .game-stat { padding: 11px 8px; border-radius: 15px; }
+  .game-stat-num { font-size: 1.4em; }
+  .game-stat-label { font-size: 0.62em; }
+
+  .question-card { padding: 32px 24px 28px; border-radius: 30px; max-width: min(420px, 100%); }
+  .question-text { font-size: clamp(2em, 5vw, 3em); }
+  .question-number { font-size: 0.72em; }
+
+  .answers-grid { gap: 12px; max-width: min(420px, 100%); }
+  .answer-btn { padding: 18px 10px; border-radius: 20px; font-size: clamp(1.1em, 3.5vw, 1.5em) !important; }
+
+  .helpers-bar { gap: 10px; max-width: 420px; }
+  .helper-btn { padding: 12px 8px; border-radius: 16px; }
+  .helper-btn-icon { font-size: 1.5em; }
+  .helper-btn-label { font-size: 0.6em; }
+  .helper-btn-cost { font-size: 0.56em; top: -7px; right: -7px; padding: 2px 6px; }
+
+  .big-timer { font-size: 2.8em; }
+  .return-home-btn { padding: 13px; font-size: 0.88em; max-width: 420px; }
+}
+
+/* الوضع الأفقي — هاتف (ارتفاع ≤ 500px) */
+@media (orientation: landscape) and (max-height: 500px) {
+  .game-header {
+    padding: calc(var(--safe-top) + 6px) 14px 6px;
+  }
+  .game-body {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 6px 12px 8px;
+    gap: 8px;
+    overflow-y: auto;
+  }
+  .game-stats-row {
+    width: 100%;
+    order: 0;
+    max-width: 100%;
+    gap: 8px;
+  }
+  .game-stat { padding: 6px 4px; }
+  .game-stat-num { font-size: 1em; }
+
+  .question-card {
+    width: 46%;
+    max-width: 46%;
+    padding: 14px 12px;
+    border-radius: 16px;
+    order: 1;
+  }
+  .question-text { font-size: 1.75em; }
+
+  .answers-grid {
+    width: 50%;
+    max-width: 50%;
+    order: 2;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    align-self: center;
+  }
+  .answer-btn { padding: 9px 5px; font-size: 1.05em !important; border-radius: 12px; }
+
+  .helpers-bar {
+    width: 100%;
+    order: 3;
+    max-width: 100%;
+    gap: 6px;
+  }
+  .helper-btn { padding: 6px 4px; }
+  .helper-btn-icon { font-size: 1em; }
+  .helper-btn-label { font-size: 0.46em; }
+
+  .return-home-btn {
+    order: 4;
+    width: auto;
+    padding: 8px 16px;
+    font-size: 0.72em;
+    margin-top: 2px;
+  }
+
+  .big-timer { font-size: 1.5em; }
+  .timer-bar-wrap { height: 4px; }
+}
+
+/* الوضع الأفقي — تابلت (601–768px ارتفاع) */
+@media (orientation: landscape) and (min-height: 501px) and (max-height: 600px) {
+  .game-body {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 8px 16px 10px;
+    gap: 10px;
+  }
+  .question-card {
+    width: 44%;
+    max-width: 44%;
+    order: 1;
+    padding: 18px 14px;
+  }
+  .question-text { font-size: 2em; }
+  .answers-grid {
+    width: 52%;
+    max-width: 52%;
+    order: 2;
+    gap: 8px;
+  }
+  .answer-btn { padding: 11px 6px; font-size: 1.1em !important; }
+  .game-stats-row, .helpers-bar { width: 100%; order: 0; }
+  .return-home-btn { order: 4; width: auto; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 8 — RESULTS OVERLAY: شاشة النتائج
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .results-card { padding: 18px 14px; border-radius: 20px; }
+  .results-emoji { font-size: 2.8em; margin-bottom: 7px; }
+  .results-title { font-size: 1.35em; }
+  .results-sub { font-size: 0.72em; margin-bottom: 12px; }
+  .results-stat-num { font-size: 1.15em; }
+  .results-stat-label { font-size: 0.52em; }
+  .res-btn { padding: 11px; font-size: 0.82em; margin-bottom: 5px; }
+}
+
+@media (min-width: 600px) {
+  .results-card { max-width: 440px; padding: 32px 26px; border-radius: 30px; }
+  .results-emoji { font-size: 4.2em; margin-bottom: 14px; }
+  .results-title { font-size: 1.9em; }
+  .results-sub { font-size: 0.9em; margin-bottom: 20px; }
+  .results-stat-num { font-size: 1.55em; }
+  .results-stat-label { font-size: 0.64em; }
+  .res-btn { padding: 16px; font-size: 1em; margin-bottom: 9px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 9 — PROFILE PAGE: صفحة الملف الشخصي
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .profile-hero { padding: 16px; gap: 11px; border-radius: 18px; }
+  .profile-avatar-big { width: 58px; height: 58px; }
+  .profile-avatar-img { font-size: 1.8em; }
+  .profile-name-big { font-size: 1em; }
+  .profile-level-big { font-size: 0.64em; }
+  .stats-grid3 { gap: 6px; }
+  .stat-card { padding: 10px 6px; border-radius: 12px; }
+  .stat-card-num { font-size: 1.1em; }
+  .stat-card-label { font-size: 0.52em; }
+  .adv-stats-grid { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .adv-stat { padding: 9px 6px; border-radius: 12px; }
+  .adv-stat-num { font-size: 1.1em; }
+}
+
+@media (min-width: 600px) {
+  .profile-hero { padding: 24px; gap: 18px; border-radius: 26px; }
+  .profile-avatar-big { width: 80px; height: 80px; }
+  .profile-avatar-img { font-size: 2.4em; border-width: 3px; }
+  .profile-name-big { font-size: 1.35em; }
+  .profile-level-big { font-size: 0.82em; }
+  .stats-grid3 { gap: 10px; }
+  .stat-card { padding: 15px 10px; border-radius: 18px; }
+  .stat-card-num { font-size: 1.5em; }
+  .stat-card-label { font-size: 0.64em; }
+  .adv-stats-grid { gap: 10px; }
+  .adv-stat { padding: 14px 8px; border-radius: 16px; }
+  .adv-stat-num { font-size: 1.35em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 10 — SETTINGS PAGE: الإعدادات
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .settings-row { padding: 10px 12px; border-radius: 12px; gap: 8px; }
+  .settings-row-icon { font-size: 1em; }
+  .settings-row-label { font-size: 0.78em; }
+  .settings-row-val { font-size: 0.66em; }
+}
+
+@media (min-width: 600px) {
+  .settings-row { padding: 16px 18px; border-radius: 16px; gap: 14px; }
+  .settings-row-icon { font-size: 1.3em; }
+  .settings-row-label { font-size: 0.95em; }
+  .settings-row-val { font-size: 0.8em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 11 — SHOP PAGE: المتجر
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .emoji-shop-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .emoji-shop-item { padding: 6px 3px; border-radius: 10px; }
+  .emoji-shop-item-icon { font-size: 1.5em; }
+  .emoji-shop-item-price { font-size: 0.46em; }
+  #shopItemsContainer { max-height: calc(100dvh - 230px); }
+}
+
+@media (min-width: 600px) {
+  .emoji-shop-grid { grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .emoji-shop-item { padding: 10px 5px; border-radius: 15px; }
+  .emoji-shop-item-icon { font-size: 2.1em; }
+  .emoji-shop-item-price { font-size: 0.58em; }
+  #shopItemsContainer { max-height: calc(100dvh - 260px); }
+}
+
+@media (min-width: 768px) and (orientation: landscape) {
+  .emoji-shop-grid { grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  #shopItemsContainer { max-height: calc(100dvh - 240px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 12 — TASKS & ACHIEVEMENTS PAGE: المهام والإنجازات
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .task-item, .achieve-item { padding: 9px 10px; gap: 8px; border-radius: 12px; }
+  .task-item-icon { width: 34px; height: 34px; font-size: 1.05em; border-radius: 10px; }
+  .task-item-name { font-size: 0.72em; }
+  .task-item-desc { font-size: 0.56em; }
+  .task-reward { font-size: 0.6em; }
+  .task-summary { padding: 12px; border-radius: 16px; }
+  .task-stat-num { font-size: 1.25em; }
+}
+
+@media (min-width: 600px) {
+  .task-item, .achieve-item { padding: 14px 16px; gap: 14px; border-radius: 16px; }
+  .task-item-icon { width: 48px; height: 48px; font-size: 1.45em; border-radius: 14px; }
+  .task-item-name { font-size: 0.9em; }
+  .task-item-desc { font-size: 0.7em; }
+  .task-reward { font-size: 0.76em; }
+  .task-stat-num { font-size: 1.7em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 13 — COMPETITION PAGE: صفحة المنافسة
+═══════════════════════════════════════════════════════════════════ */
+
+/* الحاوية الرئيسية */
+#competitionMainView {
+  padding-bottom: calc(var(--nav-h, 68px) + var(--safe-bottom) + 16px) !important;
+}
+
+/* هاتف صغير */
+@media (max-width: 360px) {
+  .comp-hero-banner { padding: 16px 12px 12px; border-radius: 18px; margin-top: 4px; }
+  .comp-hero-icon-wrap { width: 54px; height: 54px; }
+  .comp-hero-icon { font-size: 1.7em; }
+  .comp-hero-title { font-size: 1.25em; }
+  .comp-hero-sub { font-size: 0.64em; }
+  .comp-my-stat { padding: 8px 3px; }
+  .comp-my-stat-val { font-size: 1.05em; }
+  .comp-my-stat-lbl { font-size: 0.48em; }
+  .comp-start-btn { padding: 13px 14px 11px; margin-top: 10px; border-radius: 14px; }
+  .comp-start-btn-text { font-size: 0.95em; }
+  .comp-start-btn-sub { font-size: 0.56em; }
+  .comp-section-header { padding: 10px 12px; }
+  .comp-lb-tab-btn { padding: 11px 10px; border-radius: 13px; }
+  .comp-lb-tab-label { font-size: 0.82em; }
+}
+
+/* تابلت */
+@media (min-width: 600px) {
+  .comp-hero-banner { padding: 28px 22px 22px; border-radius: 28px; margin-top: 14px; }
+  .comp-hero-icon-wrap { width: 80px; height: 80px; }
+  .comp-hero-icon { font-size: 2.6em; }
+  .comp-hero-title { font-size: 1.75em; }
+  .comp-hero-sub { font-size: 0.8em; }
+  .comp-my-stat { padding: 12px 6px; }
+  .comp-my-stat-val { font-size: 1.45em; }
+  .comp-my-stat-lbl { font-size: 0.6em; }
+  .comp-start-btn { padding: 18px 22px 16px; margin-top: 18px; border-radius: 22px; }
+  .comp-start-btn-text { font-size: 1.2em; }
+  .comp-start-btn-sub { font-size: 0.68em; }
+  .comp-section-header { padding: 14px 18px; }
+  .comp-lb-tab-btn { padding: 16px 18px; border-radius: 18px; }
+  .comp-lb-tab-label { font-size: 1em; }
+}
+
+/* وضع أفقي على أي جهاز */
+@media (orientation: landscape) and (max-height: 768px) {
+  #page-leaderboard { overflow: hidden !important; }
+
+  #competitionMainView {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    height: 100% !important;
+    padding-bottom: calc(var(--nav-h, 68px) + var(--safe-bottom) + 20px) !important;
+  }
+
+  .comp-hero-banner { padding: 11px 13px 9px !important; margin-top: 3px !important; }
+  .comp-hero-icon-wrap { width: 44px !important; height: 44px !important; margin-bottom: 0 !important; }
+  .comp-hero-icon { font-size: 1.4em !important; }
+  .comp-hero-title { font-size: 1.05em !important; }
+  .comp-hero-sub { font-size: 0.6em !important; margin-bottom: 1px !important; }
+  .comp-my-stat { padding: 5px 3px !important; }
+  .comp-my-stat-val { font-size: 0.95em !important; }
+  .comp-start-btn { padding: 10px 12px 8px !important; margin-top: 7px !important; }
+  .comp-start-btn-text { font-size: 0.88em !important; }
+  .comp-start-btn-sub { font-size: 0.54em !important; }
+  .comp-section-header { padding: 8px 13px !important; }
+  .comp-lb-tab-btn { padding: 9px 11px !important; }
+  #page-leaderboard .page-title-header { padding: 8px 0 10px !important; font-size: 1.2em !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 14 — CHALLENGE GAME AREA: منطقة لعب التحدي
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .cga-body { padding: 6px 10px 8px; gap: 7px; }
+  .cga-question-text { font-size: clamp(1.9em, 9vw, 2.8em); }
+  .cga-header { padding: 8px 10px; }
+  .cga-timer-num { font-size: 1.6em; }
+  .cga-score-num { font-size: 1.2em; }
+  .cga-answers-grid { gap: 7px; }
+  .cga-answers-grid .answer-btn { padding: 12px 6px; border-radius: 13px; }
+}
+
+@media (min-width: 600px) {
+  .cga-body { padding: 16px 20px 18px; gap: 14px; }
+  .cga-question-text { font-size: clamp(2.8em, 6vw, 4em); }
+  .cga-header { padding: 14px 18px; }
+  .cga-timer-num { font-size: 2.4em; }
+  .cga-score-num { font-size: 1.7em; }
+  .cga-answers-grid { gap: 12px; }
+  .cga-answers-grid .answer-btn { padding: 18px 10px; border-radius: 20px; }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .cga-body {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 6px 12px;
+    overflow-y: auto;
+  }
+  .cga-header { width: 100%; order: 0; padding: 5px 10px; }
+  .cga-question-text {
+    width: 46%;
+    font-size: 2.2em;
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cga-answers-grid {
+    width: 50%;
+    order: 2;
+    align-self: center;
+    gap: 6px;
+    grid-template-columns: 1fr 1fr;
+  }
+  .cga-answers-grid .answer-btn { padding: 9px 4px; font-size: 1em !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 15 — SHEET PANEL & MODALS: النوافذ المنبثقة
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .sheet-panel { padding: 14px 14px calc(var(--safe-bottom) + 14px); border-radius: 20px 20px 0 0; }
+  .sheet-title { font-size: 0.9em; margin-bottom: 10px; }
+  .mode-grid { gap: 7px; }
+  .mode-card { padding: 12px 9px; border-radius: 14px; }
+  .mode-card-icon { font-size: 1.6em; margin-bottom: 4px; }
+  .mode-card-name { font-size: 0.72em; }
+  .mode-card-desc { font-size: 0.58em; }
+  .confirm-dialog { padding: 18px 16px; border-radius: 18px; }
+  .confirm-title { font-size: 1em; }
+  .confirm-msg { font-size: 0.78em; }
+}
+
+@media (min-width: 600px) {
+  .sheet-panel { max-width: 520px; padding: 22px 22px calc(var(--safe-bottom) + 22px); border-radius: 28px 28px 0 0; }
+  .sheet-title { font-size: 1.15em; margin-bottom: 16px; }
+  .mode-grid { gap: 12px; }
+  .mode-card { padding: 18px 14px; border-radius: 20px; }
+  .mode-card-icon { font-size: 2.2em; margin-bottom: 8px; }
+  .mode-card-name { font-size: 0.92em; }
+  .mode-card-desc { font-size: 0.72em; }
+  .confirm-dialog { max-width: 380px; padding: 28px 24px; border-radius: 26px; }
+  .confirm-title { font-size: 1.25em; }
+  .confirm-msg { font-size: 0.95em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 16 — LEADERBOARD OVERLAY: لوحة الصدارة
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .lb-row { padding: 9px 12px; font-size: 0.75em; }
+  .lb-overlay-header { padding: 10px 12px; }
+  .lb-overlay-title { font-size: 0.9em; }
+  .lb-overlay-back, .lb-overlay-refresh { width: 32px; height: 32px; font-size: 1.1em; }
+  #lbOverlayList { max-height: calc(100dvh - 120px); }
+}
+
+@media (min-width: 600px) {
+  .lb-row { padding: 14px 18px; font-size: 0.92em; }
+  .lb-overlay-header { padding: 16px 18px 14px; }
+  .lb-overlay-title { font-size: 1.15em; }
+  .lb-overlay-back, .lb-overlay-refresh { width: 44px; height: 44px; font-size: 1.5em; }
+  #lbOverlayList { max-height: calc(100dvh - 160px); }
+  #combinedLeaderboardList { max-height: 360px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 17 — DIFF CHIPS & MODE SELECTORS: اختيار الصعوبة
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .diff-chip { font-size: 0.62em; padding: 7px 3px; border-radius: 10px; min-width: 46px; }
+  .diff-chip-icon { font-size: 1.05em; }
+}
+
+@media (min-width: 600px) {
+  .diff-chip { font-size: 0.74em; padding: 11px 6px; border-radius: 14px; }
+  .diff-chip-icon { font-size: 1.35em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 18 — EXTRA SMALL SCREENS: الشاشات الصغيرة جداً (< 320px)
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 320px) {
+  html { font-size: 13px; }
+  .nav-item-icon { width: 24px; height: 24px; font-size: 0.76em; }
+  .nav-item-label { font-size: 0.4em; }
+  .nav-center-btn { width: 40px; height: 40px; font-size: 0.95em; }
+  .question-text { font-size: clamp(1.3em, 7.5vw, 2em); }
+  .answer-btn { font-size: 0.78em !important; padding: 10px 4px; border-radius: 11px; }
+  .comp-hero-icon-wrap { width: 46px; height: 46px; }
+  .comp-hero-title { font-size: 1.1em; }
+  .comp-start-btn-text { font-size: 0.85em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 19 — LANDSCAPE THEME COLORS: ألوان الثيم في الوضع الأفقي
+═══════════════════════════════════════════════════════════════════ */
+
+/* مهام التحدي — حسب الثيم */
+.challenge-tasks-title,
+#page-leaderboard .comp-section-title {
+  color: #ffffff !important;
+  text-shadow: 0 0 10px rgba(6,182,212,0.35);
+}
+html.light-mode .challenge-tasks-title,
+html.light-mode #page-leaderboard .comp-section-title {
+  color: #0a0f1e !important;
+  text-shadow: none;
+}
+
+/* comp-section-title العام */
+.comp-section-title { color: #ffffff !important; }
+html.light-mode .comp-section-title { color: #0a0f1e !important; }
+.comp-section-sub { color: rgba(255,255,255,0.6) !important; }
+html.light-mode .comp-section-sub { color: rgba(10,15,30,0.55) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   § 20 — MISC FIXES: إصلاحات متفرقة
+═══════════════════════════════════════════════════════════════════ */
+
+/* منع فيض النصوص */
+.answer-btn {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* تمرير ناعم لجميع القوائم */
+#competitionMainView,
+#page-shop,
+#page-home,
+.page {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* ضمان رؤية كل الصفحة فوق شريط التنقل */
+.page {
+  padding-bottom: calc(var(--nav-h, 68px) + var(--safe-bottom) + 14px) !important;
+}
+#page-leaderboard {
+  padding-bottom: 0 !important;
+}
+#page-achieve {
+  padding-bottom: calc(var(--nav-h, 68px) + var(--safe-bottom) + 10px) !important;
+}
+
+/* safe-area للأجهزة ذات الشق */
+.shell {
+  padding-top: max(var(--safe-top), 0px);
+  padding-bottom: max(var(--safe-bottom), 0px);
+  padding-left: max(var(--safe-left), 0px);
+  padding-right: max(var(--safe-right), 0px);
+}
