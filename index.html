@@ -884,21 +884,57 @@
     ══════════════════════════════════════════════════════ -->
     <div id="seasonPassOverlay" style="display:none;position:absolute;inset:0;z-index:40;background:var(--bg);flex-direction:column;overflow:hidden;">
 
-        <!-- Header -->
+        <!-- ══ Header ══ -->
         <div class="sp-header">
             <button class="sp-back-btn" onclick="closeSeasonPassOverlay()">‹</button>
             <div class="sp-header-center">
                 <div class="sp-header-title">🏆 موسم الرياضيات</div>
                 <div class="sp-header-sub" id="spSeasonName">موسم الأرقام الذهبية 🔢</div>
             </div>
-            <div class="sp-header-timer" id="spSeasonTimer">
-                <span class="sp-timer-icon">⏳</span>
-                <span id="spDaysLeft">7</span>
-                <span>أيام</span>
+            <div class="sp-header-right">
+                <!-- عداد الأيام -->
+                <div class="sp-header-timer" id="spSeasonTimer">
+                    <span class="sp-timer-icon">⏳</span>
+                    <span id="spDaysLeft">7</span>
+                    <span>أيام</span>
+                </div>
+                <!-- زر ذاكرة المواسم -->
+                <button class="sp-history-btn" onclick="openSeasonHistory()" title="سجل المواسم">📜</button>
             </div>
         </div>
 
-        <!-- شريط التقدم الكلي -->
+        <!-- ══ شريط Streak + رتبة ══ -->
+        <div class="sp-streak-rank-bar">
+            <!-- Streak -->
+            <div class="sp-streak-box" id="spStreakBox">
+                <div class="sp-streak-fire" id="spStreakFire">🔥</div>
+                <div class="sp-streak-info">
+                    <div class="sp-streak-num" id="spStreakNum">0</div>
+                    <div class="sp-streak-label">يوم تتابع</div>
+                </div>
+                <div class="sp-streak-shield" id="spStreakShield" style="display:none;">
+                    <span>🛡️</span><span id="spShieldCount">0</span>
+                </div>
+            </div>
+            <!-- فاصل -->
+            <div class="sp-srb-divider"></div>
+            <!-- الرتبة -->
+            <div class="sp-rank-box" id="spRankBox">
+                <div class="sp-rank-icon" id="spRankIcon">🥉</div>
+                <div class="sp-rank-info">
+                    <div class="sp-rank-label" id="spRankLabel">مبتدئ</div>
+                    <div class="sp-rank-sub">رتبة الموسم</div>
+                </div>
+                <div class="sp-rank-next" id="spRankNext"></div>
+            </div>
+            <!-- Bonus Day بادج -->
+            <div class="sp-bonus-badge" id="spBonusBadge" style="display:none;">
+                <span>×2</span>
+                <span class="sp-bonus-label">يوم المضاعف!</span>
+            </div>
+        </div>
+
+        <!-- ══ شريط التقدم الكلي ══ -->
         <div class="sp-progress-section">
             <div class="sp-progress-header">
                 <span class="sp-pts-label">نقاط الموسم</span>
@@ -914,9 +950,33 @@
             </div>
         </div>
 
+        <!-- ══ Body قابل للتمرير ══ -->
         <div class="sp-body">
 
-            <!-- ══ مسار الجوائز ══ -->
+            <!-- مهمة الفلاش ⚡ (تظهر فقط إذا كانت نشطة) -->
+            <div id="spFlashTaskSection" style="display:none;">
+                <div class="sp-section-title sp-flash-title">
+                    ⚡ مهمة فلاش
+                    <span class="sp-flash-timer-badge" id="spFlashTimer">--:--</span>
+                </div>
+                <div id="spFlashTaskCard" class="sp-flash-card">
+                    <!-- تُبنى بـ JS -->
+                </div>
+            </div>
+
+            <!-- صندوق الموسم 🎁 (يظهر عند إكمال 35 مهمة) -->
+            <div id="spChestSection" style="display:none;">
+                <div class="sp-chest-card" onclick="openSeasonChest()">
+                    <div class="sp-chest-icon" id="spChestIcon">🎁</div>
+                    <div class="sp-chest-info">
+                        <div class="sp-chest-title">صندوق الموسم!</div>
+                        <div class="sp-chest-sub">أكملت جميع المهام — اضغط لفتح جائزتك</div>
+                    </div>
+                    <div class="sp-chest-arrow">›</div>
+                </div>
+            </div>
+
+            <!-- مسار الجوائز -->
             <div class="sp-section-title">🎁 مسار الجوائز</div>
             <div class="sp-track-scroll">
                 <div class="sp-track" id="spRewardTrack">
@@ -924,19 +984,17 @@
                 </div>
             </div>
 
-            <!-- ══ مهام اليوم ══ -->
+            <!-- مهام اليوم -->
             <div class="sp-section-title sp-daily-title">
                 📅 مهام اليوم
                 <span class="sp-daily-badge" id="spDailyBadge">0/5</span>
             </div>
             <div class="sp-desc">أكمل المهام اليومية لتجمع نقاط الموسم • تتجدد كل يوم</div>
-            <div id="spDailyTasksList" class="sp-tasks-list">
-                <!-- تُبنى بـ JS -->
-            </div>
+            <div id="spDailyTasksList" class="sp-tasks-list"></div>
 
         </div>
 
-        <!-- شاشة إتمام الموسم (تظهر عند بلوغ 1000 نقطة) -->
+        <!-- شاشة إتمام الموسم -->
         <div id="spCompleteScreen">
             <div class="sp-complete-crown">👑</div>
             <div class="sp-complete-title">أتممت الموسم!</div>
@@ -950,7 +1008,32 @@
             </button>
         </div>
 
+        <!-- overlay فتح الصندوق -->
+        <div id="spChestOpenScreen" style="display:none;position:absolute;inset:0;z-index:50;background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:28px;">
+            <div class="sp-chest-open-icon" id="spChestOpenIcon">🎁</div>
+            <div class="sp-chest-open-title">صندوق الموسم!</div>
+            <div class="sp-chest-open-reward" id="spChestOpenReward">جارٍ الفتح…</div>
+            <button class="sp-complete-btn" onclick="document.getElementById('spChestOpenScreen').style.display='none';">
+                رائع! 🎉
+            </button>
+        </div>
+
     </div><!-- /seasonPassOverlay -->
+
+    <!-- ══ overlay ذاكرة المواسم ══ -->
+    <div id="seasonHistoryOverlay" style="display:none;position:absolute;inset:0;z-index:45;background:var(--bg);flex-direction:column;overflow:hidden;">
+        <div class="sp-header">
+            <button class="sp-back-btn" onclick="closeSeasonHistory()">‹</button>
+            <div class="sp-header-center">
+                <div class="sp-header-title">📜 سجل المواسم</div>
+                <div class="sp-header-sub">رحلتك عبر الزمن</div>
+            </div>
+            <div style="width:36px;"></div>
+        </div>
+        <div class="sp-body" id="spHistoryList">
+            <!-- تُبنى بـ JS -->
+        </div>
+    </div>
 
 
     <!-- ══════════════════════════════════════════
@@ -2091,3 +2174,4 @@ function closeSettingsSubPage(overlayId) {
           
          
       
+                
