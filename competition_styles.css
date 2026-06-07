@@ -1497,3 +1497,703 @@
     padding: 4px 0 6px;
     flex-shrink: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   🏆 SEASON PASS — موسم الرياضيات CSS
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════ */
+
+/* ── زر موسم الرياضيات المميز في شريط الأزرار ── */
+.comp-season-btn {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0e1a3a 100%) !important;
+    border-color: rgba(240,185,11,0.45) !important;
+    box-shadow: 0 0 16px rgba(240,185,11,0.12);
+    align-items: center;
+}
+.comp-season-btn-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: right;
+}
+.comp-season-btn-title {
+    font-size: 0.9em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.comp-season-btn-sub {
+    font-size: 0.65em;
+    color: var(--text2);
+}
+.comp-season-btn-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.comp-season-mini-bar {
+    width: 72px;
+    height: 5px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.comp-season-mini-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #fff176);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+.comp-season-pts-badge {
+    font-size: 0.6em;
+    font-weight: 900;
+    color: var(--gold);
+}
+
+/* ── Header صفحة الموسم ── */
+.sp-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+}
+.sp-back-btn {
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.4em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.sp-header-center {
+    flex: 1;
+    text-align: center;
+}
+.sp-header-title {
+    font-size: 0.95em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.sp-header-sub {
+    font-size: 0.65em;
+    color: var(--text2);
+    margin-top: 2px;
+}
+.sp-header-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 10px;
+    padding: 5px 9px;
+    font-size: 0.62em;
+    font-weight: 900;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+.sp-timer-icon { font-size: 1.1em; }
+
+/* ── شريط التقدم الكلي ── */
+.sp-progress-section {
+    padding: 14px 16px 10px;
+    background: linear-gradient(135deg, rgba(240,185,11,0.06), rgba(124,58,237,0.06));
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+}
+.sp-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.sp-pts-label {
+    font-size: 0.72em;
+    color: var(--text2);
+    font-weight: 700;
+}
+.sp-pts-val {
+    font-size: 0.78em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.sp-progress-track {
+    position: relative;
+    height: 10px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    overflow: visible;
+}
+.sp-progress-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #f0b90b, #fff176, #f0b90b);
+    background-size: 200% 100%;
+    border-radius: 20px;
+    transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    animation: spBarShimmer 2.5s linear infinite;
+}
+@keyframes spBarShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.sp-progress-glow {
+    position: absolute;
+    top: -4px; right: -4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 10px 4px rgba(240,185,11,0.5);
+    transition: right 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+}
+.sp-progress-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 7px;
+}
+.sp-completed-days,
+.sp-total-earned {
+    font-size: 0.62em;
+    color: var(--text2);
+}
+
+/* ── Body قابل للتمرير ── */
+.sp-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 16px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+}
+
+/* ── عناوين الأقسام ── */
+.sp-section-title {
+    font-size: 0.82em;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.sp-daily-title {
+    margin-top: 6px;
+}
+.sp-daily-badge {
+    background: rgba(240,185,11,0.18);
+    border: 1px solid rgba(240,185,11,0.35);
+    color: var(--gold);
+    border-radius: 20px;
+    padding: 2px 9px;
+    font-size: 0.8em;
+}
+.sp-desc {
+    font-size: 0.67em;
+    color: var(--text2);
+    margin-bottom: 6px;
+}
+
+/* ── مسار الجوائز (أفقي قابل للتمرير) ── */
+.sp-track-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    margin: 0 -4px;
+}
+.sp-track-scroll::-webkit-scrollbar { display: none; }
+.sp-track {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 4px 8px 8px;
+    min-width: max-content;
+}
+
+/* محطة جائزة واحدة */
+.sp-reward-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    flex-shrink: 0;
+}
+/* الخط الرابط بين المحطات */
+.sp-reward-node::before {
+    content: '';
+    position: absolute;
+    top: 22px;
+    right: 50%;
+    width: 36px;
+    height: 3px;
+    background: var(--border2);
+    z-index: 0;
+}
+.sp-reward-node:first-child::before { display: none; }
+.sp-reward-node.reached::before {
+    background: linear-gradient(90deg, var(--gold), rgba(240,185,11,0.4));
+}
+
+/* دائرة المحطة */
+.sp-node-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    position: relative;
+    z-index: 1;
+    background: var(--surface3);
+    border: 2.5px solid var(--border2);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+.sp-reward-node.reached .sp-node-circle {
+    background: linear-gradient(135deg, rgba(240,185,11,0.25), rgba(240,185,11,0.1));
+    border-color: var(--gold);
+    box-shadow: 0 0 12px rgba(240,185,11,0.35);
+}
+.sp-reward-node.claimed .sp-node-circle {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+    box-shadow: 0 0 10px rgba(16,185,129,0.4);
+}
+.sp-reward-node.claimed .sp-node-circle::after {
+    content: '✓';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    background: #10b981;
+    border-radius: 50%;
+    font-size: 0.55em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    border: 2px solid var(--bg);
+}
+/* علامة الـ current */
+.sp-reward-node.current .sp-node-circle {
+    animation: spNodePulse 1.4s ease-in-out infinite;
+    border-color: var(--gold);
+    background: rgba(240,185,11,0.15);
+}
+@keyframes spNodePulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(240,185,11,0.4); }
+    50%      { box-shadow: 0 0 0 6px rgba(240,185,11,0); }
+}
+.sp-node-pts {
+    font-size: 0.58em;
+    font-weight: 900;
+    color: var(--text2);
+}
+.sp-reward-node.reached .sp-node-pts,
+.sp-reward-node.current .sp-node-pts { color: var(--gold); }
+.sp-reward-node.claimed .sp-node-pts { color: #10b981; }
+.sp-node-label {
+    font-size: 0.55em;
+    color: var(--text2);
+    max-width: 60px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* ── المهام اليومية ── */
+.sp-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+.sp-task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 14px;
+    padding: 11px 13px;
+    transition: all 0.2s ease;
+}
+.sp-task-item.done {
+    background: rgba(16,185,129,0.07);
+    border-color: rgba(16,185,129,0.3);
+}
+.sp-task-icon {
+    font-size: 1.5em;
+    flex-shrink: 0;
+    width: 36px;
+    text-align: center;
+}
+.sp-task-info {
+    flex: 1;
+    min-width: 0;
+}
+.sp-task-name {
+    font-size: 0.78em;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+.sp-task-desc {
+    font-size: 0.63em;
+    color: var(--text2);
+    margin-bottom: 5px;
+}
+.sp-task-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.sp-task-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+.sp-task-item.done .sp-task-bar-fill {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+.sp-task-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    flex-shrink: 0;
+}
+.sp-task-pts {
+    font-size: 0.7em;
+    font-weight: 900;
+    color: var(--gold);
+    background: rgba(240,185,11,0.12);
+    border: 1px solid rgba(240,185,11,0.25);
+    border-radius: 8px;
+    padding: 2px 7px;
+}
+.sp-task-prog {
+    font-size: 0.6em;
+    color: var(--text2);
+}
+/* نجوم الصعوبة */
+.sp-task-stars {
+    font-size: 0.6em;
+    color: var(--gold);
+    letter-spacing: 1px;
+}
+/* شارة الوضع */
+.sp-task-mode-badge {
+    font-size: 0.55em;
+    background: rgba(124,58,237,0.18);
+    border: 1px solid rgba(124,58,237,0.3);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 1px 5px;
+    font-weight: 700;
+}
+
+/* زر استلام الجائزة */
+.sp-claim-btn {
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 0.62em;
+    font-weight: 900;
+    cursor: pointer;
+    flex-shrink: 0;
+    animation: spClaimPulse 1.2s ease-in-out infinite;
+}
+@keyframes spClaimPulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.06); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   🏆 SEASON PASS — المرحلة الرابعة: تأثيرات + حالات + Responsive
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════
+   أنيميشن دخول الصفحة
+══════════════════════════ */
+#seasonPassOverlay {
+    animation: spSlideUp 0.32s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+@keyframes spSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ══════════════════════════
+   تأثير pop لنقاط الموسم
+   يُضاف بـ JS على #spCurrentPts عند كل تحديث
+══════════════════════════ */
+.sp-pts-pop {
+    animation: spPtsPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes spPtsPop {
+    0%   { transform: scale(1);    color: var(--gold); }
+    40%  { transform: scale(1.45); color: #fff176;     }
+    100% { transform: scale(1);    color: var(--gold); }
+}
+
+/* ══════════════════════════
+   تأثير المهمة عند الإكتمال
+══════════════════════════ */
+.sp-task-done-anim {
+    animation: spTaskDone 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+@keyframes spTaskDone {
+    0%   { transform: scale(1);    box-shadow: none; }
+    50%  { transform: scale(1.04); box-shadow: 0 0 18px rgba(16,185,129,0.5); }
+    100% { transform: scale(1);    box-shadow: 0 0 0 rgba(16,185,129,0); }
+}
+
+/* ══════════════════════════
+   تأثير استلام الجائزة
+══════════════════════════ */
+.sp-reward-claim-pop {
+    animation: spRewardClaim 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes spRewardClaim {
+    0%   { transform: scale(1) rotate(0deg);   }
+    30%  { transform: scale(1.3) rotate(-8deg); }
+    60%  { transform: scale(0.95) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg);   }
+}
+
+/* ══════════════════════════
+   زر الموسم — حالة الإكتمال
+══════════════════════════ */
+.comp-season-btn.all-done {
+    background: linear-gradient(135deg, #0d2818 0%, #0e2010 100%) !important;
+    border-color: rgba(16,185,129,0.55) !important;
+    box-shadow: 0 0 20px rgba(16,185,129,0.18) !important;
+}
+.comp-season-btn.all-done .comp-season-btn-title {
+    color: #34d399;
+}
+.comp-season-btn.all-done .comp-season-mini-fill {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+/* توهج دائم للزر عند وجود مهام جديدة */
+.season-btn-glow {
+    position: relative;
+    overflow: visible;
+}
+.season-btn-glow::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 18px;
+    background: transparent;
+    border: 2px solid rgba(240,185,11,0.0);
+    animation: seasonBtnGlowPulse 2s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes seasonBtnGlowPulse {
+    0%,100% { border-color: rgba(240,185,11,0.0); box-shadow: none; }
+    50%      { border-color: rgba(240,185,11,0.5); box-shadow: 0 0 12px rgba(240,185,11,0.2); }
+}
+
+/* ══════════════════════════
+   شاشة إتمام الموسم
+══════════════════════════ */
+#spCompleteScreen {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0,0,0,0.93);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    padding: 28px;
+    animation: spCompleteFadeIn 0.4s ease both;
+}
+@keyframes spCompleteFadeIn {
+    from { opacity: 0; backdrop-filter: blur(0); }
+    to   { opacity: 1; backdrop-filter: blur(6px); }
+}
+.sp-complete-crown {
+    font-size: 4em;
+    animation: spCompletePulse 1.6s ease-in-out infinite;
+}
+@keyframes spCompletePulse {
+    0%,100% { transform: scale(1)    rotate(0deg);  filter: drop-shadow(0 0 8px #f0b90b); }
+    50%      { transform: scale(1.15) rotate(-5deg); filter: drop-shadow(0 0 20px #f0b90b); }
+}
+.sp-complete-title {
+    font-size: 1.4em;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(240,185,11,0.5);
+}
+.sp-complete-sub {
+    font-size: 0.8em;
+    color: var(--text2);
+    max-width: 270px;
+    line-height: 1.7;
+}
+.sp-complete-icons {
+    font-size: 2.2em;
+    letter-spacing: 6px;
+    animation: spCompleteIconsBounce 1s ease-in-out infinite alternate;
+}
+@keyframes spCompleteIconsBounce {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-6px); }
+}
+.sp-complete-btn {
+    background: linear-gradient(135deg, var(--gold), #e5a800);
+    color: #000;
+    border: none;
+    border-radius: 18px;
+    padding: 13px 36px;
+    font-size: 0.95em;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: 'Tajawal', sans-serif;
+    box-shadow: 0 4px 20px rgba(240,185,11,0.4);
+    transition: transform 0.15s ease;
+}
+.sp-complete-btn:active { transform: scale(0.96); }
+
+/* ══════════════════════════
+   الخط الرابط في المسار
+══════════════════════════ */
+.sp-track-connector {
+    width: 32px;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 10px;
+    flex-shrink: 0;
+    align-self: center;
+    margin-bottom: 28px;
+    transition: background 0.3s ease;
+}
+.sp-track-connector.passed {
+    background: linear-gradient(90deg, rgba(240,185,11,0.8), rgba(240,185,11,0.3));
+}
+
+/* ══════════════════════════
+   الحالة الفارغة (لا مهام)
+══════════════════════════ */
+.sp-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px 16px;
+    color: var(--text2);
+    text-align: center;
+}
+.sp-empty-state-icon {
+    font-size: 2.8em;
+    opacity: 0.5;
+}
+.sp-empty-state-text {
+    font-size: 0.8em;
+    line-height: 1.6;
+}
+
+/* ══════════════════════════
+   تحسينات عامة للصفحة
+══════════════════════════ */
+
+/* تأثير hover على بطاقات المهام */
+.sp-task-item:not(.done):active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+}
+
+/* ظل خفيف على شريط التقدم الكلي عند اكتماله */
+.sp-progress-fill.complete {
+    background: linear-gradient(90deg, #10b981, #34d399, #10b981);
+    background-size: 200% 100%;
+    animation: spBarShimmer 2s linear infinite;
+    box-shadow: 0 0 12px rgba(16,185,129,0.4);
+}
+
+/* تأثير تحديث عداد الأيام المتبقية */
+.sp-header-timer.urgent {
+    background: rgba(239,68,68,0.15);
+    border-color: rgba(239,68,68,0.35);
+    color: #f87171;
+    animation: spTimerUrgent 1s ease-in-out infinite;
+}
+@keyframes spTimerUrgent {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 8px rgba(239,68,68,0.3); }
+}
+
+/* نقطة تنبيه حمراء على زر الموسم عند وجود جوائز غير مُستلمة */
+.comp-season-btn .sp-unclaimed-dot {
+    position: absolute;
+    top: 10px;
+    left: 14px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 2px solid var(--bg);
+    animation: spDotPulse 1.4s ease-in-out infinite;
+}
+@keyframes spDotPulse {
+    0%,100% { transform: scale(1);   opacity: 1; }
+    50%      { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* ══════════════════════════
+   Responsive — شاشات صغيرة
+══════════════════════════ */
+@media (max-width: 380px) {
+    .sp-header-title  { font-size: 0.85em; }
+    .sp-header-sub    { font-size: 0.6em;  }
+    .sp-node-circle   { width: 38px; height: 38px; font-size: 1.1em; }
+    .sp-node-pts      { font-size: 0.52em; }
+    .sp-node-label    { font-size: 0.5em; max-width: 52px; }
+    .sp-task-name     { font-size: 0.72em; }
+    .sp-task-desc     { font-size: 0.59em; }
+    .sp-task-pts      { font-size: 0.64em; }
+    .comp-season-btn-title { font-size: 0.82em; }
+    .sp-complete-title     { font-size: 1.2em;  }
+}
+
+@media (max-height: 650px) {
+    .sp-progress-section { padding: 10px 16px 8px; }
+    .sp-body             { padding: 10px 16px 24px; gap: 8px; }
+    .sp-task-item        { padding: 9px 11px; }
+    .sp-node-circle      { width: 40px; height: 40px; }
+}
+
