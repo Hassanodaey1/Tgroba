@@ -1039,34 +1039,35 @@ function _seasonUpdateAfterGame(gameData) {
     _seasonEnsureReady();
 
     let pointsEarned = 0;
-    let anyNewDone   = false;
 
     st.season.dailyTasks.forEach(task => {
         if (task.done) return;
-        const prev    = task.current || 0;
-        const current = _seasonGetTaskCurrent(task);
-        task.current  = current;
-        if (current >= task.target) {
-            task.done    = true;
+        task.current  = _seasonGetTaskCurrent(task);
+        if (task.current >= task.target) {
+            task.done     = true;
             pointsEarned += task.pts;
-            anyNewDone   = true;
         }
     });
 
     if (pointsEarned > 0) {
+        /* تطبيق Bonus Day إذا كان يوم الجمعة */
+        pointsEarned = _seasonApplyBonusDay(pointsEarned);
+
         st.season.points         = Math.min(1000, (st.season.points || 0) + pointsEarned);
         st.season.totalPtsEarned = (st.season.totalPtsEarned || 0) + pointsEarned;
 
-        /* تحقق من إكمال اليوم كاملاً */
-        const allDone = st.season.dailyTasks.every(t => t.done);
-        if (allDone) st.season.completedDays = (st.season.completedDays || 0) + 1;
-
-        /* إشعار بالنقاط */
         try { showFeedback(`🏆 +${pointsEarned} نقطة موسم!`); } catch(e) {}
-
-        /* فحص استحقاق الجوائز */
         _seasonCheckRewards();
     }
+
+    /* تحديث الـ Streak إذا أكملت كل المهام */
+    _seasonStreakCheck();
+
+    /* تحديث تقدم مهمة الفلاش */
+    _seasonFlashTaskUpdate();
+
+    /* فحص استحقاق الصندوق */
+    _seasonChestCheck();
 
     saveSt();
     _updateSeasonBtn();
@@ -1179,26 +1180,30 @@ function _renderSeasonPassPage() {
     const tasks = st.season.dailyTasks || [];
     const done  = tasks.filter(t => t.done).length;
 
-    /* Header */
+    /* اسم الموسم */
     const nameEl = document.getElementById('spSeasonName');
     if (nameEl && typeof getCurrentSeasonName === 'function') nameEl.textContent = getCurrentSeasonName();
 
-    /* الأيام المتبقية في الأسبوع */
-    const daysEl = document.getElementById('spDaysLeft');
+    /* الأيام المتبقية — مع تنبيه urgent إذا يوم واحد */
+    const daysEl   = document.getElementById('spDaysLeft');
+    const timerBox = document.getElementById('spSeasonTimer');
     if (daysEl) {
-        const now  = new Date();
-        const day  = now.getDay(); /* 0=أحد */
+        const day  = new Date().getDay();
         const left = day === 0 ? 7 : 7 - day;
         daysEl.textContent = left;
+        if (timerBox) timerBox.className = 'sp-header-timer' + (left <= 1 ? ' urgent' : '');
     }
 
     /* شريط التقدم */
     const fillEl = document.getElementById('spProgressFill');
     const glowEl = document.getElementById('spProgressGlow');
     const ptsEl  = document.getElementById('spCurrentPts');
-    if (fillEl) fillEl.style.width = pct + '%';
-    if (glowEl) glowEl.style.right  = (100 - pct - 1) + '%';
-    if (ptsEl)  ptsEl.textContent   = pts;
+    if (fillEl) {
+        fillEl.style.width = pct + '%';
+        if (pts >= 1000) fillEl.classList.add('complete');
+    }
+    if (glowEl) glowEl.style.right = Math.max(0, 100 - pct - 1) + '%';
+    if (ptsEl)  { ptsEl.textContent = pts; ptsEl.classList.add('sp-pts-pop'); setTimeout(() => ptsEl.classList.remove('sp-pts-pop'), 500); }
 
     /* إحصائيات */
     const cdEl = document.getElementById('spCompletedDays');
@@ -1209,6 +1214,14 @@ function _renderSeasonPassPage() {
     /* شارة المهام */
     const badgeEl = document.getElementById('spDailyBadge');
     if (badgeEl) badgeEl.textContent = done + '/' + tasks.length;
+
+    /* ── الأقسام الجديدة ── */
+    _renderSeasonStreak();
+    _renderSeasonRank(pts);
+    _seasonBonusDayCheck();
+    _seasonFlashTaskGenerate();
+    _renderFlashTask();
+    _seasonChestCheck();
 
     /* مسار الجوائز */
     _renderSeasonTrack(pts);
@@ -1311,16 +1324,346 @@ function claimSeasonReward(pts) {
 
 /* ── تحديث تقدم مهام الموسم من اللعبة العادية ── */
 /* يُستدعى من game.js بعد كل جولة */
-window.seasonUpdateFromGame = function(data) {
-    try {
-        _seasonEnsureReady();
-        _seasonUpdateAfterGame(data || {});
-    } catch(e) {}
-};
+/* ═══════════════════════════════════════════════════════════════
+   🔥 STREAK — منطق التتابع اليومي
+═══════════════════════════════════════════════════════════════ */
+function _seasonStreakCheck() {
+    const today     = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+    const yesterday = (function(){
+        const d = new Date(); d.setDate(d.getDate() - 1);
+        return d.toISOString().slice(0,10);
+    })();
 
-/* تصدير للنافذة */
+    const allDone = st.season.dailyTasks.length > 0 && st.season.dailyTasks.every(t => t.done);
+    if (!allDone) return;
+    if (st.season.lastStreakDate === today) return; /* سبق وحُسب اليوم */
+
+    if (st.season.lastStreakDate === yesterday) {
+        /* تتابع مستمر */
+        st.season.streak = (st.season.streak || 0) + 1;
+    } else if (st.season.lastStreakDate && st.season.lastStreakDate !== yesterday) {
+        /* كُسر التتابع — تحقق من الدرع */
+        if ((st.season.streakShields || 0) > 0) {
+            st.season.streakShields--;
+            st.season.streak = (st.season.streak || 0) + 1;
+            try { showFeedback('🛡️ درع الـ Streak حمى تتابعك!'); } catch(e) {}
+        } else {
+            st.season.streak = 1; /* يبدأ من جديد */
+        }
+    } else {
+        st.season.streak = 1; /* أول يوم */
+    }
+
+    st.season.lastStreakDate = today;
+    if (st.season.streak > (st.season.bestStreak || 0)) st.season.bestStreak = st.season.streak;
+
+    /* مكافأة كل 3 أيام تتابع */
+    if (st.season.streak % 3 === 0) {
+        const bonus = st.season.streak >= 7 ? 30 : 15;
+        st.season.points         = Math.min(1000, (st.season.points || 0) + bonus);
+        st.season.totalPtsEarned = (st.season.totalPtsEarned || 0) + bonus;
+        try { showFeedback(`🔥 ${st.season.streak} أيام تتابع! +${bonus} نقطة بونص!`); } catch(e) {}
+        _seasonCheckRewards();
+    }
+
+    saveSt();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ⭐ SEASON RANK — عرض الرتبة
+═══════════════════════════════════════════════════════════════ */
+function _renderSeasonRank(pts) {
+    if (typeof getSeasonRank === 'undefined') return;
+    const rank    = getSeasonRank(pts);
+    const iconEl  = document.getElementById('spRankIcon');
+    const labelEl = document.getElementById('spRankLabel');
+    const nextEl  = document.getElementById('spRankNext');
+    const boxEl   = document.getElementById('spRankBox');
+
+    if (iconEl)  iconEl.textContent  = rank.icon;
+    if (labelEl) labelEl.textContent = rank.label;
+    if (boxEl)   { boxEl.className = 'sp-rank-box ' + rank.cls; }
+
+    /* النقاط المتبقية للرتبة التالية */
+    if (nextEl && typeof SEASON_RANKS !== 'undefined') {
+        const idx  = SEASON_RANKS.findIndex(r => r.cls === rank.cls);
+        const next = SEASON_RANKS[idx + 1];
+        nextEl.textContent = next ? `${next.min - pts} للتالية ›` : '🏆 الرتبة الأعلى!';
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔥 STREAK — رسم شريط الـ Streak
+═══════════════════════════════════════════════════════════════ */
+function _renderSeasonStreak() {
+    const streak  = st.season.streak  || 0;
+    const shields = st.season.streakShields || 0;
+
+    const numEl    = document.getElementById('spStreakNum');
+    const fireEl   = document.getElementById('spStreakFire');
+    const shieldEl = document.getElementById('spStreakShield');
+    const cntEl    = document.getElementById('spShieldCount');
+    const boxEl    = document.getElementById('spStreakBox');
+
+    if (numEl)    numEl.textContent    = streak;
+    if (shieldEl) shieldEl.style.display = shields > 0 ? 'flex' : 'none';
+    if (cntEl)    cntEl.textContent    = shields;
+    if (boxEl) {
+        boxEl.className = 'sp-streak-box' +
+            (streak >= 7  ? ' streak-hot'  :
+             streak >= 3  ? ' streak-warm' : '');
+    }
+    if (fireEl) {
+        fireEl.textContent = streak >= 14 ? '🌋' : streak >= 7 ? '🔥' : streak >= 3 ? '🔥' : '💤';
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📅 BONUS DAY — يوم الجمعة مضاعف ×2
+═══════════════════════════════════════════════════════════════ */
+function _seasonBonusDayCheck() {
+    const today   = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+    const dayOfWk = new Date().getDay(); /* 5 = جمعة */
+    const isBonusDay = dayOfWk === 5;
+    const badgeEl    = document.getElementById('spBonusBadge');
+
+    if (badgeEl) badgeEl.style.display = isBonusDay ? 'flex' : 'none';
+
+    return isBonusDay && st.season.bonusDayUsed !== today;
+}
+
+/* يُستدعى من _seasonUpdateAfterGame لمضاعفة النقاط يوم الجمعة */
+function _seasonApplyBonusDay(pts) {
+    const today    = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+    const dayOfWk  = new Date().getDay();
+    if (dayOfWk === 5 && st.season.bonusDayUsed !== today) {
+        st.season.bonusDayUsed = today;
+        try { showFeedback(`🎉 يوم المضاعف! نقاطك ×2`); } catch(e) {}
+        return pts * 2;
+    }
+    return pts;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ⚡ FLASH TASK — مهام الفلاش
+═══════════════════════════════════════════════════════════════ */
+function _seasonFlashTaskGenerate() {
+    if (typeof FLASH_TASK_POOL === 'undefined') return;
+    const today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+
+    /* توليد فلاش مرتين يومياً — الأولى عند الفتح، الثانية بعد 8 ساعات */
+    if (st.season.flashTaskDate === today && st.season.flashTask) return;
+
+    const pool    = FLASH_TASK_POOL.filter(t => !st.season.flashTask || t.id !== st.season.flashTask.id);
+    const picked  = pool[Math.floor(Math.random() * pool.length)];
+    const expires = Date.now() + 2 * 60 * 60 * 1000; /* ساعتان */
+
+    st.season.flashTask = {
+        id:        picked.id,
+        icon:      picked.icon,
+        name:      picked.name,
+        desc:      picked.desc,
+        type:      picked.type,
+        target:    picked.target,
+        current:   0,
+        pts:       picked.pts,
+        expiresAt: expires,
+        done:      false,
+    };
+    st.season.flashTaskDate = today;
+    saveSt();
+}
+
+function _renderFlashTask() {
+    const section = document.getElementById('spFlashTaskSection');
+    const card    = document.getElementById('spFlashTaskCard');
+    const timerEl = document.getElementById('spFlashTimer');
+    const ft      = st.season.flashTask;
+
+    if (!ft || ft.done || Date.now() > ft.expiresAt) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+    if (section) section.style.display = 'block';
+
+    const cur  = Math.min(ft.current || 0, ft.target);
+    const pct  = Math.min(100, Math.round((cur / ft.target) * 100));
+
+    if (card) {
+        card.innerHTML = `
+        <div class="sp-flash-inner">
+            <div class="sp-flash-icon">${ft.icon}</div>
+            <div class="sp-task-info">
+                <div class="sp-task-name">${ft.name} <span class="sp-flash-pts-badge">+${ft.pts * 2}🏅</span></div>
+                <div class="sp-task-desc">${ft.desc}</div>
+                <div class="sp-task-bar"><div class="sp-task-bar-fill sp-flash-bar" style="width:${pct}%"></div></div>
+            </div>
+            <div class="sp-task-right">
+                <div class="sp-task-prog">${cur}/${ft.target}</div>
+                ${ft.done ? '<div style="font-size:1.1em">✅</div>' : ''}
+            </div>
+        </div>`;
+    }
+
+    /* عداد تنازلي */
+    if (timerEl) {
+        clearInterval(window._flashTimerInterval);
+        window._flashTimerInterval = setInterval(() => {
+            const left = Math.max(0, ft.expiresAt - Date.now());
+            if (left <= 0) {
+                clearInterval(window._flashTimerInterval);
+                if (section) section.style.display = 'none';
+                st.season.flashTask = null;
+                saveSt();
+                return;
+            }
+            const h = Math.floor(left / 3600000);
+            const m = Math.floor((left % 3600000) / 60000);
+            const s = Math.floor((left % 60000) / 1000);
+            timerEl.textContent = h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+        }, 1000);
+    }
+}
+
+/* تحديث تقدم الفلاش بعد اللعبة */
+function _seasonFlashTaskUpdate() {
+    const ft = st.season.flashTask;
+    if (!ft || ft.done || Date.now() > ft.expiresAt) return;
+
+    const current = _seasonGetTaskCurrent({ type: ft.type, target: ft.target });
+    ft.current = current;
+
+    if (current >= ft.target) {
+        ft.done = true;
+        /* نقاط الفلاش مضاعفة دائماً */
+        const earned = ft.pts * 2;
+        st.season.points         = Math.min(1000, (st.season.points || 0) + earned);
+        st.season.totalPtsEarned = (st.season.totalPtsEarned || 0) + earned;
+        try { showFeedback(`⚡ مهمة فلاش مكتملة! +${earned} نقطة موسم!`); } catch(e) {}
+        _seasonCheckRewards();
+        saveSt();
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎁 SEASON CHEST — صندوق الموسم
+═══════════════════════════════════════════════════════════════ */
+function _seasonChestCheck() {
+    const total35 = 35; /* 5 مهام × 7 أيام */
+    const done    = (st.season.completedDays || 0) * 5;
+    const section = document.getElementById('spChestSection');
+
+    if (done >= total35 && !st.season.chestOpened) {
+        st.season.chestAvailable = true;
+        if (section) section.style.display = 'block';
+    } else {
+        if (section) section.style.display = 'none';
+    }
+}
+
+function openSeasonChest() {
+    if (!st.season.chestAvailable || st.season.chestOpened) return;
+
+    /* جوائز عشوائية من قائمة */
+    const prizes = [
+        { icon:'💰', text:'+100 عملة ذهبية!',      action: () => { st.coins = (st.coins||0) + 100; } },
+        { icon:'⏭️', text:'+5 تخطيات مجانية!',      action: () => { st.inventory = st.inventory||{}; st.inventory.skips = (st.inventory.skips||0)+5; } },
+        { icon:'🛡️', text:'+2 درع Streak!',         action: () => { st.season.streakShields = (st.season.streakShields||0)+2; } },
+        { icon:'⚡', text:'مضاعف XP ×2 ليوم كامل!', action: () => { st.xpBoostActive=true; st.xpBoostMultiplier=2; st.xpBoostExpiry=Date.now()+86400000; } },
+        { icon:'💎', text:'+150 عملة + درع!',        action: () => { st.coins=(st.coins||0)+150; st.season.streakShields=(st.season.streakShields||0)+1; } },
+    ];
+    const prize = prizes[Math.floor(Math.random() * prizes.length)];
+    prize.action();
+
+    st.season.chestOpened    = true;
+    st.season.chestAvailable = false;
+    saveSt();
+
+    /* شاشة الفتح */
+    const screen  = document.getElementById('spChestOpenScreen');
+    const iconEl  = document.getElementById('spChestOpenIcon');
+    const rwdEl   = document.getElementById('spChestOpenReward');
+    if (screen) screen.style.display = 'flex';
+    if (iconEl) {
+        iconEl.textContent = '🎁';
+        setTimeout(() => { iconEl.textContent = prize.icon; }, 600);
+    }
+    if (rwdEl) rwdEl.textContent = prize.text;
+
+    const section = document.getElementById('spChestSection');
+    if (section) section.style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📜 SEASON HISTORY — ذاكرة المواسم
+═══════════════════════════════════════════════════════════════ */
+function openSeasonHistory() {
+    const overlay = document.getElementById('seasonHistoryOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    _renderSeasonHistory();
+}
+
+function closeSeasonHistory() {
+    const overlay = document.getElementById('seasonHistoryOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function _renderSeasonHistory() {
+    const list = document.getElementById('spHistoryList');
+    if (!list) return;
+
+    const history = (st.season && st.season.history) || [];
+
+    if (history.length === 0) {
+        list.innerHTML = `
+        <div class="sp-empty-state">
+            <div class="sp-empty-state-icon">📜</div>
+            <div class="sp-empty-state-text">لا يوجد مواسم سابقة بعد<br>أكمل موسمك الأول ليظهر هنا!</div>
+        </div>`;
+        return;
+    }
+
+    const sorted = [...history].reverse();
+    list.innerHTML = sorted.map((h, i) => {
+        const rank = (typeof getSeasonRank !== 'undefined') ? getSeasonRank(h.pts) : { icon:'🥉', label:'—' };
+        const pct  = Math.min(100, Math.round((h.pts / 1000) * 100));
+        return `
+        <div class="sp-history-card">
+            <div class="sp-history-header">
+                <div class="sp-history-num">الموسم ${sorted.length - i}</div>
+                <div class="sp-history-name">${h.name || 'موسم سابق'}</div>
+                ${h.completed ? '<div class="sp-history-complete-badge">✅ مكتمل</div>' : ''}
+            </div>
+            <div class="sp-history-stats">
+                <div class="sp-history-stat">
+                    <span>${rank.icon}</span>
+                    <span>${rank.label}</span>
+                </div>
+                <div class="sp-history-stat">
+                    <span>🏅</span>
+                    <span>${h.pts}/1000</span>
+                </div>
+                <div class="sp-history-stat">
+                    <span>🔥</span>
+                    <span>${h.streak || 0} يوم</span>
+                </div>
+            </div>
+            <div class="sp-history-bar">
+                <div class="sp-history-bar-fill ${h.completed ? 'complete' : ''}" style="width:${pct}%"></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
 window.openSeasonPassOverlay  = openSeasonPassOverlay;
 window.closeSeasonPassOverlay = closeSeasonPassOverlay;
 window.claimSeasonReward      = claimSeasonReward;
 window._updateSeasonBtn       = _updateSeasonBtn;
 window._seasonUpdateAfterGame = _seasonUpdateAfterGame;
+window.openSeasonChest        = openSeasonChest;
+window.openSeasonHistory      = openSeasonHistory;
+window.closeSeasonHistory     = closeSeasonHistory;
+window.seasonUpdateFromGame   = function(data) {
+    try { _seasonEnsureReady(); _seasonUpdateAfterGame(data || {}); } catch(e) {}
+};
