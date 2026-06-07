@@ -18,6 +18,52 @@
             return `${date.getUTCFullYear()}-W${String(week).padStart(2,'0')}`;
         }
 
+        /* ═══════════════════════════════════════════════════════════
+           مفتاح الموسم الأسبوعي — يتطابق مع weekStr() تماماً
+           بمعنى كل أسبوع ISO = موسم جديد
+        ═══════════════════════════════════════════════════════════ */
+        function seasonPassStr() { return weekStr(); }
+
+        /* ═══════════════════════════════════════════════════════════
+           تعريف جوائز مسار الموسم — 10 محطات كل 100 نقطة
+           reward: { type, value, label }
+           types: coins | inventory_skip | inventory_heart |
+                  inventory_remove | xp_boost | frame | title | badge
+        ═══════════════════════════════════════════════════════════ */
+        const SEASON_TRACK_REWARDS = [
+            { pts: 100,  icon: '💰', label: '+30 عملة',           reward: { type: 'coins',           value: 30  } },
+            { pts: 200,  icon: '⏭️', label: '+3 تخطيات',          reward: { type: 'inventory_skip',  value: 3   } },
+            { pts: 300,  icon: '💰', label: '+50 عملة',           reward: { type: 'coins',           value: 50  } },
+            { pts: 400,  icon: '🖼️', label: 'إطار حصري للموسم',  reward: { type: 'frame',           value: 'frame_season1' } },
+            { pts: 500,  icon: '⚡', label: 'مضاعف XP ×2',        reward: { type: 'xp_boost',        value: 2   } },
+            { pts: 600,  icon: '🛡️', label: 'درع الحماية',        reward: { type: 'shield',          value: 1   } },
+            { pts: 700,  icon: '💰', label: '+80 عملة',           reward: { type: 'coins',           value: 80  } },
+            { pts: 800,  icon: '🎭', label: 'لقب "رياضي الموسم"', reward: { type: 'title',           value: 'season_math1' } },
+            { pts: 900,  icon: '🚀', label: 'مضاعف XP ×3',        reward: { type: 'xp_boost',        value: 3   } },
+            { pts: 1000, icon: '👑', label: 'إطار + لقب "بطل الموسم"', reward: { type: 'season_complete', value: 'S1' } },
+        ];
+
+        /* ═══════════════════════════════════════════════════════════
+           قائمة أسماء المواسم — تتكرر دورياً حسب رقم الأسبوع
+        ═══════════════════════════════════════════════════════════ */
+        const SEASON_NAMES = [
+            'موسم الأرقام الذهبية 🔢',
+            'موسم المعادلات 🔮',
+            'موسم الهندسة 📐',
+            'موسم الكسور 🍕',
+            'موسم الأسس والجذور √',
+            'موسم الإحصاء 📊',
+            'موسم الجبر 🔣',
+            'موسم المنطق 🧠',
+        ];
+
+        /* استخراج اسم الموسم من رقم الأسبوع */
+        function getCurrentSeasonName() {
+            const w = weekStr();
+            const num = parseInt(w.split('-W')[1] || '1', 10);
+            return SEASON_NAMES[(num - 1) % SEASON_NAMES.length];
+        }
+
         function defState() {
             return {
                 name: 'Player',
@@ -111,7 +157,21 @@
                 /* ═══ تحدي الأسبوع ═══ */
                 weeklyChallengePlayed: false,   /* هل لُعب تحدي الأسبوع هذا الأسبوع؟ */
                 weeklyChallengeDate: '',        /* رقم الأسبوع ISO عند آخر لعب */
-                weeklyChallengeBest: 0          /* أفضل نتيجة في تحدي الأسبوع */
+                weeklyChallengeBest: 0,         /* أفضل نتيجة في تحدي الأسبوع */
+                /* ═══════════════════════════════════════════════════════
+                   موسم الرياضيات — Season Pass
+                ═══════════════════════════════════════════════════════ */
+                season: {
+                    weekKey:        '',     /* مفتاح الأسبوع — لكشف تجدد الموسم تلقائياً         */
+                    points:         0,      /* نقاط الموسم المتراكمة (0 → 1000)                  */
+                    claimedRewards: [],     /* محطات مُستلمة مثل [100, 200, 400]                  */
+                    dailyTasks:     [],     /* مهام اليوم [{id,type,mode,target,current,pts,done}] */
+                    dailyTasksDate: '',     /* تاريخ آخر توليد للمهام — لإعادة التوليد يومياً     */
+                    completedDays:  0,      /* عدد أيام أكملت فيها كل مهام اليوم الخمس            */
+                    totalPtsEarned: 0,      /* مجموع النقاط الكلي عبر جميع الأسابيع (تاريخي)      */
+                },
+                /* عداد مرات لعب تحدي المنافسة */
+                challengeGamesPlayed: 0,
             };
         }
 
@@ -221,6 +281,33 @@
                 s.weeklyChallengePlayed = false;
                 s.weeklyChallengeDate   = '';
             }
+            /* ═══════════════════════════════════════════════════
+               ✅ SEASON PASS — sanitize وإعادة ضبط أسبوعي
+            ═══════════════════════════════════════════════════ */
+            if (!s.season || typeof s.season !== 'object') {
+                s.season = defState().season;
+            }
+            /* تأكد من وجود جميع الحقول */
+            if (typeof s.season.weekKey        !== 'string')  s.season.weekKey        = '';
+            if (typeof s.season.points         !== 'number' || s.season.points  < 0)  s.season.points  = 0;
+            if (s.season.points > 1000) s.season.points = 1000;
+            if (!Array.isArray(s.season.claimedRewards)) s.season.claimedRewards = [];
+            if (!Array.isArray(s.season.dailyTasks))     s.season.dailyTasks     = [];
+            if (typeof s.season.dailyTasksDate !== 'string')  s.season.dailyTasksDate = '';
+            if (typeof s.season.completedDays  !== 'number' || s.season.completedDays < 0) s.season.completedDays = 0;
+            if (typeof s.season.totalPtsEarned !== 'number' || s.season.totalPtsEarned < 0) s.season.totalPtsEarned = 0;
+            /* إذا تغيّر الأسبوع → أعد ضبط الموسم تلقائياً مع الحفاظ على التاريخ */
+            if (s.season.weekKey && s.season.weekKey !== seasonPassStr()) {
+                s.season.weekKey        = seasonPassStr();
+                s.season.points         = 0;
+                s.season.claimedRewards = [];
+                s.season.dailyTasks     = [];
+                s.season.dailyTasksDate = '';
+                /* completedDays و totalPtsEarned تراكميان — لا يُعادان */
+            }
+            if (!s.season.weekKey) s.season.weekKey = seasonPassStr();
+            /* عداد ألعاب التحدي */
+            if (typeof s.challengeGamesPlayed !== 'number' || s.challengeGamesPlayed < 0) s.challengeGamesPlayed = 0;
             return s;
         }
 
