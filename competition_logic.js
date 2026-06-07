@@ -420,8 +420,11 @@ function endChallengeGame() {
 
     const isNewRecord = CG.score > (st.challengeBestScore || 0);
     if (isNewRecord) st.challengeBestScore = CG.score;
-    /* عداد عدد مرات لعب التحدي */
     st.challengeGamesPlayed = (st.challengeGamesPlayed || 0) + 1;
+
+    /* ── تحديث مهام الموسم بناءً على نتيجة هذه الجلسة ── */
+    try { _seasonUpdateAfterGame({ score: CG.score, mode: 'challenge' }); } catch(e) {}
+
     saveSt();
 
     // مزامنة Firebase
@@ -775,6 +778,9 @@ function initCompetitionPage() {
             renderChallengeDailyTasks();
         }
     } catch(e) {}
+
+    // تحديث زر الموسم
+    try { _updateSeasonBtn(); } catch(e) {}
 }
 
 /* جلب إحصائيات Hero (المرتبة + عدد المنافسين) مباشرة من Firebase */
@@ -782,27 +788,15 @@ function _fetchCompHeroStats() {
     const rankEl  = document.getElementById('compMyRank');
     const totalEl = document.getElementById('compTotalPlayers');
 
-    /* إذا لا يوجد serialNumber — اعرض نص واضح */
-    if (!st.serialNumber) {
-        if (rankEl)  rankEl.textContent  = 'غير مسجّل';
-        if (totalEl) totalEl.textContent = '—';
-        return;
-    }
-
-    /* استخدام الـ cache إذا كان حديثاً */
+    // إذا كان عندنا cache حديث نستخدمه فوراً
     if (_lbCache && _lbCacheType === 'challenge' && (Date.now() - _lbCacheTime) < 60000) {
         updateCompMyStats(_lbCache);
         return;
     }
 
-    if (!window.database) {
-        if (rankEl && rankEl.textContent === '—') rankEl.textContent = '...';
-        return;
-    }
+    if (!window.database) return;
 
-    const myKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-
-    if (rankEl) rankEl.textContent = '...';
+    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
 
     window.database.ref('challenge_leaderboard')
         .orderByChild('challengeScore')
@@ -812,25 +806,18 @@ function _fetchCompHeroStats() {
             snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
             players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
 
+            // حفظ في cache
             _lbCache     = players;
             _lbCacheTime = Date.now();
             _lbCacheType = 'challenge';
 
+            // تحديث العناصر
             if (totalEl) totalEl.textContent = players.length || '—';
-
-            const myIdx = players.findIndex(p => p.id === myKey);
-            if (rankEl) {
-                if (myIdx >= 0) {
-                    rankEl.textContent = '#' + (myIdx + 1);
-                } else {
-                    /* اللاعب مسجّل لكن لم يلعب تحدياً بعد */
-                    rankEl.textContent = 'العب أولاً';
-                    rankEl.style.fontSize = '0.7em';
-                }
+            if (myKey && rankEl) {
+                const myIdx = players.findIndex(p => p.id === myKey);
+                rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
             }
-        }).catch(() => {
-            if (rankEl && rankEl.textContent === '...') rankEl.textContent = '—';
-        });
+        }).catch(() => {});
 }
 
 /* ══════════════════════════════════════
@@ -923,3 +910,417 @@ function _fetchLbOverlay() {
         container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.8em;">⚠️ خطأ</div>';
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   🏆 SEASON PASS — منطق موسم الرياضيات الكامل
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════════ */
+
+/* ── تعريف كتالوج المهام اليومية — 35 نوع متنوع ── */
+const _SP_TASK_POOL = [
+    /* ── وضع التحدي (challenge) ── */
+    { id:'c1',  mode:'challenge', icon:'⚔️',  stars:1, name:'أول تحدي',        desc:'العب جولة تحدٍّ واحدة',            type:'challenge_games', target:1,  pts:10 },
+    { id:'c2',  mode:'challenge', icon:'⚡',  stars:1, name:'نقاط سريعة',       desc:'اجمع 5 نقاط في التحدي',            type:'challenge_score', target:5,  pts:10 },
+    { id:'c3',  mode:'challenge', icon:'🔥',  stars:2, name:'حرارة المنافسة',   desc:'اجمع 15 نقطة في التحدي',           type:'challenge_score', target:15, pts:20 },
+    { id:'c4',  mode:'challenge', icon:'💪',  stars:2, name:'المقاتل',          desc:'العب التحدي مرتين',                 type:'challenge_games', target:2,  pts:20 },
+    { id:'c5',  mode:'challenge', icon:'🏅',  stars:3, name:'قمة التحدي',       desc:'اجمع 30 نقطة في التحدي',           type:'challenge_score', target:30, pts:30 },
+    /* ── اللعبة الرئيسية (main) ── */
+    { id:'m1',  mode:'main',      icon:'📚',  stars:1, name:'جولة دراسية',      desc:'العب لعبة واحدة في الوضع العادي',   type:'main_games',      target:1,  pts:10 },
+    { id:'m2',  mode:'main',      icon:'✅',  stars:1, name:'دقة عالية',        desc:'أجب صح على 5 أسئلة متتالية',       type:'main_correct',    target:5,  pts:10 },
+    { id:'m3',  mode:'main',      icon:'🧠',  stars:2, name:'تركيز ذهني',       desc:'أجب صح على 10 أسئلة اليوم',        type:'daily_correct',   target:10, pts:20 },
+    { id:'m4',  mode:'main',      icon:'📈',  stars:2, name:'نمو مستمر',        desc:'اجمع 20 نقطة في الألعاب العادية',  type:'main_score',      target:20, pts:20 },
+    { id:'m5',  mode:'main',      icon:'🎓',  stars:3, name:'طالب متميز',       desc:'العب 3 ألعاب في الوضع العادي',     type:'main_games',      target:3,  pts:30 },
+    /* ── وضع الصاروخ (rocket) ── */
+    { id:'r1',  mode:'rocket',    icon:'🚀',  stars:1, name:'انطلاق',           desc:'العب وضع الصاروخ مرة واحدة',       type:'rocket_games',    target:1,  pts:10 },
+    { id:'r2',  mode:'rocket',    icon:'💫',  stars:2, name:'صاروخي',           desc:'اجمع 10 نقاط في وضع الصاروخ',      type:'rocket_score',    target:10, pts:20 },
+    { id:'r3',  mode:'rocket',    icon:'🌟',  stars:3, name:'سرعة البرق',       desc:'اجمع 25 نقطة في وضع الصاروخ',      type:'rocket_score',    target:25, pts:30 },
+    /* ── التحدي الأسبوعي (weekly) ── */
+    { id:'w1',  mode:'weekly',    icon:'📅',  stars:2, name:'التحدي الأسبوعي', desc:'العب التحدي الأسبوعي هذا الأسبوع', type:'weekly_played',   target:1,  pts:20 },
+    { id:'w2',  mode:'weekly',    icon:'🏆',  stars:3, name:'بطل الأسبوع',     desc:'اجمع 20 نقطة في التحدي الأسبوعي', type:'weekly_score',    target:20, pts:30 },
+    /* ── إجمالي اليوم (daily) ── */
+    { id:'d1',  mode:'daily',     icon:'📊',  stars:1, name:'يوم نشيط',         desc:'العب لعبتين أي وضع',               type:'any_games',       target:2,  pts:10 },
+    { id:'d2',  mode:'daily',     icon:'🌙',  stars:1, name:'جلسة يومية',       desc:'افتح اللعبة اليوم',                 type:'login_today',     target:1,  pts:10 },
+    { id:'d3',  mode:'daily',     icon:'⭐',  stars:2, name:'نصف الطريق',       desc:'أجب صح على 15 سؤالاً اليوم',       type:'daily_correct',   target:15, pts:20 },
+    { id:'d4',  mode:'daily',     icon:'🎯',  stars:2, name:'تركيز تام',        desc:'أجب صح على 20 سؤالاً اليوم',       type:'daily_correct',   target:20, pts:20 },
+    { id:'d5',  mode:'daily',     icon:'💎',  stars:3, name:'يوم استثنائي',     desc:'اجمع 50 نقطة أي وضع اليوم',        type:'daily_pts_any',   target:50, pts:30 },
+    /* ── متنوعة (misc) ── */
+    { id:'x1',  mode:'misc',      icon:'🔢',  stars:1, name:'رياضيات الصباح',   desc:'أجب صح على 3 أسئلة',               type:'any_correct',     target:3,  pts:10 },
+    { id:'x2',  mode:'misc',      icon:'🧮',  stars:2, name:'حساب سريع',        desc:'أجب صح على 8 أسئلة',               type:'any_correct',     target:8,  pts:20 },
+    { id:'x3',  mode:'misc',      icon:'🏦',  stars:2, name:'مدخر العملات',     desc:'اجمع 10 عملات اليوم',               type:'earn_coins',      target:10, pts:20 },
+    { id:'x4',  mode:'misc',      icon:'📐',  stars:3, name:'هندسي',            desc:'أجب صح على 15 سؤالاً',              type:'any_correct',     target:15, pts:30 },
+    { id:'x5',  mode:'misc',      icon:'∑',   stars:3, name:'مجمّع النقاط',     desc:'اجمع 30 نقطة أي وضع',              type:'any_score',       target:30, pts:30 },
+];
+
+/* ── توليد 5 مهام يومية متنوعة ── */
+function _seasonGenerateDailyTasks() {
+    /* اختيار 5 مهام: بالتوزيع: 2×⭐ + 2×⭐⭐ + 1×⭐⭐⭐ = 10+10+20+20+30 = 90... */
+    /* لضمان 100 نقطة بالضبط: 1×⭐(10) + 2×⭐⭐(20+20) + 1×⭐⭐⭐(30) + 1×⭐⭐(20) = 100 */
+    const star1 = _SP_TASK_POOL.filter(t => t.stars === 1);
+    const star2 = _SP_TASK_POOL.filter(t => t.stars === 2);
+    const star3 = _SP_TASK_POOL.filter(t => t.stars === 3);
+
+    function pick(arr, n, exclude = []) {
+        const avail = arr.filter(t => !exclude.find(e => e.id === t.id));
+        const shuffled = [...avail].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, n);
+    }
+
+    const picked1 = pick(star1, 2);
+    const picked3 = pick(star3, 1);
+    const picked2 = pick(star2, 2, [...picked1, ...picked3]);
+
+    const tasks = [...picked1, ...picked2, ...picked3]
+        .sort(() => Math.random() - 0.5)
+        .map(t => ({
+            id:      t.id,
+            icon:    t.icon,
+            stars:   t.stars,
+            name:    t.name,
+            desc:    t.desc,
+            type:    t.type,
+            mode:    t.mode,
+            target:  t.target,
+            pts:     t.pts,
+            current: 0,
+            done:    false,
+        }));
+
+    return tasks;
+}
+
+/* ── قراءة قيمة التقدم الحالية لنوع مهمة ── */
+function _seasonGetTaskCurrent(task) {
+    const s = st;
+    switch (task.type) {
+        case 'challenge_games':  return s.challengeGamesPlayed || 0;
+        case 'challenge_score':  return s.challengeBestScore   || 0;
+        case 'main_games':       return (s.dailyStats && s.dailyStats.games) || 0;
+        case 'main_correct':     return (s.dailyStats && s.dailyStats.correct) || 0;
+        case 'main_score':       return (s.weeklyStats && s.weeklyStats.correct) || 0;
+        case 'daily_correct':    return (s.dailyStats && s.dailyStats.correct) || 0;
+        case 'any_games':        return (s.dailyStats && s.dailyStats.games) || 0;
+        case 'any_correct':      return (s.dailyStats && s.dailyStats.correct) || 0;
+        case 'any_score':        return s.score || 0;
+        case 'daily_pts_any':    return s.score || 0;
+        case 'rocket_games':     return s.rocketGamesPlayed   || 0;
+        case 'rocket_score':     return s.rocketBestScore     || 0;
+        case 'weekly_played':    return s.weeklyChallengePlayed ? 1 : 0;
+        case 'weekly_score':     return s.weeklyChallengeBest  || 0;
+        case 'earn_coins':       return s.coinsEarnedToday     || 0;
+        case 'login_today':      return 1; /* مجرد الوصول = مكتمل */
+        default:                 return 0;
+    }
+}
+
+/* ── تهيئة بيانات الموسم أو إعادة ضبطها إذا تغيّر اليوم/الأسبوع ── */
+function _seasonEnsureReady() {
+    if (!st.season) st.season = { weekKey:'', points:0, claimedRewards:[], dailyTasks:[], dailyTasksDate:'', completedDays:0, totalPtsEarned:0 };
+
+    const today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+    const week  = (typeof seasonPassStr === 'function') ? seasonPassStr() : week;
+
+    /* إعادة ضبط يومية للمهام */
+    if (st.season.dailyTasksDate !== today || !st.season.dailyTasks || st.season.dailyTasks.length === 0) {
+        st.season.dailyTasks     = _seasonGenerateDailyTasks();
+        st.season.dailyTasksDate = today;
+    }
+
+    /* إعادة ضبط أسبوعية للموسم */
+    if (st.season.weekKey && st.season.weekKey !== week) {
+        st.season.points         = 0;
+        st.season.claimedRewards = [];
+        st.season.weekKey        = week;
+    }
+    if (!st.season.weekKey) st.season.weekKey = week;
+}
+
+/* ── تحديث تقدم المهام بعد كل لعبة ── */
+function _seasonUpdateAfterGame(gameData) {
+    _seasonEnsureReady();
+
+    let pointsEarned = 0;
+    let anyNewDone   = false;
+
+    st.season.dailyTasks.forEach(task => {
+        if (task.done) return;
+        const prev    = task.current || 0;
+        const current = _seasonGetTaskCurrent(task);
+        task.current  = current;
+        if (current >= task.target) {
+            task.done    = true;
+            pointsEarned += task.pts;
+            anyNewDone   = true;
+        }
+    });
+
+    if (pointsEarned > 0) {
+        st.season.points         = Math.min(1000, (st.season.points || 0) + pointsEarned);
+        st.season.totalPtsEarned = (st.season.totalPtsEarned || 0) + pointsEarned;
+
+        /* تحقق من إكمال اليوم كاملاً */
+        const allDone = st.season.dailyTasks.every(t => t.done);
+        if (allDone) st.season.completedDays = (st.season.completedDays || 0) + 1;
+
+        /* إشعار بالنقاط */
+        try { showFeedback(`🏆 +${pointsEarned} نقطة موسم!`); } catch(e) {}
+
+        /* فحص استحقاق الجوائز */
+        _seasonCheckRewards();
+    }
+
+    saveSt();
+    _updateSeasonBtn();
+}
+
+/* ── فحص الجوائز المستحقة وإظهار popup ── */
+function _seasonCheckRewards() {
+    if (typeof SEASON_TRACK_REWARDS === 'undefined') return;
+    SEASON_TRACK_REWARDS.forEach(reward => {
+        if (st.season.points >= reward.pts && !st.season.claimedRewards.includes(reward.pts)) {
+            st.season.claimedRewards.push(reward.pts);
+            _seasonGrantReward(reward);
+        }
+    });
+}
+
+/* ── منح الجائزة فعلياً ── */
+function _seasonGrantReward(rewardDef) {
+    const r = rewardDef.reward;
+    try {
+        switch (r.type) {
+            case 'coins':
+                st.coins = (st.coins || 0) + r.value;
+                try { showFeedback(`🎁 جائزة الموسم: +${r.value} عملة!`); } catch(e) {}
+                break;
+            case 'inventory_skip':
+                st.inventory = st.inventory || {};
+                st.inventory.skips = (st.inventory.skips || 0) + r.value;
+                try { showFeedback(`🎁 +${r.value} تخطيات مجانية!`); } catch(e) {}
+                break;
+            case 'xp_boost':
+                st.xpBoostActive = true;
+                st.xpBoostMultiplier = r.value;
+                st.xpBoostExpiry = Date.now() + 24 * 60 * 60 * 1000;
+                try { showFeedback(`🎁 مضاعف XP ×${r.value} لمدة 24 ساعة!`); } catch(e) {}
+                break;
+            case 'shield':
+                st.inventory = st.inventory || {};
+                st.inventory.shields = (st.inventory.shields || 0) + r.value;
+                try { showFeedback(`🎁 درع حماية مجاني!`); } catch(e) {}
+                break;
+            case 'frame':
+                st.ownedFrames = st.ownedFrames || ['frame_none'];
+                if (!st.ownedFrames.includes(r.value)) st.ownedFrames.push(r.value);
+                try { showFeedback(`🎁 إطار حصري: ${rewardDef.label}!`); } catch(e) {}
+                break;
+            case 'title':
+                st.ownedTitles = st.ownedTitles || [];
+                if (!st.ownedTitles.includes(r.value)) st.ownedTitles.push(r.value);
+                try { showFeedback(`🎁 لقب جديد: ${rewardDef.label}!`); } catch(e) {}
+                break;
+            case 'season_complete':
+                /* إطار + لقب البطولة معاً */
+                st.ownedFrames = st.ownedFrames || ['frame_none'];
+                st.ownedTitles = st.ownedTitles || [];
+                if (!st.ownedFrames.includes('frame_season_champ')) st.ownedFrames.push('frame_season_champ');
+                if (!st.ownedTitles.includes('title_season_champ')) st.ownedTitles.push('title_season_champ');
+                /* شاشة الإتمام */
+                setTimeout(() => {
+                    const sc = document.getElementById('spCompleteScreen');
+                    if (sc) sc.style.display = 'flex';
+                }, 800);
+                break;
+        }
+        saveSt();
+    } catch(e) {}
+}
+
+/* ── تحديث زر الموسم في صفحة المنافسة ── */
+function _updateSeasonBtn() {
+    _seasonEnsureReady();
+    const pts     = st.season.points || 0;
+    const pct     = Math.min(100, (pts / 1000) * 100);
+    const today   = (typeof todayStr === 'function') ? todayStr() : '';
+    const tasks   = st.season.dailyTasks || [];
+    const done    = tasks.filter(t => t.done).length;
+    const total   = tasks.length;
+
+    const fillEl  = document.getElementById('seasonMiniBarFill');
+    const ptsEl   = document.getElementById('seasonPtsBadge');
+    const subEl   = document.getElementById('seasonBtnSub');
+
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (ptsEl)  ptsEl.textContent  = pts + '/1000';
+    if (subEl)  subEl.textContent  = done === total
+        ? `✅ أكملت مهام اليوم! (${pts}/1000 نقطة)`
+        : `${done}/${total} مهام اليوم • ${pts}/1000 نقطة`;
+}
+
+/* ── فتح/إغلاق overlay الموسم ── */
+function openSeasonPassOverlay() {
+    _seasonEnsureReady();
+    const overlay = document.getElementById('seasonPassOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    _renderSeasonPassPage();
+}
+
+function closeSeasonPassOverlay() {
+    const overlay = document.getElementById('seasonPassOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+/* ── رسم صفحة الموسم كاملة ── */
+function _renderSeasonPassPage() {
+    _seasonEnsureReady();
+
+    const pts   = st.season.points || 0;
+    const pct   = Math.min(100, (pts / 1000) * 100);
+    const tasks = st.season.dailyTasks || [];
+    const done  = tasks.filter(t => t.done).length;
+
+    /* Header */
+    const nameEl = document.getElementById('spSeasonName');
+    if (nameEl && typeof getCurrentSeasonName === 'function') nameEl.textContent = getCurrentSeasonName();
+
+    /* الأيام المتبقية في الأسبوع */
+    const daysEl = document.getElementById('spDaysLeft');
+    if (daysEl) {
+        const now  = new Date();
+        const day  = now.getDay(); /* 0=أحد */
+        const left = day === 0 ? 7 : 7 - day;
+        daysEl.textContent = left;
+    }
+
+    /* شريط التقدم */
+    const fillEl = document.getElementById('spProgressFill');
+    const glowEl = document.getElementById('spProgressGlow');
+    const ptsEl  = document.getElementById('spCurrentPts');
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (glowEl) glowEl.style.right  = (100 - pct - 1) + '%';
+    if (ptsEl)  ptsEl.textContent   = pts;
+
+    /* إحصائيات */
+    const cdEl = document.getElementById('spCompletedDays');
+    const teEl = document.getElementById('spTotalEarned');
+    if (cdEl) cdEl.textContent = st.season.completedDays || 0;
+    if (teEl) teEl.textContent = st.season.totalPtsEarned || 0;
+
+    /* شارة المهام */
+    const badgeEl = document.getElementById('spDailyBadge');
+    if (badgeEl) badgeEl.textContent = done + '/' + tasks.length;
+
+    /* مسار الجوائز */
+    _renderSeasonTrack(pts);
+
+    /* المهام اليومية */
+    _renderSeasonTasks(tasks);
+}
+
+/* ── رسم مسار الجوائز ── */
+function _renderSeasonTrack(pts) {
+    const track = document.getElementById('spRewardTrack');
+    if (!track || typeof SEASON_TRACK_REWARDS === 'undefined') return;
+
+    track.innerHTML = SEASON_TRACK_REWARDS.map((rw, idx) => {
+        const claimed = st.season.claimedRewards.includes(rw.pts);
+        const reached = pts >= rw.pts;
+        const current = !claimed && reached;
+        const cls = ['sp-reward-node',
+            claimed ? 'claimed' : reached ? 'reached' : '',
+            current ? 'current' : ''
+        ].filter(Boolean).join(' ');
+
+        const claimBtn = current
+            ? `<button class="sp-claim-btn" onclick="claimSeasonReward(${rw.pts})">استلم!</button>`
+            : '';
+
+        return `
+        <div class="${cls}">
+            <div class="sp-node-circle">${claimed ? '✓' : rw.icon}</div>
+            <div class="sp-node-pts">${rw.pts}🏅</div>
+            <div class="sp-node-label">${rw.label}</div>
+            ${claimBtn}
+        </div>`;
+    }).join('');
+
+    /* تمرير للمحطة الحالية */
+    setTimeout(() => {
+        const current = track.querySelector('.sp-reward-node.current, .sp-reward-node.reached:last-of-type');
+        if (current) current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }, 200);
+}
+
+/* ── رسم المهام اليومية ── */
+function _renderSeasonTasks(tasks) {
+    const list = document.getElementById('spDailyTasksList');
+    if (!list) return;
+
+    const stars = n => '⭐'.repeat(n);
+
+    list.innerHTML = tasks.map(task => {
+        const cur  = Math.min(task.current || 0, task.target);
+        const pct  = Math.min(100, Math.round((cur / task.target) * 100));
+        const done = task.done;
+
+        return `
+        <div class="sp-task-item${done ? ' done' : ''}">
+            <div class="sp-task-icon">${task.icon}</div>
+            <div class="sp-task-info">
+                <div class="sp-task-name">
+                    ${task.name}
+                    <span class="sp-task-stars">${stars(task.stars)}</span>
+                    <span class="sp-task-mode-badge">${_seasonModeLabel(task.mode)}</span>
+                </div>
+                <div class="sp-task-desc">${task.desc}</div>
+                <div class="sp-task-bar">
+                    <div class="sp-task-bar-fill" style="width:${pct}%"></div>
+                </div>
+            </div>
+            <div class="sp-task-right">
+                <div class="sp-task-pts">+${task.pts}🏅</div>
+                <div class="sp-task-prog">${cur}/${task.target}</div>
+                ${done ? '<div style="font-size:1.1em;">✅</div>' : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/* ── تسمية الوضع بالعربي ── */
+function _seasonModeLabel(mode) {
+    const map = { challenge:'⚔️ تحدي', main:'📚 عادي', rocket:'🚀 صاروخ', weekly:'📅 أسبوعي', daily:'📊 يومي', misc:'🎯 متنوع' };
+    return map[mode] || mode;
+}
+
+/* ── استلام جائزة يدوياً (عند الضغط على زر "استلم!") ── */
+function claimSeasonReward(pts) {
+    if (!st.season || st.season.claimedRewards.includes(pts)) return;
+    if ((st.season.points || 0) < pts) return;
+
+    if (typeof SEASON_TRACK_REWARDS === 'undefined') return;
+    const rewardDef = SEASON_TRACK_REWARDS.find(r => r.pts === pts);
+    if (!rewardDef) return;
+
+    st.season.claimedRewards.push(pts);
+    _seasonGrantReward(rewardDef);
+    saveSt();
+
+    /* إعادة رسم المسار */
+    _renderSeasonTrack(st.season.points || 0);
+}
+
+/* ── تحديث تقدم مهام الموسم من اللعبة العادية ── */
+/* يُستدعى من game.js بعد كل جولة */
+window.seasonUpdateFromGame = function(data) {
+    try {
+        _seasonEnsureReady();
+        _seasonUpdateAfterGame(data || {});
+    } catch(e) {}
+};
+
+/* تصدير للنافذة */
+window.openSeasonPassOverlay  = openSeasonPassOverlay;
+window.closeSeasonPassOverlay = closeSeasonPassOverlay;
+window.claimSeasonReward      = claimSeasonReward;
+window._updateSeasonBtn       = _updateSeasonBtn;
+window._seasonUpdateAfterGame = _seasonUpdateAfterGame;
