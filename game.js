@@ -448,6 +448,38 @@
                 updateUI();
                 checkAchievements();
                 syncWithLeaderboard();
+
+                /* ══════════════════════════════════════════════════
+                   🏆 SEASON PASS — تحديث الموسم بعد كل لعبة
+                   يُحدَّث: coinsEarnedToday + rocketBestScore + rocketGamesPlayed
+                   ثم يُرسَل لـ competition_logic للمعالجة
+                ══════════════════════════════════════════════════ */
+                try {
+                    /* تحديث عداد العملات اليومية */
+                    const _today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+                    if (st.coinsEarnedDate !== _today) {
+                        st.coinsEarnedToday = 0;
+                        st.coinsEarnedDate  = _today;
+                    }
+                    st.coinsEarnedToday = (st.coinsEarnedToday || 0) + Math.floor(G.coinsEarned || 0);
+
+                    /* تحديث إحصائيات وضع الصاروخ */
+                    if (G.mode === 'rocket') {
+                        st.rocketGamesPlayed = (st.rocketGamesPlayed || 0) + 1;
+                        if (G.score > (st.rocketBestScore || 0)) st.rocketBestScore = G.score;
+                    }
+
+                    /* إرسال بيانات الجلسة للموسم */
+                    if (typeof window.seasonUpdateFromGame === 'function') {
+                        window.seasonUpdateFromGame({
+                            mode:    G.mode,
+                            score:   G.score,
+                            correct: G.correct,
+                            coins:   Math.floor(G.coinsEarned || 0),
+                            games:   1,
+                        });
+                    }
+                } catch(_se) { /* صامت — الموسم لا يوقف اللعبة */ }
                 const pct = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
                 const emj = pct >= 90 ? '🏆' : pct >= 70 ? '⭐' : pct >= 50 ? '😊' : '💪';
                 const ttl = pct >= 90 ? 'ممتاز!' : pct >= 70 ? 'رائع!' : pct >= 50 ? 'جيد!' : 'حاول مجدداً!';
