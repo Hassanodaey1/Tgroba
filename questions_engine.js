@@ -1,3 +1,4 @@
+
 /* ═══════════════════════════════════════════════════════════════
    HO Math — محرك الأسئلة الذكي v3.0
    © 2026 Hassan Odaey
@@ -520,12 +521,17 @@ function _build(op, diff, cfg, age) {
             var den     = rnd(3, diff === 'easy' ? 6 : 10);
             var n1      = rnd(1, den-1);
             var n2      = rnd(1, den-n1 > 0 ? den-n1 : 1);
-            ans         = n1 + n2;
+            var rawSum  = n1 + n2;
+            var fsGcd   = _gcd(rawSum, den);
+            var fsN     = rawSum / fsGcd, fsD = den / fsGcd;
+            ans         = rawSum;
             text        = `${n1}/${den} + ${n2}/${den}`;
-            hint        = `المقامات متساوية، اجمع البسطين فقط`;
-            explanation = `${n1}/${den} + ${n2}/${den} = (${n1}+${n2})/${den} = ${ans}/${den}`;
-            if (ans % den === 0) explanation += ` = ${ans/den}`;
-            catKey      = 'division';
+            hint        = `المقامات متساوية — اجمع البسطَين فقط`;
+            explanation = `${n1}/${den} + ${n2}/${den} = ${rawSum}/${den}`;
+            if (fsGcd > 1 && fsD > 1) explanation += ` = ${fsN}/${fsD}`;
+            if (fsD === 1 || rawSum % den === 0) explanation += ` = ${rawSum/den}`;
+            explanation += `\n✓ تحقق: ${rawSum}/${den} = ${(rawSum/den).toFixed(2)}`;
+            catKey      = 'fractions';
             break;
         }
 
@@ -575,25 +581,56 @@ function _build(op, diff, cfg, age) {
 
         /* ─── لوغاريتم بسيط ─── */
         case 'log_simple': {
-            ans         = rnd(1, diff === 'hard' ? 5 : 3);
-            text        = `log₁₀(10^${ans})`;
-            hint        = `log₁₀(10^ن) = ن دائماً`;
-            explanation = `log₁₀(10^${ans}) = ${ans}\nلأن القاعدة (10) تُلغي الأسية (10^${ans})`;
+            if (diff === 'hard' || diff === 'genius') {
+                /* لوغاريتم بقواعد مختلفة */
+                var logPairs = [
+                    {base:2, n:8,   exp:3, sym:'log₂(8)'},
+                    {base:2, n:16,  exp:4, sym:'log₂(16)'},
+                    {base:2, n:32,  exp:5, sym:'log₂(32)'},
+                    {base:3, n:9,   exp:2, sym:'log₃(9)'},
+                    {base:3, n:27,  exp:3, sym:'log₃(27)'},
+                    {base:5, n:25,  exp:2, sym:'log₅(25)'},
+                    {base:4, n:16,  exp:2, sym:'log₄(16)'},
+                    {base:10,n:100, exp:2, sym:'log₁₀(100)'},
+                    {base:10,n:1000,exp:3, sym:'log₁₀(1000)'}
+                ];
+                var lp = logPairs[rnd(0, logPairs.length-1)];
+                ans         = lp.exp;
+                text        = `${lp.sym} = ؟`;
+                hint        = `${lp.base}^x = ${lp.n}، أوجد x`;
+                explanation = `${lp.sym} = ${lp.exp}\nلأن ${lp.base}^${lp.exp} = ${lp.n} ✓`;
+            } else {
+                ans         = rnd(1, diff === 'medium' ? 4 : 3);
+                text        = `log₁₀(10^${ans}) = ؟`;
+                hint        = `log₁₀(10^ن) = ن دائماً`;
+                explanation = `log₁₀(10^${ans}) = ${ans}\nلأن القاعدة (10) تُلغي الأسية`;
+            }
             catKey      = 'algebra';
             break;
         }
 
         /* ─── مسألة كلامية — جمع ─── */
         case 'word_add': {
-            var wNames = ['أحمد','سارة','خالد','ليلى','محمد','هند'];
-            var wItems = ['تفاحة','كتاب','قلم','لعبة','بطاقة','ورقة'];
-            var wn     = wNames[rnd(0,wNames.length-1)];
-            var wi     = wItems[rnd(0,wItems.length-1)];
+            var wNames = ['أحمد','سارة','خالد','ليلى','محمد','هند','عمر','نورة','يوسف','رنا'];
+            var wn = wNames[rnd(0, wNames.length-1)];
             a = rnd(nMin, nMax); b = rnd(nMin, nMax);
-            ans         = a + b;
-            text        = `لدى ${wn} ${a} ${wi}، حصل على ${b} ${wi} أخرى. كم ${wi} لديه؟`;
-            hint        = 'جمع بسيط';
-            explanation = `البداية: ${a}\nأُضيف: ${b}\nالمجموع: ${a} + ${b} = ${ans}`;
+            ans = a + b;
+            var waCtxs = [
+                { t: `لدى ${wn} ${a} تفاحة واشترى ${b} أخرى. كم تفاحة لديه الآن؟`,
+                  e: `البداية: ${a}\nأُضيف: ${b}\nالمجموع: ${a} + ${b} = ${ans}` },
+                { t: `جمع ${wn} ${a} طابعاً من المكتبة و${b} طابعاً من البريد. كم طابعاً معه؟`,
+                  e: `${a} + ${b} = ${ans} طابعاً` },
+                { t: `في صباح اليوم كان في المستودع ${a} صندوقاً. وصل ${b} صندوقاً إضافياً. الإجمالي = ؟`,
+                  e: `${a} + ${b} = ${ans} صندوق` },
+                { t: `ركب ${wn} ${a} كيلومتراً صباحاً و${b} كيلومتراً مساءً. المسافة الكلية = ؟`,
+                  e: `${a} + ${b} = ${ans} كيلومتر` },
+                { t: `في الحديقة ${a} وردة حمراء و${b} وردة صفراء. المجموع = ؟`,
+                  e: `${a} + ${b} = ${ans} وردة` }
+            ];
+            var waCtx = waCtxs[rnd(0, waCtxs.length-1)];
+            text        = waCtx.t;
+            hint        = 'اجمع العددين للحصول على الإجمالي';
+            explanation = waCtx.e;
             catKey      = 'wordproblems';
             break;
         }
@@ -603,15 +640,18 @@ function _build(op, diff, cfg, age) {
             a = rnd(mMin, Math.min(mMax, 15));
             b = rnd(mMin, Math.min(mMax, 15));
             ans = a * b;
-            var ctxs = [
-                { t:`ثمن القلم ${a} دينار. ثمن ${b} قلم = ؟`,           e:`${b} × ${a} = ${ans} دينار` },
-                { t:`ملعب طوله ${a}م وعرضه ${b}م. مساحته = ؟`,           e:`${a} × ${b} = ${ans} م²` },
-                { t:`${a} صندوق، في كل صندوق ${b} تفاحة. المجموع = ؟`,  e:`${a} × ${b} = ${ans} تفاحة` }
+            var wmCtxs = [
+                { t:`ثمن القلم الواحد ${a} دينار. ما ثمن ${b} قلم؟`,           e:`${b} × ${a} = ${ans} دينار` },
+                { t:`ملعب طوله ${a}م وعرضه ${b}م. مساحته = ؟`,                  e:`${a} × ${b} = ${ans} م²` },
+                { t:`${a} صندوق، في كل صندوق ${b} تفاحة. الإجمالي = ؟`,        e:`${a} × ${b} = ${ans} تفاحة` },
+                { t:`سيارة تقطع ${a} كم في الساعة. في ${b} ساعات تقطع = ؟`,    e:`${a} × ${b} = ${ans} كيلومتر` },
+                { t:`ثمن التذكرة ${a} ريال. كم تكلّف ${b} تذكرة؟`,             e:`${b} × ${a} = ${ans} ريال` },
+                { t:`مزرعة بها ${a} صفاً، في كل صف ${b} شجرة. عدد الأشجار = ؟`,e:`${a} × ${b} = ${ans} شجرة` }
             ];
-            var ctx = ctxs[rnd(0,ctxs.length-1)];
-            text        = ctx.t;
-            hint        = 'مسألة ضرب';
-            explanation = ctx.e;
+            var wmCtx = wmCtxs[rnd(0, wmCtxs.length-1)];
+            text        = wmCtx.t;
+            hint        = 'اضرب العددين للحصول على الإجمالي';
+            explanation = wmCtx.e;
             catKey      = 'wordproblems';
             break;
         }
@@ -622,9 +662,18 @@ function _build(op, diff, cfg, age) {
             b   = rnd(5, Math.floor(a/2));
             c   = rnd(2, Math.min(mMax,8));
             ans = (a - b) * c;
-            text        = `كان لدى محمد ${a} كتاباً، أعاد ${b}، ثم ضاعف الباقي ${c} مرات. كم كتاباً الآن؟`;
-            hint        = 'أولاً اطرح، ثم اضرب';
-            explanation = `الخطوة 1: ${a} − ${b} = ${a-b}\nالخطوة 2: ${a-b} × ${c} = ${ans}`;
+            var whCtxs = [
+                { t: `كان لدى محمد ${a} كتاباً، أعاد ${b} للمكتبة، ثم ضاعف الباقي ${c} مرات. كم كتاباً الآن؟`,
+                  e: `الخطوة ①: ${a} − ${b} = ${a-b} كتاباً\nالخطوة ②: ${a-b} × ${c} = ${ans}` },
+                { t: `مصنع أنتج ${a} وحدة، رُدّ منها ${b} معيبة، ثم تضاعف الإنتاج ${c} مرات. الإجمالي = ؟`,
+                  e: `الخطوة ①: ${a} − ${b} = ${a-b}\nالخطوة ②: ${a-b} × ${c} = ${ans}` },
+                { t: `بدأ الفريق بـ${a} نقطة، خسر ${b}، ثم حقق المجموع ${c} مرات. النقاط النهائية = ؟`,
+                  e: `الخطوة ①: ${a} − ${b} = ${a-b}\nالخطوة ②: ${a-b} × ${c} = ${ans}` }
+            ];
+            var whCtx = whCtxs[rnd(0, whCtxs.length-1)];
+            text        = whCtx.t;
+            hint        = 'أولاً: نفّذ عملية الطرح — ثانياً: نفّذ عملية الضرب';
+            explanation = whCtx.e;
             catKey      = 'wordproblems';
             break;
         }
@@ -636,9 +685,18 @@ function _build(op, diff, cfg, age) {
             c   = rnd(2, 5);
             var d4 = rnd(5, 20);
             ans = (a - b) * c + d4;
-            text        = `بدأ بـ${a}، خسر ${b}، ضاعف الباقي ${c} مرات، ثم أضاف ${d4}. النتيجة = ؟`;
-            hint        = 'اتبع الترتيب: طرح، ضرب، جمع';
-            explanation = `الخطوة 1: ${a} − ${b} = ${a-b}\nالخطوة 2: ${a-b} × ${c} = ${(a-b)*c}\nالخطوة 3: ${(a-b)*c} + ${d4} = ${ans}`;
+            var wgCtxs = [
+                { t: `بدأ بـ${a}، خسر ${b}، ضاعف الباقي ${c} مرات، ثم أضاف ${d4}. النتيجة = ؟`,
+                  e: `①: ${a}−${b} = ${a-b}\n②: ${a-b}×${c} = ${(a-b)*c}\n③: ${(a-b)*c}+${d4} = ${ans}` },
+                { t: `مستودع به ${a} وحدة، شُحن منه ${b}، تضاعف الباقي ${c} مرات، ثم أُضيف ${d4}. الإجمالي = ؟`,
+                  e: `①: ${a}−${b} = ${a-b}\n②: ${a-b}×${c} = ${(a-b)*c}\n③: ${(a-b)*c}+${d4} = ${ans}` },
+                { t: `رصيد ${a} ريال، صُرف ${b}، ثم ضوعف ${c} مرات، ثم أُودع ${d4}. الرصيد النهائي = ؟`,
+                  e: `①: ${a}−${b} = ${a-b}\n②: ${a-b}×${c} = ${(a-b)*c}\n③: ${(a-b)*c}+${d4} = ${ans}` }
+            ];
+            var wgCtx = wgCtxs[rnd(0, wgCtxs.length-1)];
+            text        = wgCtx.t;
+            hint        = 'رتّب العمليات: طرح ← ضرب ← جمع';
+            explanation = wgCtx.e;
             catKey      = 'wordproblems';
             break;
         }
@@ -845,6 +903,9 @@ function _commonMistakes(ans, op) {
             break;
         case 'sequence':
             r = [ans + 1, ans - 1, ans * 2, Math.round(ans * 0.75)];
+            break;
+        case 'log_simple':
+            r = [ans + 1, ans - 1, ans * 2, Math.round(ans * 0.5)].filter(function(v){ return v > 0; });
             break;
         case 'geo_area':
             r = [ans * 2, Math.round(ans / 2), ans + 10, ans - 10];
