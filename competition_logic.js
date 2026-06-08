@@ -1936,6 +1936,115 @@ window.refreshSeasonLeaderboard = refreshSeasonLeaderboard;
 window.switchSeasonLbTab       = switchSeasonLbTab;
 window.syncSeasonScore         = syncSeasonScore;
 
+/* ═══════════════════════════════════════════════════════════════
+   🎁 REWARD TRACK OVERLAY — صفحة مسار الجوائز المستقلة
+═══════════════════════════════════════════════════════════════ */
+function openRewardTrackOverlay() {
+    const overlay = document.getElementById('rewardTrackOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    _renderRewardTrackOverlay();
+}
+
+function closeRewardTrackOverlay() {
+    const overlay = document.getElementById('rewardTrackOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function _renderRewardTrackOverlay() {
+    _seasonEnsureReady();
+    const pts  = st.season.points || 0;
+    const pct  = Math.min(100, Math.round((pts / 1000) * 100));
+
+    const q = id => document.getElementById(id);
+    if (q('rtoProgressSub'))  q('rtoProgressSub').textContent  = pts + ' / 1000 نقطة';
+    if (q('rtoPtsVal'))       q('rtoPtsVal').textContent       = pts;
+    if (q('rtoProgressFill')) q('rtoProgressFill').style.width = pct + '%';
+    if (q('rtoProgressLabel'))q('rtoProgressLabel').textContent= pct + '%';
+
+    const body = q('rtoBody');
+    if (!body || typeof SEASON_TRACK_REWARDS === 'undefined') return;
+
+    body.innerHTML = SEASON_TRACK_REWARDS.map((rw, idx) => {
+        const claimed  = st.season.claimedRewards.includes(rw.pts);
+        const reached  = pts >= rw.pts;
+        const canClaim = reached && !claimed;
+        const state    = claimed ? 'claimed' : reached ? 'reached' : 'locked';
+        const ptsLeft  = Math.max(0, rw.pts - pts);
+        const miniPct  = Math.min(100, Math.round((pts / rw.pts) * 100));
+
+        return `
+        <div class="rto-node rto-node-${state}" id="rtoNode_${rw.pts}">
+            ${idx > 0 ? `<div class="rto-connector ${reached ? 'passed' : ''}"></div>` : ''}
+            <div class="rto-node-row">
+                <div class="rto-circle-wrap">
+                    <div class="rto-circle">
+                        <span class="rto-circle-icon">${claimed ? '✓' : rw.icon}</span>
+                    </div>
+                    <div class="rto-pts-tag">${rw.pts}🏅</div>
+                </div>
+                <div class="rto-card">
+                    <div class="rto-card-top">
+                        <div class="rto-card-label">${rw.label}</div>
+                        <div class="rto-card-state-badge rto-badge-${state}">
+                            ${claimed ? '✅ مُستلمة' : reached ? '🔓 جاهزة' : `🔒 بعد ${ptsLeft}🏅`}
+                        </div>
+                    </div>
+                    ${canClaim ? `
+                    <button class="rto-claim-btn" onclick="claimSeasonReward(${rw.pts});_renderRewardTrackOverlay();_updateTrackBtn(st.season.points||0);">
+                        <span>🎁 استلم الجائزة</span>
+                        <span class="rto-claim-icon">${rw.icon}</span>
+                    </button>` : ''}
+                    ${!reached ? `
+                    <div class="rto-mini-prog">
+                        <div class="rto-mini-fill" style="width:${miniPct}%"></div>
+                    </div>` : ''}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    setTimeout(() => {
+        const first = body.querySelector('.rto-node-reached:not(.rto-node-claimed), .rto-node-reached');
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+
+    _updateTrackBtn(pts);
+}
+
+function _updateTrackBtn(pts) {
+    if (typeof SEASON_TRACK_REWARDS === 'undefined') return;
+    const claimed = (st.season.claimedRewards || []);
+    const sub  = document.getElementById('spTrackBtnSub');
+    const mini = document.getElementById('spTrackMiniNodes');
+
+    if (sub) {
+        const next = SEASON_TRACK_REWARDS.find(r => !claimed.includes(r.pts));
+        if (!next) {
+            sub.textContent = '✅ كل الجوائز مُستلمة!';
+            sub.style.color = '#10b981';
+        } else if (pts >= next.pts) {
+            sub.textContent = '🔓 جائزة جاهزة للاستلام!';
+            sub.style.color = 'var(--gold)';
+        } else {
+            sub.textContent = `التالية عند ${next.pts}🏅 — باقي ${next.pts - pts} نقطة`;
+            sub.style.color = '';
+        }
+    }
+
+    if (mini) {
+        mini.innerHTML = SEASON_TRACK_REWARDS.map(r => {
+            const done  = claimed.includes(r.pts);
+            const ready = !done && pts >= r.pts;
+            return `<div class="rto-mini-dot ${done ? 'done' : ready ? 'ready' : ''}"></div>`;
+        }).join('');
+    }
+}
+
+window.openRewardTrackOverlay  = openRewardTrackOverlay;
+window.closeRewardTrackOverlay = closeRewardTrackOverlay;
+window._updateTrackBtn         = _updateTrackBtn;
+
 window.openSeasonPassOverlay   = openSeasonPassOverlay;
 window.closeSeasonPassOverlay  = closeSeasonPassOverlay;
 window.claimSeasonReward       = claimSeasonReward;
