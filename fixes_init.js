@@ -186,12 +186,34 @@ function generateAndShowSerial() {
         try { if (typeof renderChallengeDailyTasks === 'function') renderChallengeDailyTasks(); } catch(e) {}
     };
 
+    /* ══════════════════════════════════════════════════════
+       ✅ SEASON PASS — تهيئة الموسم عند بدء التطبيق
+    ══════════════════════════════════════════════════════ */
+    setTimeout(function() {
+        try {
+            /* تهيئة بيانات الموسم وضبط الأسبوع */
+            if (typeof _seasonEnsureReady === 'function') _seasonEnsureReady();
+            /* تحديث زر الموسم في صفحة المنافسة */
+            if (typeof _updateSeasonBtn === 'function') _updateSeasonBtn();
+            /* رفع نقاط الموسم لـ Firebase */
+            if (typeof syncSeasonScore === 'function') {
+                setTimeout(syncSeasonScore, 3000);
+            }
+        } catch(_se) {}
+    }, 1500);
+
     /* إخفاء شاشة البداية */
     setTimeout(() => {
         const ss = document.getElementById('splashScreen');
         if (ss) { ss.classList.add('hidden'); setTimeout(() => { if (ss) ss.style.display = 'none'; }, 500); }
         try { checkDailyLoginBonus(); } catch (e) {}
         try { if (typeof initTitlesSystem === 'function') initTitlesSystem(); } catch (e) {}
+        /* ── تحديث مهام الموسم عند الدخول (login_today) ── */
+        try {
+            if (typeof window.seasonUpdateFromGame === 'function') {
+                window.seasonUpdateFromGame({ mode: 'login', score: 0, correct: 0, games: 0 });
+            }
+        } catch(_e) {}
     }, 5200);
 
     document.addEventListener('touchstart', function () {
