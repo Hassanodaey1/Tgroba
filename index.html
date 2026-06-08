@@ -809,11 +809,14 @@
 
         <!-- ══ شريط الأزرار — ثابت في الأسفل ══ -->
         <div class="comp-bottom-bar">
-            <!-- زر موسم الرياضيات — مميز بتصميم خاص -->
+            <!-- زر Math Pass — مميز بتصميم خاص -->
             <button class="comp-bottom-btn comp-season-btn" onclick="openSeasonPassOverlay()">
                 <span class="comp-bottom-btn-icon">🏆</span>
                 <div class="comp-season-btn-body">
-                    <span class="comp-season-btn-title">موسم الرياضيات</span>
+                    <div class="comp-season-btn-title-row">
+                        <span class="comp-season-mp-badge">MP</span>
+                        <span class="comp-season-btn-title">Math Pass</span>
+                    </div>
                     <span class="comp-season-btn-sub" id="seasonBtnSub">جارٍ التحميل…</span>
                 </div>
                 <div class="comp-season-btn-right">
@@ -885,7 +888,7 @@
     </div><!-- /competitionMainView -->
 
     <!-- ══════════════════════════════════════════════════════
-         🏆 SEASON PASS OVERLAY — موسم الرياضيات
+         🏆 MATH PASS OVERLAY
     ══════════════════════════════════════════════════════ -->
     <div id="seasonPassOverlay" style="display:none;position:absolute;inset:0;z-index:40;background:var(--bg);flex-direction:column;overflow:hidden;">
 
@@ -893,7 +896,10 @@
         <div class="sp-header">
             <button class="sp-back-btn" onclick="closeSeasonPassOverlay()">‹</button>
             <div class="sp-header-center">
-                <div class="sp-header-title">🏆 موسم الرياضيات</div>
+                <div class="sp-header-title">
+                    <span class="sp-mp-badge-header">MP</span>
+                    Math Pass
+                </div>
                 <div class="sp-header-sub" id="spSeasonName">موسم الأرقام الذهبية 🔢</div>
             </div>
             <div class="sp-header-right">
@@ -1014,7 +1020,7 @@
             <div class="sp-complete-crown">👑</div>
             <div class="sp-complete-title">أتممت الموسم!</div>
             <div class="sp-complete-sub">
-                لقد جمعت 1000 نقطة وأكملت موسم الرياضيات كاملاً —<br>أنت بطل الموسم! 🏆
+                لقد جمعت 1000 نقطة وأكملت Math Pass كاملاً —<br>أنت بطل الموسم! 🏆
             </div>
             <div class="sp-complete-icons">🏆 🎭 🌟</div>
             <button class="sp-complete-btn"
@@ -1628,7 +1634,7 @@
                     </div>
                 </div>
                 <!-- شريط الدقة -->
-                <div style="background:var(--surface3);border-radius:8px;height:8px;overflow:hidden;">
+               <div style="background:var(--surface3);border-radius:8px;height:8px;overflow:hidden;">
                     <div id="parentAccBar" style="height:100%;border-radius:8px;background:linear-gradient(90deg,#10b981,#06b6d4);transition:width 0.6s ease;width:0%;"></div>
                 </div>
                 <div style="font-size:0.62em;color:var(--text2);margin-top:6px;text-align:center;" id="parentDailyGames">0 جلسة اليوم</div>
