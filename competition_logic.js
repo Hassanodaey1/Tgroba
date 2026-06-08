@@ -1847,12 +1847,13 @@ function shareSeasonAchievement() {
     const name     = st.playerName           || st.name || 'لاعب';
     const avatar   = st.avatar               || '🧑';
     const rank     = (typeof getSeasonRank !== 'undefined') ? getSeasonRank(pts) : { icon:'🥉', label:'مبتدئ' };
-    const sName    = (typeof getCurrentSeasonName !== 'undefined') ? getCurrentSeasonName() : 'موسم الرياضيات';
+    const sName    = (typeof getCurrentSeasonName !== 'undefined') ? getCurrentSeasonName() : 'Math Pass';
     const pct      = Math.min(100, Math.round((pts / 1000) * 100));
 
     /* بناء نص المشاركة */
     const shareText = [
-        `🏆 HO Math — ${sName}`,
+        `🏆 HO Math — MP | Math Pass`,
+        `📅 ${sName}`,
         ``,
         `👤 ${name}`,
         `${rank.icon} رتبة: ${rank.label}`,
@@ -1870,10 +1871,9 @@ function shareSeasonAchievement() {
     /* محاولة native share أولاً */
     if (navigator.share) {
         navigator.share({
-            title: `HO Math — ${sName}`,
+            title: `HO Math — MP | Math Pass`,
             text:  shareText,
         }).catch(() => {
-            /* إذا رفض أو فشل — اعرض الـ overlay */
             _showShareOverlay(shareText);
         });
     } else {
