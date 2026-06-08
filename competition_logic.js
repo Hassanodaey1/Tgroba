@@ -1656,14 +1656,299 @@ function _renderSeasonHistory() {
     }).join('');
 }
 
-window.openSeasonPassOverlay  = openSeasonPassOverlay;
-window.closeSeasonPassOverlay = closeSeasonPassOverlay;
-window.claimSeasonReward      = claimSeasonReward;
-window._updateSeasonBtn       = _updateSeasonBtn;
-window._seasonUpdateAfterGame = _seasonUpdateAfterGame;
-window.openSeasonChest        = openSeasonChest;
-window.openSeasonHistory      = openSeasonHistory;
-window.closeSeasonHistory     = closeSeasonHistory;
-window.seasonUpdateFromGame   = function(data) {
-    try { _seasonEnsureReady(); _seasonUpdateAfterGame(data || {}); } catch(e) {}
+/* ═══════════════════════════════════════════════════════════════
+   🏆 SEASON LEADERBOARD — لوحة صدارة الموسم الأسبوعي
+═══════════════════════════════════════════════════════════════ */
+
+let _slbTab       = 'week'; /* التبويب النشط: week | all */
+let _slbCacheWeek = null;
+let _slbCacheAll  = null;
+let _slbCacheTime = 0;
+
+function openSeasonLeaderboard() {
+    const overlay = document.getElementById('seasonLbOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+
+    /* تحديث اسم الموسم في الهيدر */
+    const nameEl = document.getElementById('slbSeasonName');
+    if (nameEl && typeof getCurrentSeasonName === 'function') nameEl.textContent = getCurrentSeasonName();
+
+    /* تحديث بطاقة "أنا" */
+    _slbUpdateMyCard();
+
+    /* تحميل اللوحة */
+    _fetchSeasonLeaderboard(_slbTab);
+}
+
+function closeSeasonLeaderboard() {
+    const overlay = document.getElementById('seasonLbOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function refreshSeasonLeaderboard() {
+    _slbCacheWeek = null;
+    _slbCacheAll  = null;
+    _slbCacheTime = 0;
+    const btn = document.getElementById('slbRefreshBtn');
+    if (btn) { btn.textContent = '⏳'; setTimeout(() => { btn.textContent = '🔄'; }, 2000); }
+    _fetchSeasonLeaderboard(_slbTab);
+}
+
+function switchSeasonLbTab(tab) {
+    _slbTab = tab;
+    document.querySelectorAll('.slb-tab').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(tab === 'week' ? 'slbTabWeek' : 'slbTabAll');
+    if (activeBtn) activeBtn.classList.add('active');
+    _fetchSeasonLeaderboard(tab);
+}
+
+/* ── تحديث بطاقة "أنا" ── */
+function _slbUpdateMyCard() {
+    const rankEl  = document.getElementById('slbMyRank');
+    const nameEl  = document.getElementById('slbMyName');
+    const ptsEl   = document.getElementById('slbMyPts');
+    const badgeEl = document.getElementById('slbMyBadge');
+
+    if (nameEl) nameEl.textContent = st.playerName || 'أنت';
+    const pts = st.season ? (st.season.points || 0) : 0;
+    if (ptsEl) ptsEl.textContent = pts + ' نقطة موسم';
+    if (badgeEl && typeof getSeasonRank === 'function') {
+        badgeEl.textContent = getSeasonRank(pts).icon;
+    }
+    /* المرتبة تُحدَّث بعد جلب البيانات */
+    if (rankEl) rankEl.textContent = '…';
+}
+
+/* ── جلب البيانات من Firebase ── */
+function _fetchSeasonLeaderboard(tab) {
+    const list = document.getElementById('slbList');
+    if (!list) return;
+
+    /* استخدام cache إذا كان حديثاً (أقل من دقيقتين) */
+    const cache = tab === 'week' ? _slbCacheWeek : _slbCacheAll;
+    if (cache && (Date.now() - _slbCacheTime) < 120000) {
+        _renderSeasonLeaderboard(cache, tab);
+        return;
+    }
+
+    list.innerHTML = '<div class="slb-loading">⏳ جارٍ التحميل…</div>';
+
+    if (!window.database) {
+        list.innerHTML = '<div class="slb-empty">⚠️ غير متصل بقاعدة البيانات</div>';
+        return;
+    }
+
+    const weekKey = (typeof seasonPassStr === 'function') ? seasonPassStr() : '';
+    const refPath = tab === 'week'
+        ? `season_leaderboard/${weekKey}`
+        : 'season_leaderboard_all';
+
+    try {
+        window.database.ref(refPath)
+            .orderByChild('seasonPoints')
+            .limitToLast(100)
+            .once('value', snapshot => {
+                const players = [];
+                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
+                players.sort((a, b) => (b.seasonPoints || 0) - (a.seasonPoints || 0));
+
+                if (tab === 'week') _slbCacheWeek = players;
+                else                _slbCacheAll  = players;
+                _slbCacheTime = Date.now();
+
+                _renderSeasonLeaderboard(players, tab);
+            }).catch(() => {
+                list.innerHTML = '<div class="slb-empty">⚠️ فشل التحميل — حاول مجدداً</div>';
+            });
+    } catch(e) {
+        list.innerHTML = '<div class="slb-empty">⚠️ خطأ في الاتصال</div>';
+    }
+}
+
+/* ── رسم قائمة اللاعبين ── */
+function _renderSeasonLeaderboard(players, tab) {
+    const list   = document.getElementById('slbList');
+    const rankEl = document.getElementById('slbMyRank');
+    if (!list) return;
+
+    if (players.length === 0) {
+        list.innerHTML = '<div class="slb-empty">لا يوجد لاعبون بعد — كن الأول! 🚀</div>';
+        if (rankEl) rankEl.textContent = '—';
+        return;
+    }
+
+    const myKey  = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
+    const medals = ['🥇','🥈','🥉'];
+
+    /* تحديث مرتبتي */
+    if (myKey && rankEl) {
+        const myIdx = players.findIndex(p => p.id === myKey);
+        rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
+    }
+
+    list.innerHTML = players.map((p, idx) => {
+        const isMe   = p.id === myKey;
+        const medal  = idx < 3 ? medals[idx] : '#' + (idx + 1);
+        const rank   = typeof getSeasonRank === 'function' ? getSeasonRank(p.seasonPoints || 0) : { icon:'🥉' };
+        const streak = p.streak ? `🔥${p.streak}` : '';
+
+        return `
+        <div class="slb-row${isMe ? ' slb-row-me' : ''}${idx < 3 ? ' slb-row-top' : ''}">
+            <div class="slb-row-rank">${medal}</div>
+            <div class="slb-row-player">
+                <span class="slb-row-avatar">${p.avatar || '🧑'}</span>
+                <div class="slb-row-info">
+                    <div class="slb-row-name">${p.name || 'لاعب'}${isMe ? ' <span class="slb-me-tag">أنت</span>' : ''}</div>
+                    <div class="slb-row-sub">مستوى ${p.level || 1} ${streak}</div>
+                </div>
+            </div>
+            <div class="slb-row-badge">${rank.icon}</div>
+            <div class="slb-row-pts">${p.seasonPoints || 0}</div>
+        </div>`;
+    }).join('');
+}
+
+/* ── رفع نقاط الموسم لـ Firebase ── */
+function syncSeasonScore() {
+    if (!window.database || !st.serialNumber || !st.season) return;
+    if ((st.season.points || 0) === 0) return;
+
+    const weekKey = (typeof seasonPassStr === 'function') ? seasonPassStr() : '';
+    const myKey   = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const payload = {
+        name:         st.playerName || 'لاعب',
+        avatar:       st.avatar     || '🧑',
+        level:        st.level      || 1,
+        seasonPoints: st.season.points || 0,
+        streak:       st.season.streak || 0,
+        weekKey,
+        updatedAt:    Date.now(),
+    };
+
+    /* رفع للأسبوع الحالي */
+    window.database.ref(`season_leaderboard/${weekKey}/${myKey}`).set(payload).catch(() => {});
+    /* رفع للكل (أفضل نتيجة تاريخية) */
+    window.database.ref(`season_leaderboard_all/${myKey}`).transaction(current => {
+        if (!current || (payload.seasonPoints > (current.seasonPoints || 0))) return payload;
+        return current;
+    }).catch(() => {});
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📤 SHARE ACHIEVEMENT — مشاركة الإنجاز
+═══════════════════════════════════════════════════════════════ */
+function shareSeasonAchievement() {
+    _seasonEnsureReady();
+
+    const pts      = st.season.points        || 0;
+    const streak   = st.season.streak        || 0;
+    const days     = st.season.completedDays || 0;
+    const name     = st.playerName           || st.name || 'لاعب';
+    const avatar   = st.avatar               || '🧑';
+    const rank     = (typeof getSeasonRank !== 'undefined') ? getSeasonRank(pts) : { icon:'🥉', label:'مبتدئ' };
+    const sName    = (typeof getCurrentSeasonName !== 'undefined') ? getCurrentSeasonName() : 'موسم الرياضيات';
+    const pct      = Math.min(100, Math.round((pts / 1000) * 100));
+
+    /* بناء نص المشاركة */
+    const shareText = [
+        `🏆 HO Math — ${sName}`,
+        ``,
+        `👤 ${name}`,
+        `${rank.icon} رتبة: ${rank.label}`,
+        `🏅 النقاط: ${pts}/1000 (${pct}%)`,
+        `🔥 تتابع: ${streak} يوم`,
+        `✅ أيام مكتملة: ${days}`,
+        ``,
+        `هل يمكنك التغلب عليّ؟ 💪`,
+        `العب الآن: HO Math`
+    ].join('\n');
+
+    /* تحديث بطاقة المشاركة */
+    _updateShareCard({ name, avatar, rank, sName, pts, streak, days, pct });
+
+    /* محاولة native share أولاً */
+    if (navigator.share) {
+        navigator.share({
+            title: `HO Math — ${sName}`,
+            text:  shareText,
+        }).catch(() => {
+            /* إذا رفض أو فشل — اعرض الـ overlay */
+            _showShareOverlay(shareText);
+        });
+    } else {
+        _showShareOverlay(shareText);
+    }
+}
+
+function _updateShareCard({ name, avatar, rank, sName, pts, streak, days, pct }) {
+    const q = id => document.getElementById(id);
+    if (q('shareSeasonName'))  q('shareSeasonName').textContent  = sName;
+    if (q('shareAvatar'))      q('shareAvatar').textContent      = avatar;
+    if (q('sharePlayerName'))  q('sharePlayerName').textContent  = name;
+    if (q('shareRankDisplay')) q('shareRankDisplay').textContent = `${rank.icon} ${rank.label}`;
+    if (q('sharePoints'))      q('sharePoints').textContent      = pts;
+    if (q('shareStreak'))      q('shareStreak').textContent      = streak + '🔥';
+    if (q('shareDays'))        q('shareDays').textContent        = days;
+    if (q('shareBarFill'))     q('shareBarFill').style.width     = pct + '%';
+}
+
+function _showShareOverlay(text) {
+    window._shareText = text;
+    const overlay = document.getElementById('shareAchievementOverlay');
+    if (overlay) overlay.style.display = 'flex';
+}
+
+function closeShareOverlay() {
+    const overlay = document.getElementById('shareAchievementOverlay');
+    if (overlay) overlay.style.display = 'none';
+    const msg = document.getElementById('shareCopiedMsg');
+    if (msg) msg.style.display = 'none';
+}
+
+function copyShareText() {
+    const text = window._shareText || '';
+    if (!text) return;
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            const msg = document.getElementById('shareCopiedMsg');
+            if (msg) { msg.style.display = 'block'; setTimeout(() => { msg.style.display = 'none'; }, 2500); }
+        })
+        .catch(() => {
+            /* fallback للأجهزة القديمة */
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            const msg = document.getElementById('shareCopiedMsg');
+            if (msg) { msg.style.display = 'block'; setTimeout(() => { msg.style.display = 'none'; }, 2500); }
+        });
+}
+
+window.shareSeasonAchievement = shareSeasonAchievement;
+window.closeShareOverlay      = closeShareOverlay;
+window.copyShareText          = copyShareText;
+window.closeSeasonLeaderboard  = closeSeasonLeaderboard;
+window.refreshSeasonLeaderboard = refreshSeasonLeaderboard;
+window.switchSeasonLbTab       = switchSeasonLbTab;
+window.syncSeasonScore         = syncSeasonScore;
+
+window.openSeasonPassOverlay   = openSeasonPassOverlay;
+window.closeSeasonPassOverlay  = closeSeasonPassOverlay;
+window.claimSeasonReward       = claimSeasonReward;
+window._updateSeasonBtn        = _updateSeasonBtn;
+window._seasonUpdateAfterGame  = _seasonUpdateAfterGame;
+window.openSeasonChest         = openSeasonChest;
+window.openSeasonHistory       = openSeasonHistory;
+window.closeSeasonHistory      = closeSeasonHistory;
+window.seasonUpdateFromGame    = function(data) {
+    try {
+        _seasonEnsureReady();
+        _seasonUpdateAfterGame(data || {});
+        /* رفع النقاط لـ Firebase بعد كل تحديث */
+        setTimeout(syncSeasonScore, 1500);
+    } catch(e) {}
 };
