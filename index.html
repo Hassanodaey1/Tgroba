@@ -838,6 +838,11 @@
                 <span class="comp-bottom-btn-label">لائحة الصدارة للألعاب العامة</span>
                 <span class="comp-bottom-btn-arrow">›</span>
             </button>
+            <button class="comp-bottom-btn comp-season-lb-btn" onclick="openSeasonLeaderboard()">
+                <span class="comp-bottom-btn-icon">🏆</span>
+                <span class="comp-bottom-btn-label">صدارة الموسم الأسبوعي</span>
+                <span class="comp-bottom-btn-arrow">›</span>
+            </button>
         </div>
 
         <!-- ══ Overlay مهام التحدي ══ -->
@@ -946,6 +951,7 @@
             </div>
             <div class="sp-progress-footer">
                 <span class="sp-completed-days">✅ <span id="spCompletedDays">0</span> يوم مكتمل</span>
+                <button class="sp-share-btn" onclick="shareSeasonAchievement()">📤 شارك إنجازك</button>
                 <span class="sp-total-earned">🏅 <span id="spTotalEarned">0</span> نقطة إجمالية</span>
             </div>
         </div>
@@ -1020,7 +1026,43 @@
 
     </div><!-- /seasonPassOverlay -->
 
-    <!-- ══ overlay ذاكرة المواسم ══ -->
+    <!-- ══ overlay مشاركة الإنجاز ══ -->
+    <div id="shareAchievementOverlay" style="display:none;position:absolute;inset:0;z-index:50;background:rgba(0,0,0,0.85);flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;">
+        <div class="sp-share-card" id="shareCard">
+            <div class="sp-share-card-header">
+                <span class="sp-share-game-logo">🏆 HO Math</span>
+                <span class="sp-share-season-name" id="shareSeasonName">موسم الأرقام الذهبية</span>
+            </div>
+            <div class="sp-share-avatar" id="shareAvatar">🧑</div>
+            <div class="sp-share-player-name" id="sharePlayerName">لاعب</div>
+            <div class="sp-share-rank" id="shareRankDisplay">🥉 مبتدئ</div>
+            <div class="sp-share-stats-row">
+                <div class="sp-share-stat">
+                    <div class="sp-share-stat-val" id="sharePoints">0</div>
+                    <div class="sp-share-stat-lbl">نقطة</div>
+                </div>
+                <div class="sp-share-stat-divider"></div>
+                <div class="sp-share-stat">
+                    <div class="sp-share-stat-val" id="shareStreak">0🔥</div>
+                    <div class="sp-share-stat-lbl">تتابع</div>
+                </div>
+                <div class="sp-share-stat-divider"></div>
+                <div class="sp-share-stat">
+                    <div class="sp-share-stat-val" id="shareDays">0</div>
+                    <div class="sp-share-stat-lbl">يوم مكتمل</div>
+                </div>
+            </div>
+            <div class="sp-share-bar">
+                <div class="sp-share-bar-fill" id="shareBarFill" style="width:0%"></div>
+            </div>
+            <div class="sp-share-footer">هل يمكنك التغلب عليّ؟ 💪</div>
+        </div>
+        <div style="display:flex;gap:10px;width:100%;max-width:320px;">
+            <button class="sp-share-action-btn sp-share-copy-btn" onclick="copyShareText()">📋 نسخ النص</button>
+            <button class="sp-share-action-btn sp-share-close-btn" onclick="closeShareOverlay()">✕ إغلاق</button>
+        </div>
+        <div id="shareCopiedMsg" style="display:none;font-size:0.72em;color:#10b981;font-weight:700;">✅ تم النسخ!</div>
+    </div>
     <div id="seasonHistoryOverlay" style="display:none;position:absolute;inset:0;z-index:45;background:var(--bg);flex-direction:column;overflow:hidden;">
         <div class="sp-header">
             <button class="sp-back-btn" onclick="closeSeasonHistory()">‹</button>
@@ -1032,6 +1074,48 @@
         </div>
         <div class="sp-body" id="spHistoryList">
             <!-- تُبنى بـ JS -->
+        </div>
+    </div>
+
+    <!-- ══ overlay لوحة صدارة الموسم الأسبوعي ══ -->
+    <div id="seasonLbOverlay" style="display:none;position:absolute;inset:0;z-index:35;background:var(--bg);flex-direction:column;overflow:hidden;">
+        <!-- Header -->
+        <div class="slb-header">
+            <button class="sp-back-btn" onclick="closeSeasonLeaderboard()">‹</button>
+            <div class="slb-header-center">
+                <div class="slb-title">🏆 صدارة الموسم</div>
+                <div class="slb-sub" id="slbSeasonName">موسم الأرقام الذهبية 🔢</div>
+            </div>
+            <button class="slb-refresh-btn" onclick="refreshSeasonLeaderboard()" id="slbRefreshBtn">🔄</button>
+        </div>
+
+        <!-- بطاقة مرتبتي -->
+        <div class="slb-my-card" id="slbMyCard">
+            <div class="slb-my-rank" id="slbMyRank">—</div>
+            <div class="slb-my-info">
+                <div class="slb-my-name" id="slbMyName">أنت</div>
+                <div class="slb-my-pts" id="slbMyPts">0 نقطة</div>
+            </div>
+            <div class="slb-my-badge" id="slbMyBadge">🥉</div>
+        </div>
+
+        <!-- تبويبات: هذا الأسبوع / الكل -->
+        <div class="slb-tabs">
+            <button class="slb-tab active" id="slbTabWeek" onclick="switchSeasonLbTab('week')">هذا الأسبوع</button>
+            <button class="slb-tab" id="slbTabAll"  onclick="switchSeasonLbTab('all')">الكل</button>
+        </div>
+
+        <!-- قائمة اللاعبين -->
+        <div class="slb-list-wrap">
+            <div class="slb-list-header">
+                <span>المركز</span>
+                <span>اللاعب</span>
+                <span>الرتبة</span>
+                <span>النقاط</span>
+            </div>
+            <div id="slbList" class="slb-list">
+                <div class="slb-loading">⏳ جارٍ التحميل…</div>
+            </div>
         </div>
     </div>
 
@@ -2174,4 +2258,3 @@ function closeSettingsSubPage(overlayId) {
           
          
       
-                
