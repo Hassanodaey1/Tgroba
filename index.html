@@ -982,13 +982,22 @@
                 </div>
             </div>
 
-            <!-- مسار الجوائز -->
-            <div class="sp-section-title">🎁 مسار الجوائز</div>
-            <div class="sp-track-scroll">
-                <div class="sp-track" id="spRewardTrack">
-                    <!-- تُبنى بـ JS -->
+            <!-- مسار الجوائز — زر يفتح الصفحة -->
+            <button class="sp-track-open-btn" onclick="openRewardTrackOverlay()">
+                <div class="sp-track-open-left">
+                    <div class="sp-track-open-icon">🎁</div>
+                    <div class="sp-track-open-info">
+                        <div class="sp-track-open-title">مسار الجوائز</div>
+                        <div class="sp-track-open-sub" id="spTrackBtnSub">اضغط لعرض الجوائز</div>
+                    </div>
                 </div>
-            </div>
+                <div class="sp-track-open-right">
+                    <div class="sp-track-mini-nodes" id="spTrackMiniNodes">
+                        <!-- 10 نقاط مصغّرة تُبنى بـ JS -->
+                    </div>
+                    <div class="sp-track-open-arrow">›</div>
+                </div>
+            </button>
 
             <!-- مهام اليوم -->
             <div class="sp-section-title sp-daily-title">
@@ -1063,6 +1072,30 @@
         </div>
         <div id="shareCopiedMsg" style="display:none;font-size:0.72em;color:#10b981;font-weight:700;">✅ تم النسخ!</div>
     </div>
+
+    <!-- ══ overlay مسار الجوائز ══ -->
+    <div id="rewardTrackOverlay" style="display:none;position:absolute;inset:0;z-index:46;flex-direction:column;overflow:hidden;">
+        <div class="rto-bg"></div>
+        <div class="rto-header">
+            <button class="rto-back-btn" onclick="closeRewardTrackOverlay()">‹</button>
+            <div class="rto-header-center">
+                <div class="rto-title">🎁 مسار الجوائز</div>
+                <div class="rto-sub" id="rtoProgressSub">0 / 1000 نقطة</div>
+            </div>
+            <div class="rto-pts-pill" id="rtoPtsPill">
+                <span id="rtoPtsVal">0</span>
+                <span>🏅</span>
+            </div>
+        </div>
+        <div class="rto-progress-wrap">
+            <div class="rto-progress-bg">
+                <div class="rto-progress-fill" id="rtoProgressFill" style="width:0%"></div>
+                <div class="rto-progress-label" id="rtoProgressLabel">0%</div>
+            </div>
+        </div>
+        <div class="rto-body" id="rtoBody"></div>
+    </div>
+
     <div id="seasonHistoryOverlay" style="display:none;position:absolute;inset:0;z-index:45;background:var(--bg);flex-direction:column;overflow:hidden;">
         <div class="sp-header">
             <button class="sp-back-btn" onclick="closeSeasonHistory()">‹</button>
