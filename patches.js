@@ -909,6 +909,10 @@ window.addEventListener('load', function() {
             if (panel && panel.style.transform !== 'translateY(100%)' && panel.style.display !== 'none') {
                 _refreshQuickToolsPanel();
             }
+            /* ── تحديث زر الموسم في كل مرة يُحفظ الـ state ── */
+            try {
+                if (typeof window._updateSeasonBtn === 'function') window._updateSeasonBtn();
+            } catch(_e) {}
         };
     }
 });
