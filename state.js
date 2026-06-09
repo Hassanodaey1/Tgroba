@@ -101,6 +101,10 @@
                 xpToNext: 560,
                 level: 1,
                 coins: 10,
+                /* ═══ 💎 نظام الماس — العملة النادرة ═══ */
+                diamonds: 0,
+                /* سجل آخر مصدر حصل منه على ماس (لمنع التكرار اليومي) */
+                _diamondSources: {},
                 correctTotal: 0,
                 wrongTotal: 0,
                 bestStreak: 0,
@@ -230,7 +234,11 @@
             /* ✅ FIX-V2: حدود عليا لمنع التلاعب بـ localStorage */
             /* ── حماية إضافية: أي قيمة NaN أو Infinity تُصفَّر ── */
             if (typeof s.coins !== 'number'  || s.coins < 0 || !isFinite(s.coins))   s.coins = 0;
-            if (s.coins  > 99999)   s.coins  = 99999;  /* الحد الأقصى الواقعي للعملات */
+            if (s.coins  > 99999)   s.coins  = 99999;
+            /* ═══ 💎 صحّة بيانات الماس ═══ */
+            if (typeof s.diamonds !== 'number' || s.diamonds < 0 || !isFinite(s.diamonds)) s.diamonds = 0;
+            if (s.diamonds > 9999) s.diamonds = 9999; /* الحد الأقصى للماس */
+            if (!s._diamondSources || typeof s._diamondSources !== 'object') s._diamondSources = {};
             if (typeof s.level !== 'number'  || s.level < 1 || !isFinite(s.level))   s.level = 1;
             if (s.level  > 200)     s.level  = 200;
             if (typeof s.xp !== 'number'     || s.xp < 0 || !isFinite(s.xp))      s.xp = 0;
@@ -476,7 +484,7 @@
             /* بصمة بسيطة تعتمد على القيم الحساسة — مرتبطة بـ serialNumber */
             try {
                 const key = s.serialNumber || 'ho_guest';
-                const val = `${key}|${s.coins}|${s.level}|${s.xp}|${s.challengeBestScore}|${s.bestScore}`;
+                const val = `${key}|${s.coins}|${s.diamonds}|${s.level}|${s.xp}|${s.challengeBestScore}|${s.bestScore}`;
                 let h = 0;
                 for (let i = 0; i < val.length; i++) {
                     h = (Math.imul(31, h) + val.charCodeAt(i)) | 0;
