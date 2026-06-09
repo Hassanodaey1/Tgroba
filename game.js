@@ -399,10 +399,99 @@
                 st.wrongTotal += G.wrong;
                 /* ✅ ANTI-CHEAT: حماية coins من الزيادة المفرطة */
                 const _coinsBeforeAdd = st.coins;
-                st.coins += earnedCoins;
-                /* لا يمكن لجلسة واحدة أن تضيف أكثر من 150 عملة */
-                if (st.coins - _coinsBeforeAdd > 150) st.coins = _coinsBeforeAdd + 150;
+                /* ✅ 💎 تطبيق مضاعف الكوينز الدائم من متجر الماس */
+                const _permCoinMult = (typeof getPermCoinMultiplier === 'function') ? getPermCoinMultiplier() : 1.0;
+                const _finalCoins = Math.floor(earnedCoins * _permCoinMult);
+                st.coins += _finalCoins;
+                if (st.coins - _coinsBeforeAdd > 200) st.coins = _coinsBeforeAdd + 200;
                 st.totalGames++;
+
+                /* ═══════════════════════════════════════════════════════
+                   💎 نظام الماس — حساب الماس المكتسب من هذه الجلسة
+                   ═══════════════════════════════════════════════════════ */
+                (function _earnDiamonds() {
+                    try {
+                        if (typeof st.diamonds !== 'number') st.diamonds = 0;
+                        let _dEarned = 0;
+                        const _acc = G.correct + G.wrong > 0 ? G.correct / (G.correct + G.wrong) : 0;
+                        const _today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+                        if (!st._diamondSources) st._diamondSources = {};
+
+                        /* ── 1. تتابع استثنائي (≥15) → 1 💎 مرة يومياً ── */
+                        if (G.bestStreak >= 15) {
+                            const _key = 'streak15_' + _today;
+                            if (!st._diamondSources[_key]) {
+                                st._diamondSources[_key] = true;
+                                _dEarned += 1;
+                            }
+                        }
+                        /* ── 2. دقة 100% في وضع صعب أو أصعب ── */
+                        if (_acc === 1 && G.correct >= 8 && ['hard','genius','impossible'].includes(st.difficulty)) {
+                            const _key = 'perfect_hard_' + _today;
+                            if (!st._diamondSources[_key]) {
+                                st._diamondSources[_key] = true;
+                                _dEarned += 1;
+                            }
+                        }
+                        /* ── 3. إكمال وضع المستحيل بنتيجة ≥ 80% ── */
+                        if (G.mode === 'impossible' && _acc >= 0.8 && G.correct >= 8) {
+                            const _key = 'impossible_' + _today;
+                            if (!st._diamondSources[_key]) {
+                                st._diamondSources[_key] = true;
+                                _dEarned += 2;
+                            }
+                        }
+                        /* ── 4. الوصول لأعلى مرحلة في الصاروخ (عبقري) مرة أسبوعياً ── */
+                        if (G.mode === 'rocket' && (G._rocketStage || 0) >= 6) {
+                            const _wk = (typeof weekStr === 'function') ? weekStr() : _today.slice(0,7);
+                            const _key = 'rocket_genius_' + _wk;
+                            if (!st._diamondSources[_key]) {
+                                st._diamondSources[_key] = true;
+                                _dEarned += 2;
+                            }
+                        }
+                        /* ── 5. تحدي الأسبوع — مكافأة ثابتة 1 💎 ── */
+                        if (G.mode === 'weekly' && G.correct >= 12) {
+                            const _wk2 = (typeof weekStr === 'function') ? weekStr() : _today.slice(0,7);
+                            const _key = 'weekly_' + _wk2;
+                            if (!st._diamondSources[_key]) {
+                                st._diamondSources[_key] = true;
+                                _dEarned += 1;
+                            }
+                        }
+                        /* ── 6. أول مرة تُكسر فيها أفضل نتيجة شخصية بفارق كبير ── */
+                        if (G.score > (st.bestScore || 0) + 50 && G.score > 100) {
+                            const _key = 'record_' + _today;
+                            if (!st._diamondSources[_key]) {
+                                st._diamondSources[_key] = true;
+                                _dEarned += 1;
+                            }
+                        }
+                        /* ── 7. سلسلة 20+ في وضع السلسلة ── */
+                        if (G.mode === 'chain' && (G._chainLen || 0) >= 20) {
+                            const _key = 'chain20_' + _today;
+                            if (!st._diamondSources[_key]) {
+                                st._diamondSources[_key] = true;
+                                _dEarned += 2;
+                            }
+                        }
+
+                        if (_dEarned > 0) {
+                            st.diamonds = Math.min(9999, st.diamonds + _dEarned);
+                            setTimeout(() => {
+                                try { showFeedback(`💎 +${_dEarned} ماس نادر!`); } catch(e) {}
+                                try { if (typeof _showDiamondFloat === 'function') _showDiamondFloat(_dEarned); } catch(e) {}
+                            }, 700);
+                        }
+                        /* تنظيف السجل القديم (احتفظ فقط بآخر 90 مدخل) */
+                        const _srcKeys = Object.keys(st._diamondSources);
+                        if (_srcKeys.length > 90) {
+                            const _toDelete = _srcKeys.slice(0, _srcKeys.length - 90);
+                            _toDelete.forEach(k => delete st._diamondSources[k]);
+                        }
+                    } catch(_de) { console.warn('[Diamonds]', _de); }
+                })();
+
                 recordDailyStat('game');
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
                 if (G.score > st.bestScore) st.bestScore = G.score;
