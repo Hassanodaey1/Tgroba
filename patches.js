@@ -1007,3 +1007,97 @@ window._antiCheatInit = (function() {
         } catch(e) {}
     }, 30000); /* كل 30 ثانية */
 })();
+
+/* ═══════════════════════════════════════════════════════════════
+   💎 DIAMOND UI INJECTION — حقن أزرار وعرض الماس في الواجهة
+═══════════════════════════════════════════════════════════════ */
+
+/* زر الماس في صفحة المتجر + الصفحة الرئيسية */
+function _injectDiamondStoreButton() {
+    /* ① زر في header الصفحة الرئيسية */
+    const _homeHeader = document.querySelector('.home-header-row, .header-actions, #homeHeaderCoins')
+        || document.querySelector('[id*="homeCoins"]')?.parentElement;
+    if (_homeHeader && !document.getElementById('homeDiamondBtn')) {
+        const _dBtn = document.createElement('div');
+        _dBtn.id = 'homeDiamondBtn';
+        _dBtn.onclick = function() { if (typeof openDiamondStore === 'function') openDiamondStore(); };
+        _dBtn.style.cssText = `
+            display:inline-flex;align-items:center;gap:4px;
+            background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(0,212,255,0.05));
+            border:1.5px solid rgba(0,212,255,0.4);
+            border-radius:12px;padding:4px 10px;
+            cursor:pointer;font-size:0.82em;font-weight:900;
+            color:#00d4ff;transition:all 0.15s;
+        `;
+        _dBtn.innerHTML = `💎 <span id="homeDiamondCount">${st.diamonds || 0}</span>`;
+        _homeHeader.appendChild(_dBtn);
+    }
+
+    /* ② زر في صفحة المتجر (shop page) */
+    const _shopPage = document.getElementById('page-shop');
+    if (_shopPage && !document.getElementById('shopDiamondBtn')) {
+        const _dShopBtn = document.createElement('div');
+        _dShopBtn.id = 'shopDiamondBtn';
+        _dShopBtn.onclick = function() { if (typeof openDiamondStore === 'function') openDiamondStore(); };
+        _dShopBtn.style.cssText = `
+            margin:12px 16px 0;
+            background:linear-gradient(135deg,rgba(0,212,255,0.18),rgba(124,58,237,0.1));
+            border:2px solid rgba(0,212,255,0.5);
+            border-radius:18px;padding:16px;
+            cursor:pointer;text-align:center;
+            transition:all 0.18s;
+        `;
+        _dShopBtn.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+                <div style="font-size:2em;">💎</div>
+                <div>
+                    <div style="font-size:0.95em;font-weight:900;color:#00d4ff;">متجر الماس الحصري</div>
+                    <div style="font-size:0.65em;color:var(--text2);margin-top:2px;">أطر • ألقاب • مضاعفات نادرة • عروض محدودة</div>
+                </div>
+                <div style="
+                    background:rgba(0,212,255,0.2);border:1px solid rgba(0,212,255,0.4);
+                    border-radius:10px;padding:4px 10px;
+                    font-size:0.75em;font-weight:900;color:#00d4ff;
+                    display:flex;align-items:center;gap:4px;
+                ">💎 <span data-diamond-balance>${st.diamonds || 0}</span></div>
+            </div>
+        `;
+        /* إدراجه أعلى محتوى المتجر */
+        const _shopContent = _shopPage.querySelector('#shopContent, .shop-content, .page-content')
+            || _shopPage.firstElementChild;
+        if (_shopContent) {
+            _shopContent.insertBefore(_dShopBtn, _shopContent.firstChild);
+        } else {
+            _shopPage.insertBefore(_dShopBtn, _shopPage.firstChild);
+        }
+    }
+
+    /* ③ badge الماس في الـ nav (إن كانت نقاط ≥ 1) */
+    const _navShop = document.getElementById('nav-shop');
+    if (_navShop && !document.getElementById('navDiamondBadge') && (st.diamonds || 0) > 0) {
+        const _badge = document.createElement('div');
+        _badge.id = 'navDiamondBadge';
+        _badge.style.cssText = `
+            position:absolute;top:-4px;right:-4px;
+            background:#00d4ff;color:#000;
+            font-size:0.45em;font-weight:900;
+            padding:1px 5px;border-radius:8px;
+            display:flex;align-items:center;
+        `;
+        _badge.innerHTML = `💎 ${st.diamonds}`;
+        _navShop.style.position = 'relative';
+        _navShop.appendChild(_badge);
+    }
+}
+
+/* استدعاء عند كل تحديث UI */
+(function _patchUpdateUI() {
+    if (typeof window === 'undefined') return;
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            try { _injectDiamondStoreButton(); } catch(e) {}
+        }, 1200);
+    });
+})();
+
+window._injectDiamondStoreButton = _injectDiamondStoreButton;
