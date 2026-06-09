@@ -432,8 +432,13 @@
                         <div class="player-sub" id="headerSub">Lv.1 • مبتدئ</div>
                     </div>
                 </div>
-                <div style="display:flex;align-items:center;gap:4px;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:20px;padding:5px 10px;font-size:0.78em;font-weight:900;color:var(--gold);white-space:nowrap;">
-                    💰 <span id="headerCoins">0</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="display:flex;align-items:center;gap:4px;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:20px;padding:5px 10px;font-size:0.78em;font-weight:900;color:var(--gold);white-space:nowrap;">
+                        💰 <span id="headerCoins">0</span>
+                    </div>
+                    <div id="headerDiamondsWrap" onclick="openDiamondStore()" style="display:flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(0,212,255,0.06));border:1px solid rgba(0,212,255,0.35);border-radius:20px;padding:5px 10px;font-size:0.78em;font-weight:900;color:#00d4ff;white-space:nowrap;cursor:pointer;transition:all 0.15s;">
+                        💎 <span id="headerDiamonds">0</span>
+                    </div>
                 </div>
                 <!-- زر MP في الهيدر -->
                 <button class="header-mp-btn" onclick="openSeasonPassOverlay()">
@@ -1621,7 +1626,7 @@
             </div>
 
             <!-- الإجمالي الكلي -->
-           <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px;">
+          <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px;">
                 <div style="font-size:0.8em;font-weight:900;color:var(--text);margin-bottom:12px;">🏆 الإجمالي الكلي</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                     <div style="background:var(--surface3);border-radius:13px;padding:12px;text-align:center;">
@@ -2069,9 +2074,7 @@ function closeSettingsSubPage(overlayId) {
 <script src="questions_engine.js"></script>
 <script src="patches.js"></script>
 <script src="shop.js"></script>
-<script src="diamond_store.js"></script>  
-<script src="ui_fixes.js"></script> 
-  
+<script src="ui_fixes.js"></script>
 
     <!-- HO Math Splash Animation v3 -->
     <script>
