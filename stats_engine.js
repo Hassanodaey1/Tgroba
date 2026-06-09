@@ -191,8 +191,12 @@ function applyXpGain(correct, wrong, score, bestStreak) {
     let xpGained = calcXpGained(correct, wrong, score, bestStreak);
     if (xpGained <= 0) return { xpGained: 0, levelsGained: 0, newLevel: st.level };
 
-    /* ✅ FIX-XP-BOOST: تطبيق مضاعف XP من المتجر */
-    const xpMult = (typeof getXpMultiplier === 'function') ? getXpMultiplier() : 1;
+    /* ✅ ANTI-CHEAT: حد أقصى صارم لـ XP per session */
+    const _maxXpPerSession = Math.max(200, (correct + wrong) * 25);
+    xpGained = Math.min(xpGained, _maxXpPerSession);
+
+    /* ✅ FIX-XP-BOOST: تطبيق مضاعف XP من المتجر — بحد أقصى ×5 */
+    const xpMult = Math.min(5, (typeof getXpMultiplier === 'function') ? getXpMultiplier() : 1);
     if (xpMult > 1) {
         const bonus = Math.floor(xpGained * (xpMult - 1));
         xpGained += bonus;
@@ -202,6 +206,9 @@ function applyXpGain(correct, wrong, score, bestStreak) {
             }, 400);
         }
     }
+
+    /* ✅ ANTI-CHEAT: حد نهائي مطلق لكل جلسة */
+    xpGained = Math.min(xpGained, 5000);
 
     st.xp += xpGained;
     let levelsGained = 0;
