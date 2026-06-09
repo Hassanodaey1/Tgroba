@@ -777,14 +777,21 @@ document.addEventListener('keydown', e => {
 /**
  * مزامنة نقاط اللاعب مع لائحة المتصدرين العامة (أعلى نقاط).
  */
+let _lastLbSync = 0;
 function syncWithLeaderboard() {
     if (!database) return;
-    /* ✅ FIX-V3+V10: استخدام serialNumber كـ key ثابت وفريد لمنع انتحال الهوية */
-    if (!st.serialNumber) return; /* لا مزامنة قبل تسجيل الملف الشخصي */
+    /* ✅ FIX-V3+V10: استخدام serialNumber كـ key ثابت وفريد */
+    if (!st.serialNumber) return;
+    /* ✅ ANTI-CHEAT: rate limiting — مزامنة واحدة كل 60 ثانية كحد أقصى */
+    const _now = Date.now();
+    if (_now - _lastLbSync < 60000) return;
+    _lastLbSync = _now;
     try {
-        /* ✅ FIX-V3: لا تُرفع النتيجة إذا كانت أعلى من حد معقول */
-        const safeBestScore = Math.min(st.bestScore || 0, 9999999);
+        /* ✅ FIX-V3: حدود صارمة على القيم المرفوعة */
+        const safeBestScore = Math.min(st.bestScore || 0, 999999);
         const safeLevel     = Math.min(st.level || 1,     200);
+        /* ✅ ANTI-CHEAT: رفض نتائج غير واقعية */
+        if (safeBestScore > 999999 || safeLevel > 200) return;
         const playerKey     = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
         saveSt();
         /* ✅ FIX-V3: نقرأ أولاً — لا نكتب إلا إذا كانت النتيجة الجديدة أعلى فعلاً */
@@ -796,9 +803,9 @@ function syncWithLeaderboard() {
                     avatar:        st.avatar,
                     level:         safeLevel,
                     bestScore:     safeBestScore,
-                    totalXp:       Math.min(st.xp || 0, 99999999),
+                    totalXp:       Math.min(st.xp || 0, 9999999),
                     serialNumber:  st.serialNumber,
-                    lastUpdated:   Date.now()
+                    lastUpdated:   _now
                 }).catch(() => {});
             }
         }).catch(() => {});
