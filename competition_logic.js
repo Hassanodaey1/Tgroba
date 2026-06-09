@@ -2082,3 +2082,191 @@ window.seasonUpdateFromGame    = function(data) {
         setTimeout(syncSeasonScore, 1500);
     } catch(e) {}
 };
+
+/* ═══════════════════════════════════════════════════════
+   MP Quick Sheets — مهام اليوم + لائحة الصدارة
+═══════════════════════════════════════════════════════ */
+
+/* ── Sheet مهام اليوم ── */
+function openMpDailySheet() {
+    _seasonEnsureReady();
+    const sheet = document.getElementById('mpDailySheet');
+    if (!sheet) return;
+
+    const tasks = (st.season && st.season.dailyTasks) || [];
+    const done  = tasks.filter(t => t.done).length;
+    const total = tasks.length || 5;
+    const pct   = Math.min(100, Math.round((done / total) * 100));
+
+    /* تحديث الـ badge والبار */
+    const badge = document.getElementById('mpDailySheetBadge');
+    const bar   = document.getElementById('mpDailySheetBar');
+    const list  = document.getElementById('mpDailySheetList');
+    if (badge) badge.textContent = done + '/' + total;
+    if (bar)   setTimeout(() => { bar.style.width = pct + '%'; }, 80);
+
+    /* بناء القائمة */
+    if (list) {
+        if (!tasks.length) {
+            list.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.82em;">لا توجد مهام متاحة الآن</div>';
+        } else {
+            const stars = n => '⭐'.repeat(n || 0);
+            list.innerHTML = tasks.map(task => {
+                const cur  = Math.min(task.current || 0, task.target);
+                const tpct = Math.min(100, Math.round((cur / task.target) * 100));
+                const done = task.done;
+                return `
+                <div class="mp-sheet-task-item${done ? ' done' : ''}">
+                    <div class="mp-sheet-task-icon">${task.icon || '📌'}</div>
+                    <div class="mp-sheet-task-body">
+                        <div class="mp-sheet-task-name">
+                            ${task.name || ''}
+                            ${task.stars ? '<span style="font-size:0.8em;">' + stars(task.stars) + '</span>' : ''}
+                        </div>
+                        <div class="mp-sheet-task-desc">${task.desc || ''}</div>
+                        <div class="mp-sheet-task-bar">
+                            <div class="mp-sheet-task-bar-fill" style="width:${tpct}%"></div>
+                        </div>
+                    </div>
+                    <div class="mp-sheet-task-right">
+                        <div class="mp-sheet-task-pts">+${task.pts || 0}🏅</div>
+                        <div class="mp-sheet-task-prog">${cur}/${task.target}</div>
+                        ${done ? '<div style="font-size:1.1em;">✅</div>' : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+    }
+
+    sheet.style.display = 'flex';
+}
+
+function closeMpDailySheet() {
+    const sheet = document.getElementById('mpDailySheet');
+    if (sheet) sheet.style.display = 'none';
+}
+
+/* ── Sheet لائحة الصدارة ── */
+let _mpLbCurrentTab = 'week';
+
+function openMpLeaderboardSheet() {
+    const sheet = document.getElementById('mpLeaderboardSheet');
+    if (!sheet) return;
+
+    /* اسم الموسم */
+    const nameEl = document.getElementById('mpLbSheetSeasonName');
+    if (nameEl && typeof getCurrentSeasonName === 'function') nameEl.textContent = getCurrentSeasonName();
+
+    /* بطاقة مرتبتي */
+    _renderMpLbMyCard();
+
+    sheet.style.display = 'flex';
+    _mpLbCurrentTab = 'week';
+    _updateMpLbTabStyle();
+    _loadMpLeaderboardSheet('week');
+}
+
+function closeMpLeaderboardSheet() {
+    const sheet = document.getElementById('mpLeaderboardSheet');
+    if (sheet) sheet.style.display = 'none';
+}
+
+function refreshMpLeaderboardSheet() {
+    const btn = document.getElementById('mpLbRefreshBtn');
+    if (btn) { btn.style.transform = 'rotate(360deg)'; setTimeout(() => btn.style.transform = '', 400); }
+    _loadMpLeaderboardSheet(_mpLbCurrentTab);
+}
+
+function switchMpLbTab(tab) {
+    _mpLbCurrentTab = tab;
+    _updateMpLbTabStyle();
+    _loadMpLeaderboardSheet(tab);
+}
+
+function _updateMpLbTabStyle() {
+    const week = document.getElementById('mpLbTabWeek');
+    const all  = document.getElementById('mpLbTabAll');
+    if (!week || !all) return;
+    const activeStyle  = 'flex:1;padding:7px;border-radius:10px;border:1px solid rgba(240,185,11,0.35);background:linear-gradient(135deg,rgba(240,185,11,0.2),rgba(240,185,11,0.08));color:var(--gold);font-family:\'Tajawal\',sans-serif;font-size:0.75em;font-weight:900;cursor:pointer;';
+    const inactiveStyle = 'flex:1;padding:7px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-family:\'Tajawal\',sans-serif;font-size:0.75em;font-weight:700;cursor:pointer;';
+    week.style.cssText = (_mpLbCurrentTab === 'week') ? activeStyle : inactiveStyle;
+    all.style.cssText  = (_mpLbCurrentTab === 'all')  ? activeStyle : inactiveStyle;
+}
+
+function _renderMpLbMyCard() {
+    _seasonEnsureReady();
+    const pts    = (st.season && st.season.points) || 0;
+    const name   = (st && st.name) || 'أنت';
+    const rankEl = document.getElementById('mpLbMyRank');
+    const nameEl = document.getElementById('mpLbMyName');
+    const ptsEl  = document.getElementById('mpLbMyPts');
+    const badge  = document.getElementById('mpLbMyBadge');
+    if (nameEl) nameEl.textContent = name;
+    if (ptsEl)  ptsEl.textContent  = pts + ' نقطة';
+    /* رتبة تقديرية */
+    if (badge) {
+        if (pts >= 800) badge.textContent = '💎';
+        else if (pts >= 500) badge.textContent = '🥇';
+        else if (pts >= 200) badge.textContent = '🥈';
+        else badge.textContent = '🥉';
+    }
+}
+
+function _loadMpLeaderboardSheet(tab) {
+    const list = document.getElementById('mpLbSheetList');
+    if (!list) return;
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">جاري التحميل…</div>';
+
+    /* نستخدم نفس بيانات Firebase الموجودة في الكود الأصلي */
+    if (typeof firebase === 'undefined' || !firebase.database) {
+        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">غير متصل</div>';
+        return;
+    }
+
+    const path = tab === 'week' ? 'season_weekly_scores' : 'season_alltime_scores';
+    try {
+        firebase.database().ref(path).orderByChild('pts').limitToLast(30).once('value').then(snap => {
+            const rows = [];
+            snap.forEach(c => {
+                const d = c.val();
+                if (d && d.name && typeof d.pts === 'number') rows.push(d);
+            });
+            rows.sort((a,b) => b.pts - a.pts);
+
+            if (!rows.length) {
+                list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">لا توجد بيانات بعد</div>';
+                return;
+            }
+
+            const myName = (st && st.name) || '';
+            const rankBadge = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+            const rankClass = i => i === 0 ? ' gold-rank' : i === 1 ? ' silver-rank' : i === 2 ? ' bronze-rank' : '';
+
+            list.innerHTML = rows.map((r, i) => {
+                const isMe = r.name === myName;
+                return `<div class="mp-lb-row${isMe ? ' me' : ''}">
+                    <div class="mp-lb-rank${rankClass(i)}">${rankBadge(i) || (i+1)}</div>
+                    <div class="mp-lb-name">${r.name || '—'}</div>
+                    <div class="mp-lb-badge">${r.badge || ''}</div>
+                    <div class="mp-lb-pts">${r.pts}🏅</div>
+                </div>`;
+            }).join('');
+
+            /* تحديث مرتبتي */
+            const myIdx = rows.findIndex(r => r.name === myName);
+            const rankEl = document.getElementById('mpLbMyRank');
+            if (rankEl && myIdx >= 0) rankEl.textContent = '#' + (myIdx + 1);
+        }).catch(() => {
+            list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">تعذّر التحميل</div>';
+        });
+    } catch(e) {
+        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">تعذّر التحميل</div>';
+    }
+}
+
+window.openMpDailySheet         = openMpDailySheet;
+window.closeMpDailySheet        = closeMpDailySheet;
+window.openMpLeaderboardSheet   = openMpLeaderboardSheet;
+window.closeMpLeaderboardSheet  = closeMpLeaderboardSheet;
+window.refreshMpLeaderboardSheet = refreshMpLeaderboardSheet;
+window.switchMpLbTab            = switchMpLbTab;
