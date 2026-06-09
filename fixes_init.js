@@ -81,14 +81,13 @@ function setVibrationStrength(val) {
 /* ─── مكافأة يومية ─── */
 function checkDailyLoginBonus() {
     const today = todayStr();
-    /* ✅ FIX-DOUBLE-BONUS: استخدام نفس المفتاح المستخدم في game.js (loginBonusDate) لمنع المكافأة المزدوجة */
+    /* ✅ FIX-DOUBLE-BONUS: استخدام نفس المفتاح المستخدم في game.js */
     if (st.loginBonusDate === today) return;
-    /* إذا كان التاريخ المخزّن في المستقبل (تلاعب بالساعة) → نتجاهل ونُحدّث فقط */
+    /* ✅ ANTI-CHEAT: إذا كان التاريخ المخزّن في المستقبل (تلاعب بساعة الجهاز) → تجميد */
     if (st.loginBonusDate && st.loginBonusDate > today) {
         st.loginBonusDate = today; saveSt(); return;
     }
-    /* لا نعطي المكافأة هنا — تُعطى بالفعل من updateDailyShield في game.js */
-    /* هذه الدالة تبقى فقط للتحقق من الصحة وعدم التكرار */
+    /* لا نعطي المكافأة هنا — تُعطى من updateDailyShield في game.js */
     saveSt();
 }
 
