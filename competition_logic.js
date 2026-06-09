@@ -1139,22 +1139,43 @@ function _seasonGrantReward(rewardDef) {
 /* ── تحديث زر الموسم في صفحة المنافسة ── */
 function _updateSeasonBtn() {
     _seasonEnsureReady();
-    const pts     = st.season.points || 0;
-    const pct     = Math.min(100, (pts / 1000) * 100);
-    const today   = (typeof todayStr === 'function') ? todayStr() : '';
-    const tasks   = st.season.dailyTasks || [];
-    const done    = tasks.filter(t => t.done).length;
-    const total   = tasks.length;
+    const pts   = st.season.points || 0;
+    const pct   = Math.min(100, (pts / 1000) * 100);
+    const tasks = st.season.dailyTasks || [];
+    const done  = tasks.filter(t => t.done).length;
+    const total = tasks.length;
 
-    const fillEl  = document.getElementById('seasonMiniBarFill');
-    const ptsEl   = document.getElementById('seasonPtsBadge');
-    const subEl   = document.getElementById('seasonBtnSub');
+    /* ── زر MP في الهيدر ── */
+    const headerBar = document.getElementById('headerMpBar');
+    if (headerBar) headerBar.style.width = pct + '%';
 
+    /* نقطة تنبيه حمراء عند وجود جائزة جاهزة للاستلام */
+    const mpBtn = document.querySelector('.header-mp-btn');
+    if (mpBtn) {
+        const hasReady = typeof SEASON_TRACK_REWARDS !== 'undefined' &&
+            SEASON_TRACK_REWARDS.some(r => pts >= r.pts && !(st.season.claimedRewards || []).includes(r.pts));
+        let dot = mpBtn.querySelector('.mp-alert-dot');
+        if (hasReady && !dot) {
+            dot = document.createElement('div');
+            dot.className = 'mp-alert-dot';
+            mpBtn.appendChild(dot);
+        } else if (!hasReady && dot) {
+            dot.remove();
+        }
+    }
+
+    /* ── تحديث العناصر القديمة (إن وجدت) ── */
+    const fillEl = document.getElementById('seasonMiniBarFill');
+    const ptsEl  = document.getElementById('seasonPtsBadge');
+    const subEl  = document.getElementById('seasonBtnSub');
     if (fillEl) fillEl.style.width = pct + '%';
     if (ptsEl)  ptsEl.textContent  = pts + '/1000';
     if (subEl)  subEl.textContent  = done === total
         ? `✅ أكملت مهام اليوم! (${pts}/1000 نقطة)`
         : `${done}/${total} مهام اليوم • ${pts}/1000 نقطة`;
+
+    /* ── تحديث زر مسار الجوائز ── */
+    try { _updateTrackBtn(pts); } catch(e) {}
 }
 
 /* ── فتح/إغلاق overlay الموسم ── */
