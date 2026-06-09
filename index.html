@@ -990,22 +990,33 @@
                 </div>
             </button>
 
-            <!-- مهام اليوم -->
-            <div class="sp-section-title sp-daily-title">
-                📅 مهام اليوم
-                <span class="sp-daily-badge" id="spDailyBadge">0/5</span>
-            </div>
-            <div class="sp-desc">أكمل المهام اليومية لتجمع نقاط الموسم • تتجدد كل يوم</div>
-            <div id="spDailyTasksList" class="sp-tasks-list"></div>
-
-            <!-- زر صدارة الموسم — داخل صفحة MP -->
-            <button class="sp-lb-btn" onclick="openSeasonLeaderboard()">
-                <span class="sp-lb-btn-icon">🏅</span>
-                <div class="sp-lb-btn-info">
-                    <div class="sp-lb-btn-title">صدارة Math Pass</div>
-                    <div class="sp-lb-btn-sub">تصنيف اللاعبين هذا الأسبوع</div>
+            <!-- زر مهام اليوم — يفتح sheet سريع -->
+            <button class="sp-sheet-trigger-btn sp-daily-trigger" onclick="openMpDailySheet()">
+                <div class="sp-stb-left">
+                    <div class="sp-stb-icon">📅</div>
+                    <div class="sp-stb-info">
+                        <div class="sp-stb-title">مهام اليوم</div>
+                        <div class="sp-stb-sub">أكمل المهام اليومية لتجمع النقاط</div>
+                    </div>
                 </div>
-                <span class="sp-lb-btn-arrow">›</span>
+                <div class="sp-stb-right">
+                    <span class="sp-stb-badge" id="spDailyBadge">0/5</span>
+                    <span class="sp-stb-arrow">›</span>
+                </div>
+            </button>
+
+            <!-- زر لائحة الصدارة — يفتح sheet سريع -->
+            <button class="sp-sheet-trigger-btn sp-lb-trigger" onclick="openMpLeaderboardSheet()">
+                <div class="sp-stb-left">
+                    <div class="sp-stb-icon">🏅</div>
+                    <div class="sp-stb-info">
+                        <div class="sp-stb-title">لائحة الصدارة</div>
+                        <div class="sp-stb-sub">تصنيف اللاعبين هذا الأسبوع</div>
+                    </div>
+                </div>
+                <div class="sp-stb-right">
+                    <span class="sp-stb-arrow">›</span>
+                </div>
             </button>
 
         </div>
@@ -2275,6 +2286,79 @@ function closeSettingsSubPage(overlayId) {
     })();
     </script>
 
+
+    <!-- ═══ Sheet سريع: مهام اليوم (MP) ═══ -->
+    <div id="mpDailySheet" style="position:fixed;inset:0;z-index:9200;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeMpDailySheet()">
+        <div style="background:var(--surface);border-radius:26px 26px 0 0;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;animation:mpSheetUp 0.32s cubic-bezier(0.34,1.4,0.64,1);">
+            <!-- Header -->
+            <div style="padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border2);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:1.3em;">📅</span>
+                    <div>
+                        <div style="font-size:0.92em;font-weight:900;color:var(--text);">مهام اليوم</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:1px;">أكمل المهام لتجمع نقاط الموسم • تتجدد يومياً</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span id="mpDailySheetBadge" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:0.65em;font-weight:900;padding:3px 9px;border-radius:20px;">0/5</span>
+                    <button onclick="closeMpDailySheet()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:30px;height:30px;font-size:1em;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;">✕</button>
+                </div>
+            </div>
+            <!-- شريط تقدم -->
+            <div style="padding:10px 18px 0;flex-shrink:0;">
+                <div style="height:5px;background:var(--surface3);border-radius:99px;overflow:hidden;">
+                    <div id="mpDailySheetBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;transition:width 0.5s ease;"></div>
+                </div>
+            </div>
+            <!-- قائمة المهام -->
+            <div id="mpDailySheetList" style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 30px;display:flex;flex-direction:column;gap:0;"></div>
+        </div>
+    </div>
+
+    <!-- ═══ Sheet سريع: لائحة الصدارة (MP) ═══ -->
+    <div id="mpLeaderboardSheet" style="position:fixed;inset:0;z-index:9200;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeMpLeaderboardSheet()">
+        <div style="background:var(--surface);border-radius:26px 26px 0 0;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;animation:mpSheetUp 0.32s cubic-bezier(0.34,1.4,0.64,1);">
+            <!-- Header -->
+            <div style="padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border2);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:1.3em;">🏅</span>
+                    <div>
+                        <div style="font-size:0.92em;font-weight:900;color:var(--text);">صدارة Math Pass</div>
+                        <div style="font-size:0.6em;color:var(--text2);margin-top:1px;" id="mpLbSheetSeasonName">موسم الأرقام الذهبية</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <button onclick="refreshMpLeaderboardSheet()" style="background:rgba(240,185,11,0.15);border:1px solid rgba(240,185,11,0.3);border-radius:50%;width:30px;height:30px;font-size:1em;cursor:pointer;color:var(--gold);display:flex;align-items:center;justify-content:center;transition:transform 0.3s;" id="mpLbRefreshBtn">↻</button>
+                    <button onclick="closeMpLeaderboardSheet()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:30px;height:30px;font-size:1em;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;">✕</button>
+                </div>
+            </div>
+            <!-- بطاقة مرتبتي -->
+            <div id="mpLbMyCard" style="margin:10px 16px 0;background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.08));border:1px solid rgba(240,185,11,0.25);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <div style="font-size:1.4em;font-weight:900;color:var(--gold);min-width:32px;text-align:center;" id="mpLbMyRank">—</div>
+                <div style="flex:1;">
+                    <div style="font-size:0.8em;font-weight:900;color:var(--text);" id="mpLbMyName">أنت</div>
+                    <div style="font-size:0.62em;color:var(--text2);margin-top:1px;" id="mpLbMyPts">0 نقطة</div>
+                </div>
+                <div style="font-size:1.4em;" id="mpLbMyBadge">🥉</div>
+            </div>
+            <!-- تبويبات -->
+            <div style="display:flex;gap:6px;padding:10px 16px 0;flex-shrink:0;">
+                <button id="mpLbTabWeek" onclick="switchMpLbTab('week')" style="flex:1;padding:7px;border-radius:10px;border:1px solid rgba(240,185,11,0.35);background:linear-gradient(135deg,rgba(240,185,11,0.2),rgba(240,185,11,0.08));color:var(--gold);font-family:'Tajawal',sans-serif;font-size:0.75em;font-weight:900;cursor:pointer;">هذا الأسبوع</button>
+                <button id="mpLbTabAll" onclick="switchMpLbTab('all')" style="flex:1;padding:7px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.75em;font-weight:700;cursor:pointer;">الكل</button>
+            </div>
+            <!-- رأس الجدول -->
+            <div style="display:grid;grid-template-columns:44px 1fr 52px 64px;padding:8px 16px 4px;flex-shrink:0;">
+                <span style="font-size:0.58em;color:var(--text3);font-weight:700;">المركز</span>
+                <span style="font-size:0.58em;color:var(--text3);font-weight:700;">اللاعب</span>
+                <span style="font-size:0.58em;color:var(--text3);font-weight:700;text-align:center;">الرتبة</span>
+                <span style="font-size:0.58em;color:var(--text3);font-weight:700;text-align:left;">النقاط</span>
+            </div>
+            <!-- قائمة اللاعبين -->
+            <div id="mpLbSheetList" style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 16px 30px;">
+                <div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">جاري التحميل…</div>
+            </div>
+        </div>
+    </div>
 
     <!-- ═══ نافذة مهام الفئة السريعة ═══ -->
     <div id="categorySheetOverlay" style="position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,0.68);backdrop-filter:blur(7px);display:none;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeCategorySheet()">
