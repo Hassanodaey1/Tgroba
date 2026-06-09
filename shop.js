@@ -365,6 +365,10 @@ function _renderAvatarGrid(container) {
 }
 
 function buyAvatarFromShop(emoji, price, label) {
+    /* ✅ ANTI-CHEAT: قفل لمنع النقر المزدوج */
+    if (window._shopBuyLock) return;
+    window._shopBuyLock = true;
+    setTimeout(() => { window._shopBuyLock = false; }, 1500);
     if (!st.ownedEmojis) st.ownedEmojis = ['👦'];
     if (st.ownedEmojis.includes(emoji)) {
         selectEmojiFromShop(emoji);
@@ -648,6 +652,8 @@ function _renderFrames(container) {
 }
 
 function buyFrame(frameId) {
+    /* ✅ ANTI-CHEAT: قفل لمنع النقر المزدوج */
+    if (window._shopBuyLock) return;
     const frame = FRAMES_CATALOG.find(f => f.id === frameId);
     if (!frame) return;
     if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
@@ -939,6 +945,8 @@ function _buildBundleCard(bundle) {
    ⑤ تنفيذ شراء المستهلكات
 ═══════════════════════════════════════════════════════════════ */
 function buyConsumable(id) {
+    /* ✅ ANTI-CHEAT: قفل عالمي لمنع النقر المتسارع */
+    if (window._shopBuyLock) return;
     const item = SHOP_CATALOG.consumables.find(i => i.id === id);
     if (!item) return;
 
@@ -983,7 +991,15 @@ function buyConsumable(id) {
     }
 
     showConfirm(`${item.icon} ${item.name}`, `${item.desc}\n\nالسعر: ${item.price} عملة`, 'اشترِ الآن', 'إلغاء', ok => {
-        if (!ok) return;
+        if (!ok) { window._shopBuyLock = false; return; }
+        /* ✅ ANTI-CHEAT: تحقق مزدوج من الرصيد داخل الـ callback لمنع race condition */
+        if (st.coins < item.price) {
+            _showInsufficientCoinsOffer(item.price - st.coins, item.name);
+            window._shopBuyLock = false;
+            return;
+        }
+        window._shopBuyLock = true;
+        setTimeout(() => { window._shopBuyLock = false; }, 1500);
         st.coins -= item.price;
 
         /* تسجيل الشراء الفوري لمنع التكرار */
@@ -1085,6 +1101,8 @@ function buyConsumable(id) {
    ⑥ تنفيذ شراء الحزم
 ═══════════════════════════════════════════════════════════════ */
 function buyBundle(id) {
+    /* ✅ ANTI-CHEAT: قفل لمنع الشراء المزدوج */
+    if (window._shopBuyLock) return;
     const bundle = SHOP_CATALOG.bundles.find(b => b.id === id);
     if (!bundle) return;
     if (bundle.lvlReq && st.level < bundle.lvlReq) {
@@ -1097,10 +1115,14 @@ function buyBundle(id) {
     }
     showConfirm(`${bundle.icon} ${bundle.name}`, `${bundle.desc}\n\nالسعر: ${bundle.price}💰 (بدلاً من ${bundle.originalPrice}💰)`, 'اشترِ الحزمة', 'إلغاء', ok => {
         if (!ok) return;
+        /* ✅ ANTI-CHEAT: تحقق مزدوج من الرصيد داخل الـ callback */
+        if (st.coins < bundle.price) { _showInsufficientCoinsOffer(bundle.price - st.coins, bundle.name); return; }
+        window._shopBuyLock = true;
+        setTimeout(() => { window._shopBuyLock = false; }, 1500);
         st.coins -= bundle.price;
         bundle.items.forEach(item => {
             switch (item.type) {
-                case 'coins':   st.coins += item.val; break;
+                case 'coins':   st.coins += Math.min(item.val, 500); break;
                 case 'hearts':  if (G && !G.ended) G.livesLeft = Math.min(G.livesLeft + item.val, 9); break;
                 case 'avatar':
                     if (!st.ownedEmojis) st.ownedEmojis = [];
@@ -1108,8 +1130,8 @@ function buyBundle(id) {
                     break;
                 case 'xpBoost':
                     _shopState.xpBoostActive = true;
-                    _shopState.xpBoostMultiplier = item.val;
-                    st._xpBoostMultiplier = item.val;
+                    _shopState.xpBoostMultiplier = Math.min(item.val, 5);
+                    st._xpBoostMultiplier = _shopState.xpBoostMultiplier;
                     st._xpBoostExpires = Date.now() + 60 * 60 * 1000;
                     break;
                 case 'shield':
@@ -1123,7 +1145,6 @@ function buyBundle(id) {
         showFeedback(`${bundle.icon} تم شراء ${bundle.name}!`);
     });
 }
-
 /* ═══════════════════════════════════════════════════════════════
    ⑦ العرض العاجل
 ═══════════════════════════════════════════════════════════════ */
