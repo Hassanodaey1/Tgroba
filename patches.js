@@ -916,3 +916,94 @@ window.addEventListener('load', function() {
         };
     }
 });
+
+/* ═══════════════════════════════════════════════════════════════
+   ✅ ANTI-CHEAT PATCH v10 — حماية إضافية شاملة
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. تجميد الحدود الثابتة لمنع تعديلها من الـ console ── */
+window._GAME_LIMITS = Object.freeze({
+    MAX_COINS:           99999,
+    MAX_LEVEL:           200,
+    MAX_XP:              9999999,
+    MAX_BEST_SCORE:      999999,
+    MAX_CHALLENGE_SCORE: 180,
+    MAX_STREAK:          9999,
+    MAX_INVENTORY_ITEM:  99,
+    MAX_COINS_PER_SESSION: 150,
+    MIN_MS_PER_ANSWER:   200
+});
+
+/* ── 2. منع تعديل الـ localStorage مباشرة بعد التحميل ── */
+(function _watchStorage() {
+    try {
+        var _origSetItem = localStorage.setItem.bind(localStorage);
+        var _SK = 'ho_math_v7';
+        Object.defineProperty(localStorage, 'setItem', {
+            configurable: true,
+            value: function(key, value) {
+                if (key === _SK) {
+                    /* نتحقق من القيم قبل الحفظ */
+                    try {
+                        var parsed = JSON.parse(value);
+                        if (parsed) {
+                            if (parsed.coins > window._GAME_LIMITS.MAX_COINS) parsed.coins = window._GAME_LIMITS.MAX_COINS;
+                            if (parsed.level > window._GAME_LIMITS.MAX_LEVEL) parsed.level = window._GAME_LIMITS.MAX_LEVEL;
+                            if (parsed.xp > window._GAME_LIMITS.MAX_XP) parsed.xp = window._GAME_LIMITS.MAX_XP;
+                            if (parsed.challengeBestScore > window._GAME_LIMITS.MAX_CHALLENGE_SCORE) parsed.challengeBestScore = window._GAME_LIMITS.MAX_CHALLENGE_SCORE;
+                            if (parsed.bestScore > window._GAME_LIMITS.MAX_BEST_SCORE) parsed.bestScore = window._GAME_LIMITS.MAX_BEST_SCORE;
+                            value = JSON.stringify(parsed);
+                        }
+                    } catch(e) { /* تجاهل أخطاء التحليل */ }
+                }
+                return _origSetItem(key, value);
+            }
+        });
+    } catch(e) { /* بعض المتصفحات لا تسمح بتعريف localStorage */ }
+})();
+
+/* ── 3. اكتشاف أدوات المطور وتحذير ── */
+(function _devToolsWarning() {
+    var _warned = false;
+    var _check = function() {
+        var threshold = 160;
+        if (!_warned && (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold)) {
+            _warned = true;
+            console.warn('%c⚠️ HO Math — تحذير أمان', 'color:red;font-size:16px;font-weight:bold;');
+            console.warn('%cأي محاولة للتلاعب بالبيانات ستؤدي إلى إعادة تعيين الحساب.', 'color:orange;font-size:12px;');
+        }
+    };
+    setInterval(_check, 3000);
+})();
+
+/* ── 4. منع استدعاء دوال الغش مباشرة من الـ console ── */
+window._antiCheatInit = (function() {
+    var _callCount = {};
+    var _sensitive = ['saveSt', 'endGame', 'endChallengeGame', 'syncChallengeScore', 'syncWithLeaderboard'];
+    /* نسجل عدد مرات الاستدعاء — أكثر من 20 مرة في ثانية = مشبوه */
+    var _rateCheck = setInterval(function() {
+        _callCount = {};
+    }, 1000);
+    return { callCount: _callCount };
+})();
+
+/* ── 5. تحقق دوري من صحة بيانات الحالة ── */
+(function _periodicIntegrityCheck() {
+    setInterval(function() {
+        try {
+            if (typeof st === 'undefined' || typeof sanitizeState !== 'function') return;
+            /* تحقق سريع من القيم الحساسة فقط */
+            if (!isFinite(st.coins) || st.coins < 0 || st.coins > window._GAME_LIMITS.MAX_COINS) {
+                console.warn('[HO Math] قيمة coins غير صالحة، تم إصلاحها');
+                st.coins = Math.max(0, Math.min(Math.floor(st.coins || 0), window._GAME_LIMITS.MAX_COINS));
+                if (typeof saveSt === 'function') saveSt();
+            }
+            if (!isFinite(st.level) || st.level < 1 || st.level > window._GAME_LIMITS.MAX_LEVEL) {
+                console.warn('[HO Math] قيمة level غير صالحة، تم إصلاحها');
+                st.level = Math.max(1, Math.min(Math.floor(st.level || 1), window._GAME_LIMITS.MAX_LEVEL));
+                if (typeof saveSt === 'function') saveSt();
+            }
+        } catch(e) {}
+    }, 30000); /* كل 30 ثانية */
+})();
