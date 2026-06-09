@@ -146,7 +146,10 @@ function startChallengeGame() {
     CG.timeLeft   = 60;
     CG.maxTime    = 60;
     CG.consecutiveWrong = 0;
-    CG.helpersUsedSession = { skip: 0, remove: 0, time: 0 }; // ← عداد تراكمي للجلسة
+    CG.helpersUsedSession = { skip: 0, remove: 0, time: 0 };
+    /* ✅ ANTI-CHEAT: تسجيل وقت البدء الحقيقي لرفض النتائج المستحيلة */
+    CG._sessionStartMs = Date.now();
+    CG._lastAnswerTime = 0;
 
     if (CG.timer) { clearInterval(CG.timer); CG.timer = null; }
 
@@ -288,6 +291,10 @@ function loadChallengeQuestion() {
 ══════════════════════════════════════ */
 function checkChallengeAnswer(btn) {
     if (CG.answered || CG.ended) return;
+    /* ✅ ANTI-CHEAT: منع النقر المتسارع (debounce 200ms) */
+    const _now = Date.now();
+    if (CG._lastAnswerTime && _now - CG._lastAnswerTime < 200) return;
+    CG._lastAnswerTime = _now;
     CG.answered = true;
 
     const val = parseFloat(btn.getAttribute('data-val'));
@@ -415,7 +422,16 @@ function endChallengeGame() {
     CG.active = false;
     if (CG.timer) clearInterval(CG.timer);
 
-    CG.score = Math.max(0, Math.min(Math.floor(_cgScoreInternal || 0), 9999));
+    /* ✅ ANTI-CHEAT: تحقق من مدة الجلسة — لا يمكن الحصول على نقاط عالية في وقت قصير جداً */
+    const _sessionMs = Date.now() - (CG._sessionStartMs || Date.now());
+    const _minExpectedMs = (CG.questionIndex || 0) * 800; /* 800ms على الأقل لكل سؤال */
+    if (CG.questionIndex > 5 && _sessionMs < _minExpectedMs) {
+        console.warn('[HO Math] جلسة تحدي مشبوهة — سرعة مستحيلة');
+        /* تقليص النتيجة إلى صفر لجلسات مشبوهة */
+        _cgScoreInternal = 0;
+    }
+
+    CG.score = Math.max(0, Math.min(Math.floor(_cgScoreInternal || 0), 180));
     _cgScoreInternal = CG.score;
 
     const isNewRecord = CG.score > (st.challengeBestScore || 0);
@@ -629,7 +645,9 @@ function syncChallengeScore(score) {
     _lastCgSync = now;
 
     try {
-        const safeScore = Math.max(0, Math.min(Math.floor(score || 0), 9999));
+        /* ✅ ANTI-CHEAT: الحد النظري الأقصى = 3 نقاط × 60 ثانية = 180 */
+        const _theoreticalMax = 180;
+        const safeScore = Math.max(0, Math.min(Math.floor(score || 0), _theoreticalMax));
         const safeLevel = Math.min(st.level || 1, 200);
         const playerKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
         const ref = window.database.ref('challenge_leaderboard/' + playerKey);
