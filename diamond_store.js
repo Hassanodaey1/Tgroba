@@ -588,6 +588,9 @@ function _updateDiamondDisplayAll() {
     if (_balEl) _balEl.textContent = _d;
     const _homeEl = document.getElementById('homeDiamondCount');
     if (_homeEl) _homeEl.textContent = _d;
+    /* ── 💎 عداد الهيدر الجديد ── */
+    const _headerEl = document.getElementById('headerDiamonds');
+    if (_headerEl) _headerEl.textContent = _d;
     const _navEl = document.getElementById('navDiamondBadge');
     if (_navEl) {
         _navEl.textContent = _d;
