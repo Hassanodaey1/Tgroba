@@ -435,6 +435,13 @@
                 <div style="display:flex;align-items:center;gap:4px;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:20px;padding:5px 10px;font-size:0.78em;font-weight:900;color:var(--gold);white-space:nowrap;">
                     💰 <span id="headerCoins">0</span>
                 </div>
+                <!-- زر MP في الهيدر -->
+                <button class="header-mp-btn" onclick="openSeasonPassOverlay()">
+                    <span class="header-mp-label">MP</span>
+                    <div class="header-mp-bar-wrap">
+                        <div class="header-mp-bar" id="headerMpBar" style="width:0%"></div>
+                    </div>
+                </button>
                 <div class="th-right">
                     <!-- زر الإعدادات — ينقل إلى صفحة الإعدادات -->
                     <div class="icon-pill" id="mainSettingsBtn" onclick="goTab('settings')" title="الإعدادات">⚙️</div>
@@ -809,23 +816,6 @@
 
         <!-- ══ شريط الأزرار — ثابت في الأسفل ══ -->
         <div class="comp-bottom-bar">
-            <!-- زر Math Pass — مميز بتصميم خاص -->
-            <button class="comp-bottom-btn comp-season-btn" onclick="openSeasonPassOverlay()">
-                <span class="comp-bottom-btn-icon">🏆</span>
-                <div class="comp-season-btn-body">
-                    <div class="comp-season-btn-title-row">
-                        <span class="comp-season-mp-badge">MP</span>
-                        <span class="comp-season-btn-title">Math Pass</span>
-                    </div>
-                    <span class="comp-season-btn-sub" id="seasonBtnSub">جارٍ التحميل…</span>
-                </div>
-                <div class="comp-season-btn-right">
-                    <div class="comp-season-mini-bar">
-                        <div class="comp-season-mini-fill" id="seasonMiniBarFill" style="width:0%"></div>
-                    </div>
-                    <span class="comp-season-pts-badge" id="seasonPtsBadge">0/1000</span>
-                </div>
-            </button>
             <button class="comp-bottom-btn" onclick="openChallengeTasksOverlay()">
                 <span class="comp-bottom-btn-icon">📋</span>
                 <span class="comp-bottom-btn-label">مهام التحدي</span>
@@ -839,11 +829,6 @@
             <button class="comp-bottom-btn" onclick="openLbOverlay('general')">
                 <span class="comp-bottom-btn-icon">📊</span>
                 <span class="comp-bottom-btn-label">لائحة الصدارة للألعاب العامة</span>
-                <span class="comp-bottom-btn-arrow">›</span>
-            </button>
-            <button class="comp-bottom-btn comp-season-lb-btn" onclick="openSeasonLeaderboard()">
-                <span class="comp-bottom-btn-icon">🏆</span>
-                <span class="comp-bottom-btn-label">صدارة الموسم الأسبوعي</span>
                 <span class="comp-bottom-btn-arrow">›</span>
             </button>
         </div>
@@ -1012,6 +997,16 @@
             </div>
             <div class="sp-desc">أكمل المهام اليومية لتجمع نقاط الموسم • تتجدد كل يوم</div>
             <div id="spDailyTasksList" class="sp-tasks-list"></div>
+
+            <!-- زر صدارة الموسم — داخل صفحة MP -->
+            <button class="sp-lb-btn" onclick="openSeasonLeaderboard()">
+                <span class="sp-lb-btn-icon">🏅</span>
+                <div class="sp-lb-btn-info">
+                    <div class="sp-lb-btn-title">صدارة Math Pass</div>
+                    <div class="sp-lb-btn-sub">تصنيف اللاعبين هذا الأسبوع</div>
+                </div>
+                <span class="sp-lb-btn-arrow">›</span>
+            </button>
 
         </div>
 
@@ -1634,7 +1629,7 @@
                     </div>
                 </div>
                 <!-- شريط الدقة -->
-               <div style="background:var(--surface3);border-radius:8px;height:8px;overflow:hidden;">
+                <div style="background:var(--surface3);border-radius:8px;height:8px;overflow:hidden;">
                     <div id="parentAccBar" style="height:100%;border-radius:8px;background:linear-gradient(90deg,#10b981,#06b6d4);transition:width 0.6s ease;width:0%;"></div>
                 </div>
                 <div style="font-size:0.62em;color:var(--text2);margin-top:6px;text-align:center;" id="parentDailyGames">0 جلسة اليوم</div>
