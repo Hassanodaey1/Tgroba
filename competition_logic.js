@@ -441,6 +441,32 @@ function endChallengeGame() {
     /* ── تحديث مهام الموسم بناءً على نتيجة هذه الجلسة ── */
     try { _seasonUpdateAfterGame({ score: CG.score, mode: 'challenge' }); } catch(e) {}
 
+    /* ═══ 💎 ماس من التحدي ═══ */
+    try {
+        if (typeof st.diamonds === 'number') {
+            const _today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+            if (!st._diamondSources) st._diamondSources = {};
+            let _cd = 0;
+            /* أول مرة تصل لـ 30 نقطة في التحدي — يومياً */
+            if (CG.score >= 30) {
+                const _k = 'challenge30_' + _today;
+                if (!st._diamondSources[_k]) { st._diamondSources[_k] = true; _cd += 1; }
+            }
+            /* سجل شخصي جديد في التحدي */
+            if (isNewRecord && CG.score >= 20) {
+                const _k2 = 'challenge_record_' + _today;
+                if (!st._diamondSources[_k2]) { st._diamondSources[_k2] = true; _cd += 1; }
+            }
+            if (_cd > 0) {
+                st.diamonds = Math.min(9999, st.diamonds + _cd);
+                setTimeout(() => {
+                    try { showFeedback(`💎 +${_cd} ماس نادر!`); } catch(e) {}
+                    try { if (typeof _showDiamondFloat === 'function') _showDiamondFloat(_cd); } catch(e) {}
+                }, 800);
+            }
+        }
+    } catch(_de) {}
+
     saveSt();
 
     // مزامنة Firebase
