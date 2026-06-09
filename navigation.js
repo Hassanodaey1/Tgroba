@@ -108,11 +108,11 @@
                 if (!advancedUnlocked) {
                     catAdvanced.classList.add('locked');
                     catAdvanced.onclick = null;
-                    document.getElementById('catAdvancedStats').textContent = '🔒 يفتح Lv.7';
+                    try { const _el = document.getElementById('catAdvancedStats'); if(_el) _el.textContent = '🔒 يفتح Lv.7'; } catch(e) {};
                 } else {
                     catAdvanced.classList.remove('locked');
                     catAdvanced.onclick = () => startGameWith('classic', 'advanced', null, true);
-                    document.getElementById('catAdvancedStats').textContent = 'اضغط للعب';
+                    try { const _el2 = document.getElementById('catAdvancedStats'); if(_el2) _el2.textContent = 'اضغط للعب'; } catch(e) {};
                 }
             }
             const lawsUnlocked = level >= 10;
@@ -137,11 +137,11 @@
                 if (!lawsUnlocked) {
                     catLaws.classList.add('locked');
                     catLaws.onclick = null;
-                    document.getElementById('catLawsStats').textContent = '🔒 يفتح Lv.10';
+                    try { const _el3 = document.getElementById('catLawsStats'); if(_el3) _el3.textContent = '🔒 يفتح Lv.10'; } catch(e) {};
                 } else {
                     catLaws.classList.remove('locked');
                     catLaws.onclick = () => startGameWith('classic', 'laws', null, true);
-                    document.getElementById('catLawsStats').textContent = 'اضغط للعب';
+                    try { const _el4 = document.getElementById('catLawsStats'); if(_el4) _el4.textContent = 'اضغط للعب'; } catch(e) {};
                 }
             }
             const diffMedium = document.getElementById('diffMedium');
