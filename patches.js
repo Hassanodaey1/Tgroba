@@ -913,6 +913,8 @@ window.addEventListener('load', function() {
             try {
                 if (typeof window._updateSeasonBtn === 'function') window._updateSeasonBtn();
             } catch(_e) {}
+            /* ── 💎 تحديث عداد الجواهر في الهيدر ── */
+            _updateHeaderDiamonds();
         };
     }
 });
@@ -1095,9 +1097,39 @@ function _injectDiamondStoreButton() {
     if (typeof window === 'undefined') return;
     window.addEventListener('load', function() {
         setTimeout(function() {
-            try { _injectDiamondStoreButton(); } catch(e) {}
+            try {
+                /* لم نعد نُضيف homeDiamondBtn لأن عداد الهيدر موجود مباشرة */
+                _updateHeaderDiamonds && _updateHeaderDiamonds();
+                /* نُحدّث فقط badge الناف وزر متجر الماس في صفحة shop */
+                _injectDiamondStoreButton();
+            } catch(e) {}
         }, 1200);
     });
 })();
 
 window._injectDiamondStoreButton = _injectDiamondStoreButton;
+
+/* ═══════════════════════════════════════════════════════════════
+   💎 تحديث عداد الجواهر في هيدر الصفحة الرئيسية
+   يُستدعى من saveSt وعند تحميل الصفحة
+═══════════════════════════════════════════════════════════════ */
+function _updateHeaderDiamonds() {
+    try {
+        if (typeof st === 'undefined') return;
+        var d = st.diamonds || 0;
+        /* عنصر الهيدر الجديد */
+        var el = document.getElementById('headerDiamonds');
+        if (el) el.textContent = d;
+        /* إخفاء الزر إذا كانت الجواهر صفراً — يظهر فقط عند وجودها */
+        var wrap = document.getElementById('headerDiamondsWrap');
+        if (wrap) wrap.style.display = d >= 0 ? 'flex' : 'none';
+        /* تحديث diamond_store إن كانت مفتوحة */
+        if (typeof _updateDiamondDisplayAll === 'function') _updateDiamondDisplayAll();
+    } catch(e) {}
+}
+window._updateHeaderDiamonds = _updateHeaderDiamonds;
+
+/* تشغيل العداد عند تحميل الصفحة */
+window.addEventListener('load', function() {
+    setTimeout(_updateHeaderDiamonds, 800);
+});
