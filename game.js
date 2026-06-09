@@ -2,6 +2,10 @@
         /* ═══════════ CHECK ANSWER ═══════════ */
         function checkAnswer(btn) {
             if (G.answered || G.ended) return;
+            /* ✅ ANTI-CHEAT: debounce 150ms لمنع النقر المتسارع */
+            const _now = Date.now();
+            if (G._lastAnswerTime && _now - G._lastAnswerTime < 150) return;
+            G._lastAnswerTime = _now;
             /* 🧠 وضع الذاكرة: تأكد من أن المرحلة hide (السؤال اختفى) */
             if (G.mode === 'memory' && G._memPhase === 'show') return;
             /* إلغاء مؤقت الذاكرة عند الإجابة */
@@ -386,12 +390,18 @@
                 G.correct     = Math.max(0, Math.min(Math.floor(G.correct),     _maxQ));
                 G.wrong       = Math.max(0, Math.min(Math.floor(G.wrong),       _maxQ));
                 G.score       = Math.max(0, Math.min(Math.floor(G.score),       _maxScore));
-                G.coinsEarned = Math.max(0, Math.min(G.coinsEarned,             _maxCoins));
+                /* ✅ ANTI-CHEAT: حد أقصى صارم للعملات بناءً على الأداء الحقيقي */
+                const _strictMaxCoins = Math.min(_maxCoins, _maxQ * 3 + 10); /* لا يمكن كسب أكثر من 3 عملة/سؤال */
+                G.coinsEarned = Math.max(0, Math.min(G.coinsEarned, _strictMaxCoins));
                 G.bestStreak  = Math.max(0, Math.min(Math.floor(G.bestStreak),  _maxQ));
                 const earnedCoins = Math.floor(G.coinsEarned);
                 st.correctTotal += G.correct;
                 st.wrongTotal += G.wrong;
+                /* ✅ ANTI-CHEAT: حماية coins من الزيادة المفرطة */
+                const _coinsBeforeAdd = st.coins;
                 st.coins += earnedCoins;
+                /* لا يمكن لجلسة واحدة أن تضيف أكثر من 150 عملة */
+                if (st.coins - _coinsBeforeAdd > 150) st.coins = _coinsBeforeAdd + 150;
                 st.totalGames++;
                 recordDailyStat('game');
                 if (G.bestStreak > st.bestStreak) st.bestStreak = G.bestStreak;
@@ -437,10 +447,10 @@
                 const acc = G.correct + G.wrong > 0 ? Math.round((G.correct / (G.correct + G.wrong)) * 100) : 0;
                 st.history.unshift({ mode: G.mode, score: G.score, correct: G.correct, acc, op: G.op });
                 if (st.history.length > 10) st.history.pop();
-                /* 3.4: مكافأة الدقة 100% */
+                /* 3.4: مكافأة الدقة 100% — بحد أقصى 10 عملات لمنع الاستغلال */
                 const _total = G.correct + G.wrong;
                 if (_total > 0 && G.wrong === 0 && G.correct >= 5) {
-                    const _perfectBonus = Math.ceil(G.correct * 0.5);
+                    const _perfectBonus = Math.min(10, Math.ceil(G.correct * 0.3));
                     st.coins += _perfectBonus;
                     setTimeout(() => showFeedback(`⭐ دقة مثالية! +${_perfectBonus}💰`), 300);
                 }
@@ -625,6 +635,15 @@
 
         function updateDailyShield() {
             const today = todayStr();
+            /* ✅ ANTI-CHEAT: منع التلاعب بتاريخ الجهاز للحصول على مكافأة مبكرة */
+            const _now = Date.now();
+            const _storedMs = st._lastShieldCheckMs || 0;
+            /* إذا كان الوقت يرجع للخلف أكثر من ساعة → تجميد */
+            if (_storedMs > 0 && _now < _storedMs - 3600000) {
+                console.warn('[HO Math] تحذير: تلاعب محتمل بساعة الجهاز');
+                return;
+            }
+            st._lastShieldCheckMs = _now;
             if (st.lastDailyDate !== today) {
                 if (st.lastDailyDate && st.lastDailyDate > today) {
                     st.lastDailyDate = today;
