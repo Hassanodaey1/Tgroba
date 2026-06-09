@@ -872,297 +872,7 @@
 
     </div><!-- /competitionMainView -->
 
-    <!-- ══════════════════════════════════════════════════════
-         🏆 MATH PASS OVERLAY
-    ══════════════════════════════════════════════════════ -->
-    <div id="seasonPassOverlay" style="display:none;position:absolute;inset:0;z-index:40;background:var(--bg);flex-direction:column;overflow:hidden;">
 
-        <!-- ══ Header ══ -->
-        <div class="sp-header">
-            <button class="sp-back-btn" onclick="closeSeasonPassOverlay()">‹</button>
-            <div class="sp-header-center">
-                <div class="sp-header-title">
-                    <span class="sp-mp-badge-header">MP</span>
-                    Math Pass
-                </div>
-                <div class="sp-header-sub" id="spSeasonName">موسم الأرقام الذهبية 🔢</div>
-            </div>
-            <div class="sp-header-right">
-                <!-- عداد الأيام -->
-                <div class="sp-header-timer" id="spSeasonTimer">
-                    <span class="sp-timer-icon">⏳</span>
-                    <span id="spDaysLeft">7</span>
-                    <span>أيام</span>
-                </div>
-                <!-- زر ذاكرة المواسم -->
-                <button class="sp-history-btn" onclick="openSeasonHistory()" title="سجل المواسم">📜</button>
-            </div>
-        </div>
-
-        <!-- ══ شريط Streak + رتبة ══ -->
-        <div class="sp-streak-rank-bar">
-            <!-- Streak -->
-            <div class="sp-streak-box" id="spStreakBox">
-                <div class="sp-streak-fire" id="spStreakFire">🔥</div>
-                <div class="sp-streak-info">
-                    <div class="sp-streak-num" id="spStreakNum">0</div>
-                    <div class="sp-streak-label">يوم تتابع</div>
-                </div>
-                <div class="sp-streak-shield" id="spStreakShield" style="display:none;">
-                    <span>🛡️</span><span id="spShieldCount">0</span>
-                </div>
-            </div>
-            <!-- فاصل -->
-            <div class="sp-srb-divider"></div>
-            <!-- الرتبة -->
-            <div class="sp-rank-box" id="spRankBox">
-                <div class="sp-rank-icon" id="spRankIcon">🥉</div>
-                <div class="sp-rank-info">
-                    <div class="sp-rank-label" id="spRankLabel">مبتدئ</div>
-                    <div class="sp-rank-sub">رتبة الموسم</div>
-                </div>
-                <div class="sp-rank-next" id="spRankNext"></div>
-            </div>
-            <!-- Bonus Day بادج -->
-            <div class="sp-bonus-badge" id="spBonusBadge" style="display:none;">
-                <span>×2</span>
-                <span class="sp-bonus-label">يوم المضاعف!</span>
-            </div>
-        </div>
-
-        <!-- ══ شريط التقدم الكلي ══ -->
-        <div class="sp-progress-section">
-            <div class="sp-progress-header">
-                <span class="sp-pts-label">نقاط الموسم</span>
-                <span class="sp-pts-val"><span id="spCurrentPts">0</span> / 1000</span>
-            </div>
-            <div class="sp-progress-track">
-                <div class="sp-progress-fill" id="spProgressFill" style="width:0%"></div>
-                <div class="sp-progress-glow" id="spProgressGlow"></div>
-            </div>
-            <div class="sp-progress-footer">
-                <span class="sp-completed-days">✅ <span id="spCompletedDays">0</span> يوم مكتمل</span>
-                <button class="sp-share-btn" onclick="shareSeasonAchievement()">📤 شارك إنجازك</button>
-                <span class="sp-total-earned">🏅 <span id="spTotalEarned">0</span> نقطة إجمالية</span>
-            </div>
-        </div>
-
-        <!-- ══ Body قابل للتمرير ══ -->
-        <div class="sp-body">
-
-            <!-- مهمة الفلاش ⚡ (تظهر فقط إذا كانت نشطة) -->
-            <div id="spFlashTaskSection" style="display:none;">
-                <div class="sp-section-title sp-flash-title">
-                    ⚡ مهمة فلاش
-                    <span class="sp-flash-timer-badge" id="spFlashTimer">--:--</span>
-                </div>
-                <div id="spFlashTaskCard" class="sp-flash-card">
-                    <!-- تُبنى بـ JS -->
-                </div>
-            </div>
-
-            <!-- صندوق الموسم 🎁 (يظهر عند إكمال 35 مهمة) -->
-            <div id="spChestSection" style="display:none;">
-                <div class="sp-chest-card" onclick="openSeasonChest()">
-                    <div class="sp-chest-icon" id="spChestIcon">🎁</div>
-                    <div class="sp-chest-info">
-                        <div class="sp-chest-title">صندوق الموسم!</div>
-                        <div class="sp-chest-sub">أكملت جميع المهام — اضغط لفتح جائزتك</div>
-                    </div>
-                    <div class="sp-chest-arrow">›</div>
-                </div>
-            </div>
-
-            <!-- مسار الجوائز — زر يفتح الصفحة -->
-            <button class="sp-track-open-btn" onclick="openRewardTrackOverlay()">
-                <div class="sp-track-open-left">
-                    <div class="sp-track-open-icon">🎁</div>
-                    <div class="sp-track-open-info">
-                        <div class="sp-track-open-title">مسار الجوائز</div>
-                        <div class="sp-track-open-sub" id="spTrackBtnSub">اضغط لعرض الجوائز</div>
-                    </div>
-                </div>
-                <div class="sp-track-open-right">
-                    <div class="sp-track-mini-nodes" id="spTrackMiniNodes">
-                        <!-- 10 نقاط مصغّرة تُبنى بـ JS -->
-                    </div>
-                    <div class="sp-track-open-arrow">›</div>
-                </div>
-            </button>
-
-            <!-- زر مهام اليوم — يفتح sheet سريع -->
-            <button class="sp-sheet-trigger-btn sp-daily-trigger" onclick="openMpDailySheet()">
-                <div class="sp-stb-left">
-                    <div class="sp-stb-icon">📅</div>
-                    <div class="sp-stb-info">
-                        <div class="sp-stb-title">مهام اليوم</div>
-                        <div class="sp-stb-sub">أكمل المهام اليومية لتجمع النقاط</div>
-                    </div>
-                </div>
-                <div class="sp-stb-right">
-                    <span class="sp-stb-badge" id="spDailyBadge">0/5</span>
-                    <span class="sp-stb-arrow">›</span>
-                </div>
-            </button>
-
-            <!-- زر لائحة الصدارة — يفتح sheet سريع -->
-            <button class="sp-sheet-trigger-btn sp-lb-trigger" onclick="openMpLeaderboardSheet()">
-                <div class="sp-stb-left">
-                    <div class="sp-stb-icon">🏅</div>
-                    <div class="sp-stb-info">
-                        <div class="sp-stb-title">لائحة الصدارة</div>
-                        <div class="sp-stb-sub">تصنيف اللاعبين هذا الأسبوع</div>
-                    </div>
-                </div>
-                <div class="sp-stb-right">
-                    <span class="sp-stb-arrow">›</span>
-                </div>
-            </button>
-
-        </div>
-
-        <!-- شاشة إتمام الموسم -->
-        <div id="spCompleteScreen">
-            <div class="sp-complete-crown">👑</div>
-            <div class="sp-complete-title">أتممت الموسم!</div>
-            <div class="sp-complete-sub">
-                لقد جمعت 1000 نقطة وأكملت Math Pass كاملاً —<br>أنت بطل الموسم! 🏆
-            </div>
-            <div class="sp-complete-icons">🏆 🎭 🌟</div>
-            <button class="sp-complete-btn"
-                onclick="document.getElementById('spCompleteScreen').style.display='none';">
-                رائع! ✨
-            </button>
-        </div>
-
-        <!-- overlay فتح الصندوق -->
-        <div id="spChestOpenScreen" style="display:none;position:absolute;inset:0;z-index:50;background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:28px;">
-            <div class="sp-chest-open-icon" id="spChestOpenIcon">🎁</div>
-            <div class="sp-chest-open-title">صندوق الموسم!</div>
-            <div class="sp-chest-open-reward" id="spChestOpenReward">جارٍ الفتح…</div>
-            <button class="sp-complete-btn" onclick="document.getElementById('spChestOpenScreen').style.display='none';">
-                رائع! 🎉
-            </button>
-        </div>
-
-    </div><!-- /seasonPassOverlay -->
-
-    <!-- ══ overlay مشاركة الإنجاز ══ -->
-    <div id="shareAchievementOverlay" style="display:none;position:absolute;inset:0;z-index:50;background:rgba(0,0,0,0.85);flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;">
-        <div class="sp-share-card" id="shareCard">
-            <div class="sp-share-card-header">
-                <span class="sp-share-game-logo">🏆 HO Math</span>
-                <span class="sp-share-season-name" id="shareSeasonName">موسم الأرقام الذهبية</span>
-            </div>
-            <div class="sp-share-avatar" id="shareAvatar">🧑</div>
-            <div class="sp-share-player-name" id="sharePlayerName">لاعب</div>
-            <div class="sp-share-rank" id="shareRankDisplay">🥉 مبتدئ</div>
-            <div class="sp-share-stats-row">
-                <div class="sp-share-stat">
-                    <div class="sp-share-stat-val" id="sharePoints">0</div>
-                    <div class="sp-share-stat-lbl">نقطة</div>
-                </div>
-                <div class="sp-share-stat-divider"></div>
-                <div class="sp-share-stat">
-                    <div class="sp-share-stat-val" id="shareStreak">0🔥</div>
-                    <div class="sp-share-stat-lbl">تتابع</div>
-                </div>
-                <div class="sp-share-stat-divider"></div>
-                <div class="sp-share-stat">
-                    <div class="sp-share-stat-val" id="shareDays">0</div>
-                    <div class="sp-share-stat-lbl">يوم مكتمل</div>
-                </div>
-            </div>
-            <div class="sp-share-bar">
-                <div class="sp-share-bar-fill" id="shareBarFill" style="width:0%"></div>
-            </div>
-            <div class="sp-share-footer">هل يمكنك التغلب عليّ؟ 💪</div>
-        </div>
-        <div style="display:flex;gap:10px;width:100%;max-width:320px;">
-            <button class="sp-share-action-btn sp-share-copy-btn" onclick="copyShareText()">📋 نسخ النص</button>
-            <button class="sp-share-action-btn sp-share-close-btn" onclick="closeShareOverlay()">✕ إغلاق</button>
-        </div>
-        <div id="shareCopiedMsg" style="display:none;font-size:0.72em;color:#10b981;font-weight:700;">✅ تم النسخ!</div>
-    </div>
-
-    <!-- ══ overlay مسار الجوائز ══ -->
-    <div id="rewardTrackOverlay" style="display:none;position:absolute;inset:0;z-index:46;flex-direction:column;overflow:hidden;">
-        <div class="rto-bg"></div>
-        <div class="rto-header">
-            <button class="rto-back-btn" onclick="closeRewardTrackOverlay()">‹</button>
-            <div class="rto-header-center">
-                <div class="rto-title">🎁 مسار الجوائز</div>
-                <div class="rto-sub" id="rtoProgressSub">0 / 1000 نقطة</div>
-            </div>
-            <div class="rto-pts-pill" id="rtoPtsPill">
-                <span id="rtoPtsVal">0</span>
-                <span>🏅</span>
-            </div>
-        </div>
-        <div class="rto-progress-wrap">
-            <div class="rto-progress-bg">
-                <div class="rto-progress-fill" id="rtoProgressFill" style="width:0%"></div>
-                <div class="rto-progress-label" id="rtoProgressLabel">0%</div>
-            </div>
-        </div>
-        <div class="rto-body" id="rtoBody"></div>
-    </div>
-
-    <div id="seasonHistoryOverlay" style="display:none;position:absolute;inset:0;z-index:45;background:var(--bg);flex-direction:column;overflow:hidden;">
-        <div class="sp-header">
-            <button class="sp-back-btn" onclick="closeSeasonHistory()">‹</button>
-            <div class="sp-header-center">
-                <div class="sp-header-title">📜 سجل المواسم</div>
-                <div class="sp-header-sub">رحلتك عبر الزمن</div>
-            </div>
-            <div style="width:36px;"></div>
-        </div>
-        <div class="sp-body" id="spHistoryList">
-            <!-- تُبنى بـ JS -->
-        </div>
-    </div>
-
-    <!-- ══ overlay لوحة صدارة الموسم الأسبوعي ══ -->
-    <div id="seasonLbOverlay" style="display:none;position:absolute;inset:0;z-index:35;background:var(--bg);flex-direction:column;overflow:hidden;">
-        <!-- Header -->
-        <div class="slb-header">
-            <button class="sp-back-btn" onclick="closeSeasonLeaderboard()">‹</button>
-            <div class="slb-header-center">
-                <div class="slb-title">🏆 صدارة الموسم</div>
-                <div class="slb-sub" id="slbSeasonName">موسم الأرقام الذهبية 🔢</div>
-            </div>
-            <button class="slb-refresh-btn" onclick="refreshSeasonLeaderboard()" id="slbRefreshBtn">🔄</button>
-        </div>
-
-        <!-- بطاقة مرتبتي -->
-        <div class="slb-my-card" id="slbMyCard">
-            <div class="slb-my-rank" id="slbMyRank">—</div>
-            <div class="slb-my-info">
-                <div class="slb-my-name" id="slbMyName">أنت</div>
-                <div class="slb-my-pts" id="slbMyPts">0 نقطة</div>
-            </div>
-            <div class="slb-my-badge" id="slbMyBadge">🥉</div>
-        </div>
-
-        <!-- تبويبات: هذا الأسبوع / الكل -->
-        <div class="slb-tabs">
-            <button class="slb-tab active" id="slbTabWeek" onclick="switchSeasonLbTab('week')">هذا الأسبوع</button>
-            <button class="slb-tab" id="slbTabAll"  onclick="switchSeasonLbTab('all')">الكل</button>
-        </div>
-
-        <!-- قائمة اللاعبين -->
-        <div class="slb-list-wrap">
-            <div class="slb-list-header">
-                <span>المركز</span>
-                <span>اللاعب</span>
-                <span>الرتبة</span>
-                <span>النقاط</span>
-            </div>
-            <div id="slbList" class="slb-list">
-                <div class="slb-loading">⏳ جارٍ التحميل…</div>
-            </div>
-        </div>
-    </div>
 
 
     <!-- ══════════════════════════════════════════
@@ -1355,6 +1065,270 @@
                     <div class="nav-item-icon">🛍️</div>
                     <div class="nav-item-label">المتجر</div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         🏆 MATH PASS — كل الـ overlays خارج app-wrapper / position:fixed
+    ══════════════════════════════════════════════════════ -->
+
+    <!-- الصفحة الرئيسية لـ Math Pass -->
+    <div id="seasonPassOverlay" style="display:none;position:fixed;inset:0;z-index:8000;background:var(--bg);flex-direction:column;overflow:hidden;">
+
+        <!-- Header -->
+        <div class="sp-header">
+            <button class="sp-back-btn" onclick="closeSeasonPassOverlay()">‹</button>
+            <div class="sp-header-center">
+                <div class="sp-header-title">
+                    <span class="sp-mp-badge-header">MP</span>
+                    Math Pass
+                </div>
+                <div class="sp-header-sub" id="spSeasonName">موسم الأرقام الذهبية 🔢</div>
+            </div>
+            <div class="sp-header-right">
+                <div class="sp-header-timer" id="spSeasonTimer">
+                    <span class="sp-timer-icon">⏳</span>
+                    <span id="spDaysLeft">7</span>
+                    <span>أيام</span>
+                </div>
+                <button class="sp-history-btn" onclick="openSeasonHistory()" title="سجل المواسم">📜</button>
+            </div>
+        </div>
+
+        <!-- شريط Streak + رتبة -->
+        <div class="sp-streak-rank-bar">
+            <div class="sp-streak-box" id="spStreakBox">
+                <div class="sp-streak-fire" id="spStreakFire">🔥</div>
+                <div class="sp-streak-info">
+                    <div class="sp-streak-num" id="spStreakNum">0</div>
+                    <div class="sp-streak-label">يوم تتابع</div>
+                </div>
+                <div class="sp-streak-shield" id="spStreakShield" style="display:none;">
+                    <span>🛡️</span><span id="spShieldCount">0</span>
+                </div>
+            </div>
+            <div class="sp-srb-divider"></div>
+            <div class="sp-rank-box" id="spRankBox">
+                <div class="sp-rank-icon" id="spRankIcon">🥉</div>
+                <div class="sp-rank-info">
+                    <div class="sp-rank-label" id="spRankLabel">مبتدئ</div>
+                    <div class="sp-rank-sub">رتبة الموسم</div>
+                </div>
+                <div class="sp-rank-next" id="spRankNext"></div>
+            </div>
+            <div class="sp-bonus-badge" id="spBonusBadge" style="display:none;">
+                <span>×2</span>
+                <span class="sp-bonus-label">يوم المضاعف!</span>
+            </div>
+        </div>
+
+        <!-- شريط التقدم الكلي -->
+        <div class="sp-progress-section">
+            <div class="sp-progress-header">
+                <span class="sp-pts-label">نقاط الموسم</span>
+                <span class="sp-pts-val"><span id="spCurrentPts">0</span> / 1000</span>
+            </div>
+            <div class="sp-progress-track">
+                <div class="sp-progress-fill" id="spProgressFill" style="width:0%"></div>
+                <div class="sp-progress-glow" id="spProgressGlow"></div>
+            </div>
+            <div class="sp-progress-footer">
+                <span class="sp-completed-days">✅ <span id="spCompletedDays">0</span> يوم مكتمل</span>
+                <button class="sp-share-btn" onclick="shareSeasonAchievement()">📤 شارك إنجازك</button>
+                <span class="sp-total-earned">🏅 <span id="spTotalEarned">0</span> نقطة إجمالية</span>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="sp-body">
+
+            <!-- مهمة الفلاش -->
+            <div id="spFlashTaskSection" style="display:none;">
+                <div class="sp-section-title sp-flash-title">
+                    ⚡ مهمة فلاش
+                    <span class="sp-flash-timer-badge" id="spFlashTimer">--:--</span>
+                </div>
+                <div id="spFlashTaskCard" class="sp-flash-card"></div>
+            </div>
+
+            <!-- صندوق الموسم -->
+            <div id="spChestSection" style="display:none;">
+                <div class="sp-chest-card" onclick="openSeasonChest()">
+                    <div class="sp-chest-icon" id="spChestIcon">🎁</div>
+                    <div class="sp-chest-info">
+                        <div class="sp-chest-title">صندوق الموسم!</div>
+                        <div class="sp-chest-sub">أكملت جميع المهام — اضغط لفتح جائزتك</div>
+                    </div>
+                    <div class="sp-chest-arrow">›</div>
+                </div>
+            </div>
+
+            <!-- مسار الجوائز -->
+            <button class="sp-track-open-btn" onclick="openRewardTrackOverlay()">
+                <div class="sp-track-open-left">
+                    <div class="sp-track-open-icon">🎁</div>
+                    <div class="sp-track-open-info">
+                        <div class="sp-track-open-title">مسار الجوائز</div>
+                        <div class="sp-track-open-sub" id="spTrackBtnSub">اضغط لعرض الجوائز</div>
+                    </div>
+                </div>
+                <div class="sp-track-open-right">
+                    <div class="sp-track-mini-nodes" id="spTrackMiniNodes"></div>
+                    <div class="sp-track-open-arrow">›</div>
+                </div>
+            </button>
+
+            <!-- مهام اليوم -->
+            <div class="sp-section-title sp-daily-title">
+                📅 مهام اليوم
+                <span class="sp-daily-badge" id="spDailyBadge">0/5</span>
+            </div>
+            <div class="sp-desc">أكمل المهام اليومية لتجمع نقاط الموسم • تتجدد كل يوم</div>
+            <div id="spDailyTasksList" class="sp-tasks-list"></div>
+
+            <!-- زر لائحة الصدارة -->
+            <button class="sp-lb-btn" onclick="openSeasonLeaderboard()">
+                <span class="sp-lb-btn-icon">🏅</span>
+                <div class="sp-lb-btn-info">
+                    <div class="sp-lb-btn-title">صدارة Math Pass</div>
+                    <div class="sp-lb-btn-sub">تصنيف اللاعبين هذا الأسبوع</div>
+                </div>
+                <span class="sp-lb-btn-arrow">›</span>
+            </button>
+
+        </div>
+
+        <!-- شاشة إتمام الموسم -->
+        <div id="spCompleteScreen">
+            <div class="sp-complete-crown">👑</div>
+            <div class="sp-complete-title">أتممت الموسم!</div>
+            <div class="sp-complete-sub">
+                لقد جمعت 1000 نقطة وأكملت Math Pass كاملاً —<br>أنت بطل الموسم! 🏆
+            </div>
+            <div class="sp-complete-icons">🏆 🎭 🌟</div>
+            <button class="sp-complete-btn" onclick="document.getElementById('spCompleteScreen').style.display='none';">
+                رائع! ✨
+            </button>
+        </div>
+
+        <!-- overlay فتح الصندوق (داخل MP) -->
+        <div id="spChestOpenScreen" style="display:none;position:fixed;inset:0;z-index:8050;background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:28px;">
+            <div class="sp-chest-open-icon" id="spChestOpenIcon">🎁</div>
+            <div class="sp-chest-open-title">صندوق الموسم!</div>
+            <div class="sp-chest-open-reward" id="spChestOpenReward">جارٍ الفتح…</div>
+            <button class="sp-complete-btn" onclick="document.getElementById('spChestOpenScreen').style.display='none';">
+                رائع! 🎉
+            </button>
+        </div>
+
+    </div><!-- /seasonPassOverlay -->
+
+    <!-- overlay مشاركة الإنجاز -->
+    <div id="shareAchievementOverlay" style="display:none;position:fixed;inset:0;z-index:8050;background:rgba(0,0,0,0.85);flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;">
+        <div class="sp-share-card" id="shareCard">
+            <div class="sp-share-card-header">
+                <span class="sp-share-game-logo">🏆 HO Math</span>
+                <span class="sp-share-season-name" id="shareSeasonName">موسم الأرقام الذهبية</span>
+            </div>
+            <div class="sp-share-avatar" id="shareAvatar">🧑</div>
+            <div class="sp-share-player-name" id="sharePlayerName">لاعب</div>
+            <div class="sp-share-rank" id="shareRankDisplay">🥉 مبتدئ</div>
+            <div class="sp-share-stats-row">
+                <div class="sp-share-stat">
+                    <div class="sp-share-stat-val" id="sharePoints">0</div>
+                    <div class="sp-share-stat-lbl">نقطة</div>
+                </div>
+                <div class="sp-share-stat-divider"></div>
+                <div class="sp-share-stat">
+                    <div class="sp-share-stat-val" id="shareStreak">0🔥</div>
+                    <div class="sp-share-stat-lbl">تتابع</div>
+                </div>
+                <div class="sp-share-stat-divider"></div>
+                <div class="sp-share-stat">
+                    <div class="sp-share-stat-val" id="shareDays">0</div>
+                    <div class="sp-share-stat-lbl">يوم مكتمل</div>
+                </div>
+            </div>
+            <div class="sp-share-bar">
+                <div class="sp-share-bar-fill" id="shareBarFill" style="width:0%"></div>
+            </div>
+            <div class="sp-share-footer">هل يمكنك التغلب عليّ؟ 💪</div>
+        </div>
+        <div style="display:flex;gap:10px;width:100%;max-width:320px;">
+            <button class="sp-share-action-btn sp-share-copy-btn" onclick="copyShareText()">📋 نسخ النص</button>
+            <button class="sp-share-action-btn sp-share-close-btn" onclick="closeShareOverlay()">✕ إغلاق</button>
+        </div>
+        <div id="shareCopiedMsg" style="display:none;font-size:0.72em;color:#10b981;font-weight:700;">✅ تم النسخ!</div>
+    </div>
+
+    <!-- overlay مسار الجوائز -->
+    <div id="rewardTrackOverlay" style="display:none;position:fixed;inset:0;z-index:8010;flex-direction:column;overflow:hidden;">
+        <div class="rto-bg"></div>
+        <div class="rto-header">
+            <button class="rto-back-btn" onclick="closeRewardTrackOverlay()">‹</button>
+            <div class="rto-header-center">
+                <div class="rto-title">🎁 مسار الجوائز</div>
+                <div class="rto-sub" id="rtoProgressSub">0 / 1000 نقطة</div>
+            </div>
+            <div class="rto-pts-pill" id="rtoPtsPill">
+                <span id="rtoPtsVal">0</span>
+                <span>🏅</span>
+            </div>
+        </div>
+        <div class="rto-progress-wrap">
+            <div class="rto-progress-bg">
+                <div class="rto-progress-fill" id="rtoProgressFill" style="width:0%"></div>
+                <div class="rto-progress-label" id="rtoProgressLabel">0%</div>
+            </div>
+        </div>
+        <div class="rto-body" id="rtoBody"></div>
+    </div>
+
+    <!-- overlay سجل المواسم -->
+    <div id="seasonHistoryOverlay" style="display:none;position:fixed;inset:0;z-index:8010;background:var(--bg);flex-direction:column;overflow:hidden;">
+        <div class="sp-header">
+            <button class="sp-back-btn" onclick="closeSeasonHistory()">‹</button>
+            <div class="sp-header-center">
+                <div class="sp-header-title">📜 سجل المواسم</div>
+                <div class="sp-header-sub">رحلتك عبر الزمن</div>
+            </div>
+            <div style="width:36px;"></div>
+        </div>
+        <div class="sp-body" id="spHistoryList"></div>
+    </div>
+
+    <!-- overlay لائحة الصدارة Math Pass -->
+    <div id="seasonLbOverlay" style="display:none;position:fixed;inset:0;z-index:8010;background:var(--bg);flex-direction:column;overflow:hidden;">
+        <div class="slb-header">
+            <button class="sp-back-btn" onclick="closeSeasonLeaderboard()">‹</button>
+            <div class="slb-header-center">
+                <div class="slb-title">🏆 صدارة الموسم</div>
+                <div class="slb-sub" id="slbSeasonName">موسم الأرقام الذهبية 🔢</div>
+            </div>
+            <button class="slb-refresh-btn" onclick="refreshSeasonLeaderboard()" id="slbRefreshBtn">🔄</button>
+        </div>
+        <div class="slb-my-card" id="slbMyCard">
+            <div class="slb-my-rank" id="slbMyRank">—</div>
+            <div class="slb-my-info">
+                <div class="slb-my-name" id="slbMyName">أنت</div>
+                <div class="slb-my-pts" id="slbMyPts">0 نقطة</div>
+            </div>
+            <div class="slb-my-badge" id="slbMyBadge">🥉</div>
+        </div>
+        <div class="slb-tabs">
+            <button class="slb-tab active" id="slbTabWeek" onclick="switchSeasonLbTab('week')">هذا الأسبوع</button>
+            <button class="slb-tab" id="slbTabAll" onclick="switchSeasonLbTab('all')">الكل</button>
+        </div>
+        <div class="slb-list-wrap">
+            <div class="slb-list-header">
+                <span>المركز</span>
+                <span>اللاعب</span>
+                <span>الرتبة</span>
+                <span>النقاط</span>
+            </div>
+            <div id="slbList" class="slb-list">
+                <div class="slb-loading">⏳ جارٍ التحميل…</div>
             </div>
         </div>
     </div>
@@ -1647,7 +1621,7 @@
             </div>
 
             <!-- الإجمالي الكلي -->
-            <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px;">
+           <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px;">
                 <div style="font-size:0.8em;font-weight:900;color:var(--text);margin-bottom:12px;">🏆 الإجمالي الكلي</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                     <div style="background:var(--surface3);border-radius:13px;padding:12px;text-align:center;">
@@ -2287,79 +2261,6 @@ function closeSettingsSubPage(overlayId) {
     </script>
 
 
-    <!-- ═══ Sheet سريع: مهام اليوم (MP) ═══ -->
-    <div id="mpDailySheet" style="position:fixed;inset:0;z-index:9200;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeMpDailySheet()">
-        <div style="background:var(--surface);border-radius:26px 26px 0 0;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;animation:mpSheetUp 0.32s cubic-bezier(0.34,1.4,0.64,1);">
-            <!-- Header -->
-            <div style="padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border2);">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:1.3em;">📅</span>
-                    <div>
-                        <div style="font-size:0.92em;font-weight:900;color:var(--text);">مهام اليوم</div>
-                        <div style="font-size:0.6em;color:var(--text2);margin-top:1px;">أكمل المهام لتجمع نقاط الموسم • تتجدد يومياً</div>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span id="mpDailySheetBadge" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:0.65em;font-weight:900;padding:3px 9px;border-radius:20px;">0/5</span>
-                    <button onclick="closeMpDailySheet()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:30px;height:30px;font-size:1em;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;">✕</button>
-                </div>
-            </div>
-            <!-- شريط تقدم -->
-            <div style="padding:10px 18px 0;flex-shrink:0;">
-                <div style="height:5px;background:var(--surface3);border-radius:99px;overflow:hidden;">
-                    <div id="mpDailySheetBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;transition:width 0.5s ease;"></div>
-                </div>
-            </div>
-            <!-- قائمة المهام -->
-            <div id="mpDailySheetList" style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 30px;display:flex;flex-direction:column;gap:0;"></div>
-        </div>
-    </div>
-
-    <!-- ═══ Sheet سريع: لائحة الصدارة (MP) ═══ -->
-    <div id="mpLeaderboardSheet" style="position:fixed;inset:0;z-index:9200;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeMpLeaderboardSheet()">
-        <div style="background:var(--surface);border-radius:26px 26px 0 0;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;animation:mpSheetUp 0.32s cubic-bezier(0.34,1.4,0.64,1);">
-            <!-- Header -->
-            <div style="padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border2);">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:1.3em;">🏅</span>
-                    <div>
-                        <div style="font-size:0.92em;font-weight:900;color:var(--text);">صدارة Math Pass</div>
-                        <div style="font-size:0.6em;color:var(--text2);margin-top:1px;" id="mpLbSheetSeasonName">موسم الأرقام الذهبية</div>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <button onclick="refreshMpLeaderboardSheet()" style="background:rgba(240,185,11,0.15);border:1px solid rgba(240,185,11,0.3);border-radius:50%;width:30px;height:30px;font-size:1em;cursor:pointer;color:var(--gold);display:flex;align-items:center;justify-content:center;transition:transform 0.3s;" id="mpLbRefreshBtn">↻</button>
-                    <button onclick="closeMpLeaderboardSheet()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:30px;height:30px;font-size:1em;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;">✕</button>
-                </div>
-            </div>
-            <!-- بطاقة مرتبتي -->
-            <div id="mpLbMyCard" style="margin:10px 16px 0;background:linear-gradient(135deg,rgba(240,185,11,0.12),rgba(124,58,237,0.08));border:1px solid rgba(240,185,11,0.25);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
-                <div style="font-size:1.4em;font-weight:900;color:var(--gold);min-width:32px;text-align:center;" id="mpLbMyRank">—</div>
-                <div style="flex:1;">
-                    <div style="font-size:0.8em;font-weight:900;color:var(--text);" id="mpLbMyName">أنت</div>
-                    <div style="font-size:0.62em;color:var(--text2);margin-top:1px;" id="mpLbMyPts">0 نقطة</div>
-                </div>
-                <div style="font-size:1.4em;" id="mpLbMyBadge">🥉</div>
-            </div>
-            <!-- تبويبات -->
-            <div style="display:flex;gap:6px;padding:10px 16px 0;flex-shrink:0;">
-                <button id="mpLbTabWeek" onclick="switchMpLbTab('week')" style="flex:1;padding:7px;border-radius:10px;border:1px solid rgba(240,185,11,0.35);background:linear-gradient(135deg,rgba(240,185,11,0.2),rgba(240,185,11,0.08));color:var(--gold);font-family:'Tajawal',sans-serif;font-size:0.75em;font-weight:900;cursor:pointer;">هذا الأسبوع</button>
-                <button id="mpLbTabAll" onclick="switchMpLbTab('all')" style="flex:1;padding:7px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-family:'Tajawal',sans-serif;font-size:0.75em;font-weight:700;cursor:pointer;">الكل</button>
-            </div>
-            <!-- رأس الجدول -->
-            <div style="display:grid;grid-template-columns:44px 1fr 52px 64px;padding:8px 16px 4px;flex-shrink:0;">
-                <span style="font-size:0.58em;color:var(--text3);font-weight:700;">المركز</span>
-                <span style="font-size:0.58em;color:var(--text3);font-weight:700;">اللاعب</span>
-                <span style="font-size:0.58em;color:var(--text3);font-weight:700;text-align:center;">الرتبة</span>
-                <span style="font-size:0.58em;color:var(--text3);font-weight:700;text-align:left;">النقاط</span>
-            </div>
-            <!-- قائمة اللاعبين -->
-            <div id="mpLbSheetList" style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 16px 30px;">
-                <div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">جاري التحميل…</div>
-            </div>
-        </div>
-    </div>
-
     <!-- ═══ نافذة مهام الفئة السريعة ═══ -->
     <div id="categorySheetOverlay" style="position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,0.68);backdrop-filter:blur(7px);display:none;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeCategorySheet()">
         <div style="background:var(--surface);border-radius:26px 26px 0 0;width:100%;max-width:520px;max-height:87vh;display:flex;flex-direction:column;overflow:hidden;animation:catSheetUp 0.32s cubic-bezier(0.34,1.4,0.64,1);">
@@ -2375,4 +2276,4 @@ function closeSettingsSubPage(overlayId) {
 </html>
           
          
-      
+       
