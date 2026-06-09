@@ -272,16 +272,24 @@ function _renderShopTabs() {
         { key: 'frames',      icon: '🖼️', label: 'إطارات', badge: 'جديد!' },
         { key: 'consumables', icon: '⚡',  label: 'مستهلكات' },
         { key: 'bundles',     icon: '🎁',  label: 'حزم', badge: 'وفّر!' },
+        { key: 'exclusives',  icon: '✨',  label: 'الحصريات', badge: '💎', diamond: true },
     ];
 
     tabs.innerHTML = tabDefs.map(t => {
         const active = _shopState.activeTab === t.key;
+        const isDiamond = t.diamond;
         const badge  = t.badge
-            ? `<span style="position:absolute;top:-7px;right:-3px;background:#ef4444;color:#fff;font-size:0.52em;font-weight:900;padding:1px 5px;border-radius:7px;white-space:nowrap;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,0.4);">${t.badge}</span>`
+            ? `<span style="position:absolute;top:-7px;right:-3px;background:${isDiamond ? 'linear-gradient(135deg,#00d4ff,#7c3aed)' : '#ef4444'};color:#fff;font-size:0.52em;font-weight:900;padding:1px 5px;border-radius:7px;white-space:nowrap;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,0.4);">${t.badge}</span>`
             : '';
+        const activeStyle = isDiamond
+            ? 'background:linear-gradient(135deg,#00d4ff22,#7c3aed22);color:#00d4ff;border-color:rgba(0,212,255,0.6);'
+            : 'background:var(--gold);color:#000;border-color:var(--gold);';
+        const inactiveStyle = isDiamond
+            ? 'background:rgba(0,212,255,0.06);color:#00d4ff;border-color:rgba(0,212,255,0.25);'
+            : 'background:var(--surface3);color:var(--text2);border-color:var(--border2);';
         return `<button class="shop-tab-btn${active ? ' active' : ''}"
             onclick="_setShopTab('${t.key}');playSound('click');"
-            style="flex:1;min-width:0;padding:7px 2px;border-radius:12px;font-size:0.62em;font-weight:800;white-space:nowrap;text-align:center;background:${active ? 'var(--gold)' : 'var(--surface3)'};color:${active ? '#000' : 'var(--text2)'};border:1px solid ${active ? 'var(--gold)' : 'var(--border2)'};position:relative;transition:all 0.18s ease;overflow:visible;"
+            style="flex:1;min-width:0;padding:7px 2px;border-radius:12px;font-size:0.62em;font-weight:800;white-space:nowrap;text-align:center;${active ? activeStyle : inactiveStyle}border:1px solid;position:relative;transition:all 0.18s ease;overflow:visible;"
         >${t.icon} ${t.label}${badge}</button>`;
     }).join('');
 }
@@ -300,6 +308,7 @@ function _renderActiveShopTab() {
         case 'frames':      _renderFrames(container);     break;
         case 'consumables': _renderConsumables(container); break;
         case 'bundles':     _renderBundles(container);    break;
+        case 'exclusives':  _renderExclusives(container); break;
     }
 }
 
@@ -1377,7 +1386,509 @@ function getXpMultiplier() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ⑫ تهيئة عند تحميل الصفحة
+   ✨ EXCLUSIVES — كتالوج الحصريات (عروض مؤقتة بالجواهر فقط)
+   كل عرض له: id, type, rarity, icon, name, desc, price(💎),
+   flashDuration(ms), badgeLabel, items[]
+═══════════════════════════════════════════════════════════════ */
+const EXCLUSIVES_CATALOG = [
+
+    /* ══ عروض الإطارات الحصرية ══ */
+    {
+        id: 'ex_frame_neon',
+        type: 'frame',
+        rarity: 'legendary',
+        icon: '⚡',
+        name: 'إطار النيون المتوهج',
+        desc: 'إطار أسطوري يتوهج بألوان النيون — متاح فقط لـ 24 ساعة',
+        diamondPrice: 6,
+        preview: 'frame_neon',
+        flashDuration: 24 * 3600 * 1000,
+        badgeLabel: '24 ساعة',
+    },
+    {
+        id: 'ex_frame_cosmos',
+        type: 'frame',
+        rarity: 'legendary',
+        icon: '🌌',
+        name: 'إطار الكون اللامتناهي',
+        desc: 'كوكبات ونجوم تدور حول أيقونتك — فرصة نادرة جداً',
+        diamondPrice: 9,
+        preview: 'frame_cosmos',
+        flashDuration: 48 * 3600 * 1000,
+        badgeLabel: '48 ساعة',
+    },
+    {
+        id: 'ex_frame_royal',
+        type: 'frame',
+        rarity: 'epic',
+        icon: '👑',
+        name: 'إطار الملوك الذهبي',
+        desc: 'مزخرف بالذهب الملكي — للذين يستحقون القمة',
+        diamondPrice: 5,
+        preview: 'frame_royal',
+        flashDuration: 36 * 3600 * 1000,
+        badgeLabel: '36 ساعة',
+    },
+
+    /* ══ عروض الألقاب الحصرية ══ */
+    {
+        id: 'ex_title_shadow',
+        type: 'title',
+        rarity: 'legendary',
+        icon: '🥷',
+        name: 'لقب «الظل الرياضي»',
+        desc: 'لقب أسطوري للصامتين الذين يتصدرون القائمة',
+        diamondPrice: 12,
+        titleValue: 'ex_shadow',
+        titleLabel: '🥷 الظل الرياضي',
+        flashDuration: 12 * 3600 * 1000,
+        badgeLabel: '12 ساعة فقط!',
+        urgent: true,
+    },
+    {
+        id: 'ex_title_supreme',
+        type: 'title',
+        rarity: 'legendary',
+        icon: '🔱',
+        name: 'لقب «الأعلى مرتبةً»',
+        desc: 'اللقب الذي لا يحمله إلا واحد من كل ألف لاعب',
+        diamondPrice: 18,
+        titleValue: 'ex_supreme',
+        titleLabel: '🔱 الأعلى مرتبةً',
+        flashDuration: 72 * 3600 * 1000,
+        badgeLabel: '3 أيام',
+    },
+
+    /* ══ عروض الأفاتارات الحصرية ══ */
+    {
+        id: 'ex_avatar_phoenix',
+        type: 'avatar',
+        rarity: 'legendary',
+        icon: '🦅',
+        name: 'أفاتار طائر الفينيق',
+        desc: 'يولد من جديد مع كل تحدٍّ — ظهور موسمي',
+        diamondPrice: 8,
+        emojiValue: '🦅',
+        flashDuration: 48 * 3600 * 1000,
+        badgeLabel: '48 ساعة',
+    },
+    {
+        id: 'ex_avatar_crystal',
+        type: 'avatar',
+        rarity: 'epic',
+        icon: '🔮',
+        name: 'أفاتار كرة الكريستال',
+        desc: 'رمز من يرى المستقبل ويحسب قبل الجميع',
+        diamondPrice: 5,
+        emojiValue: '🔮',
+        flashDuration: 24 * 3600 * 1000,
+        badgeLabel: '24 ساعة',
+    },
+
+    /* ══ حزم الحصريات (قيمة استثنائية) ══ */
+    {
+        id: 'ex_bundle_diamond_starter',
+        type: 'bundle',
+        rarity: 'epic',
+        icon: '💎',
+        name: 'حزمة الماس الأولى',
+        desc: '+150 عملة ذهبية + درعان + مضاعف XP ×2 لـ 24 ساعة',
+        diamondPrice: 10,
+        bundleItems: [
+            { type: 'coins',   val: 150 },
+            { type: 'shields', val: 2   },
+            { type: 'xpBoost', val: 2, durationHours: 24 },
+        ],
+        flashDuration: 48 * 3600 * 1000,
+        badgeLabel: 'قيمة خارقة',
+    },
+    {
+        id: 'ex_bundle_legend',
+        type: 'bundle',
+        rarity: 'legendary',
+        icon: '🌟',
+        name: 'حزمة الأسطورة الكاملة',
+        desc: '+300 عملة + إطار ملكي + لقب «الأسطورة» + مضاعف XP ×3 دائم لأسبوع',
+        diamondPrice: 28,
+        bundleItems: [
+            { type: 'coins',    val: 300 },
+            { type: 'frame',    val: 'frame_legend' },
+            { type: 'title',    val: 'ex_legend_title', label: '🌟 الأسطورة' },
+            { type: 'xpBoost',  val: 3, durationHours: 168 },
+        ],
+        flashDuration: 72 * 3600 * 1000,
+        badgeLabel: '🔥 العرض الأقوى',
+        urgent: true,
+    },
+    {
+        id: 'ex_bundle_weekly_warrior',
+        type: 'bundle',
+        rarity: 'epic',
+        icon: '⚔️',
+        name: 'حزمة المحارب الأسبوعي',
+        desc: '+5 تخطيات + 5 قلوب احتياط + درع أسبوعي + 50 عملة',
+        diamondPrice: 7,
+        bundleItems: [
+            { type: 'skip',   val: 5 },
+            { type: 'hearts', val: 5 },
+            { type: 'shield', val: 7 },
+            { type: 'coins',  val: 50 },
+        ],
+        flashDuration: 36 * 3600 * 1000,
+        badgeLabel: 'الأكثر شراءً',
+    },
+];
+
+/* ─── حالة توليد الحصريات ─── */
+const _exState = {
+    activeItems: [],
+    _lastGenDate: '',
+    _countdownTimer: null,
+};
+
+/* ─── توليد عروض الحصريات ─── */
+function _generateExclusives() {
+    const _today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
+
+    /* استعادة من st إن كانت حية */
+    if (st._exclusiveItems && Array.isArray(st._exclusiveItems)) {
+        const _live = st._exclusiveItems.filter(i => i.expiresAt > Date.now() && !i.purchased);
+        if (_live.length >= 3) {
+            _exState.activeItems = _live;
+            return;
+        }
+    }
+
+    /* توليد جديد: 3 عروض عشوائية */
+    const _now = Date.now();
+    const _owned = st.ownedDiamondItems || [];
+    const _pool  = EXCLUSIVES_CATALOG.filter(i => !_owned.includes(i.id));
+    const _shuffled = [..._pool].sort(() => Math.random() - 0.5);
+    const _chosen = _shuffled.slice(0, Math.min(4, _shuffled.length)).map(item => ({
+        ...item,
+        expiresAt: _now + item.flashDuration,
+        purchased: false,
+    }));
+
+    _exState.activeItems = _chosen;
+    st._exclusiveItems   = _chosen;
+    if (typeof saveSt === 'function') saveSt();
+}
+
+/* ─── رسم صفحة الحصريات ─── */
+function _renderExclusives(container) {
+    _generateExclusives();
+
+    const _d     = st.diamonds || 0;
+    const _live  = _exState.activeItems.filter(i => i.expiresAt > Date.now());
+    const _owned = st.ownedDiamondItems || [];
+
+    /* ── هيدر الصفحة ── */
+    let html = `
+    <div style="padding:10px 0 4px;">
+
+        <!-- رصيد الماس -->
+        <div onclick="openDiamondStore()" style="
+            display:flex;align-items:center;justify-content:space-between;
+            background:linear-gradient(135deg,rgba(0,212,255,0.12),rgba(124,58,237,0.08));
+            border:1.5px solid rgba(0,212,255,0.4);
+            border-radius:16px;padding:10px 14px;margin-bottom:10px;
+            cursor:pointer;transition:all 0.18s;
+        ">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="font-size:1.6em;">💎</div>
+                <div>
+                    <div style="font-size:0.78em;font-weight:900;color:#00d4ff;">رصيدك من الجواهر</div>
+                    <div style="font-size:0.62em;color:var(--text2);">اضغط لفتح متجر الجواهر الكامل</div>
+                </div>
+            </div>
+            <div style="
+                background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);
+                border-radius:12px;padding:5px 14px;
+                font-size:1.1em;font-weight:900;color:#00d4ff;
+            ">💎 ${_d}</div>
+        </div>
+
+        <!-- كيف تكسب الجواهر -->
+        <div style="
+            background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.25);
+            border-radius:12px;padding:8px 12px;margin-bottom:12px;
+        ">
+            <div style="font-size:0.62em;font-weight:900;color:#a855f7;margin-bottom:5px;">💡 كيف تكسب الجواهر؟</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                ${['🔥 تتابع ≥15 إجابة','💀 وضع المستحيل','🚀 مرحلة العبقري','⚔️ تحدي 30+ نقطة','🔗 سلسلة ≥20','🗓️ تحدي الأسبوع'].map(t =>
+                    `<span style="background:rgba(124,58,237,0.12);border-radius:7px;padding:2px 7px;font-size:0.58em;color:var(--text2);">${t}</span>`
+                ).join('')}
+            </div>
+        </div>
+
+        <!-- عنوان العروض -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:0.75em;font-weight:900;color:var(--text);">✨ العروض الحصرية النشطة</div>
+            <div style="font-size:0.6em;color:var(--text3);">تتجدد تلقائياً</div>
+        </div>
+    `;
+
+    if (_live.length === 0) {
+        html += `
+        <div style="
+            text-align:center;padding:40px 20px;
+            background:var(--surface2);border-radius:18px;
+            border:1.5px dashed rgba(0,212,255,0.2);
+        ">
+            <div style="font-size:3em;margin-bottom:10px;">⌛</div>
+            <div style="font-size:0.85em;font-weight:700;color:var(--text2);">لا توجد عروض نشطة الآن</div>
+            <div style="font-size:0.65em;color:var(--text3);margin-top:6px;">تعود العروض قريباً — تحقق يومياً!</div>
+        </div>`;
+    } else {
+        html += _live.map(item => _buildExclusiveCard(item, _owned.includes(item.id), _d)).join('');
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+
+    /* بدء العداد التنازلي */
+    if (_exState._countdownTimer) clearInterval(_exState._countdownTimer);
+    _exState._countdownTimer = setInterval(() => {
+        document.querySelectorAll('.ex-countdown[data-expires]').forEach(el => {
+            const _ms = Math.max(0, parseInt(el.dataset.expires) - Date.now());
+            el.textContent = '⏰ ' + _exFormatCountdown(_ms);
+            if (_ms === 0) {
+                clearInterval(_exState._countdownTimer);
+                _generateExclusives();
+                if (_shopState.activeTab === 'exclusives') {
+                    _renderExclusives(document.getElementById('shopItemsContainer'));
+                }
+            }
+        });
+    }, 1000);
+}
+
+/* ─── بناء بطاقة الحصرية ─── */
+function _buildExclusiveCard(item, isOwned, userDiamonds) {
+    const _canAfford = userDiamonds >= item.diamondPrice;
+    const _msLeft    = Math.max(0, item.expiresAt - Date.now());
+    const _isUrgent  = item.urgent || _msLeft < 12 * 3600 * 1000;
+
+    const _rarityColors = {
+        rare:      { grad: 'rgba(6,182,212,0.14)',   border: 'rgba(6,182,212,0.5)',  labelBg: '#06b6d4',  label: 'نادر'   },
+        epic:      { grad: 'rgba(124,58,237,0.14)',  border: 'rgba(124,58,237,0.5)', labelBg: '#7c3aed',  label: 'ملحمي'  },
+        legendary: { grad: 'rgba(240,185,11,0.12)',  border: 'rgba(240,185,11,0.5)', labelBg: '#f0b90b',  label: 'أسطوري' },
+    };
+    const _rc = _rarityColors[item.rarity] || _rarityColors.rare;
+
+    /* محتوى بنود الحزمة */
+    const _bundleContent = (item.type === 'bundle' && item.bundleItems)
+        ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;">
+            ${item.bundleItems.map(bi => {
+                const _bIcon = bi.type === 'coins' ? '💰' : bi.type === 'shields' ? '🛡️' : bi.type === 'xpBoost' ? '⚡' : bi.type === 'frame' ? '🖼️' : bi.type === 'title' ? '🏷️' : bi.type === 'skip' ? '⏭️' : bi.type === 'hearts' ? '❤️' : bi.type === 'shield' ? '🛡️' : '🎁';
+                const _bLabel = bi.type === 'coins' ? `+${bi.val} عملة` : bi.type === 'shields' ? `×${bi.val} درع` : bi.type === 'xpBoost' ? `XP ×${bi.val}${bi.durationHours ? ' لـ '+bi.durationHours+'س' : ''}` : bi.type === 'frame' ? 'إطار حصري' : bi.type === 'title' ? (bi.label || 'لقب') : bi.type === 'skip' ? `×${bi.val} تخطي` : bi.type === 'hearts' ? `×${bi.val} قلب` : bi.type === 'shield' ? `${bi.val} يوم درع` : bi.val;
+                return `<span style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:2px 7px;font-size:0.6em;color:var(--text2);">${_bIcon} ${_bLabel}</span>`;
+            }).join('')}
+          </div>`
+        : '';
+
+    const _btn = isOwned
+        ? `<div style="background:rgba(16,185,129,0.15);border:1.5px solid rgba(16,185,129,0.4);border-radius:12px;padding:8px;text-align:center;font-size:0.72em;font-weight:900;color:#10b981;">✅ تملّكته</div>`
+        : `<div onclick="buyExclusive('${item.id}')" style="
+            background:${_canAfford ? 'linear-gradient(135deg,rgba(0,212,255,0.25),rgba(124,58,237,0.2))' : 'rgba(255,255,255,0.04)'};
+            border:1.5px solid ${_canAfford ? 'rgba(0,212,255,0.6)' : 'rgba(255,255,255,0.1)'};
+            border-radius:12px;padding:9px;text-align:center;
+            cursor:${_canAfford ? 'pointer' : 'not-allowed'};
+            transition:all 0.15s;
+            display:flex;align-items:center;justify-content:center;gap:6px;
+          " ${_canAfford ? `onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''"` : ''}>
+            <span style="font-size:0.85em;font-weight:900;color:${_canAfford ? '#00d4ff' : 'var(--text3)'};">💎 ${item.diamondPrice}</span>
+            ${_canAfford
+                ? `<span style="font-size:0.68em;font-weight:700;color:rgba(0,212,255,0.8);">اشترِ الآن →</span>`
+                : `<span style="font-size:0.62em;color:var(--text3);">(تحتاج ${item.diamondPrice - userDiamonds} أكثر)</span>`
+            }
+          </div>`;
+
+    return `
+    <div style="
+        position:relative;
+        background:${_isUrgent ? 'linear-gradient(135deg,rgba(239,68,68,0.1),'+_rc.grad+')' : _rc.grad};
+        border:1.5px solid ${_isUrgent ? 'rgba(239,68,68,0.5)' : _rc.border};
+        border-radius:18px;padding:14px;margin-bottom:12px;
+        ${_isUrgent ? 'box-shadow:0 0 16px rgba(239,68,68,0.12);' : ''}
+        transition:transform 0.15s;
+    ">
+        <!-- رارتي بادج -->
+        <div style="
+            position:absolute;top:-1px;right:-1px;
+            background:${_rc.labelBg};color:${item.rarity === 'legendary' ? '#000' : '#fff'};
+            font-size:0.52em;font-weight:900;
+            padding:3px 10px;border-radius:0 16px 0 10px;
+        ">${_rc.label}</div>
+
+        <!-- عداد تنازلي -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+            <div class="ex-countdown" data-expires="${item.expiresAt}" style="
+                display:inline-flex;align-items:center;gap:3px;
+                background:${_isUrgent ? 'rgba(239,68,68,0.18)' : 'rgba(0,0,0,0.25)'};
+                border:1px solid ${_isUrgent ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.1)'};
+                border-radius:8px;padding:3px 8px;
+                font-size:0.6em;font-weight:900;
+                color:${_isUrgent ? '#ef4444' : 'var(--text2)'};
+            ">⏰ ${_exFormatCountdown(_msLeft)}</div>
+            ${item.badgeLabel ? `<div style="background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(124,58,237,0.15));border:1px solid rgba(0,212,255,0.35);border-radius:8px;padding:3px 8px;font-size:0.58em;font-weight:900;color:#00d4ff;">${item.badgeLabel}</div>` : ''}
+        </div>
+
+        <!-- محتوى البطاقة -->
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:8px;">
+            <div style="font-size:2.2em;line-height:1;flex-shrink:0;">${item.icon}</div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:0.88em;font-weight:900;color:var(--text);margin-bottom:3px;">${item.name}</div>
+                <div style="font-size:0.64em;color:var(--text2);line-height:1.45;">${item.desc}</div>
+                ${_bundleContent}
+            </div>
+        </div>
+        ${_btn}
+    </div>`;
+}
+
+/* ─── تنسيق العداد التنازلي ─── */
+function _exFormatCountdown(ms) {
+    if (ms <= 0) return 'انتهى!';
+    const _h = Math.floor(ms / 3600000);
+    const _m = Math.floor((ms % 3600000) / 60000);
+    const _s = Math.floor((ms % 60000) / 1000);
+    if (_h > 0) return `${_h}س ${String(_m).padStart(2,'0')}د`;
+    if (_m > 0) return `${_m}:${String(_s).padStart(2,'0')}`;
+    return `${_s}ث`;
+}
+
+/* ─── تنفيذ شراء الحصرية ─── */
+function buyExclusive(id) {
+    if (window._exBuyLock) return;
+
+    const item = _exState.activeItems.find(i => i.id === id);
+    if (!item) { showFeedback('⚠️ العرض غير موجود أو انتهى'); return; }
+    if (item.expiresAt <= Date.now()) { showFeedback('⏰ انتهى وقت هذا العرض'); _renderExclusives(document.getElementById('shopItemsContainer')); return; }
+    if (item.purchased) { showFeedback('✅ اشتريت هذا العرض بالفعل'); return; }
+
+    const _d = st.diamonds || 0;
+    if (_d < item.diamondPrice) {
+        showFeedback(`💎 تحتاج ${item.diamondPrice - _d} جوهرة إضافية`);
+        return;
+    }
+
+    if (!st.ownedDiamondItems) st.ownedDiamondItems = [];
+    if (st.ownedDiamondItems.includes(id)) { showFeedback('✅ تملّكته بالفعل'); return; }
+
+    showConfirm(
+        `✨ ${item.name}`,
+        `${item.desc}\n\nالسعر: ${item.diamondPrice} 💎 جواهر\nالوقت المتبقي: ${_exFormatCountdown(item.expiresAt - Date.now())}`,
+        'اشترِ الآن ✨',
+        'إلغاء',
+        ok => {
+            if (!ok) return;
+            if ((st.diamonds || 0) < item.diamondPrice) { showFeedback('💎 رصيد الجواهر غير كافٍ'); return; }
+
+            window._exBuyLock = true;
+            setTimeout(() => { window._exBuyLock = false; }, 1500);
+
+            st.diamonds -= item.diamondPrice;
+            st.ownedDiamondItems.push(id);
+            item.purchased = true;
+
+            /* تطبيق العرض */
+            _applyExclusiveItem(item);
+
+            /* تحديث st._exclusiveItems */
+            st._exclusiveItems = _exState.activeItems;
+
+            saveSt();
+            updateUI();
+            if (typeof _updateDiamondDisplayAll === 'function') _updateDiamondDisplayAll();
+            if (typeof _updateHeaderDiamonds    === 'function') _updateHeaderDiamonds();
+            _renderExclusives(document.getElementById('shopItemsContainer'));
+
+            try { if (typeof playSound    === 'function') playSound('purchase'); }  catch(e) {}
+            try { if (typeof doConfetti   === 'function') doConfetti(); }            catch(e) {}
+            setTimeout(() => { try { showFeedback(`✨ تم شراء ${item.name}!`); } catch(e) {} }, 300);
+        }
+    );
+}
+
+function _applyExclusiveItem(item) {
+    try {
+        if (item.type === 'frame') {
+            if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
+            if (item.preview && !st.ownedFrames.includes(item.preview)) st.ownedFrames.push(item.preview);
+            st.activeFrame = item.preview;
+            if (typeof _applyActiveFrameGlobally === 'function') _applyActiveFrameGlobally();
+        } else if (item.type === 'title') {
+            if (!st.ownedTitles) st.ownedTitles = [];
+            if (!st.ownedTitles.includes(item.titleValue)) st.ownedTitles.push(item.titleValue);
+            st.activeTitle = item.titleLabel;
+            if (typeof renderProfileTitles === 'function') renderProfileTitles();
+        } else if (item.type === 'avatar') {
+            if (!st.ownedEmojis) st.ownedEmojis = [];
+            if (!st.ownedEmojis.includes(item.emojiValue)) st.ownedEmojis.push(item.emojiValue);
+        } else if (item.type === 'bundle' && item.bundleItems) {
+            item.bundleItems.forEach(bi => {
+                switch (bi.type) {
+                    case 'coins':
+                        st.coins = (st.coins || 0) + Math.min(bi.val, 500);
+                        break;
+                    case 'shields':
+                    case 'shield':
+                        st.dailyShieldUsed = false;
+                        st.lastShieldDate  = null;
+                        if (bi.val > 1 && st.season) {
+                            st.season.streakShields = Math.min(10, (st.season.streakShields || 0) + Math.floor(bi.val / 2));
+                        }
+                        break;
+                    case 'xpBoost':
+                        if (typeof _shopState !== 'undefined') {
+                            _shopState.xpBoostActive = true;
+                            _shopState.xpBoostMultiplier = bi.val || 2;
+                        }
+                        st._xpBoostMultiplier = bi.val || 2;
+                        const _durationMs = (bi.durationHours || 24) * 3600 * 1000;
+                        st._xpBoostExpires = Date.now() + _durationMs;
+                        break;
+                    case 'frame':
+                        if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
+                        if (!st.ownedFrames.includes(bi.val)) st.ownedFrames.push(bi.val);
+                        break;
+                    case 'title':
+                        if (!st.ownedTitles) st.ownedTitles = [];
+                        if (bi.val && !st.ownedTitles.includes(bi.val)) st.ownedTitles.push(bi.val);
+                        if (bi.label) st.activeTitle = bi.label;
+                        break;
+                    case 'skip':
+                        if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0 };
+                        st.inventory.skip = Math.min(99, (st.inventory.skip || 0) + bi.val);
+                        break;
+                    case 'hearts':
+                        if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0 };
+                        st.inventory.heart = Math.min(99, (st.inventory.heart || 0) + bi.val);
+                        break;
+                }
+            });
+        }
+    } catch(e) { console.warn('[Exclusives] _applyExclusiveItem error:', e); }
+}
+
+/* ─── تصدير الدوال ─── */
+window.buyExclusive    = buyExclusive;
+window._renderExclusives = _renderExclusives;
+window._generateExclusives = _generateExclusives;
+
+/* ─── تنظيف العروض المنتهية عند تحميل الصفحة ─── */
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        if (typeof st !== 'undefined' && st._exclusiveItems) {
+            st._exclusiveItems = st._exclusiveItems.filter(i => i.expiresAt > Date.now());
+        }
+    }, 500);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   نهاية ملف shop.js
 ═══════════════════════════════════════════════════════════════ */
 window.addEventListener('load', function () {
     if (typeof st !== 'undefined') {
