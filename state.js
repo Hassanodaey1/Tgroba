@@ -228,12 +228,13 @@
 
         function sanitizeState(s) {
             /* ✅ FIX-V2: حدود عليا لمنع التلاعب بـ localStorage */
-            if (typeof s.coins !== 'number'  || s.coins < 0)   s.coins = 0;
-            if (s.coins  > 999999)  s.coins  = 999999;
-            if (typeof s.level !== 'number'  || s.level < 1)   s.level = 1;
+            /* ── حماية إضافية: أي قيمة NaN أو Infinity تُصفَّر ── */
+            if (typeof s.coins !== 'number'  || s.coins < 0 || !isFinite(s.coins))   s.coins = 0;
+            if (s.coins  > 99999)   s.coins  = 99999;  /* الحد الأقصى الواقعي للعملات */
+            if (typeof s.level !== 'number'  || s.level < 1 || !isFinite(s.level))   s.level = 1;
             if (s.level  > 200)     s.level  = 200;
-            if (typeof s.xp !== 'number'     || s.xp < 0)      s.xp = 0;
-            if (s.xp     > 99999999) s.xp    = 99999999;
+            if (typeof s.xp !== 'number'     || s.xp < 0 || !isFinite(s.xp))      s.xp = 0;
+            if (s.xp     > 9999999) s.xp    = 9999999;
             /* ✅ FIX-XP: الحد الأدنى 460 = calcXpToNext(1) تقريباً لتجنب قيم مشوهة */
             if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 560;
             if (!s.ownedEmojis || !Array.isArray(s.ownedEmojis)) s.ownedEmojis = ['👦'];
@@ -253,14 +254,14 @@
             if (typeof s.vibrationStrength !== 'number') s.vibrationStrength = 30;
             if (s.profilePhoto === undefined) s.profilePhoto = null;
             /* ✅ FIX-V2b: حدود عليا للإحصائيات */
-            if (typeof s.bestScore    !== 'number' || s.bestScore < 0)    s.bestScore = 0;
-            if (s.bestScore    > 9999999)  s.bestScore    = 9999999;
-            if (typeof s.correctTotal !== 'number' || s.correctTotal < 0) s.correctTotal = 0;
+            if (typeof s.bestScore    !== 'number' || s.bestScore < 0 || !isFinite(s.bestScore))    s.bestScore = 0;
+            if (s.bestScore    > 999999)   s.bestScore    = 999999;
+            if (typeof s.correctTotal !== 'number' || s.correctTotal < 0 || !isFinite(s.correctTotal)) s.correctTotal = 0;
             if (s.correctTotal > 9999999)  s.correctTotal = 9999999;
-            if (typeof s.totalGames   !== 'number' || s.totalGames < 0)   s.totalGames = 0;
+            if (typeof s.totalGames   !== 'number' || s.totalGames < 0 || !isFinite(s.totalGames))   s.totalGames = 0;
             if (s.totalGames   > 9999999)  s.totalGames   = 9999999;
-            if (typeof s.challengeBestScore !== 'number' || s.challengeBestScore < 0) s.challengeBestScore = 0;
-            if (s.challengeBestScore > 9999999) s.challengeBestScore = 9999999;
+            if (typeof s.challengeBestScore !== 'number' || s.challengeBestScore < 0 || !isFinite(s.challengeBestScore)) s.challengeBestScore = 0;
+            if (s.challengeBestScore > 9999) s.challengeBestScore = 9999;
             /* ✅ STATS-V2: حقول الوقت الجديدة */
             if (typeof s.totalPlayTimeSecs !== 'number' || s.totalPlayTimeSecs < 0) s.totalPlayTimeSecs = 0;
             if (s.totalPlayTimeSecs > 99999999) s.totalPlayTimeSecs = 99999999;
@@ -440,7 +441,28 @@
             try {
                 const s = JSON.parse(localStorage.getItem(SK));
                 if (s && s.name !== undefined) {
-                    /* ✅ FIX-MERGE: دمج المفاتيح الناقصة من الحالة الافتراضية لتجنب أعطال الإصدارات القديمة */
+                    /* ✅ ANTI-CHEAT: تحقق من البصمة التكاملية — إذا فُسدت، استعد من Firebase */
+                    if (s._integrity && !_checkIntegrity(s)) {
+                        console.warn('[HO Math] تحذير: تم اكتشاف تلاعب محتمل في البيانات المحلية');
+                        /* محاولة استعادة من Firebase */
+                        const serial = s.serialNumber;
+                        if (serial) {
+                            setTimeout(() => {
+                                loadFromFirebase(serial, function(cloudData) {
+                                    if (cloudData) {
+                                        Object.assign(st, sanitizeState(cloudData));
+                                        st._integrity = _calcIntegrity(st);
+                                        localStorage.setItem(SK, JSON.stringify(st));
+                                        if (typeof updateUI === 'function') updateUI();
+                                        if (typeof showFeedback === 'function') showFeedback('⚠️ تم اكتشاف بيانات مشبوهة — تمت استعادة حسابك');
+                                    }
+                                });
+                            }, 2000);
+                        }
+                        /* أعد sanitize للقيم المتلاعب بها */
+                        sanitizeState(s);
+                    }
+                    /* ✅ FIX-MERGE: دمج المفاتيح الناقصة من الحالة الافتراضية */
                     const def = defState();
                     Object.keys(def).forEach(k => { if (s[k] === undefined) s[k] = def[k]; });
                     return sanitizeState(s);
@@ -449,10 +471,32 @@
             return defState();
         }
 
+        /* ═══ دالة توليد بصمة تكاملية خفيفة لمنع التلاعب بالـ localStorage ═══ */
+        function _calcIntegrity(s) {
+            /* بصمة بسيطة تعتمد على القيم الحساسة — مرتبطة بـ serialNumber */
+            try {
+                const key = s.serialNumber || 'ho_guest';
+                const val = `${key}|${s.coins}|${s.level}|${s.xp}|${s.challengeBestScore}|${s.bestScore}`;
+                let h = 0;
+                for (let i = 0; i < val.length; i++) {
+                    h = (Math.imul(31, h) + val.charCodeAt(i)) | 0;
+                }
+                return (h >>> 0).toString(16);
+            } catch(e) { return ''; }
+        }
+
+        function _checkIntegrity(s) {
+            /* إذا لم توجد بصمة → لاعب قديم أو جديد → قبول */
+            if (!s._integrity) return true;
+            return s._integrity === _calcIntegrity(s);
+        }
+
         function saveSt() {
             try {
                 /* ✅ ANTI-CHEAT: تحقق من الحدود قبل الحفظ دائماً */
                 sanitizeState(st);
+                /* ✅ ANTI-CHEAT: تضمين بصمة تكاملية */
+                st._integrity = _calcIntegrity(st);
                 localStorage.setItem(SK, JSON.stringify(st));
                 if (st.serialNumber) {
                     saveSerialBackup(st.serialNumber, st);
