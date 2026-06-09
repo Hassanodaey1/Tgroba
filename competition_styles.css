@@ -3504,220 +3504,50 @@
 }
 
 
-/* ═══════════════════════════════════════════
-   MP Sheet Trigger Buttons — أزرار فتح الـ Sheets
-═══════════════════════════════════════════ */
-.sp-sheet-trigger-btn {
+/* ═══ زر لائحة الصدارة داخل MP ═══ */
+.sp-lb-btn {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 12px;
     width: 100%;
-    padding: 14px 16px;
-    border: none;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(240,185,11,0.14), rgba(249,115,22,0.07));
+    border: 1.5px solid rgba(240,185,11,0.35);
     border-radius: 18px;
     cursor: pointer;
     font-family: 'Tajawal', sans-serif;
     text-align: right;
     transition: transform 0.14s ease, box-shadow 0.14s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.sp-sheet-trigger-btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.06);
-    opacity: 0;
-    transition: opacity 0.15s;
-    border-radius: inherit;
-}
-.sp-sheet-trigger-btn:active::after { opacity: 1; }
-.sp-sheet-trigger-btn:active { transform: scale(0.97); }
-
-/* مهام اليوم */
-.sp-daily-trigger {
-    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,182,212,0.08));
-    border: 1.5px solid rgba(124,58,237,0.35);
-    box-shadow: 0 3px 14px rgba(124,58,237,0.12);
-}
-.sp-daily-trigger:hover {
-    box-shadow: 0 5px 20px rgba(124,58,237,0.2);
-}
-
-/* لائحة الصدارة */
-.sp-lb-trigger {
-    background: linear-gradient(135deg, rgba(240,185,11,0.15), rgba(249,115,22,0.07));
-    border: 1.5px solid rgba(240,185,11,0.35);
     box-shadow: 0 3px 14px rgba(240,185,11,0.1);
+    margin-top: 4px;
 }
-.sp-lb-trigger:hover {
-    box-shadow: 0 5px 20px rgba(240,185,11,0.2);
-}
-
-.sp-stb-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.sp-stb-icon {
-    font-size: 1.6em;
-    line-height: 1;
-}
-
-.sp-stb-info { text-align: right; }
-
-.sp-stb-title {
+.sp-lb-btn:active { transform: scale(0.97); }
+.sp-lb-btn-icon { font-size: 1.6em; flex-shrink: 0; }
+.sp-lb-btn-info { flex: 1; }
+.sp-lb-btn-title {
     font-size: 0.88em;
     font-weight: 900;
-    color: var(--text);
-    line-height: 1.2;
+    color: var(--gold);
 }
-
-.sp-stb-sub {
-    font-size: 0.6em;
+.sp-lb-btn-sub {
+    font-size: 0.62em;
     color: var(--text2);
     margin-top: 3px;
 }
-
-.sp-stb-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.sp-stb-badge {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    font-size: 0.65em;
-    font-weight: 900;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-family: 'Tajawal', sans-serif;
-}
-
-.sp-stb-arrow {
-    font-size: 1.3em;
-    color: var(--text3);
-    font-weight: 900;
-}
-
-/* ═══ Sheet Up Animation ═══ */
-@keyframes mpSheetUp {
-    from { transform: translateY(100%); opacity: 0.7; }
-    to   { transform: translateY(0);    opacity: 1; }
-}
-
-/* ═══ صف المهمة داخل الـ Sheet ═══ */
-.mp-sheet-task-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 14px;
-    margin-bottom: 8px;
-    transition: border-color 0.2s;
-}
-.mp-sheet-task-item.done {
-    opacity: 0.65;
-    border-color: rgba(16,185,129,0.3);
-    background: rgba(16,185,129,0.04);
-}
-.mp-sheet-task-icon {
+.sp-lb-btn-arrow {
     font-size: 1.4em;
-    flex-shrink: 0;
-    width: 32px;
-    text-align: center;
-}
-.mp-sheet-task-body { flex: 1; min-width: 0; }
-.mp-sheet-task-name {
-    font-size: 0.78em;
-    font-weight: 800;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-wrap: wrap;
-}
-.mp-sheet-task-desc {
-    font-size: 0.62em;
-    color: var(--text2);
-    margin-top: 2px;
-}
-.mp-sheet-task-bar {
-    height: 4px;
-    background: var(--surface3);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: 5px;
-}
-.mp-sheet-task-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--gold));
-    border-radius: 4px;
-    transition: width 0.4s ease;
-}
-.mp-sheet-task-item.done .mp-sheet-task-bar-fill {
-    background: linear-gradient(90deg, #10b981, #34d399);
-}
-.mp-sheet-task-right {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    flex-shrink: 0;
-}
-.mp-sheet-task-pts {
-    font-size: 0.68em;
-    font-weight: 900;
-    color: var(--gold);
-}
-.mp-sheet-task-prog {
-    font-size: 0.58em;
     color: var(--text3);
+    font-weight: 900;
 }
 
-/* ═══ صف اللاعب في لائحة الصدارة Sheet ═══ */
-.mp-lb-row {
-    display: grid;
-    grid-template-columns: 44px 1fr 52px 64px;
-    align-items: center;
-    padding: 9px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.78em;
-}
-.mp-lb-row:last-child { border-bottom: none; }
-.mp-lb-row.me {
-    background: linear-gradient(135deg, rgba(240,185,11,0.1), rgba(124,58,237,0.06));
-    border-radius: 10px;
-    padding: 9px 8px;
-    margin: 0 -8px;
-    border-bottom: none;
-}
-.mp-lb-rank {
-    font-size: 1em;
-    font-weight: 900;
-    color: var(--text2);
-    text-align: center;
-}
-.mp-lb-rank.gold-rank   { color: #f0b90b; }
-.mp-lb-rank.silver-rank { color: #b0b8c8; }
-.mp-lb-rank.bronze-rank { color: #b8733b; }
-.mp-lb-name {
-    font-weight: 700;
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.mp-lb-badge { text-align: center; font-size: 1.1em; }
-.mp-lb-pts {
-    font-weight: 900;
-    color: var(--gold);
-    text-align: left;
-    font-size: 0.9em;
+/* ═══ تأكيد: seasonPassOverlay و sub-overlays تملأ الشاشة كاملة ═══ */
+#seasonPassOverlay,
+#seasonLbOverlay,
+#rewardTrackOverlay,
+#seasonHistoryOverlay,
+#shareAchievementOverlay,
+#spChestOpenScreen {
+    /* safe-area للشاشات التي بها notch */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
