@@ -913,8 +913,6 @@ window.addEventListener('load', function() {
             try {
                 if (typeof window._updateSeasonBtn === 'function') window._updateSeasonBtn();
             } catch(_e) {}
-            /* ── 💎 تحديث عداد الجواهر في الهيدر ── */
-            _updateHeaderDiamonds();
         };
     }
 });
@@ -1010,126 +1008,89 @@ window._antiCheatInit = (function() {
     }, 30000); /* كل 30 ثانية */
 })();
 
+
 /* ═══════════════════════════════════════════════════════════════
-   💎 DIAMOND UI INJECTION — حقن أزرار وعرض الماس في الواجهة
+   HO Math — وصلة تكامل نظام التصعيد v4.0
+   © 2026 Hassan Odaey
 ═══════════════════════════════════════════════════════════════ */
 
-/* زر الماس في صفحة المتجر + الصفحة الرئيسية */
-function _injectDiamondStoreButton() {
-    /* ① زر في header الصفحة الرئيسية */
-    const _homeHeader = document.querySelector('.home-header-row, .header-actions, #homeHeaderCoins')
-        || document.querySelector('[id*="homeCoins"]')?.parentElement;
-    if (_homeHeader && !document.getElementById('homeDiamondBtn')) {
-        const _dBtn = document.createElement('div');
-        _dBtn.id = 'homeDiamondBtn';
-        _dBtn.onclick = function() { if (typeof openDiamondStore === 'function') openDiamondStore(); };
-        _dBtn.style.cssText = `
-            display:inline-flex;align-items:center;gap:4px;
-            background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(0,212,255,0.05));
-            border:1.5px solid rgba(0,212,255,0.4);
-            border-radius:12px;padding:4px 10px;
-            cursor:pointer;font-size:0.82em;font-weight:900;
-            color:#00d4ff;transition:all 0.15s;
-        `;
-        _dBtn.innerHTML = `💎 <span id="homeDiamondCount">${st.diamonds || 0}</span>`;
-        _homeHeader.appendChild(_dBtn);
-    }
+/* ═══════════════════════════════════════════════════════════════
+   مؤشر الحرارة — يظهر للاعب حين ترتفع صعوبة الجلسة
+═══════════════════════════════════════════════════════════════ */
 
-    /* ② زر في صفحة المتجر (shop page) */
-    const _shopPage = document.getElementById('page-shop');
-    if (_shopPage && !document.getElementById('shopDiamondBtn')) {
-        const _dShopBtn = document.createElement('div');
-        _dShopBtn.id = 'shopDiamondBtn';
-        _dShopBtn.onclick = function() { if (typeof openDiamondStore === 'function') openDiamondStore(); };
-        _dShopBtn.style.cssText = `
-            margin:12px 16px 0;
-            background:linear-gradient(135deg,rgba(0,212,255,0.18),rgba(124,58,237,0.1));
-            border:2px solid rgba(0,212,255,0.5);
-            border-radius:18px;padding:16px;
-            cursor:pointer;text-align:center;
-            transition:all 0.18s;
-        `;
-        _dShopBtn.innerHTML = `
-            <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
-                <div style="font-size:2em;">💎</div>
-                <div>
-                    <div style="font-size:0.95em;font-weight:900;color:#00d4ff;">متجر الماس الحصري</div>
-                    <div style="font-size:0.65em;color:var(--text2);margin-top:2px;">أطر • ألقاب • مضاعفات نادرة • عروض محدودة</div>
-                </div>
-                <div style="
-                    background:rgba(0,212,255,0.2);border:1px solid rgba(0,212,255,0.4);
-                    border-radius:10px;padding:4px 10px;
-                    font-size:0.75em;font-weight:900;color:#00d4ff;
-                    display:flex;align-items:center;gap:4px;
-                ">💎 <span data-diamond-balance>${st.diamonds || 0}</span></div>
-            </div>
-        `;
-        /* إدراجه أعلى محتوى المتجر */
-        const _shopContent = _shopPage.querySelector('#shopContent, .shop-content, .page-content')
-            || _shopPage.firstElementChild;
-        if (_shopContent) {
-            _shopContent.insertBefore(_dShopBtn, _shopContent.firstChild);
-        } else {
-            _shopPage.insertBefore(_dShopBtn, _shopPage.firstChild);
+(function _heatIndicator() {
+
+    function _getOrCreateBadge() {
+        var b = document.getElementById('_heatBadge');
+        if (!b) {
+            b = document.createElement('div');
+            b.id = '_heatBadge';
+            b.style.cssText = [
+                'position:fixed', 'top:12px', 'left:50%', 'transform:translateX(-50%)',
+                'background:linear-gradient(135deg,#ef4444,#f97316)',
+                'color:#fff', 'font-size:0.7em', 'font-weight:900',
+                'padding:4px 12px', 'border-radius:20px',
+                'z-index:9999', 'display:none',
+                'box-shadow:0 2px 8px rgba(239,68,68,0.4)',
+                'font-family:Tajawal,sans-serif',
+                'pointer-events:none',
+                'transition:opacity 0.4s'
+            ].join(';');
+            document.body.appendChild(b);
         }
+        return b;
     }
 
-    /* ③ badge الماس في الـ nav (إن كانت نقاط ≥ 1) */
-    const _navShop = document.getElementById('nav-shop');
-    if (_navShop && !document.getElementById('navDiamondBadge') && (st.diamonds || 0) > 0) {
-        const _badge = document.createElement('div');
-        _badge.id = 'navDiamondBadge';
-        _badge.style.cssText = `
-            position:absolute;top:-4px;right:-4px;
-            background:#00d4ff;color:#000;
-            font-size:0.45em;font-weight:900;
-            padding:1px 5px;border-radius:8px;
-            display:flex;align-items:center;
-        `;
-        _badge.innerHTML = `💎 ${st.diamonds}`;
-        _navShop.style.position = 'relative';
-        _navShop.appendChild(_badge);
-    }
-}
+    var _heatInterval = null;
 
-/* استدعاء عند كل تحديث UI */
-(function _patchUpdateUI() {
-    if (typeof window === 'undefined') return;
-    window.addEventListener('load', function() {
-        setTimeout(function() {
+    window._startHeatMonitor = function() {
+        if (_heatInterval) clearInterval(_heatInterval);
+        _heatInterval = setInterval(function() {
             try {
-                /* لم نعد نُضيف homeDiamondBtn لأن عداد الهيدر موجود مباشرة */
-                _updateHeaderDiamonds && _updateHeaderDiamonds();
-                /* نُحدّث فقط badge الناف وزر متجر الماس في صفحة shop */
-                _injectDiamondStoreButton();
+                if (typeof SessionProgress === 'undefined') return;
+                var heat  = SessionProgress.getHeat();
+                var combo = SessionProgress.getCombo();
+                var badge = _getOrCreateBadge();
+
+                if (heat >= 0.85) {
+                    badge.textContent = '🔥🔥 وضع العبقري! (×' + combo + ')';
+                    badge.style.background = 'linear-gradient(135deg,#7c3aed,#ef4444)';
+                    badge.style.display = 'block';
+                } else if (heat >= 0.6) {
+                    badge.textContent = '🔥 الصعوبة ترتفع! (×' + combo + ')';
+                    badge.style.background = 'linear-gradient(135deg,#ef4444,#f97316)';
+                    badge.style.display = 'block';
+                } else if (heat >= 0.35) {
+                    badge.textContent = '⚡ جيد! استمر (×' + combo + ')';
+                    badge.style.background = 'linear-gradient(135deg,#f0b90b,#f97316)';
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
             } catch(e) {}
-        }, 1200);
-    });
+        }, 1500);
+    };
+
+    window._stopHeatMonitor = function() {
+        if (_heatInterval) { clearInterval(_heatInterval); _heatInterval = null; }
+        var badge = document.getElementById('_heatBadge');
+        if (badge) badge.style.display = 'none';
+    };
+
 })();
 
-window._injectDiamondStoreButton = _injectDiamondStoreButton;
 
-/* ═══════════════════════════════════════════════════════════════
-   💎 تحديث عداد الجواهر في هيدر الصفحة الرئيسية
-   يُستدعى من saveSt وعند تحميل الصفحة
-═══════════════════════════════════════════════════════════════ */
-function _updateHeaderDiamonds() {
-    try {
-        if (typeof st === 'undefined') return;
-        var d = st.diamonds || 0;
-        /* عنصر الهيدر الجديد */
-        var el = document.getElementById('headerDiamonds');
-        if (el) el.textContent = d;
-        /* إخفاء الزر إذا كانت الجواهر صفراً — يظهر فقط عند وجودها */
-        var wrap = document.getElementById('headerDiamondsWrap');
-        if (wrap) wrap.style.display = d >= 0 ? 'flex' : 'none';
-        /* تحديث diamond_store إن كانت مفتوحة */
-        if (typeof _updateDiamondDisplayAll === 'function') _updateDiamondDisplayAll();
-    } catch(e) {}
-}
-window._updateHeaderDiamonds = _updateHeaderDiamonds;
+/* ─── دوال مساعدة للاختبار من Console ─── */
+window._debugHeat = function() {
+    if (typeof SessionProgress === 'undefined') { console.log('SessionProgress غير محمّل'); return; }
+    console.log({
+        heat:   SessionProgress.getHeat().toFixed(2),
+        streak: SessionProgress.getStreak(),
+        combo:  SessionProgress.getCombo()
+    });
+};
 
-/* تشغيل العداد عند تحميل الصفحة */
-window.addEventListener('load', function() {
-    setTimeout(_updateHeaderDiamonds, 800);
-});
+window._simulateStreak = function(n) {
+    for (var i = 0; i < (n || 10); i++) SessionProgress.onCorrect();
+    window._debugHeat();
+};
