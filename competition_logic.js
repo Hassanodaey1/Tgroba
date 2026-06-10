@@ -1156,7 +1156,23 @@ function _seasonGrantReward(rewardDef) {
             case 'frame':
                 st.ownedFrames = st.ownedFrames || ['frame_none'];
                 if (!st.ownedFrames.includes(r.value)) st.ownedFrames.push(r.value);
-                try { showFeedback(`🎁 إطار حصري: ${rewardDef.label}!`); } catch(e) {}
+                /* ── جوائز مركّبة: إطار + لقب حسب المحطة ── */
+                if (r.value === 'frame_silver_star') {
+                    /* 500 — فضية: إطار + لقب "نجم الموسم" */
+                    st.ownedTitles = st.ownedTitles || [];
+                    if (!st.ownedTitles.includes('title_silver_star')) st.ownedTitles.push('title_silver_star');
+                    try { showFeedback(`🥈 جائزة فضية! إطار "الفضي" + لقب "نجم الموسم"!`); } catch(e) {}
+                } else if (r.value === 'frame_gold_season') {
+                    /* 750 — ذهبية: إطار + لقب "رياضي الموسم" */
+                    st.ownedTitles = st.ownedTitles || [];
+                    if (!st.ownedTitles.includes('title_gold_season')) st.ownedTitles.push('title_gold_season');
+                    try { showFeedback(`🥇 جائزة ذهبية! إطار "الذهبي" + لقب "رياضي الموسم"!`); } catch(e) {}
+                } else if (r.value === 'frame_epic_warrior') {
+                    /* 250 — ملحمية: إطار "المحارب" */
+                    try { showFeedback(`⚔️ جائزة ملحمية! إطار "المحارب" حصري!`); } catch(e) {}
+                } else {
+                    try { showFeedback(`🎁 إطار حصري: ${rewardDef.label}!`); } catch(e) {}
+                }
                 break;
             case 'title':
                 st.ownedTitles = st.ownedTitles || [];
@@ -1164,11 +1180,12 @@ function _seasonGrantReward(rewardDef) {
                 try { showFeedback(`🎁 لقب جديد: ${rewardDef.label}!`); } catch(e) {}
                 break;
             case 'season_complete':
-                /* إطار + لقب البطولة معاً */
+                /* 1000 — أسطورية: إطار + لقب "بطل الموسم" */
                 st.ownedFrames = st.ownedFrames || ['frame_none'];
                 st.ownedTitles = st.ownedTitles || [];
                 if (!st.ownedFrames.includes('frame_season_champ')) st.ownedFrames.push('frame_season_champ');
                 if (!st.ownedTitles.includes('title_season_champ')) st.ownedTitles.push('title_season_champ');
+                try { showFeedback(`👑 جائزة أسطورية! لقب "بطل الموسم" + إطار الأبطال!`); } catch(e) {}
                 /* شاشة الإتمام */
                 setTimeout(() => {
                     const sc = document.getElementById('spCompleteScreen');
