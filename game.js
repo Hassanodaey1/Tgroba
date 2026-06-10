@@ -76,8 +76,6 @@
                 }
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
-                /* ✅ v4.0: تصاعد الجلسة — إجابة صحيحة */
-                try { if (typeof SessionProgress !== 'undefined') SessionProgress.onCorrect(); } catch(_sp) {}
                 playSound('correct');
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive && G.mode !== 'sudden') {
@@ -118,8 +116,6 @@
                 });
                 G.wrong++;
                 G.streak = 0;
-                /* ✅ v4.0: تصاعد الجلسة — إجابة خاطئة */
-                try { if (typeof SessionProgress !== 'undefined') SessionProgress.onWrong(); } catch(_sp) {}
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive) {
                     G.timeLeft = Math.max(0, G.timeLeft - 1);
@@ -270,8 +266,6 @@
             if (G.ended) return;
             G.ended = true;
             clearGameTimer();
-            /* ✅ v4.0: إيقاف مؤشر تصاعد الجلسة */
-            try { if (typeof window._stopHeatMonitor === 'function') window._stopHeatMonitor(); } catch(_sp) {}
             /* 🧠 تنظيف وضع الذاكرة عند انتهاء اللعبة */
             if (G._memTimer) { clearTimeout(G._memTimer); G._memTimer = null; }
             const _qtMem = document.getElementById('questionText');
@@ -781,13 +775,6 @@
                     endGame(); 
                     return;
                 }
-                /* ✅ v4.0: إعادة تعيين تصاعد الجلسة عند أول سؤال فقط */
-                if (G.currentQ === 0) {
-                    try {
-                        if (typeof window.resetSessionProgress === 'function') window.resetSessionProgress();
-                        if (typeof window._startHeatMonitor === 'function') window._startHeatMonitor();
-                    } catch(_sp) {}
-                }
                 G.currentQ++;
                 G.answered = false;
                 G.helpersUsed.remove = false;
@@ -935,7 +922,7 @@
                     qt.style.animation = 'none';
                     void qt.offsetWidth;
                     qt.style.animation = '';
-                    qt.textContent = (q.text.endsWith('؟') || q.text.endsWith('?') || q.text.endsWith('= ?') || q.text.endsWith('= ؟')) ? q.text : `${q.text} = ?`;
+                    qt.textContent = (q.text.includes('؟') || q.text.includes('?')) ? q.text : q.text + ' = ?';
                 }
                 const hintEl = document.getElementById('questionHint');
                 if (hintEl) hintEl.textContent = q.hint || 'ما هو الجواب؟';
