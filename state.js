@@ -24,19 +24,50 @@
         function seasonPassStr() { return weekStr(); }
 
         /* ═══════════════════════════════════════════════════════════
-           جوائز مسار الموسم — 10 محطات كل 100 نقطة
+           جوائز مسار الموسم — 20 محطة كل 50 نقطة حتى 1000
+           🏅 عادية  |  ⚔️ ملحمية (250)  |  🥈 فضية (500)  |  🥇 ذهبية (750)  |  👑 أسطورية (1000)
         ═══════════════════════════════════════════════════════════ */
         const SEASON_TRACK_REWARDS = [
-            { pts: 100,  icon: '💰', label: '+30 عملة',              reward: { type: 'coins',           value: 30  } },
-            { pts: 200,  icon: '⏭️', label: '+3 تخطيات',             reward: { type: 'inventory_skip',  value: 3   } },
-            { pts: 300,  icon: '💰', label: '+50 عملة',              reward: { type: 'coins',           value: 50  } },
-            { pts: 400,  icon: '🖼️', label: 'إطار حصري للموسم',     reward: { type: 'frame',           value: 'frame_season1' } },
-            { pts: 500,  icon: '⚡', label: 'مضاعف XP ×2',           reward: { type: 'xp_boost',        value: 2   } },
-            { pts: 600,  icon: '🛡️', label: 'درع حماية Streak',     reward: { type: 'streak_shield',   value: 1   } },
-            { pts: 700,  icon: '💰', label: '+80 عملة',              reward: { type: 'coins',           value: 80  } },
-            { pts: 800,  icon: '🎭', label: 'لقب "رياضي الموسم"',    reward: { type: 'title',           value: 'season_math1' } },
-            { pts: 900,  icon: '🚀', label: 'مضاعف XP ×3',           reward: { type: 'xp_boost',        value: 3   } },
-            { pts: 1000, icon: '👑', label: 'إطار + لقب "بطل الموسم"', reward: { type: 'season_complete', value: 'S1' } },
+            /* ── 50 ── */
+            { pts:  50,  icon: '💰', label: '+20 عملة',                    reward: { type: 'coins',          value: 20  } },
+            /* ── 100 ── */
+            { pts: 100,  icon: '⏭️', label: '+2 تخطيات',                   reward: { type: 'inventory_skip', value: 2   } },
+            /* ── 150 ── */
+            { pts: 150,  icon: '💰', label: '+35 عملة',                    reward: { type: 'coins',          value: 35  } },
+            /* ── 200 ── */
+            { pts: 200,  icon: '🛡️', label: 'درع حماية Streak',           reward: { type: 'shield',         value: 1   } },
+            /* ── 250 ⚔️ ملحمية ── */
+            { pts: 250,  icon: '⚔️', label: 'جائزة ملحمية — إطار "المحارب"', reward: { type: 'frame',       value: 'frame_epic_warrior' } },
+            /* ── 300 ── */
+            { pts: 300,  icon: '💰', label: '+50 عملة',                    reward: { type: 'coins',          value: 50  } },
+            /* ── 350 ── */
+            { pts: 350,  icon: '⚡', label: 'مضاعف XP ×2',                 reward: { type: 'xp_boost',       value: 2   } },
+            /* ── 400 ── */
+            { pts: 400,  icon: '⏭️', label: '+3 تخطيات',                   reward: { type: 'inventory_skip', value: 3   } },
+            /* ── 450 ── */
+            { pts: 450,  icon: '💰', label: '+65 عملة',                    reward: { type: 'coins',          value: 65  } },
+            /* ── 500 🥈 فضية ── */
+            { pts: 500,  icon: '🥈', label: 'جائزة فضية — إطار "الفضي" + لقب "نجم الموسم"', reward: { type: 'frame', value: 'frame_silver_star' } },
+            /* ── 550 ── */
+            { pts: 550,  icon: '🛡️', label: '+2 درع حماية',               reward: { type: 'shield',         value: 2   } },
+            /* ── 600 ── */
+            { pts: 600,  icon: '💰', label: '+80 عملة',                    reward: { type: 'coins',          value: 80  } },
+            /* ── 650 ── */
+            { pts: 650,  icon: '⚡', label: 'مضاعف XP ×2',                 reward: { type: 'xp_boost',       value: 2   } },
+            /* ── 700 ── */
+            { pts: 700,  icon: '⏭️', label: '+4 تخطيات',                   reward: { type: 'inventory_skip', value: 4   } },
+            /* ── 750 🥇 ذهبية ── */
+            { pts: 750,  icon: '🥇', label: 'جائزة ذهبية — إطار "الذهبي" + لقب "رياضي الموسم"', reward: { type: 'frame', value: 'frame_gold_season' } },
+            /* ── 800 ── */
+            { pts: 800,  icon: '💰', label: '+100 عملة',                   reward: { type: 'coins',          value: 100 } },
+            /* ── 850 ── */
+            { pts: 850,  icon: '⚡', label: 'مضاعف XP ×3',                 reward: { type: 'xp_boost',       value: 3   } },
+            /* ── 900 ── */
+            { pts: 900,  icon: '🛡️', label: '+3 درع حماية',               reward: { type: 'shield',         value: 3   } },
+            /* ── 950 ── */
+            { pts: 950,  icon: '💰', label: '+150 عملة',                   reward: { type: 'coins',          value: 150 } },
+            /* ── 1000 👑 أسطورية ── */
+            { pts: 1000, icon: '👑', label: 'جائزة أسطورية — لقب "بطل الموسم" + إطار الأبطال', reward: { type: 'season_complete', value: 'S1' } },
         ];
 
         /* ═══════════════════════════════════════════════════════════
