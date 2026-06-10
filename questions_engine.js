@@ -485,7 +485,7 @@ function _build(op, diff, cfg, age) {
             ];
             /* في صعوبة genius → أضف شكل مع فاصلة آلاف */
             if (diff === 'genius') {
-                addForms.push({ t: a.toLocaleString('ar-SA') + ' + ' + b.toLocaleString('ar-SA'), h: 'اجمع' });
+                addForms.push({ t: a + ' + ' + b, h: 'اجمع' });
             }
             /* في medium/hard → اجمع 3 أرقام أحياناً */
             if ((diff === 'medium' || diff === 'hard') && rnd(0,3) === 0) {
