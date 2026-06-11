@@ -176,6 +176,149 @@ const SHOP_CATALOG = {
             action: 'hintPack',
             actionVal: 5,
         },
+
+        /* ─── مستهلكات جديدة أثناء اللعب ─── */
+        {
+            id: 'reveal_half',
+            icon: '🔍',
+            name: 'كشف جزئي',
+            desc: 'يكشف نصف الجواب الصحيح ويساعدك على التخمين السريع',
+            price: 16,
+            action: 'revealHalf',
+            gameOnly: true,
+            oneTimeGameOnly: true,
+            badge: 'ذكي',
+        },
+        {
+            id: 'reveal_pack3',
+            icon: '🔍',
+            name: 'باقة 3 كشف جزئي',
+            desc: '3 كشوفات تُخزَّن في مخزونك وتُستخدم داخل اللعبة',
+            price: 38,
+            action: 'storeReveal',
+            actionVal: 3,
+            badge: 'وفّر',
+        },
+        {
+            id: 'freeze_time',
+            icon: '🧊',
+            name: 'تجميد الوقت',
+            desc: 'يوقف المؤقت 8 ثوان لتفكر بهدوء تام',
+            price: 20,
+            action: 'freezeTime',
+            actionVal: 8,
+            gameOnly: true,
+            timerOnly: true,
+            oneTimeGameOnly: true,
+            hot: true,
+        },
+        {
+            id: 'freeze_pack3',
+            icon: '🧊',
+            name: 'باقة 3 تجميد وقت',
+            desc: '3 تجميدات تُخزَّن للاستخدام في اللعبة',
+            price: 48,
+            action: 'storeFreeze',
+            actionVal: 3,
+            badge: 'وفّر',
+        },
+        {
+            id: 'heart_armor',
+            icon: '💜',
+            name: 'حصانة القلب',
+            desc: 'يحميك من خسارة قلب إذا أخطأت — استخدام واحد',
+            price: 22,
+            action: 'heartArmor',
+            gameOnly: true,
+            oneTimeGameOnly: true,
+            badge: 'مستحسن',
+        },
+        {
+            id: 'heart_armor_pack3',
+            icon: '💜',
+            name: 'باقة 3 حصانة قلب',
+            desc: '3 حصانات تُحفظ في مخزونك',
+            price: 55,
+            action: 'storeHeartArmor',
+            actionVal: 3,
+            hot: true,
+        },
+        {
+            id: 'combo_booster',
+            icon: '⚡',
+            name: 'ضربة مضاعفة',
+            desc: 'ضاعف نقاطك للسؤال التالي ×3 فقط',
+            price: 24,
+            action: 'comboBoost',
+            gameOnly: true,
+            oneTimeGameOnly: true,
+            new: true,
+        },
+        {
+            id: 'combo_pack3',
+            icon: '⚡',
+            name: 'باقة 3 ضربة مضاعفة',
+            desc: '3 مضاعفات ×3 تُخزَّن ليوم اللعب',
+            price: 58,
+            action: 'storeCombo',
+            actionVal: 3,
+            badge: 'وفّر',
+            new: true,
+        },
+
+        /* ─── مكافآت الإعلانات الحصرية ─── */
+        {
+            id: 'ad_xp_boost',
+            icon: '📺',
+            name: 'مضاعف XP ×2 — مجاني',
+            desc: 'شاهد إعلاناً واحصل على مضاعف XP ×2 للجلسة القادمة (مرة كل 6 ساعات)',
+            price: 0,
+            action: 'adXpBoost',
+            adReward: true,
+            adCooldownHours: 6,
+            adRewardType: 'xpBoost',
+            badge: '📺 إعلان',
+        },
+        {
+            id: 'ad_coins_30',
+            icon: '📺',
+            name: '+30 عملة — مجاني',
+            desc: 'شاهد إعلاناً واحصل على 30 عملة مجاناً (مرة كل 8 ساعات)',
+            price: 0,
+            action: 'adCoins30',
+            adReward: true,
+            adCooldownHours: 8,
+            adRewardType: 'coins',
+            adRewardVal: 30,
+            badge: '📺 إعلان',
+        },
+        {
+            id: 'ad_diamonds_5',
+            icon: '📺',
+            name: '+5 جواهر يومياً — مجاني',
+            desc: 'شاهد إعلاناً يومياً واحصل على 5 جواهر نادرة (مرة كل 24 ساعة)',
+            price: 0,
+            action: 'adDiamonds5',
+            adReward: true,
+            adCooldownHours: 24,
+            adRewardType: 'diamonds',
+            adRewardVal: 5,
+            badge: '💎 يومي',
+            hot: true,
+        },
+        {
+            id: 'ad_helper',
+            icon: '📺',
+            name: 'مساعدة مجانية — إعلان',
+            desc: 'شاهد إعلاناً واختر: تخطّي، أو كشف جزئي، أو +1 قلب (مرة كل 4 ساعات)',
+            price: 0,
+            action: 'adHelper',
+            adReward: true,
+            adCooldownHours: 4,
+            adRewardType: 'helperChoice',
+            badge: '📺 إعلان',
+            new: true,
+        },
     ],
 
     /* ─── الحزم الكبيرة ─── */
@@ -581,6 +724,215 @@ var FRAMES_CATALOG = [
              <circle cx="65" cy="65" r="48" fill="none" stroke="#f0b90b" stroke-width="0.5" opacity="0.2"/>`;
         },
     },
+
+    /* ─── الإطارات الجديدة ─── */
+    {
+        id: 'frame_neon',
+        label: '🌈 نيون',
+        price: 40,
+        new: true,
+        svgContent: () => {
+            return `<defs>
+                <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%"   stop-color="#ff0080"/>
+                    <stop offset="33%"  stop-color="#7c3aed"/>
+                    <stop offset="66%"  stop-color="#00d4ff"/>
+                    <stop offset="100%" stop-color="#10b981"/>
+                </linearGradient>
+                <filter id="neonGlow">
+                    <feGaussianBlur stdDeviation="2" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+            </defs>
+            <circle cx="65" cy="65" r="57" fill="none" stroke="url(#neonGrad)" stroke-width="3.5" filter="url(#neonGlow)" opacity="0.9"/>
+            <circle cx="65" cy="65" r="52" fill="none" stroke="url(#neonGrad)" stroke-width="1" stroke-dasharray="3 5" opacity="0.5"/>
+            <circle cx="65" cy="65" r="62" fill="none" stroke="url(#neonGrad)" stroke-width="1" stroke-dasharray="1 6" opacity="0.3"/>`;
+        },
+    },
+    {
+        id: 'frame_space',
+        label: '🚀 فضاء',
+        price: 45,
+        new: true,
+        hot: true,
+        svgContent: () => {
+            const planets = ['🪐','⭐','🌙','🌟','🚀','💫','🪐','⭐'];
+            const dots = Array.from({length: 16}, (_, i) => {
+                const angle = (i / 16) * 360;
+                const rad = angle * Math.PI / 180;
+                const r = i % 2 === 0 ? 59 : 55;
+                const x = 65 + r * Math.cos(rad);
+                const y = 65 + r * Math.sin(rad);
+                const size = i % 4 === 0 ? 3 : 1.5;
+                return `<circle cx="${x}" cy="${y}" r="${size}" fill="#fff" opacity="${i % 3 === 0 ? 0.9 : 0.4}"/>`;
+            }).join('');
+            const icons = planets.map((icon, i) => {
+                const angle = (i / planets.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 54 * Math.cos(rad);
+                const y = 65 + 54 * Math.sin(rad);
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11">${icon}</text>`;
+            }).join('');
+            return `<defs>
+                <radialGradient id="spaceBg" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#1a0a2e" stop-opacity="0"/>
+                    <stop offset="100%" stop-color="#0a0020" stop-opacity="0"/>
+                </radialGradient>
+            </defs>
+            ${dots}${icons}
+            <circle cx="65" cy="65" r="51" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.4"/>`;
+        },
+    },
+    {
+        id: 'frame_fire_ring',
+        label: '🔥 حلقة نار',
+        price: 50,
+        new: true,
+        svgContent: () => {
+            const flames = ['🔥','🌋','🔥','💥','🔥','🌋','🔥','💥'];
+            const icons = flames.map((icon, i) => {
+                const angle = (i / flames.length) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 54 * Math.cos(rad);
+                const y = 65 + 54 * Math.sin(rad);
+                return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="12" transform="rotate(${angle+90},${x},${y})">${icon}</text>`;
+            }).join('');
+            return `<defs>
+                <linearGradient id="fireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%"   stop-color="#ff4500"/>
+                    <stop offset="50%"  stop-color="#f0b90b"/>
+                    <stop offset="100%" stop-color="#ff4500"/>
+                </linearGradient>
+            </defs>
+            ${icons}
+            <circle cx="65" cy="65" r="51" fill="none" stroke="url(#fireGrad)" stroke-width="2.5" opacity="0.7"/>
+            <circle cx="65" cy="65" r="57" fill="none" stroke="#ff4500" stroke-width="1" stroke-dasharray="2 4" opacity="0.4"/>`;
+        },
+    },
+    {
+        id: 'frame_crystal',
+        label: '💎 بلّوري',
+        price: 60,
+        lvlReq: 6,
+        new: true,
+        svgContent: () => {
+            /* مثلثات بلورية حول الدائرة */
+            const triangles = Array.from({length: 8}, (_, i) => {
+                const angle = (i / 8) * 360;
+                const rad = angle * Math.PI / 180;
+                const cx = 65 + 57 * Math.cos(rad);
+                const cy = 65 + 57 * Math.sin(rad);
+                const size = i % 2 === 0 ? 7 : 5;
+                const p1 = `${cx},${cy - size}`;
+                const p2 = `${cx - size * 0.866},${cy + size * 0.5}`;
+                const p3 = `${cx + size * 0.866},${cy + size * 0.5}`;
+                const color = i % 2 === 0 ? '#00d4ff' : '#7c3aed';
+                return `<polygon points="${p1} ${p2} ${p3}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.8" transform="rotate(${angle},${cx},${cy})"/>`;
+            }).join('');
+            return `<defs>
+                <linearGradient id="crystalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00d4ff"/>
+                    <stop offset="100%" stop-color="#7c3aed"/>
+                </linearGradient>
+            </defs>
+            ${triangles}
+            <circle cx="65" cy="65" r="51" fill="none" stroke="url(#crystalGrad)" stroke-width="2" opacity="0.7"/>
+            <circle cx="65" cy="65" r="63" fill="none" stroke="#00d4ff" stroke-width="0.8" stroke-dasharray="1 5" opacity="0.3"/>`;
+        },
+    },
+    {
+        id: 'frame_rainbow_arc',
+        label: '🌈 قوس قزح',
+        price: 55,
+        lvlReq: 4,
+        new: true,
+        svgContent: () => {
+            const colors = ['#ef4444','#f97316','#f0b90b','#10b981','#06b6d4','#3b82f6','#7c3aed','#ec4899'];
+            const arcs = colors.map((color, i) => {
+                const startAngle = (i / colors.length) * 360 - 90;
+                const endAngle   = ((i + 0.85) / colors.length) * 360 - 90;
+                const s = startAngle * Math.PI / 180;
+                const e = endAngle   * Math.PI / 180;
+                const r = 57;
+                const x1 = 65 + r * Math.cos(s);
+                const y1 = 65 + r * Math.sin(s);
+                const x2 = 65 + r * Math.cos(e);
+                const y2 = 65 + r * Math.sin(e);
+                return `<path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" opacity="0.9"/>`;
+            }).join('');
+            return `${arcs}
+            <circle cx="65" cy="65" r="51" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`;
+        },
+    },
+    {
+        id: 'frame_diamond_ring',
+        label: '💎 ماسي',
+        price: 70,
+        lvlReq: 8,
+        hot: true,
+        new: true,
+        adOnly: true,
+        svgContent: () => {
+            const gems = Array.from({length: 12}, (_, i) => {
+                const angle = (i / 12) * 360 - 90;
+                const rad = angle * Math.PI / 180;
+                const x = 65 + 57 * Math.cos(rad);
+                const y = 65 + 57 * Math.sin(rad);
+                const big = i % 3 === 0;
+                return `<polygon points="${x},${y - (big?5:3)} ${x-(big?3:2)},${y+(big?2:1)} ${x+(big?3:2)},${y+(big?2:1)}"
+                    fill="${big ? '#00d4ff' : 'rgba(0,212,255,0.5)'}"
+                    transform="rotate(${angle+90},${x},${y})"/>`;
+            }).join('');
+            return `<defs>
+                <linearGradient id="diamondRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00d4ff"/>
+                    <stop offset="50%" stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#7c3aed"/>
+                </linearGradient>
+            </defs>
+            ${gems}
+            <circle cx="65" cy="65" r="53" fill="none" stroke="url(#diamondRingGrad)" stroke-width="2.5" opacity="0.8"/>
+            <circle cx="65" cy="65" r="49" fill="none" stroke="rgba(0,212,255,0.25)" stroke-width="0.8"/>`;
+        },
+    },
+    {
+        id: 'frame_galaxy_swirl',
+        label: '🌌 مجرة',
+        price: 90,
+        lvlReq: 10,
+        hot: true,
+        new: true,
+        svgContent: () => {
+            /* حلقات متداخلة بألوان المجرة */
+            const rings = [
+                { r: 57, color: '#7c3aed', dash: '6 2', w: 2.5 },
+                { r: 53, color: '#4f46e5', dash: '3 4', w: 1.5 },
+                { r: 49, color: '#818cf8', dash: '1 6', w: 0.8 },
+                { r: 61, color: '#a78bfa', dash: '2 8', w: 1   },
+            ].map(({r, color, dash, w}) =>
+                `<circle cx="65" cy="65" r="${r}" fill="none" stroke="${color}" stroke-width="${w}" stroke-dasharray="${dash}" opacity="0.7"/>`
+            ).join('');
+            const stars = Array.from({length: 20}, (_, i) => {
+                const angle = (i / 20) * 360;
+                const rad = angle * Math.PI / 180;
+                const dist = 48 + (i % 3) * 6;
+                const x = 65 + dist * Math.cos(rad);
+                const y = 65 + dist * Math.sin(rad);
+                return `<circle cx="${x}" cy="${y}" r="${i % 5 === 0 ? 2 : 1}" fill="#fff" opacity="${0.3 + (i % 3) * 0.2}"/>`;
+            }).join('');
+            return `<defs>
+                <radialGradient id="galaxyGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#1e0a4e" stop-opacity="0"/>
+                </radialGradient>
+            </defs>
+            ${stars}${rings}
+            <text x="65" y="8" text-anchor="middle" font-size="10">✨</text>
+            <text x="65" y="125" text-anchor="middle" font-size="10">✨</text>
+            <text x="5" y="68" text-anchor="middle" font-size="10">✨</text>
+            <text x="125" y="68" text-anchor="middle" font-size="10">✨</text>`;
+        },
+    },
 ];
 
 /* ═══════════════════════════════════════════════════════════════
@@ -967,29 +1319,41 @@ function buyConsumable(id) {
     }
 
     if (item.adReward) {
-        /* ✅ FIX-ADREWARD: قيد 24 ساعة لمنع الحصول على عملات مجانية بلا حدود */
+        /* كل عنصر إعلان له cooldown خاص به */
         const _now = Date.now();
-        const _lastAd = st._lastAdRewardTime || 0;
-        const _cooldownMs = 24 * 60 * 60 * 1000; /* 24 ساعة */
-        if (_now - _lastAd < _cooldownMs) {
-            const _msLeft = _cooldownMs - (_now - _lastAd);
-            const _hLeft  = Math.ceil(_msLeft / (60 * 60 * 1000));
-            showFeedback(`⏳ يمكنك الحصول على المكافأة بعد ${_hLeft} ساعة`);
+        const _cooldownHours = item.adCooldownHours || 24;
+        const _cooldownMs    = _cooldownHours * 60 * 60 * 1000;
+        const _lastKey       = '_lastAd_' + item.id;
+        const _lastTime      = st[_lastKey] || 0;
+
+        if (_now - _lastTime < _cooldownMs) {
+            const _msLeft = _cooldownMs - (_now - _lastTime);
+            const _hLeft  = Math.floor(_msLeft / (60 * 60 * 1000));
+            const _mLeft  = Math.ceil((_msLeft % (60 * 60 * 1000)) / 60000);
+            const _label  = _hLeft > 0 ? `${_hLeft} ساعة ${_mLeft} دقيقة` : `${_mLeft} دقيقة`;
+            showFeedback(`⏳ متاح مجدداً بعد ${_label}`);
             return;
         }
-        showConfirm('📺 مكافأة مشاهدة', 'شاهد إعلاناً قصيراً للحصول على 20 عملة مجاناً!\n(مرة واحدة كل 24 ساعة)', 'شاهد الآن', 'لاحقاً', ok => {
+
+        /* رسالة تأكيد مشاهدة الإعلان */
+        const _adDesc = {
+            adXpBoost:   'شاهد إعلاناً واحصل على مضاعف XP ×2 كاملاً!',
+            adCoins30:   'شاهد إعلاناً واحصل على 30 عملة مجاناً!',
+            adDiamonds5: 'شاهد إعلاناً واحصل على 5 جواهر نادرة!',
+            adHelper:    'شاهد إعلاناً واختر مساعدة مجانية!',
+        };
+        showConfirm('📺 مكافأة مجانية', _adDesc[item.action] || 'شاهد إعلاناً للحصول على المكافأة', 'شاهد الآن 📺', 'لاحقاً', ok => {
             if (!ok) return;
-            /* تحقق مزدوج: لا نعطي المكافأة إذا مرر اللاعب الحوار بسرعة */
             const _checkNow = Date.now();
-            if (_checkNow - (st._lastAdRewardTime || 0) < _cooldownMs) {
+            if (_checkNow - (st[_lastKey] || 0) < _cooldownMs) {
                 showFeedback('⏳ المكافأة غير متاحة الآن');
                 return;
             }
-            st.coins += 20;
-            st._lastAdRewardTime = _checkNow;
+            st[_lastKey] = _checkNow;
+            /* تنفيذ المكافأة — يعاد توجيهه عبر نفس switch */
+            _executeConsumableAction(item);
             saveSt(); updateUI(); renderShop();
             playSound('coin');
-            showFeedback('💰 حصلت على 20 عملة! (متاحة مجدداً بعد 24 ساعة)');
         });
         return;
     }
@@ -1017,7 +1381,18 @@ function buyConsumable(id) {
             G._purchasedInstant[item.id] = true;
         }
 
-        switch (item.action) {
+        _executeConsumableAction(item);
+        saveSt(); updateUI(); renderShop();
+        playSound('purchase');
+        showFeedback(`${item.icon} تم الشراء بنجاح!`);
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   دالة مشتركة لتنفيذ أثر المستهلك (شراء أو مكافأة إعلان)
+═══════════════════════════════════════════════════════════════ */
+function _executeConsumableAction(item) {
+    switch (item.action) {
             case 'addHeart':
                 if (G && !G.ended) {
                     G.livesLeft = Math.min(G.livesLeft + 1, 9);
@@ -1070,7 +1445,6 @@ function buyConsumable(id) {
                 if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0 };
                 if (typeof st.inventory.hint !== 'number') st.inventory.hint = 0;
                 st.inventory.hint = Math.min(99, st.inventory.hint + (item.actionVal || 5));
-                /* احتفظ بالتوافق مع الكود القديم */
                 _shopState.hintsRemaining = st.inventory.hint;
                 st._hintsRemaining = st.inventory.hint;
                 _updateInventoryBar();
@@ -1079,7 +1453,6 @@ function buyConsumable(id) {
             case 'coinBonus':
                 st.coins += item.actionVal || 20;
                 break;
-            /* ─── عناصر المخزون الدائم ─── */
             case 'storeSkip':
                 if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0 };
                 st.inventory.skip = Math.min(99, (st.inventory.skip || 0) + (item.actionVal || 3));
@@ -1098,12 +1471,87 @@ function buyConsumable(id) {
                 _updateInventoryBar();
                 showFeedback(`🗑️ أُضيف ${item.actionVal} حذف خيار لمخزونك!`);
                 break;
-        }
 
-        saveSt(); updateUI(); renderShop();
-        playSound('purchase');
-        showFeedback(`${item.icon} تم الشراء بنجاح!`);
-    });
+            /* ─── المستهلكات الجديدة أثناء اللعب ─── */
+            case 'revealHalf':
+                if (G && !G.ended && !G.answered) {
+                    const _correct = String(G.correctAnswer);
+                    const _half = _correct.length > 2 ? _correct.slice(0, Math.ceil(_correct.length / 2)) + '...' : _correct[0] + '?';
+                    showFeedback(`🔍 تلميح: الجواب يبدأ بـ "${_half}"`);
+                }
+                break;
+            case 'storeReveal':
+                if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0, reveal: 0, freeze: 0, armor: 0, combo: 0 };
+                if (typeof st.inventory.reveal !== 'number') st.inventory.reveal = 0;
+                st.inventory.reveal = Math.min(99, st.inventory.reveal + (item.actionVal || 3));
+                _updateInventoryBar();
+                showFeedback(`🔍 أُضيف ${item.actionVal} كشف جزئي لمخزونك!`);
+                break;
+            case 'freezeTime':
+                if (G && G.hasTimer && !G.ended) {
+                    G._timeFrozen = true;
+                    const _freezeSec = item.actionVal || 8;
+                    showFeedback(`🧊 الوقت متجمد ${_freezeSec} ثوان!`);
+                    setTimeout(() => { if (G) G._timeFrozen = false; }, _freezeSec * 1000);
+                } else {
+                    showFeedback('🧊 التجميد يعمل فقط في وضع المؤقت');
+                }
+                break;
+            case 'storeFreeze':
+                if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0, reveal: 0, freeze: 0, armor: 0, combo: 0 };
+                if (typeof st.inventory.freeze !== 'number') st.inventory.freeze = 0;
+                st.inventory.freeze = Math.min(99, st.inventory.freeze + (item.actionVal || 3));
+                _updateInventoryBar();
+                showFeedback(`🧊 أُضيف ${item.actionVal} تجميد وقت لمخزونك!`);
+                break;
+            case 'heartArmor':
+                if (G && !G.ended) {
+                    G._heartArmored = true;
+                    showFeedback('💜 حصانة القلب مفعّلة — ستحمي قلبك من الخطأ التالي!');
+                }
+                break;
+            case 'storeHeartArmor':
+                if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0, reveal: 0, freeze: 0, armor: 0, combo: 0 };
+                if (typeof st.inventory.armor !== 'number') st.inventory.armor = 0;
+                st.inventory.armor = Math.min(99, st.inventory.armor + (item.actionVal || 3));
+                _updateInventoryBar();
+                showFeedback(`💜 أُضيف ${item.actionVal} حصانة قلب لمخزونك!`);
+                break;
+            case 'comboBoost':
+                if (G && !G.ended) {
+                    G._comboBoostActive = true;
+                    showFeedback('⚡ مضاعفة ×3 مفعّلة للسؤال التالي!');
+                }
+                break;
+            case 'storeCombo':
+                if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0, reveal: 0, freeze: 0, armor: 0, combo: 0 };
+                if (typeof st.inventory.combo !== 'number') st.inventory.combo = 0;
+                st.inventory.combo = Math.min(99, st.inventory.combo + (item.actionVal || 3));
+                _updateInventoryBar();
+                showFeedback(`⚡ أُضيف ${item.actionVal} مضاعفة ×3 لمخزونك!`);
+                break;
+
+            /* ─── مكافآت الإعلانات ─── */
+            case 'adXpBoost':
+                _shopState.xpBoostActive = true;
+                _shopState.xpBoostMultiplier = 2;
+                st._xpBoostMultiplier = 2;
+                st._xpBoostExpires = Date.now() + 60 * 60 * 1000;
+                showFeedback('⚡ مضاعف XP ×2 مفعّل للساعة القادمة!');
+                break;
+            case 'adCoins30':
+                st.coins += 30;
+                showFeedback('💰 حصلت على 30 عملة مجاناً!');
+                break;
+            case 'adDiamonds5':
+                st.diamonds = (st.diamonds || 0) + 5;
+                if (typeof _updateDiamondDisplayAll === 'function') _updateDiamondDisplayAll();
+                showFeedback('💎 حصلت على 5 جواهر نادرة!');
+                break;
+            case 'adHelper':
+                _showAdHelperChoice();
+                break;
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1337,27 +1785,34 @@ function buyEmojiShopOnly(emoji, price, label) {
 function _updateInventoryBar() {
     const bar = document.getElementById('helperInventoryBar');
     if (!bar) return;
-    const inv = st.inventory || { skip: 0, heart: 0, remove: 0 };
+    const inv = st.inventory || {};
     const skip   = inv.skip   || 0;
     const heart  = inv.heart  || 0;
     const remove = inv.remove || 0;
     const hint   = inv.hint   || 0;
-    const hasAny = skip > 0 || heart > 0 || remove > 0 || hint > 0;
+    const reveal = inv.reveal || 0;
+    const freeze = inv.freeze || 0;
+    const armor  = inv.armor  || 0;
+    const combo  = inv.combo  || 0;
+    const hasAny = skip > 0 || heart > 0 || remove > 0 || hint > 0 || reveal > 0 || freeze > 0 || armor > 0 || combo > 0;
     bar.style.display = hasAny ? 'flex' : 'none';
 
-    const skipChip   = document.getElementById('invSkipChip');
-    const heartChip  = document.getElementById('invHeartChip');
-    const removeChip = document.getElementById('invRemoveChip');
-    const hintChip   = document.getElementById('invHintChip');
-    const skipEl     = document.getElementById('invSkipCount');
-    const heartEl    = document.getElementById('invHeartCount');
-    const removeEl   = document.getElementById('invRemoveCount');
-    const hintEl     = document.getElementById('invHintCount');
-
-    if (skipEl   && skipChip)   { skipEl.textContent   = skip;   skipChip.style.display   = skip   > 0 ? 'flex' : 'none'; }
-    if (heartEl  && heartChip)  { heartEl.textContent  = heart;  heartChip.style.display  = heart  > 0 ? 'flex' : 'none'; }
-    if (removeEl && removeChip) { removeEl.textContent = remove; removeChip.style.display = remove > 0 ? 'flex' : 'none'; }
-    if (hintEl   && hintChip)   { hintEl.textContent   = hint;   hintChip.style.display   = hint   > 0 ? 'flex' : 'none'; }
+    const _chips = [
+        { chipId: 'invSkipChip',   countId: 'invSkipCount',   val: skip   },
+        { chipId: 'invHeartChip',  countId: 'invHeartCount',  val: heart  },
+        { chipId: 'invRemoveChip', countId: 'invRemoveCount', val: remove },
+        { chipId: 'invHintChip',   countId: 'invHintCount',   val: hint   },
+        { chipId: 'invRevealChip', countId: 'invRevealCount', val: reveal },
+        { chipId: 'invFreezeChip', countId: 'invFreezeCount', val: freeze },
+        { chipId: 'invArmorChip',  countId: 'invArmorCount',  val: armor  },
+        { chipId: 'invComboChip',  countId: 'invComboCount',  val: combo  },
+    ];
+    _chips.forEach(({ chipId, countId, val }) => {
+        const chip  = document.getElementById(chipId);
+        const count = document.getElementById(countId);
+        if (chip)  chip.style.display = val > 0 ? 'flex' : 'none';
+        if (count) count.textContent  = val;
+    });
 }
 
 /* استخدام المخزون — يُستدعى من useHelper في questions.js — البند 5.3 */
@@ -1367,7 +1822,11 @@ function useHelperFromInventory(type) {
     if (type === 'skip'   && inv.skip   > 0) { inv.skip--;   saveSt(); _updateInventoryBar(); return true; }
     if (type === 'heart'  && inv.heart  > 0) { inv.heart--;  saveSt(); _updateInventoryBar(); return true; }
     if (type === 'remove' && inv.remove > 0) { inv.remove--; saveSt(); _updateInventoryBar(); return true; }
-    if (type === 'hint'   && (inv.hint  || 0) > 0) { inv.hint--;  saveSt(); _updateInventoryBar(); return true; }
+    if (type === 'hint'   && (inv.hint  || 0) > 0) { inv.hint--;   saveSt(); _updateInventoryBar(); return true; }
+    if (type === 'reveal' && (inv.reveal|| 0) > 0) { inv.reveal--; saveSt(); _updateInventoryBar(); return true; }
+    if (type === 'freeze' && (inv.freeze|| 0) > 0) { inv.freeze--; saveSt(); _updateInventoryBar(); return true; }
+    if (type === 'armor'  && (inv.armor || 0) > 0) { inv.armor--;  saveSt(); _updateInventoryBar(); return true; }
+    if (type === 'combo'  && (inv.combo || 0) > 0) { inv.combo--;  saveSt(); _updateInventoryBar(); return true; }
     return false;
 }
 
@@ -1888,6 +2347,96 @@ window.addEventListener('load', function() {
 });
 
 /* ═══════════════════════════════════════════════════════════════
+   📺 نافذة اختيار المساعدة المجانية (مكافأة إعلان ad_helper)
+═══════════════════════════════════════════════════════════════ */
+function _showAdHelperChoice() {
+    /* إزالة أي نافذة سابقة */
+    const _old = document.getElementById('adHelperChoiceOverlay');
+    if (_old) _old.remove();
+
+    const _overlay = document.createElement('div');
+    _overlay.id = 'adHelperChoiceOverlay';
+    _overlay.style.cssText = 'position:fixed;inset:0;z-index:99995;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);';
+
+    _overlay.innerHTML = `
+        <div style="
+            background:linear-gradient(145deg,var(--surface),var(--surface2));
+            border:2px solid rgba(240,185,11,0.4);
+            border-radius:22px;padding:22px 18px;text-align:center;
+            max-width:290px;width:88%;
+            animation:levelUpPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        ">
+            <div style="font-size:2em;margin-bottom:4px;">🎁</div>
+            <div style="font-size:0.95em;font-weight:900;color:var(--text);margin-bottom:4px;">اختر مساعدتك المجانية</div>
+            <div style="font-size:0.68em;color:var(--text2);margin-bottom:16px;">مكافأة الإعلان — اختر واحدة!</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+                <button onclick="_pickAdHelper('skip')" style="
+                    background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(99,102,241,0.1));
+                    border:1.5px solid rgba(99,102,241,0.5);border-radius:13px;
+                    padding:11px 14px;font-size:0.8em;font-weight:900;color:var(--text);
+                    cursor:pointer;display:flex;align-items:center;gap:10px;
+                ">
+                    <span style="font-size:1.4em;">⏭️</span>
+                    <span>تخطّي سؤال صعب</span>
+                    <span style="margin-right:auto;background:rgba(99,102,241,0.25);border-radius:7px;padding:2px 8px;font-size:0.75em;color:#818cf8;">+1</span>
+                </button>
+                <button onclick="_pickAdHelper('reveal')" style="
+                    background:linear-gradient(135deg,rgba(6,182,212,0.2),rgba(6,182,212,0.08));
+                    border:1.5px solid rgba(6,182,212,0.5);border-radius:13px;
+                    padding:11px 14px;font-size:0.8em;font-weight:900;color:var(--text);
+                    cursor:pointer;display:flex;align-items:center;gap:10px;
+                ">
+                    <span style="font-size:1.4em;">🔍</span>
+                    <span>كشف جزئي للجواب</span>
+                    <span style="margin-right:auto;background:rgba(6,182,212,0.25);border-radius:7px;padding:2px 8px;font-size:0.75em;color:#06b6d4;">+1</span>
+                </button>
+                <button onclick="_pickAdHelper('heart')" style="
+                    background:linear-gradient(135deg,rgba(239,68,68,0.2),rgba(239,68,68,0.08));
+                    border:1.5px solid rgba(239,68,68,0.5);border-radius:13px;
+                    padding:11px 14px;font-size:0.8em;font-weight:900;color:var(--text);
+                    cursor:pointer;display:flex;align-items:center;gap:10px;
+                ">
+                    <span style="font-size:1.4em;">❤️</span>
+                    <span>+1 قلب في المخزون</span>
+                    <span style="margin-right:auto;background:rgba(239,68,68,0.25);border-radius:7px;padding:2px 8px;font-size:0.75em;color:#ef4444;">+1</span>
+                </button>
+            </div>
+            <button onclick="document.getElementById('adHelperChoiceOverlay').remove()" style="
+                background:transparent;border:1px solid var(--border2);color:var(--text3);
+                border-radius:10px;padding:7px 20px;margin-top:12px;font-size:0.72em;cursor:pointer;
+            ">إلغاء</button>
+        </div>
+    `;
+    document.body.appendChild(_overlay);
+}
+
+function _pickAdHelper(type) {
+    const _overlay = document.getElementById('adHelperChoiceOverlay');
+    if (_overlay) _overlay.remove();
+
+    if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0, reveal: 0, freeze: 0, armor: 0, combo: 0 };
+
+    switch (type) {
+        case 'skip':
+            st.inventory.skip = Math.min(99, (st.inventory.skip || 0) + 1);
+            showFeedback('⏭️ تخطّي سؤال أُضيف لمخزونك!');
+            break;
+        case 'reveal':
+            if (typeof st.inventory.reveal !== 'number') st.inventory.reveal = 0;
+            st.inventory.reveal = Math.min(99, st.inventory.reveal + 1);
+            showFeedback('🔍 كشف جزئي أُضيف لمخزونك!');
+            break;
+        case 'heart':
+            st.inventory.heart = Math.min(99, (st.inventory.heart || 0) + 1);
+            showFeedback('❤️ قلب أُضيف لمخزونك!');
+            break;
+    }
+    _updateInventoryBar();
+    saveSt(); updateUI();
+    try { playSound('coin'); } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════════════════════════
    نهاية ملف shop.js
 ═══════════════════════════════════════════════════════════════ */
 window.addEventListener('load', function () {
@@ -1917,3 +2466,6 @@ window.buyOrSelectEmoji        = buyOrSelectEmoji;
 window.buyEmojiShopOnly        = buyEmojiShopOnly;
 window.useHelperFromInventory  = useHelperFromInventory;
 window._updateInventoryBar     = _updateInventoryBar;
+window._executeConsumableAction = _executeConsumableAction;
+window._showAdHelperChoice     = _showAdHelperChoice;
+window._pickAdHelper           = _pickAdHelper;
