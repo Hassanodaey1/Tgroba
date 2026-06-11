@@ -1552,63 +1552,283 @@
     color: var(--gold);
 }
 
-/* ── Header صفحة الموسم ── */
+
+/* ═══════════════════════════════════════════════════════════════════
+   🏆 MATH PASS — تصميم كامل نظيف ومتناسق مع اللعبة
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   OVERLAY — الحاوية الرئيسية
+══════════════════════════════════════════ */
+#seasonPassOverlay {
+    background: var(--bg);
+    animation: spSlideUp 0.32s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+@keyframes spSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
 .sp-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 16px 10px;
+    gap: 12px;
+    padding: 16px 16px 12px;
+    padding-top: calc(16px + var(--safe-top, 0px));
+    background: linear-gradient(180deg, rgba(240,185,11,0.07) 0%, transparent 100%);
     border-bottom: 1px solid var(--border2);
     flex-shrink: 0;
 }
+
 .sp-back-btn {
-    background: var(--surface3);
-    border: 1px solid var(--border2);
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
     color: var(--text);
-    border-radius: 10px;
-    width: 36px;
-    height: 36px;
-    font-size: 1.4em;
-    cursor: pointer;
+    font-size: 1.5em;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
     flex-shrink: 0;
+    transition: background 0.15s;
 }
+.sp-back-btn:active { background: var(--surface3); }
+
 .sp-header-center {
     flex: 1;
     text-align: center;
+    min-width: 0;
 }
 .sp-header-title {
-    font-size: 0.95em;
+    font-size: 1em;
     font-weight: 900;
     color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    letter-spacing: 0.3px;
+}
+.sp-mp-badge-header {
+    background: linear-gradient(135deg, var(--gold), #e5a800);
+    color: #000;
+    font-size: 0.65em;
+    font-weight: 900;
+    border-radius: 7px;
+    padding: 2px 7px;
+    letter-spacing: 1px;
 }
 .sp-header-sub {
-    font-size: 0.65em;
+    font-size: 0.68em;
     color: var(--text2);
-    margin-top: 2px;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sp-header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
 }
 .sp-header-timer {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1px;
-    background: rgba(124,58,237,0.15);
-    border: 1px solid rgba(124,58,237,0.3);
+    background: rgba(124,58,237,0.12);
+    border: 1.5px solid rgba(124,58,237,0.28);
     border-radius: 10px;
-    padding: 5px 9px;
-    font-size: 0.62em;
+    padding: 5px 10px;
+    font-size: 0.64em;
     font-weight: 900;
     color: var(--accent);
+}
+.sp-timer-icon { font-size: 1em; }
+.sp-header-timer.urgent {
+    background: rgba(239,68,68,0.12);
+    border-color: rgba(239,68,68,0.32);
+    color: #f87171;
+    animation: spTimerUrgent 1s ease-in-out infinite;
+}
+@keyframes spTimerUrgent {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 8px rgba(239,68,68,0.3); }
+}
+.sp-history-btn {
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 8px;
+    width: 28px; height: 28px;
+    font-size: 0.82em;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.sp-history-btn:active { background: var(--surface3); }
+
+/* ══════════════════════════════════════════
+   STREAK + RANK BAR
+══════════════════════════════════════════ */
+.sp-streak-rank-bar {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+    gap: 0;
+    position: relative;
+}
+.sp-srb-divider {
+    width: 1px;
+    height: 34px;
+    background: var(--border2);
+    margin: 0 10px;
     flex-shrink: 0;
 }
-.sp-timer-icon { font-size: 1.1em; }
 
-/* ── شريط التقدم الكلي ── */
+/* Streak */
+.sp-streak-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    padding: 7px 10px;
+    border-radius: 12px;
+    transition: background 0.3s, border 0.3s;
+    border: 1px solid transparent;
+}
+.sp-streak-box.streak-warm {
+    background: rgba(249,115,22,0.09);
+    border-color: rgba(249,115,22,0.22);
+}
+.sp-streak-box.streak-hot {
+    background: rgba(239,68,68,0.09);
+    border-color: rgba(239,68,68,0.28);
+    animation: streakHotGlow 2s ease-in-out infinite;
+}
+@keyframes streakHotGlow {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 10px rgba(239,68,68,0.25); }
+}
+.sp-streak-fire {
+    font-size: 1.4em;
+    line-height: 1;
+    animation: streakFireBounce 1s ease-in-out infinite alternate;
+}
+@keyframes streakFireBounce {
+    from { transform: scale(1)   rotate(-5deg); }
+    to   { transform: scale(1.1) rotate(5deg); }
+}
+.sp-streak-info { flex: 1; }
+.sp-streak-num {
+    font-size: 1.25em;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+}
+.sp-streak-box.streak-warm .sp-streak-num { color: #f97316; }
+.sp-streak-box.streak-hot  .sp-streak-num { color: #ef4444; }
+.sp-streak-label {
+    font-size: 0.57em;
+    color: var(--text2);
+    margin-top: 1px;
+}
+.sp-streak-shield {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.28);
+    border-radius: 8px;
+    padding: 2px 7px;
+    font-size: 0.64em;
+    font-weight: 900;
+    color: var(--accent);
+}
+
+/* Rank */
+.sp-rank-box {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: 1;
+    padding: 7px 9px;
+    border-radius: 12px;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+}
+.sp-rank-box.rank-bronze  { background: rgba(184,115,51,0.09);  border-color: rgba(184,115,51,0.22); }
+.sp-rank-box.rank-silver  { background: rgba(176,184,200,0.09); border-color: rgba(176,184,200,0.22); }
+.sp-rank-box.rank-gold    { background: rgba(240,185,11,0.09);  border-color: rgba(240,185,11,0.22); }
+.sp-rank-box.rank-diamond { background: rgba(0,212,255,0.09);   border-color: rgba(0,212,255,0.28); }
+.sp-rank-box.rank-legend  { background: rgba(168,85,247,0.09);  border-color: rgba(168,85,247,0.28); }
+.sp-rank-box.rank-champion {
+    background: linear-gradient(135deg, rgba(240,185,11,0.12), rgba(168,85,247,0.08));
+    border-color: rgba(240,185,11,0.38);
+    animation: rankChampGlow 2s ease-in-out infinite;
+}
+@keyframes rankChampGlow {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 12px rgba(240,185,11,0.25); }
+}
+.sp-rank-icon { font-size: 1.35em; flex-shrink: 0; }
+.sp-rank-info { flex: 1; min-width: 0; }
+.sp-rank-label {
+    font-size: 0.78em;
+    font-weight: 900;
+    color: var(--text);
+    white-space: nowrap;
+}
+.sp-rank-sub { font-size: 0.55em; color: var(--text2); }
+.sp-rank-next {
+    font-size: 0.54em;
+    color: var(--text3);
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* Bonus badge */
+.sp-bonus-badge {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #f0b90b, #e5a800);
+    color: #000;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.7em;
+    font-weight: 900;
+    box-shadow: 0 2px 12px rgba(240,185,11,0.45);
+    animation: bonusBadgePop 0.4s cubic-bezier(0.34,1.56,0.64,1) both,
+               bonusBadgePulse 2s ease-in-out 0.4s infinite;
+    z-index: 2;
+}
+@keyframes bonusBadgePop  { from{transform:translateX(-50%) scale(0)} to{transform:translateX(-50%) scale(1)} }
+@keyframes bonusBadgePulse { 0%,100%{box-shadow:0 2px 12px rgba(240,185,11,0.4)} 50%{box-shadow:0 2px 20px rgba(240,185,11,0.65)} }
+.sp-bonus-label { font-size: 0.9em; }
+
+/* ══════════════════════════════════════════
+   PROGRESS BAR الكلي
+══════════════════════════════════════════ */
 .sp-progress-section {
-    padding: 14px 16px 10px;
-    background: linear-gradient(135deg, rgba(240,185,11,0.06), rgba(124,58,237,0.06));
+    padding: 14px 16px 12px;
+    background: linear-gradient(135deg, rgba(240,185,11,0.04), rgba(124,58,237,0.04));
     border-bottom: 1px solid var(--border2);
     flex-shrink: 0;
 }
@@ -1616,7 +1836,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 9px;
 }
 .sp-pts-label {
     font-size: 0.72em;
@@ -1624,14 +1844,14 @@
     font-weight: 700;
 }
 .sp-pts-val {
-    font-size: 0.78em;
+    font-size: 0.82em;
     font-weight: 900;
     color: var(--gold);
 }
 .sp-progress-track {
     position: relative;
     height: 10px;
-    background: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.07);
     border-radius: 20px;
     overflow: visible;
 }
@@ -1639,189 +1859,317 @@
     position: absolute;
     top: 0; left: 0;
     height: 100%;
-    background: linear-gradient(90deg, #f0b90b, #fff176, #f0b90b);
+    background: linear-gradient(90deg, #e5a800, #fff176, #f0b90b);
     background-size: 200% 100%;
     border-radius: 20px;
-    transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    transition: width 0.65s cubic-bezier(0.34,1.56,0.64,1);
     animation: spBarShimmer 2.5s linear infinite;
 }
 @keyframes spBarShimmer {
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+.sp-progress-fill.complete {
+    background: linear-gradient(90deg, #10b981, #34d399, #10b981);
+    background-size: 200% 100%;
+    box-shadow: 0 0 10px rgba(16,185,129,0.4);
+}
 .sp-progress-glow {
     position: absolute;
     top: -4px; right: -4px;
-    width: 18px;
-    height: 18px;
+    width: 18px; height: 18px;
     border-radius: 50%;
     background: var(--gold);
     box-shadow: 0 0 10px 4px rgba(240,185,11,0.5);
-    transition: right 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    transition: right 0.65s cubic-bezier(0.34,1.56,0.64,1);
     pointer-events: none;
 }
 .sp-progress-footer {
     display: flex;
     justify-content: space-between;
-    margin-top: 7px;
+    align-items: center;
+    margin-top: 8px;
+    gap: 6px;
 }
 .sp-completed-days,
 .sp-total-earned {
     font-size: 0.62em;
     color: var(--text2);
+    font-weight: 600;
+}
+.sp-share-btn {
+    background: rgba(124,58,237,0.12);
+    border: 1.5px solid rgba(124,58,237,0.28);
+    color: var(--accent);
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 0.62em;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: 'Tajawal', sans-serif;
+}
+.sp-share-btn:active { background: rgba(124,58,237,0.22); }
+
+/* تأثير pop للنقاط */
+.sp-pts-pop {
+    animation: spPtsPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes spPtsPop {
+    0%   { transform: scale(1);    color: var(--gold); }
+    40%  { transform: scale(1.45); color: #fff176; }
+    100% { transform: scale(1);    color: var(--gold); }
 }
 
-/* ── Body قابل للتمرير ── */
+/* ══════════════════════════════════════════
+   BODY — القابل للتمرير
+══════════════════════════════════════════ */
 .sp-body {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 14px 16px 32px;
+    padding: 14px 16px 40px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     min-height: 0;
 }
+.sp-body::-webkit-scrollbar { display: none; }
 
-/* ── عناوين الأقسام ── */
+/* ══════════════════════════════════════════
+   SECTION TITLES
+══════════════════════════════════════════ */
 .sp-section-title {
     font-size: 0.82em;
     font-weight: 900;
     color: var(--text);
-    margin-bottom: 4px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
+    margin-bottom: 2px;
 }
-.sp-daily-title {
-    margin-top: 6px;
-}
+.sp-daily-title { margin-top: 2px; }
 .sp-daily-badge {
-    background: rgba(240,185,11,0.18);
-    border: 1px solid rgba(240,185,11,0.35);
+    background: rgba(240,185,11,0.14);
+    border: 1px solid rgba(240,185,11,0.3);
     color: var(--gold);
     border-radius: 20px;
     padding: 2px 9px;
     font-size: 0.8em;
+    font-weight: 900;
 }
 .sp-desc {
-    font-size: 0.67em;
-    color: var(--text2);
-    margin-bottom: 6px;
+    font-size: 0.66em;
+    color: var(--text3);
+    margin-bottom: 4px;
+    line-height: 1.5;
 }
 
-/* ── مسار الجوائز (أفقي قابل للتمرير) ── */
-.sp-track-scroll {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 6px;
-    margin: 0 -4px;
+/* ══════════════════════════════════════════
+   FLASH TASK
+══════════════════════════════════════════ */
+.sp-flash-title { color: #f59e0b; }
+.sp-flash-timer-badge {
+    background: rgba(239,68,68,0.13);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #f87171;
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-size: 0.78em;
+    font-weight: 900;
+    font-family: monospace;
+    margin-right: auto;
 }
-.sp-track-scroll::-webkit-scrollbar { display: none; }
-.sp-track {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0;
-    padding: 4px 8px 8px;
-    min-width: max-content;
+.sp-flash-card {
+    background: linear-gradient(135deg, rgba(245,158,11,0.09), rgba(239,68,68,0.05));
+    border: 1.5px solid rgba(245,158,11,0.35);
+    border-radius: 16px;
+    padding: 2px;
+    animation: flashCardGlow 1.5s ease-in-out infinite;
 }
-
-/* محطة جائزة واحدة */
-.sp-reward-node {
+@keyframes flashCardGlow {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 14px rgba(245,158,11,0.25); }
+}
+.sp-flash-inner {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    position: relative;
+    gap: 10px;
+    padding: 11px 13px;
+}
+.sp-flash-icon {
+    font-size: 1.6em;
     flex-shrink: 0;
+    animation: flashIconSpin 3s linear infinite;
 }
-/* الخط الرابط بين المحطات */
-.sp-reward-node::before {
+@keyframes flashIconSpin {
+    0%,90%,100% { transform: rotate(0deg); }
+    95%          { transform: rotate(15deg); }
+}
+.sp-flash-pts-badge {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.28);
+    color: #f87171;
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 0.7em;
+    font-weight: 900;
+    margin-right: 4px;
+}
+.sp-flash-bar {
+    background: linear-gradient(90deg, #f59e0b, #ef4444) !important;
+}
+
+/* ══════════════════════════════════════════
+   CHEST CARD
+══════════════════════════════════════════ */
+.sp-chest-card {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    background: linear-gradient(135deg, rgba(240,185,11,0.1), rgba(168,85,247,0.07));
+    border: 2px solid rgba(240,185,11,0.4);
+    border-radius: 18px;
+    padding: 15px 16px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    animation: chestCardPulse 1.8s ease-in-out infinite;
+}
+.sp-chest-card:active { transform: scale(0.97); }
+@keyframes chestCardPulse {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 18px rgba(240,185,11,0.28); }
+}
+.sp-chest-icon {
+    font-size: 2em;
+    flex-shrink: 0;
+    animation: chestIconBounce 1s ease-in-out infinite alternate;
+}
+@keyframes chestIconBounce {
+    from { transform: translateY(0) rotate(-5deg); }
+    to   { transform: translateY(-4px) rotate(5deg); }
+}
+.sp-chest-info { flex: 1; }
+.sp-chest-title {
+    font-size: 0.88em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.sp-chest-sub {
+    font-size: 0.62em;
+    color: var(--text2);
+    margin-top: 2px;
+}
+.sp-chest-arrow {
+    font-size: 1.4em;
+    color: var(--gold);
+}
+
+/* ══════════════════════════════════════════
+   TRACK OPEN BUTTON — زر فتح مسار الجوائز
+══════════════════════════════════════════ */
+.sp-track-open-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: linear-gradient(135deg, var(--surface2), var(--surface3));
+    border: 1.5px solid var(--border2);
+    border-radius: 18px;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: right;
+    transition: border-color 0.2s, transform 0.15s;
+    font-family: 'Tajawal', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+.sp-track-open-btn::before {
     content: '';
     position: absolute;
-    top: 22px;
-    right: 50%;
-    width: 36px;
-    height: 3px;
-    background: var(--border2);
-    z-index: 0;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(240,185,11,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
 }
-.sp-reward-node:first-child::before { display: none; }
-.sp-reward-node.reached::before {
-    background: linear-gradient(90deg, var(--gold), rgba(240,185,11,0.4));
-}
+.sp-track-open-btn:hover::before  { opacity: 1; }
+.sp-track-open-btn:active { transform: scale(0.98); }
 
-/* دائرة المحطة */
-.sp-node-circle {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
+/* جائزة جاهزة → حد ذهبي نابض */
+.sp-track-open-btn.has-ready {
+    border-color: rgba(240,185,11,0.55);
+    animation: trackBtnGlow 2s ease-in-out infinite;
+}
+@keyframes trackBtnGlow {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 16px rgba(240,185,11,0.22); }
+}
+.sp-track-open-left {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.3em;
-    position: relative;
-    z-index: 1;
-    background: var(--surface3);
-    border: 2.5px solid var(--border2);
-    transition: all 0.3s ease;
+    gap: 12px;
+}
+.sp-track-open-icon {
+    font-size: 1.8em;
     flex-shrink: 0;
+    filter: drop-shadow(0 0 6px rgba(240,185,11,0.4));
 }
-.sp-reward-node.reached .sp-node-circle {
-    background: linear-gradient(135deg, rgba(240,185,11,0.25), rgba(240,185,11,0.1));
-    border-color: var(--gold);
-    box-shadow: 0 0 12px rgba(240,185,11,0.35);
+.sp-track-open-info { text-align: right; }
+.sp-track-open-title {
+    font-size: 0.88em;
+    font-weight: 900;
+    color: var(--text);
 }
-.sp-reward-node.claimed .sp-node-circle {
-    background: linear-gradient(135deg, #10b981, #059669);
-    border-color: #10b981;
-    box-shadow: 0 0 10px rgba(16,185,129,0.4);
+.sp-track-open-sub {
+    font-size: 0.64em;
+    color: var(--text2);
+    margin-top: 3px;
 }
-.sp-reward-node.claimed .sp-node-circle::after {
-    content: '✓';
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 16px;
-    height: 16px;
-    background: #10b981;
-    border-radius: 50%;
-    font-size: 0.55em;
-    color: #fff;
+.sp-track-open-sub.ready-text {
+    color: var(--gold);
+    font-weight: 700;
+}
+.sp-track-open-right {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    border: 2px solid var(--bg);
+    gap: 8px;
 }
-/* علامة الـ current */
-.sp-reward-node.current .sp-node-circle {
-    animation: spNodePulse 1.4s ease-in-out infinite;
+.sp-track-mini-nodes {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.rto-mini-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border2);
+    border: 1.5px solid var(--border2);
+    transition: all 0.2s;
+}
+.rto-mini-dot.done  {
+    background: #10b981;
+    border-color: #10b981;
+}
+.rto-mini-dot.ready {
+    background: var(--gold);
     border-color: var(--gold);
-    background: rgba(240,185,11,0.15);
+    box-shadow: 0 0 5px rgba(240,185,11,0.6);
+    animation: miniDotPulse 1.2s ease-in-out infinite;
 }
-@keyframes spNodePulse {
-    0%,100% { box-shadow: 0 0 0 0 rgba(240,185,11,0.4); }
-    50%      { box-shadow: 0 0 0 6px rgba(240,185,11,0); }
+@keyframes miniDotPulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.4); }
 }
-.sp-node-pts {
-    font-size: 0.58em;
+.sp-track-open-arrow {
+    font-size: 1.3em;
+    color: var(--text3);
     font-weight: 900;
-    color: var(--text2);
-}
-.sp-reward-node.reached .sp-node-pts,
-.sp-reward-node.current .sp-node-pts { color: var(--gold); }
-.sp-reward-node.claimed .sp-node-pts { color: #10b981; }
-.sp-node-label {
-    font-size: 0.55em;
-    color: var(--text2);
-    max-width: 60px;
-    text-align: center;
-    line-height: 1.3;
 }
 
-/* ── المهام اليومية ── */
+/* ══════════════════════════════════════════
+   DAILY TASKS
+══════════════════════════════════════════ */
 .sp-tasks-list {
     display: flex;
     flex-direction: column;
@@ -1830,41 +2178,55 @@
 .sp-task-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: var(--surface2);
+    gap: 11px;
+    background: var(--surface);
     border: 1.5px solid var(--border2);
-    border-radius: 14px;
-    padding: 11px 13px;
-    transition: all 0.2s ease;
+    border-radius: 16px;
+    padding: 12px 13px;
+    transition: all 0.2s;
+}
+.sp-task-item:not(.done):active {
+    transform: scale(0.98);
+    border-color: var(--border2);
 }
 .sp-task-item.done {
-    background: rgba(16,185,129,0.07);
-    border-color: rgba(16,185,129,0.3);
+    background: rgba(16,185,129,0.06);
+    border-color: rgba(16,185,129,0.28);
+}
+.sp-task-done-anim {
+    animation: spTaskDone 0.5s cubic-bezier(0.34,1.4,0.64,1) both;
+}
+@keyframes spTaskDone {
+    0%   { transform: scale(1);    box-shadow: none; }
+    50%  { transform: scale(1.04); box-shadow: 0 0 16px rgba(16,185,129,0.45); }
+    100% { transform: scale(1);    box-shadow: none; }
 }
 .sp-task-icon {
-    font-size: 1.5em;
+    font-size: 1.55em;
     flex-shrink: 0;
-    width: 36px;
+    width: 38px;
     text-align: center;
 }
-.sp-task-info {
-    flex: 1;
-    min-width: 0;
-}
+.sp-task-info { flex: 1; min-width: 0; }
 .sp-task-name {
     font-size: 0.78em;
     font-weight: 900;
     color: var(--text);
     margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
 }
 .sp-task-desc {
     font-size: 0.63em;
     color: var(--text2);
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    line-height: 1.4;
 }
 .sp-task-bar {
     height: 4px;
-    background: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.07);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -1888,125 +2250,96 @@
     font-size: 0.7em;
     font-weight: 900;
     color: var(--gold);
-    background: rgba(240,185,11,0.12);
-    border: 1px solid rgba(240,185,11,0.25);
+    background: rgba(240,185,11,0.1);
+    border: 1px solid rgba(240,185,11,0.22);
     border-radius: 8px;
-    padding: 2px 7px;
+    padding: 2px 8px;
 }
 .sp-task-prog {
     font-size: 0.6em;
-    color: var(--text2);
+    color: var(--text3);
 }
-/* نجوم الصعوبة */
 .sp-task-stars {
     font-size: 0.6em;
     color: var(--gold);
     letter-spacing: 1px;
 }
-/* شارة الوضع */
 .sp-task-mode-badge {
     font-size: 0.55em;
-    background: rgba(124,58,237,0.18);
-    border: 1px solid rgba(124,58,237,0.3);
+    background: rgba(124,58,237,0.14);
+    border: 1px solid rgba(124,58,237,0.26);
     color: var(--accent);
     border-radius: 6px;
     padding: 1px 5px;
     font-weight: 700;
 }
 
-/* زر استلام الجائزة */
-.sp-claim-btn {
-    background: var(--gold);
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    padding: 4px 10px;
-    font-size: 0.62em;
-    font-weight: 900;
+/* ══════════════════════════════════════════
+   LEADERBOARD BUTTON
+══════════════════════════════════════════ */
+.sp-lb-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(240,185,11,0.07), rgba(240,185,11,0.03));
+    border: 1.5px solid rgba(240,185,11,0.22);
+    border-radius: 18px;
+    padding: 14px 16px;
     cursor: pointer;
-    flex-shrink: 0;
-    animation: spClaimPulse 1.2s ease-in-out infinite;
+    text-align: right;
+    transition: border-color 0.2s, transform 0.15s;
+    font-family: 'Tajawal', sans-serif;
 }
-@keyframes spClaimPulse {
-    0%,100% { transform: scale(1); }
-    50%      { transform: scale(1.06); }
+.sp-lb-btn:active { transform: scale(0.97); }
+.sp-lb-btn-icon { font-size: 1.6em; flex-shrink: 0; }
+.sp-lb-btn-info { flex: 1; }
+.sp-lb-btn-title {
+    font-size: 0.88em;
+    font-weight: 900;
+    color: var(--gold);
 }
-
-
-/* ═══════════════════════════════════════════════════════════
-   🏆 SEASON PASS — المرحلة الرابعة: تأثيرات + حالات + Responsive
-   © 2026 Hassan Odaey
-═══════════════════════════════════════════════════════════ */
-
-/* ══════════════════════════
-   أنيميشن دخول الصفحة
-══════════════════════════ */
-#seasonPassOverlay {
-    animation: spSlideUp 0.32s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+.sp-lb-btn-sub {
+    font-size: 0.62em;
+    color: var(--text2);
+    margin-top: 3px;
 }
-@keyframes spSlideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
+.sp-lb-btn-arrow {
+    font-size: 1.4em;
+    color: var(--text3);
+    font-weight: 900;
 }
 
-/* ══════════════════════════
-   تأثير pop لنقاط الموسم
-   يُضاف بـ JS على #spCurrentPts عند كل تحديث
-══════════════════════════ */
-.sp-pts-pop {
-    animation: spPtsPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+/* ══════════════════════════════════════════
+   نقطة تنبيه (جوائز غير مُستلمة)
+══════════════════════════════════════════ */
+.comp-season-btn .sp-unclaimed-dot {
+    position: absolute;
+    top: 10px; left: 14px;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 2px solid var(--bg);
+    animation: spDotPulse 1.4s ease-in-out infinite;
 }
-@keyframes spPtsPop {
-    0%   { transform: scale(1);    color: var(--gold); }
-    40%  { transform: scale(1.45); color: #fff176;     }
-    100% { transform: scale(1);    color: var(--gold); }
-}
-
-/* ══════════════════════════
-   تأثير المهمة عند الإكتمال
-══════════════════════════ */
-.sp-task-done-anim {
-    animation: spTaskDone 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
-}
-@keyframes spTaskDone {
-    0%   { transform: scale(1);    box-shadow: none; }
-    50%  { transform: scale(1.04); box-shadow: 0 0 18px rgba(16,185,129,0.5); }
-    100% { transform: scale(1);    box-shadow: 0 0 0 rgba(16,185,129,0); }
+@keyframes spDotPulse {
+    0%,100% { transform: scale(1);   opacity: 1; }
+    50%      { transform: scale(1.3); opacity: 0.7; }
 }
 
-/* ══════════════════════════
-   تأثير استلام الجائزة
-══════════════════════════ */
-.sp-reward-claim-pop {
-    animation: spRewardClaim 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-@keyframes spRewardClaim {
-    0%   { transform: scale(1) rotate(0deg);   }
-    30%  { transform: scale(1.3) rotate(-8deg); }
-    60%  { transform: scale(0.95) rotate(5deg); }
-    100% { transform: scale(1) rotate(0deg);   }
-}
-
-/* ══════════════════════════
-   زر الموسم — حالة الإكتمال
-══════════════════════════ */
+/* زر الموسم — حالة الإكتمال */
 .comp-season-btn.all-done {
-    background: linear-gradient(135deg, #0d2818 0%, #0e2010 100%) !important;
-    border-color: rgba(16,185,129,0.55) !important;
-    box-shadow: 0 0 20px rgba(16,185,129,0.18) !important;
+    background: linear-gradient(135deg,#0d2818,#0e2010) !important;
+    border-color: rgba(16,185,129,0.5) !important;
+    box-shadow: 0 0 18px rgba(16,185,129,0.16) !important;
 }
-.comp-season-btn.all-done .comp-season-btn-title {
-    color: #34d399;
-}
+.comp-season-btn.all-done .comp-season-btn-title { color: #34d399; }
 .comp-season-btn.all-done .comp-season-mini-fill {
-    background: linear-gradient(90deg, #10b981, #34d399);
+    background: linear-gradient(90deg,#10b981,#34d399);
 }
 
-/* توهج دائم للزر عند وجود مهام جديدة */
-.season-btn-glow {
-    position: relative;
-    overflow: visible;
-}
+/* توهج دائم للزر */
+.season-btn-glow { position: relative; overflow: visible; }
 .season-btn-glow::after {
     content: '';
     position: absolute;
@@ -2019,456 +2352,98 @@
 }
 @keyframes seasonBtnGlowPulse {
     0%,100% { border-color: rgba(240,185,11,0.0); box-shadow: none; }
-    50%      { border-color: rgba(240,185,11,0.5); box-shadow: 0 0 12px rgba(240,185,11,0.2); }
+    50%      { border-color: rgba(240,185,11,0.45); box-shadow: 0 0 10px rgba(240,185,11,0.18); }
 }
 
-/* ══════════════════════════
-   شاشة إتمام الموسم
-══════════════════════════ */
-#spCompleteScreen {
-    display: none;
-    position: absolute;
-    inset: 0;
-    z-index: 50;
-    background: rgba(0,0,0,0.93);
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    text-align: center;
-    padding: 28px;
-    animation: spCompleteFadeIn 0.4s ease both;
-}
-@keyframes spCompleteFadeIn {
-    from { opacity: 0; backdrop-filter: blur(0); }
-    to   { opacity: 1; backdrop-filter: blur(6px); }
-}
-.sp-complete-crown {
-    font-size: 4em;
-    animation: spCompletePulse 1.6s ease-in-out infinite;
-}
-@keyframes spCompletePulse {
-    0%,100% { transform: scale(1)    rotate(0deg);  filter: drop-shadow(0 0 8px #f0b90b); }
-    50%      { transform: scale(1.15) rotate(-5deg); filter: drop-shadow(0 0 20px #f0b90b); }
-}
-.sp-complete-title {
-    font-size: 1.4em;
-    font-weight: 900;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(240,185,11,0.5);
-}
-.sp-complete-sub {
-    font-size: 0.8em;
-    color: var(--text2);
-    max-width: 270px;
-    line-height: 1.7;
-}
-.sp-complete-icons {
-    font-size: 2.2em;
-    letter-spacing: 6px;
-    animation: spCompleteIconsBounce 1s ease-in-out infinite alternate;
-}
-@keyframes spCompleteIconsBounce {
-    from { transform: translateY(0); }
-    to   { transform: translateY(-6px); }
-}
-.sp-complete-btn {
-    background: linear-gradient(135deg, var(--gold), #e5a800);
-    color: #000;
-    border: none;
-    border-radius: 18px;
-    padding: 13px 36px;
-    font-size: 0.95em;
-    font-weight: 900;
-    cursor: pointer;
-    margin-top: 10px;
-    font-family: 'Tajawal', sans-serif;
-    box-shadow: 0 4px 20px rgba(240,185,11,0.4);
-    transition: transform 0.15s ease;
-}
-.sp-complete-btn:active { transform: scale(0.96); }
-
-/* ══════════════════════════
-   الخط الرابط في المسار
-══════════════════════════ */
-.sp-track-connector {
-    width: 32px;
-    height: 3px;
-    background: var(--border2);
-    border-radius: 10px;
-    flex-shrink: 0;
-    align-self: center;
-    margin-bottom: 28px;
-    transition: background 0.3s ease;
-}
-.sp-track-connector.passed {
-    background: linear-gradient(90deg, rgba(240,185,11,0.8), rgba(240,185,11,0.3));
-}
-
-/* ══════════════════════════
-   الحالة الفارغة (لا مهام)
-══════════════════════════ */
+/* ══════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════ */
 .sp-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 32px 16px;
+    padding: 36px 16px;
     color: var(--text2);
     text-align: center;
 }
-.sp-empty-state-icon {
-    font-size: 2.8em;
-    opacity: 0.5;
-}
-.sp-empty-state-text {
-    font-size: 0.8em;
-    line-height: 1.6;
-}
+.sp-empty-state-icon  { font-size: 2.8em; opacity: 0.4; }
+.sp-empty-state-text  { font-size: 0.8em; line-height: 1.65; }
 
-/* ══════════════════════════
-   تحسينات عامة للصفحة
-══════════════════════════ */
-
-/* تأثير hover على بطاقات المهام */
-.sp-task-item:not(.done):active {
-    transform: scale(0.98);
-    transition: transform 0.1s ease;
-}
-
-/* ظل خفيف على شريط التقدم الكلي عند اكتماله */
-.sp-progress-fill.complete {
-    background: linear-gradient(90deg, #10b981, #34d399, #10b981);
-    background-size: 200% 100%;
-    animation: spBarShimmer 2s linear infinite;
-    box-shadow: 0 0 12px rgba(16,185,129,0.4);
-}
-
-/* تأثير تحديث عداد الأيام المتبقية */
-.sp-header-timer.urgent {
-    background: rgba(239,68,68,0.15);
-    border-color: rgba(239,68,68,0.35);
-    color: #f87171;
-    animation: spTimerUrgent 1s ease-in-out infinite;
-}
-@keyframes spTimerUrgent {
-    0%,100% { box-shadow: none; }
-    50%      { box-shadow: 0 0 8px rgba(239,68,68,0.3); }
-}
-
-/* نقطة تنبيه حمراء على زر الموسم عند وجود جوائز غير مُستلمة */
-.comp-season-btn .sp-unclaimed-dot {
+/* ══════════════════════════════════════════
+   SEASON COMPLETE SCREEN
+══════════════════════════════════════════ */
+#spCompleteScreen {
+    display: none;
     position: absolute;
-    top: 10px;
-    left: 14px;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: #ef4444;
-    border: 2px solid var(--bg);
-    animation: spDotPulse 1.4s ease-in-out infinite;
-}
-@keyframes spDotPulse {
-    0%,100% { transform: scale(1);   opacity: 1; }
-    50%      { transform: scale(1.3); opacity: 0.7; }
-}
-
-/* ══════════════════════════
-   Responsive — شاشات صغيرة
-══════════════════════════ */
-@media (max-width: 380px) {
-    .sp-header-title  { font-size: 0.85em; }
-    .sp-header-sub    { font-size: 0.6em;  }
-    .sp-node-circle   { width: 38px; height: 38px; font-size: 1.1em; }
-    .sp-node-pts      { font-size: 0.52em; }
-    .sp-node-label    { font-size: 0.5em; max-width: 52px; }
-    .sp-task-name     { font-size: 0.72em; }
-    .sp-task-desc     { font-size: 0.59em; }
-    .sp-task-pts      { font-size: 0.64em; }
-    .comp-season-btn-title { font-size: 0.82em; }
-    .sp-complete-title     { font-size: 1.2em;  }
-}
-
-@media (max-height: 650px) {
-    .sp-progress-section { padding: 10px 16px 8px; }
-    .sp-body             { padding: 10px 16px 24px; gap: 8px; }
-    .sp-task-item        { padding: 9px 11px; }
-    .sp-node-circle      { width: 40px; height: 40px; }
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   🏆 SEASON PASS — المرحلة الثانية: Streak + رتبة + فلاش + Bonus + صندوق + ذاكرة
-═══════════════════════════════════════════════════════════ */
-
-/* ── Header Right (timer + history btn) ── */
-.sp-header-right {
-    display: flex;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0,0,0,0.93);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
-    flex-shrink: 0;
-}
-.sp-history-btn {
-    background: var(--surface3);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    width: 28px; height: 28px;
-    font-size: 0.85em;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-}
-
-/* ══ شريط Streak + رتبة ══ */
-.sp-streak-rank-bar {
-    display: flex;
     align-items: center;
-    gap: 0;
-    padding: 10px 16px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border2);
-    flex-shrink: 0;
-    position: relative;
+    justify-content: center;
+    gap: 18px;
+    text-align: center;
+    padding: 32px 24px;
+    animation: spCompleteFadeIn 0.4s ease both;
 }
-.sp-srb-divider {
-    width: 1px;
-    height: 36px;
-    background: var(--border2);
-    margin: 0 12px;
-    flex-shrink: 0;
+@keyframes spCompleteFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
-
-/* ── Streak Box ── */
-.sp-streak-box {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    padding: 6px 10px;
-    border-radius: 12px;
-    transition: background 0.3s ease;
+.sp-complete-crown {
+    font-size: 4.5em;
+    animation: spCompletePulse 1.6s ease-in-out infinite;
 }
-.sp-streak-box.streak-warm {
-    background: rgba(249,115,22,0.1);
-    border: 1px solid rgba(249,115,22,0.25);
+@keyframes spCompletePulse {
+    0%,100% { transform: scale(1)    rotate(0deg);  filter: drop-shadow(0 0 10px #f0b90b); }
+    50%      { transform: scale(1.14) rotate(-5deg); filter: drop-shadow(0 0 22px #f0b90b); }
 }
-.sp-streak-box.streak-hot {
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.3);
-    animation: streakHotGlow 2s ease-in-out infinite;
-}
-@keyframes streakHotGlow {
-    0%,100% { box-shadow: none; }
-    50%      { box-shadow: 0 0 12px rgba(239,68,68,0.3); }
-}
-.sp-streak-fire {
+.sp-complete-title {
     font-size: 1.5em;
-    line-height: 1;
-    animation: streakFireBounce 1s ease-in-out infinite alternate;
-}
-@keyframes streakFireBounce {
-    from { transform: scale(1) rotate(-5deg); }
-    to   { transform: scale(1.1) rotate(5deg); }
-}
-.sp-streak-info { flex: 1; }
-.sp-streak-num {
-    font-size: 1.3em;
     font-weight: 900;
-    color: var(--text);
-    line-height: 1;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(240,185,11,0.5);
 }
-.sp-streak-box.streak-warm .sp-streak-num { color: #f97316; }
-.sp-streak-box.streak-hot  .sp-streak-num { color: #ef4444; }
-.sp-streak-label {
-    font-size: 0.58em;
+.sp-complete-sub {
+    font-size: 0.82em;
     color: var(--text2);
-    margin-top: 1px;
+    max-width: 275px;
+    line-height: 1.75;
 }
-.sp-streak-shield {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    background: rgba(124,58,237,0.15);
-    border: 1px solid rgba(124,58,237,0.3);
-    border-radius: 8px;
-    padding: 2px 6px;
-    font-size: 0.65em;
-    font-weight: 900;
-    color: var(--accent);
+.sp-complete-icons {
+    font-size: 2.2em;
+    letter-spacing: 8px;
+    animation: spCompleteIconsBounce 1s ease-in-out infinite alternate;
 }
-
-/* ── Rank Box ── */
-.sp-rank-box {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    flex: 1;
-    padding: 6px 8px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
+@keyframes spCompleteIconsBounce {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-7px); }
 }
-.sp-rank-box.rank-bronze  { background: rgba(184,115,51,0.1);  border:1px solid rgba(184,115,51,0.25); }
-.sp-rank-box.rank-silver  { background: rgba(176,184,200,0.1); border:1px solid rgba(176,184,200,0.25); }
-.sp-rank-box.rank-gold    { background: rgba(240,185,11,0.1);  border:1px solid rgba(240,185,11,0.25); }
-.sp-rank-box.rank-diamond { background: rgba(0,212,255,0.1);   border:1px solid rgba(0,212,255,0.3); }
-.sp-rank-box.rank-legend  { background: rgba(168,85,247,0.1);  border:1px solid rgba(168,85,247,0.3); }
-.sp-rank-box.rank-champion{
-    background: linear-gradient(135deg,rgba(240,185,11,0.15),rgba(168,85,247,0.1));
-    border:1px solid rgba(240,185,11,0.4);
-    animation: rankChampGlow 2s ease-in-out infinite;
-}
-@keyframes rankChampGlow {
-    0%,100% { box-shadow: none; }
-    50%      { box-shadow: 0 0 14px rgba(240,185,11,0.3); }
-}
-.sp-rank-icon { font-size: 1.4em; }
-.sp-rank-info { flex: 1; min-width: 0; }
-.sp-rank-label {
-    font-size: 0.78em;
-    font-weight: 900;
-    color: var(--text);
-    white-space: nowrap;
-}
-.sp-rank-sub {
-    font-size: 0.56em;
-    color: var(--text2);
-}
-.sp-rank-next {
-    font-size: 0.55em;
-    color: var(--text2);
-    text-align: left;
-    white-space: nowrap;
-}
-
-/* ── Bonus Day Badge ── */
-.sp-bonus-badge {
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: linear-gradient(135deg, #f0b90b, #e5a800);
+.sp-complete-btn {
+    background: linear-gradient(135deg, var(--gold), #e5a800);
     color: #000;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.7em;
+    border: none;
+    border-radius: 18px;
+    padding: 14px 40px;
+    font-size: 1em;
     font-weight: 900;
-    box-shadow: 0 2px 12px rgba(240,185,11,0.5);
-    animation: bonusBadgePop 0.4s cubic-bezier(0.34,1.56,0.64,1) both,
-               bonusBadgePulse 2s ease-in-out 0.4s infinite;
-}
-@keyframes bonusBadgePop {
-    from { transform: translateX(-50%) scale(0); }
-    to   { transform: translateX(-50%) scale(1); }
-}
-@keyframes bonusBadgePulse {
-    0%,100% { box-shadow: 0 2px 12px rgba(240,185,11,0.4); }
-    50%      { box-shadow: 0 2px 20px rgba(240,185,11,0.7); }
-}
-.sp-bonus-label { font-size: 0.9em; }
-
-/* ══ مهمة الفلاش ══ */
-.sp-flash-title {
-    color: #f59e0b;
-}
-.sp-flash-timer-badge {
-    background: rgba(239,68,68,0.15);
-    border: 1px solid rgba(239,68,68,0.35);
-    color: #f87171;
-    border-radius: 8px;
-    padding: 2px 8px;
-    font-size: 0.78em;
-    font-weight: 900;
-    font-family: monospace;
-    margin-right: auto;
-}
-.sp-flash-card {
-    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.06));
-    border: 2px solid rgba(245,158,11,0.4);
-    border-radius: 16px;
-    padding: 2px;
-    animation: flashCardGlow 1.5s ease-in-out infinite;
-}
-@keyframes flashCardGlow {
-    0%,100% { box-shadow: 0 0 0 rgba(245,158,11,0); }
-    50%      { box-shadow: 0 0 16px rgba(245,158,11,0.3); }
-}
-.sp-flash-inner {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 13px;
-}
-.sp-flash-icon {
-    font-size: 1.6em;
-    flex-shrink: 0;
-    animation: flashIconSpin 3s linear infinite;
-}
-@keyframes flashIconSpin {
-    0%,90%,100% { transform: rotate(0deg); }
-    95%          { transform: rotate(15deg); }
-}
-.sp-flash-pts-badge {
-    background: rgba(239,68,68,0.18);
-    border: 1px solid rgba(239,68,68,0.3);
-    color: #f87171;
-    border-radius: 6px;
-    padding: 1px 5px;
-    font-size: 0.7em;
-    font-weight: 900;
-    margin-right: 4px;
-}
-.sp-flash-bar {
-    background: linear-gradient(90deg, #f59e0b, #ef4444) !important;
-}
-
-/* ══ صندوق الموسم ══ */
-.sp-chest-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: linear-gradient(135deg, rgba(240,185,11,0.12), rgba(168,85,247,0.08));
-    border: 2px solid rgba(240,185,11,0.45);
-    border-radius: 16px;
-    padding: 14px 16px;
     cursor: pointer;
-    transition: transform 0.15s ease;
-    animation: chestCardPulse 1.8s ease-in-out infinite;
+    font-family: 'Tajawal', sans-serif;
+    box-shadow: 0 4px 20px rgba(240,185,11,0.4);
+    transition: transform 0.15s;
+    margin-top: 6px;
 }
-.sp-chest-card:active { transform: scale(0.97); }
-@keyframes chestCardPulse {
-    0%,100% { box-shadow: 0 0 0 rgba(240,185,11,0); }
-    50%      { box-shadow: 0 0 20px rgba(240,185,11,0.3); }
-}
-.sp-chest-icon {
-    font-size: 2em;
-    animation: chestIconBounce 1s ease-in-out infinite alternate;
-}
-@keyframes chestIconBounce {
-    from { transform: translateY(0) rotate(-5deg); }
-    to   { transform: translateY(-4px) rotate(5deg); }
-}
-.sp-chest-info { flex: 1; }
-.sp-chest-title {
-    font-size: 0.85em;
-    font-weight: 900;
-    color: var(--gold);
-}
-.sp-chest-sub {
-    font-size: 0.62em;
-    color: var(--text2);
-    margin-top: 2px;
-}
-.sp-chest-arrow {
-    font-size: 1.4em;
-    color: var(--gold);
-}
-/* شاشة فتح الصندوق */
+.sp-complete-btn:active { transform: scale(0.96); }
+
+/* ══════════════════════════════════════════
+   CHEST OPEN SCREEN
+══════════════════════════════════════════ */
 .sp-chest-open-icon {
-    font-size: 4em;
+    font-size: 4.2em;
     animation: chestOpenBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 @keyframes chestOpenBounce {
@@ -2476,26 +2451,62 @@
     to   { transform: scale(1) rotate(0deg); }
 }
 .sp-chest-open-title {
-    font-size: 1.3em;
+    font-size: 1.35em;
     font-weight: 900;
     color: var(--gold);
 }
 .sp-chest-open-reward {
-    font-size: 0.9em;
+    font-size: 0.92em;
     color: var(--text);
-    background: rgba(240,185,11,0.1);
-    border: 1px solid rgba(240,185,11,0.25);
-    border-radius: 12px;
-    padding: 10px 20px;
+    background: rgba(240,185,11,0.09);
+    border: 1.5px solid rgba(240,185,11,0.25);
+    border-radius: 14px;
+    padding: 12px 22px;
     font-weight: 700;
 }
 
-/* ══ ذاكرة المواسم ══ */
+/* ══════════════════════════════════════════
+   CLAIM BUTTON (في المسار الأفقي)
+══════════════════════════════════════════ */
+.sp-claim-btn {
+    background: linear-gradient(135deg, var(--gold), #e5a800);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 11px;
+    font-size: 0.62em;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    animation: spClaimPulse 1.2s ease-in-out infinite;
+    box-shadow: 0 2px 8px rgba(240,185,11,0.35);
+}
+@keyframes spClaimPulse {
+    0%,100% { transform: scale(1);    box-shadow: 0 2px 8px rgba(240,185,11,0.3); }
+    50%      { transform: scale(1.08); box-shadow: 0 2px 14px rgba(240,185,11,0.55); }
+}
+
+/* ══════════════════════════════════════════
+   REWARD CLAIM ANIMATION
+══════════════════════════════════════════ */
+.sp-reward-claim-pop {
+    animation: spRewardClaim 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes spRewardClaim {
+    0%   { transform: scale(1) rotate(0deg); }
+    30%  { transform: scale(1.3) rotate(-8deg); }
+    60%  { transform: scale(0.95) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+/* ══════════════════════════════════════════
+   SEASON HISTORY
+══════════════════════════════════════════ */
 #seasonHistoryOverlay {
     animation: spSlideUp 0.3s cubic-bezier(0.34,1.2,0.64,1) both;
 }
 .sp-history-card {
-    background: var(--surface2);
+    background: var(--surface);
     border: 1.5px solid var(--border2);
     border-radius: 16px;
     padding: 14px;
@@ -2511,8 +2522,8 @@
 }
 .sp-history-num {
     font-size: 0.65em;
-    color: var(--text2);
-    background: var(--surface3);
+    color: var(--text3);
+    background: var(--surface2);
     border-radius: 6px;
     padding: 2px 7px;
 }
@@ -2524,8 +2535,8 @@
 }
 .sp-history-complete-badge {
     font-size: 0.6em;
-    background: rgba(16,185,129,0.15);
-    border: 1px solid rgba(16,185,129,0.3);
+    background: rgba(16,185,129,0.13);
+    border: 1px solid rgba(16,185,129,0.28);
     color: #34d399;
     border-radius: 8px;
     padding: 2px 7px;
@@ -2545,7 +2556,7 @@
 }
 .sp-history-bar {
     height: 5px;
-    background: rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.06);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -2558,13 +2569,502 @@
     background: linear-gradient(90deg, #10b981, #34d399);
 }
 
-/* ── Responsive ── */
+/* ══════════════════════════════════════════
+   REWARD TRACK OVERLAY (rto)
+══════════════════════════════════════════ */
+.rto-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    z-index: 0;
+}
+.rto-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 35% at 50% 0%, rgba(240,185,11,0.09) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 30% at 80% 100%, rgba(124,58,237,0.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+.rto-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px 12px;
+    padding-top: calc(16px + var(--safe-top, 0px));
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+    background: linear-gradient(180deg, rgba(240,185,11,0.06) 0%, transparent 100%);
+}
+.rto-back-btn {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    color: var(--text);
+    font-size: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+    position: relative;
+    z-index: 1;
+}
+.rto-back-btn:active { background: var(--surface3); }
+.rto-header-center {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+.rto-title {
+    font-size: 0.98em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.rto-sub {
+    font-size: 0.65em;
+    color: var(--text2);
+    margin-top: 2px;
+}
+.rto-pts-pill {
+    background: rgba(240,185,11,0.14);
+    border: 1.5px solid rgba(240,185,11,0.32);
+    border-radius: 20px;
+    padding: 5px 13px;
+    font-size: 0.78em;
+    font-weight: 900;
+    color: var(--gold);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.rto-progress-wrap {
+    position: relative;
+    z-index: 1;
+    padding: 10px 16px 12px;
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+}
+.rto-progress-bg {
+    height: 9px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 20px;
+    overflow: visible;
+    position: relative;
+}
+.rto-progress-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #e5a800, #fff176, #f0b90b);
+    background-size: 200% 100%;
+    border-radius: 20px;
+    transition: width 0.7s cubic-bezier(0.34,1.56,0.64,1);
+    animation: spBarShimmer 2.5s linear infinite;
+}
+.rto-progress-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.58em;
+    font-weight: 900;
+    color: var(--bg);
+    pointer-events: none;
+    z-index: 1;
+}
+.rto-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 16px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+    min-height: 0;
+}
+.rto-body::-webkit-scrollbar { display: none; }
+
+/* محطة جائزة في overlay */
+.rto-node { position: relative; }
+.rto-connector {
+    width: 2px;
+    height: 14px;
+    background: var(--border2);
+    margin: 0 auto 0;
+    border-radius: 10px;
+    transition: background 0.3s;
+}
+.rto-connector.passed {
+    background: linear-gradient(180deg, var(--gold), rgba(240,185,11,0.3));
+}
+.rto-node-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.rto-circle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.rto-circle {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    border: 2px solid var(--border2);
+    transition: all 0.3s;
+}
+.rto-node-claimed .rto-circle {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+    box-shadow: 0 0 10px rgba(16,185,129,0.35);
+}
+.rto-node-reached .rto-circle {
+    background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(240,185,11,0.08));
+    border-color: var(--gold);
+    box-shadow: 0 0 10px rgba(240,185,11,0.3);
+}
+.rto-node-locked .rto-circle { opacity: 0.55; }
+.rto-circle-icon { font-size: 1.4em; }
+.rto-pts-tag {
+    font-size: 0.6em;
+    font-weight: 900;
+    color: var(--text2);
+    white-space: nowrap;
+}
+.rto-node-claimed .rto-pts-tag { color: #10b981; }
+.rto-node-reached .rto-pts-tag { color: var(--gold); }
+
+.rto-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1.5px solid var(--border2);
+    border-radius: 16px;
+    padding: 12px 14px;
+    transition: border-color 0.25s;
+}
+.rto-node-claimed .rto-card {
+    background: rgba(16,185,129,0.05);
+    border-color: rgba(16,185,129,0.25);
+}
+.rto-node-reached .rto-card {
+    background: rgba(240,185,11,0.05);
+    border-color: rgba(240,185,11,0.28);
+}
+.rto-node-locked .rto-card { opacity: 0.6; }
+.rto-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.rto-card-label {
+    font-size: 0.82em;
+    font-weight: 900;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.3;
+}
+.rto-card-state-badge {
+    font-size: 0.62em;
+    font-weight: 900;
+    border-radius: 8px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.rto-badge-claimed {
+    background: rgba(16,185,129,0.13);
+    border: 1px solid rgba(16,185,129,0.28);
+    color: #34d399;
+}
+.rto-badge-reached {
+    background: rgba(240,185,11,0.13);
+    border: 1px solid rgba(240,185,11,0.3);
+    color: var(--gold);
+}
+.rto-badge-locked {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+}
+.rto-claim-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), #e5a800);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 0.82em;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    transition: transform 0.15s;
+    box-shadow: 0 3px 12px rgba(240,185,11,0.35);
+    animation: rtoClaimPulse 1.4s ease-in-out infinite;
+}
+@keyframes rtoClaimPulse {
+    0%,100% { box-shadow: 0 3px 12px rgba(240,185,11,0.3); }
+    50%      { box-shadow: 0 3px 20px rgba(240,185,11,0.6); }
+}
+.rto-claim-btn:active { transform: scale(0.97); }
+.rto-claim-icon { font-size: 1.1em; }
+.rto-mini-prog {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+.rto-mini-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+/* ══════════════════════════════════════════
+   REWARD CLAIMED POPUP (rcp)
+══════════════════════════════════════════ */
+.rcp-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.62);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    animation: rcpFadeIn 0.2s ease;
+}
+@keyframes rcpFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.rcp-box {
+    background: var(--surface);
+    border: 2px solid var(--gold);
+    border-radius: 24px;
+    padding: 32px 28px 26px;
+    max-width: 320px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(240,185,11,0.18);
+    animation: rcpSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes rcpSlideUp {
+    from { transform: translateY(60px) scale(0.85); opacity: 0; }
+    to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+.rcp-icon {
+    font-size: 3.4em;
+    margin-bottom: 8px;
+    animation: rcpBounce 0.5s ease 0.2s both;
+}
+@keyframes rcpBounce {
+    0%   { transform: scale(0); }
+    60%  { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+.rcp-title {
+    font-size: 1.28em;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 4px;
+}
+.rcp-label {
+    font-size: 0.9em;
+    color: var(--text);
+    font-weight: 700;
+    margin-bottom: 16px;
+    opacity: 0.88;
+    line-height: 1.4;
+}
+.rcp-dest {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid var(--border2);
+    border-radius: 14px;
+    padding: 11px 16px;
+    margin-bottom: 20px;
+}
+.rcp-dest-icon { font-size: 1.45em; }
+.rcp-dest-text {
+    font-size: 0.82em;
+    color: var(--text2);
+    font-weight: 600;
+    text-align: right;
+    line-height: 1.45;
+}
+.rcp-ok-btn {
+    background: linear-gradient(135deg, var(--gold), #e5a800);
+    color: #000;
+    border: none;
+    border-radius: 14px;
+    padding: 13px 40px;
+    font-size: 0.98em;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    width: 100%;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(240,185,11,0.35);
+}
+.rcp-ok-btn:hover  { transform: scale(1.03); }
+.rcp-ok-btn:active { transform: scale(0.97); }
+
+/* ══════════════════════════════════════════
+   SHARE OVERLAY
+══════════════════════════════════════════ */
+.sp-share-card {
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 22px;
+    padding: 22px 20px;
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+.sp-share-card-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 0.72em;
+    color: var(--text2);
+    font-weight: 700;
+}
+.sp-share-game-logo { color: var(--gold); }
+.sp-share-avatar { font-size: 2.2em; }
+.sp-share-player-name {
+    font-size: 1em;
+    font-weight: 900;
+    color: var(--text);
+}
+.sp-share-rank {
+    font-size: 0.8em;
+    color: var(--gold);
+    font-weight: 700;
+}
+.sp-share-stats-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: 100%;
+}
+.sp-share-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+.sp-share-stat-val {
+    font-size: 1.1em;
+    font-weight: 900;
+    color: var(--text);
+}
+.sp-share-stat-lbl {
+    font-size: 0.6em;
+    color: var(--text2);
+}
+.sp-share-stat-divider {
+    width: 1px;
+    height: 30px;
+    background: var(--border2);
+    flex-shrink: 0;
+    margin: 0 8px;
+}
+.sp-share-bar {
+    width: 100%;
+    height: 7px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 20px;
+    overflow: hidden;
+}
+.sp-share-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f0b90b, #fff176);
+    border-radius: 20px;
+    transition: width 0.6s ease;
+}
+.sp-share-footer {
+    font-size: 0.7em;
+    color: var(--text3);
+    font-style: italic;
+}
+.sp-share-action-btn {
+    flex: 1;
+    border: none;
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 0.82em;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    transition: transform 0.15s;
+}
+.sp-share-action-btn:active { transform: scale(0.97); }
+.sp-share-copy-btn {
+    background: linear-gradient(135deg, var(--gold), #e5a800);
+    color: #000;
+}
+.sp-share-close-btn {
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    color: var(--text2);
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
 @media (max-width: 380px) {
-    .sp-streak-num   { font-size: 1.1em; }
-    .sp-rank-label   { font-size: 0.7em; }
-    .sp-bonus-badge  { font-size: 0.62em; padding: 2px 8px; }
-    .sp-chest-title  { font-size: 0.78em; }
-    .sp-flash-card   { font-size: 0.9em; }
+    .sp-header-title     { font-size: 0.9em; }
+    .sp-header-sub       { font-size: 0.62em; }
+    .sp-streak-num       { font-size: 1.1em; }
+    .sp-rank-label       { font-size: 0.72em; }
+    .sp-chest-title      { font-size: 0.8em; }
+    .sp-flash-card       { font-size: 0.92em; }
+    .sp-task-name        { font-size: 0.74em; }
+    .sp-task-desc        { font-size: 0.6em; }
+    .sp-complete-title   { font-size: 1.25em; }
+    .rto-circle          { width: 42px; height: 42px; }
+    .rto-card-label      { font-size: 0.76em; }
+}
+@media (max-height: 650px) {
+    .sp-progress-section { padding: 10px 16px 8px; }
+    .sp-body             { padding: 10px 16px 24px; gap: 9px; }
+    .sp-task-item        { padding: 9px 11px; }
+    .rto-circle          { width: 42px; height: 42px; }
+    .rto-body            { padding: 10px 14px 30px; }
 }
 
 
@@ -3552,91 +4052,154 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   Reward Claimed Popup — rcp
-   يظهر عند ضغط اللاعب على "استلم الجائزة"
-═══════════════════════════════════════════════════════════ */
-.rcp-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
+/* ══════════════════════════════════════════
+   مسار الجوائز الأفقي (داخل صفحة MP الرئيسية)
+   sp-track-scroll / sp-track / sp-reward-node
+══════════════════════════════════════════ */
+.sp-track-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    margin: 0 -4px;
+}
+.sp-track-scroll::-webkit-scrollbar { display: none; }
+
+.sp-track {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
-    animation: rcpFadeIn 0.2s ease;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 0;
+    padding: 6px 10px 10px;
+    min-width: max-content;
 }
-@keyframes rcpFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-.rcp-box {
-    background: var(--card, #1e2636);
-    border: 2px solid var(--gold, #f0b90b);
-    border-radius: 22px;
-    padding: 32px 28px 24px;
-    max-width: 320px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(240,185,11,0.2);
-    animation: rcpSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
-@keyframes rcpSlideUp {
-    from { transform: translateY(60px) scale(0.85); opacity: 0; }
-    to   { transform: translateY(0)    scale(1);    opacity: 1; }
-}
-.rcp-icon {
-    font-size: 3.2em;
-    margin-bottom: 8px;
-    animation: rcpBounce 0.5s ease 0.2s both;
-}
-@keyframes rcpBounce {
-    0%   { transform: scale(0);   }
-    60%  { transform: scale(1.3); }
-    100% { transform: scale(1);   }
-}
-.rcp-title {
-    font-size: 1.25em;
-    font-weight: 900;
-    color: var(--gold, #f0b90b);
-    margin-bottom: 4px;
-}
-.rcp-label {
-    font-size: 0.92em;
-    color: var(--text, #fff);
-    font-weight: 700;
-    margin-bottom: 16px;
-    opacity: 0.9;
-}
-.rcp-dest {
+
+/* محطة جائزة واحدة */
+.sp-reward-node {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 12px;
-    padding: 10px 16px;
-    margin-bottom: 20px;
+    gap: 5px;
+    position: relative;
+    flex-shrink: 0;
+    padding: 0 6px;
+    min-width: 72px;
 }
-.rcp-dest-icon { font-size: 1.4em; }
-.rcp-dest-text {
-    font-size: 0.82em;
-    color: var(--text2, #a0aec0);
-    font-weight: 600;
-    text-align: right;
-    line-height: 1.4;
-}
-.rcp-ok-btn {
-    background: linear-gradient(135deg, var(--gold,#f0b90b), #e67e22);
-    color: #000;
-    border: none;
-    border-radius: 14px;
-    padding: 12px 40px;
-    font-size: 1em;
-    font-weight: 900;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
+
+/* الخط الرابط بين المحطات */
+.sp-reward-node::before {
+    content: '';
+    position: absolute;
+    top: 22px;
+    right: 50%;
     width: 100%;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 10px;
+    z-index: 0;
 }
-.rcp-ok-btn:hover  { transform: scale(1.04); }
-.rcp-ok-btn:active { transform: scale(0.97); }
+.sp-reward-node:first-child::before { display: none; }
+.sp-reward-node.reached::before {
+    background: linear-gradient(90deg, var(--gold), rgba(240,185,11,0.35));
+}
+.sp-reward-node.claimed::before {
+    background: linear-gradient(90deg, #10b981, rgba(16,185,129,0.35));
+}
+
+/* دائرة المحطة */
+.sp-node-circle {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    position: relative;
+    z-index: 1;
+    background: var(--surface2);
+    border: 2.5px solid var(--border2);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.sp-reward-node.reached .sp-node-circle {
+    background: linear-gradient(135deg, rgba(240,185,11,0.22), rgba(240,185,11,0.08));
+    border-color: var(--gold);
+    box-shadow: 0 0 14px rgba(240,185,11,0.32), 0 2px 8px rgba(0,0,0,0.3);
+}
+.sp-reward-node.claimed .sp-node-circle {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+    box-shadow: 0 0 12px rgba(16,185,129,0.4), 0 2px 8px rgba(0,0,0,0.3);
+}
+.sp-reward-node.claimed .sp-node-circle::after {
+    content: '✓';
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 17px; height: 17px;
+    background: #10b981;
+    border-radius: 50%;
+    font-size: 0.55em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    border: 2px solid var(--bg);
+}
+/* current — جاهزة للاستلام */
+.sp-reward-node.current .sp-node-circle {
+    border-color: var(--gold);
+    background: rgba(240,185,11,0.14);
+    animation: spNodePulse 1.4s ease-in-out infinite;
+}
+@keyframes spNodePulse {
+    0%,100% { box-shadow: 0 0 0 0   rgba(240,185,11,0.45), 0 2px 8px rgba(0,0,0,0.3); }
+    50%      { box-shadow: 0 0 0 7px rgba(240,185,11,0),    0 2px 8px rgba(0,0,0,0.3); }
+}
+
+.sp-node-pts {
+    font-size: 0.58em;
+    font-weight: 900;
+    color: var(--text3);
+}
+.sp-reward-node.reached .sp-node-pts,
+.sp-reward-node.current .sp-node-pts { color: var(--gold); }
+.sp-reward-node.claimed .sp-node-pts { color: #10b981; }
+
+.sp-node-label {
+    font-size: 0.54em;
+    color: var(--text2);
+    max-width: 64px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* ── رابط connector الأفقي ── */
+.sp-track-connector {
+    width: 28px;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 10px;
+    flex-shrink: 0;
+    align-self: center;
+    margin-bottom: 32px;
+    transition: background 0.3s;
+}
+.sp-track-connector.passed {
+    background: linear-gradient(90deg, rgba(240,185,11,0.85), rgba(240,185,11,0.3));
+}
+
+/* ── #spCurrentPts pop animation ── */
+#spCurrentPts {
+    display: inline-block;
+    transition: color 0.2s;
+}
+.sp-pts-pop {
+    animation: spPtsPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes spPtsPop {
+    0%   { transform: scale(1);    color: var(--gold); }
+    40%  { transform: scale(1.45); color: #fff176; }
+    100% { transform: scale(1);    color: var(--gold); }
+}
