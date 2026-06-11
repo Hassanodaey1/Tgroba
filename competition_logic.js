@@ -1117,15 +1117,18 @@ function _seasonUpdateAfterGame(gameData) {
     _updateSeasonBtn();
 }
 
-/* ── فحص الجوائز المستحقة وإظهار popup ── */
+/* ── فحص الجوائز المستحقة — تُعلم اللاعب فقط ولا تمنح تلقائياً ── */
 function _seasonCheckRewards() {
     if (typeof SEASON_TRACK_REWARDS === 'undefined') return;
-    SEASON_TRACK_REWARDS.forEach(reward => {
-        if (st.season.points >= reward.pts && !st.season.claimedRewards.includes(reward.pts)) {
-            st.season.claimedRewards.push(reward.pts);
-            _seasonGrantReward(reward);
-        }
-    });
+    const pts = st.season.points || 0;
+    const hasNew = SEASON_TRACK_REWARDS.some(r =>
+        pts >= r.pts && !st.season.claimedRewards.includes(r.pts)
+    );
+    if (hasNew) {
+        /* تحديث زر المسار ليُظهر "جائزة جاهزة للاستلام" */
+        try { _updateTrackBtn(pts); } catch(e) {}
+        try { showFeedback('🎁 لديك جائزة جاهزة في مسار الموسم!'); } catch(e) {}
+    }
 }
 
 /* ── منح الجائزة فعلياً ── */
@@ -1400,8 +1403,82 @@ function claimSeasonReward(pts) {
     _seasonGrantReward(rewardDef);
     saveSt();
 
+    /* ── popup يوضح أين ذهبت الجائزة ── */
+    _showRewardClaimedPopup(rewardDef);
+
     /* إعادة رسم المسار */
     _renderSeasonTrack(st.season.points || 0);
+    try { _renderRewardTrackOverlay(); } catch(e) {}
+    try { _updateTrackBtn(st.season.points || 0); } catch(e) {}
+}
+
+/* ── popup "تم الاستلام" مع وصف وجهة الجائزة ── */
+function _showRewardClaimedPopup(rewardDef) {
+    const r = rewardDef.reward;
+
+    /* تحديد وصف الوجهة */
+    let destIcon = '🎁';
+    let destText = 'أُضيفت إلى حسابك';
+    switch (r.type) {
+        case 'coins':
+            destIcon = '💰';
+            destText = `أُضيف ${r.value} عملة إلى رصيدك`;
+            break;
+        case 'inventory_skip':
+            destIcon = '⏭️';
+            destText = `أُضيف ${r.value} تخطيات إلى حقيبة المساعدات`;
+            break;
+        case 'shield':
+            destIcon = '🛡️';
+            destText = `أُضيف ${r.value} درع إلى حقيبة المساعدات`;
+            break;
+        case 'xp_boost':
+            destIcon = '⚡';
+            destText = `مضاعف XP ×${r.value} فعّال لـ 24 ساعة`;
+            break;
+        case 'frame':
+            destIcon = '🖼️';
+            destText = 'أُضيف الإطار إلى مجموعة إطاراتك';
+            if (r.value === 'frame_silver_star') destText = 'إطار "الفضي" + لقب "نجم الموسم" أُضيفا لملفك';
+            if (r.value === 'frame_gold_season') destText = 'إطار "الذهبي" + لقب "رياضي الموسم" أُضيفا لملفك';
+            if (r.value === 'frame_epic_warrior') destText = 'إطار "المحارب الملحمي" أُضيف لمجموعة إطاراتك';
+            break;
+        case 'title':
+            destIcon = '🏷️';
+            destText = 'أُضيف اللقب إلى مجموعة ألقابك';
+            break;
+        case 'season_complete':
+            destIcon = '👑';
+            destText = 'إطار الأبطال + لقب "بطل الموسم" أُضيفا لملفك';
+            break;
+    }
+
+    /* بناء الـ popup */
+    const existing = document.getElementById('rewardClaimedPopup');
+    if (existing) existing.remove();
+
+    const popup = document.createElement('div');
+    popup.id = 'rewardClaimedPopup';
+    popup.innerHTML = `
+        <div class="rcp-overlay" onclick="document.getElementById('rewardClaimedPopup').remove()">
+            <div class="rcp-box" onclick="event.stopPropagation()">
+                <div class="rcp-icon">${rewardDef.icon}</div>
+                <div class="rcp-title">تم الاستلام! 🎉</div>
+                <div class="rcp-label">${rewardDef.label}</div>
+                <div class="rcp-dest">
+                    <span class="rcp-dest-icon">${destIcon}</span>
+                    <span class="rcp-dest-text">${destText}</span>
+                </div>
+                <button class="rcp-ok-btn" onclick="document.getElementById('rewardClaimedPopup').remove()">رائع! ✓</button>
+            </div>
+        </div>`;
+    document.body.appendChild(popup);
+
+    /* إزالة تلقائية بعد 4 ثواني */
+    setTimeout(() => {
+        const p = document.getElementById('rewardClaimedPopup');
+        if (p) p.remove();
+    }, 4000);
 }
 
 /* ── تحديث تقدم مهام الموسم من اللعبة العادية ── */
