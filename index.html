@@ -880,23 +880,22 @@
         </div>
     </div>
 
+    </div><!-- /competitionMainView -->
+
     <!-- ══ Overlay موسم التحدي ══ -->
-    <div id="compTitlesOverlay" style="display:none;position:absolute;inset:0;z-index:30;background:var(--bg);flex-direction:column;overflow:hidden;">
-
-        <!-- رأس الـ overlay -->
-        <div class="cto-header">
-            <button class="cto-back-btn" onclick="closeCompTitlesOverlay()">‹</button>
-            <span class="cto-title">🏆 موسم التحدي</span>
-            <div style="width:36px;"></div>
+    <div id="compTitlesOverlay" class="game-overlay" style="display:none;overflow-y:auto;z-index:9999;">
+        <div class="game-header">
+            <button class="game-back-btn" onclick="closeCompTitlesOverlay()" aria-label="رجوع">‹</button>
+            <div class="game-title">🏆 موسم التحدي</div>
+            <div></div>
         </div>
-
-        <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 14px 32px;">
+        <div style="padding:16px 14px 90px;display:flex;flex-direction:column;gap:14px;">
 
             <!-- شارة الموسم -->
             <div class="ct-season-badge" id="ctSeasonBadge">🏆 الموسم 1 • يتبقى — يوم</div>
 
             <!-- اللقب الحالي -->
-            <div id="ctActiveTitleCard" style="margin-bottom:14px;"></div>
+            <div id="ctActiveTitleCard"></div>
 
             <!-- شريط أيام التصدر -->
             <div class="ct-streak-box">
@@ -922,8 +921,6 @@
 
         </div>
     </div>
-
-    </div><!-- /competitionMainView -->
 
     <!-- ══════════════════════════════════════════
          الملف الشخصي للاعب (Player Profile Modal)
@@ -2445,4 +2442,4 @@ function closeSettingsSubPage(overlayId) {
 </html>
           
          
-        
+         
