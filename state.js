@@ -257,6 +257,15 @@
                 coinsEarnedToday:   0,     /* عملات مكتسبة اليوم */
                 coinsEarnedDate:    '',    /* تاريخ آخر ضبط لـ coinsEarnedToday */
                 challengeGamesPlayed: 0,   /* عدد مرات لعب التحدي */
+
+                /* ═══ موسم التحدي — تتبع المرتبة الأولى ═══ */
+                seasonStart:    null,      /* وقت بداية الموسم الحالي (timestamp) */
+                firstPlaceData: {
+                    streak:       0,       /* أيام التصدر المتتالية */
+                    lastDate:     null,    /* آخر يوم تصدّر فيه اللاعب */
+                    titles:       [],      /* الألقاب المكتسبة */
+                    currentTitle: null,    /* اللقب النشط الحالي */
+                },
             };
         }
 
@@ -453,6 +462,15 @@
             if (typeof s.rocketGamesPlayed  !== 'number' || s.rocketGamesPlayed  < 0) s.rocketGamesPlayed  = 0;
             if (typeof s.rocketBestScore    !== 'number' || s.rocketBestScore    < 0) s.rocketBestScore    = 0;
             if (typeof s.challengeGamesPlayed !== 'number' || s.challengeGamesPlayed < 0) s.challengeGamesPlayed = 0;
+            /* ═══ موسم التحدي ═══ */
+            if (typeof s.seasonStart !== 'number' && s.seasonStart !== null) s.seasonStart = null;
+            if (!s.firstPlaceData || typeof s.firstPlaceData !== 'object') {
+                s.firstPlaceData = { streak: 0, lastDate: null, titles: [], currentTitle: null };
+            }
+            if (typeof s.firstPlaceData.streak  !== 'number') s.firstPlaceData.streak  = 0;
+            if (s.firstPlaceData.streak < 0)                  s.firstPlaceData.streak  = 0;
+            if (!Array.isArray(s.firstPlaceData.titles))      s.firstPlaceData.titles  = [];
+            if (s.firstPlaceData.lastDate !== null && typeof s.firstPlaceData.lastDate !== 'string') s.firstPlaceData.lastDate = null;
 
             /* ── عملات اليوم ── */
             if (typeof s.coinsEarnedToday !== 'number' || s.coinsEarnedToday < 0) s.coinsEarnedToday = 0;
