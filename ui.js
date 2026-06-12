@@ -553,6 +553,8 @@ function openAvatarPickerOverlay() {
     if (removeOpt) removeOpt.style.display = st.profilePhoto ? 'block' : 'none';
     /* رسم الرموز المملوكة فقط */
     renderOwnedEmojiGrid();
+    /* رسم الإطارات المملوكة */
+    renderOwnedFramesGrid();
     overlay.style.display = 'flex';
     playSound && playSound('click');
 }
@@ -635,7 +637,75 @@ function goToEmojiShop() {
     }, 200);
 }
 
-/* اختيار مصدر الصورة الشخصية مباشرة من الأزرار في الواجهة */
+/* ═══════════════════════════════════════════════════════
+   رسم شبكة الإطارات المملوكة في avatar picker
+═══════════════════════════════════════════════════════ */
+function renderOwnedFramesGrid() {
+    const grid = document.getElementById('ownedFramesGrid');
+    if (!grid) return;
+    if (!st.ownedFrames || !Array.isArray(st.ownedFrames)) st.ownedFrames = ['frame_none'];
+    const currentFrame = st.activeFrame || 'frame_none';
+
+    /* جلب كتالوج الإطارات من shop.js */
+    const catalog = (typeof FRAMES_CATALOG !== 'undefined') ? FRAMES_CATALOG : [];
+    const ownedList = catalog.filter(f => st.ownedFrames.includes(f.id));
+
+    if (ownedList.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:0.72em;color:var(--text2);padding:10px;">لا توجد إطارات — اضغط المتجر للحصول على إطارات</div>';
+        return;
+    }
+
+    grid.innerHTML = ownedList.map(frame => {
+        const active = currentFrame === frame.id;
+        const svgHTML = (frame.svgContent) ? frame.svgContent() : '';
+        return `<div onclick="selectFrameFromPicker('${frame.id}')" style="
+            background:${active ? 'linear-gradient(135deg,var(--gold),#e5a800)' : 'var(--surface3)'};
+            border:2.5px solid ${active ? 'var(--gold)' : 'var(--border2)'};
+            border-radius:14px;padding:8px 4px;text-align:center;cursor:pointer;
+            transition:all 0.18s ease;transform:${active ? 'scale(1.08)' : 'scale(1)'};
+            box-shadow:${active ? '0 4px 16px rgba(240,185,11,0.4)' : 'none'};
+            position:relative;overflow:visible;">
+            <div style="position:relative;width:52px;height:52px;margin:0 auto;">
+                <div style="width:52px;height:52px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.5em;">🧑</div>
+                ${svgHTML ? `<svg style="position:absolute;inset:-8px;width:calc(100% + 16px);height:calc(100% + 16px);pointer-events:none;" viewBox="0 0 130 130">${svgHTML}</svg>` : ''}
+            </div>
+            <div style="font-size:0.55em;color:${active ? '#000' : 'var(--text)'};font-weight:800;margin-top:5px;line-height:1.2;">${frame.label}</div>
+            <div style="font-size:0.52em;color:${active ? '#000' : 'var(--text3)'};min-height:12px;">
+                ${active ? '✅ مفعّل' : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/* اختيار إطار من الـ picker */
+function selectFrameFromPicker(frameId) {
+    if (!st.ownedFrames || !st.ownedFrames.includes(frameId)) return;
+    st.activeFrame = frameId;
+    saveSt();
+    if (typeof _applyActiveFrameGlobally === 'function') _applyActiveFrameGlobally();
+    renderOwnedFramesGrid();
+    updateUI();
+    playSound && playSound('click');
+    const frame = (typeof FRAMES_CATALOG !== 'undefined') ? FRAMES_CATALOG.find(f => f.id === frameId) : null;
+    showFeedback(`✅ تم تفعيل الإطار ${frame ? frame.label : ''}`);
+}
+
+/* الذهاب لتبويب الإطارات في المتجر */
+function goToFrameShop() {
+    closeAvatarPickerOverlay();
+    goTab('shop');
+    setTimeout(() => {
+        if (typeof renderShop === 'function') renderShop();
+        /* الانتقال لتبويب الإطارات */
+        setTimeout(() => {
+            const framesBtn = document.querySelector('[onclick*="frames"]') ||
+                              document.querySelector('[data-tab="frames"]');
+            if (framesBtn) framesBtn.click();
+        }, 300);
+    }, 200);
+}
+
+
 function pickPhotoSource(source) {
     const inp = document.getElementById('profilePhotoInput');
     if (!inp) return;
