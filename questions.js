@@ -87,7 +87,7 @@ if (typeof getCatStatsKey === 'undefined') {
                     a = rnd(2,5); const m=rnd(1,3), n=rnd(1,3);
                     ans = Math.pow(a, m+n);
                     text = `${a}^${m} × ${a}^${n}`;
-                    hint = 'قانون الأسس: اجمع الأسس عند الضرب بنفس القاعدة';
+                    hint = 'قانون الأxx: اجمع الأxx عند الضرب بنفس القاعدة';
                     explanation = `${a}^${m} × ${a}^${n} = ${a}^(${m}+${n}) = ${a}^${m+n} = ${ans}`;
 
                 } else if (ch === 'sqrt') {
@@ -106,22 +106,22 @@ if (typeof getCatStatsKey === 'undefined') {
 
                 } else if (ch === 'equation_simple') {
                     a = rnd(4,20); ans = rnd(3,25); b = a + ans;
-                    text = `س + ${a} = ${b}`;
-                    hint = 'اطرح الثابت من الطرفين لعزل س';
-                    explanation = `س + ${a} = ${b}\nالخطوة: اطرح ${a} من الطرفين\nس = ${b} − ${a} = ${ans}`;
+                    text = `x + ${a} = ${b}`;
+                    hint = 'اطرح الثابت من الطرفين لعزل x';
+                    explanation = `x + ${a} = ${b}\nالخطوة: اطرح ${a} من الطرفين\nx = ${b} − ${a} = ${ans}`;
 
                 } else if (ch === 'equation_two_step') {
                     const coef=rnd(2,6); ans=rnd(2,10); const con=rnd(1,8); b=coef*ans+con;
-                    text = `${coef}س + ${con} = ${b}`;
+                    text = `${coef}x + ${con} = ${b}`;
                     hint = 'أولاً اطرح الثابت، ثم اقسم على المعامل';
-                    explanation = `${coef}س + ${con} = ${b}\nالخطوة ①: اطرح ${con}: ${coef}س = ${b-con}\nالخطوة ②: اقسم على ${coef}: س = ${b-con}÷${coef} = ${ans}`;
+                    explanation = `${coef}x + ${con} = ${b}\nالخطوة ①: اطرح ${con}: ${coef}x = ${b-con}\nالخطوة ②: اقسم على ${coef}: x = ${b-con}÷${coef} = ${ans}`;
 
                 } else if (ch === 'equation_bracket') {
                     const k=rnd(2,5); ans=rnd(2,8); const c2=rnd(1,6);
                     b = k*(ans+c2);
-                    text = `${k}(س + ${c2}) = ${b}`;
+                    text = `${k}(x + ${c2}) = ${b}`;
                     hint = 'افتح القوس أو اقسم على المعامل أولاً';
-                    explanation = `${k}(س + ${c2}) = ${b}\nالخطوة ①: اقسم على ${k}: س + ${c2} = ${b/k}\nالخطوة ②: اطرح ${c2}: س = ${b/k} − ${c2} = ${ans}`;
+                    explanation = `${k}(x + ${c2}) = ${b}\nالخطوة ①: اقسم على ${k}: x + ${c2} = ${b/k}\nالخطوة ②: اطرح ${c2}: x = ${b/k} − ${c2} = ${ans}`;
 
                 } else if (ch === 'fraction_add') {
                     /* كسور بمقام مشترك */
@@ -313,8 +313,8 @@ if (typeof getCatStatsKey === 'undefined') {
                     /* قانون: a^m × a^n = a^(m+n) */
                     a = rnd(2,4); const m=rnd(1,3),n=rnd(1,3);
                     ans = Math.pow(a,m+n);
-                    text = `${a}^${m} × ${a}^${n} = ؟`; hint = 'اجمع الأسس عند الضرب بنفس القاعدة';
-                    explanation = `القاعدة نفسها (${a}) → اجمع الأسس\n${a}^${m} × ${a}^${n} = ${a}^(${m}+${n}) = ${a}^${m+n} = ${ans}`;
+                    text = `${a}^${m} × ${a}^${n} = ؟`; hint = 'اجمع الأxx عند الضرب بنفس القاعدة';
+                    explanation = `القاعدة نفسها (${a}) → اجمع الأxx\n${a}^${m} × ${a}^${n} = ${a}^(${m}+${n}) = ${a}^${m+n} = ${ans}`;
                 } else {
                     const opts = [[16,0.25,2,'⁴√16'],[81,0.25,3,'⁴√81'],[32,0.2,2,'⁵√32'],[64,1/3,4,'∛64']];
                     const pick = opts[rnd(0,opts.length-1)];
@@ -421,7 +421,7 @@ if (typeof getCatStatsKey === 'undefined') {
                 } else if (t === 'pythagoras') {
                     const pairs=[[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15],[7,24,25]];
                     const p=pairs[rnd(0,pairs.length-1)]; ans=p[2];
-                    text=`مثلث قائم أضلاعه ${p[0]} و ${p[1]}، ما الوتر؟`; hint='نظرية فيثاغورس: الوتر² = مجموع مربعَي الضلعين';
+                    text=`مثلث قائم أضلاعه ${p[0]} و ${p[1]}، ما الوتر؟`; hint='نظرية فيثاغورx: الوتر² = مجموع مربعَي الضلعين';
                     explanation=`الوتر² = ${p[0]}² + ${p[1]}²\n= ${p[0]*p[0]} + ${p[1]*p[1]}\n= ${p[0]*p[0]+p[1]*p[1]}\nالوتر = √${p[0]*p[0]+p[1]*p[1]} = ${p[2]}`;
                 } else {
                     /* قطر المستطيل */
@@ -442,40 +442,40 @@ if (typeof getCatStatsKey === 'undefined') {
                 let ans, text, hint, explanation;
                 if (t === 'linear1') {
                     const a=rnd(2,9),b=rnd(1,15); ans=b;
-                    text=`س + ${a} = ${a+b}`; hint='اطرح الثابت من الطرفين';
-                    explanation=`س + ${a} = ${a+b}\nاطرح ${a} من الطرفين:\nس = ${a+b} − ${a} = ${b}\n✓ تحقق: ${b}+${a} = ${a+b} ✓`;
+                    text=`x + ${a} = ${a+b}`; hint='اطرح الثابت من الطرفين';
+                    explanation=`x + ${a} = ${a+b}\nاطرح ${a} من الطرفين:\nx = ${a+b} − ${a} = ${b}\n✓ تحقق: ${b}+${a} = ${a+b} ✓`;
                 } else if (t === 'linear2') {
                     const a=rnd(2,6),b=rnd(1,10); ans=b;
-                    text=`${a}س = ${a*b}`; hint='اقسم الطرفين على المعامل';
-                    explanation=`${a}س = ${a*b}\nاقسم الطرفين على ${a}:\nس = ${a*b} ÷ ${a} = ${b}\n✓ تحقق: ${a}×${b} = ${a*b} ✓`;
+                    text=`${a}x = ${a*b}`; hint='اقسم الطرفين على المعامل';
+                    explanation=`${a}x = ${a*b}\nاقسم الطرفين على ${a}:\nx = ${a*b} ÷ ${a} = ${b}\n✓ تحقق: ${a}×${b} = ${a*b} ✓`;
                 } else if (t === 'two_var') {
                     const a=rnd(2,6),b=rnd(1,10); ans=b;
                     const c=rnd(1,5); const d=a*b+c;
-                    text=`${a}س + ${c} = ${d}`; hint='الخطوتان: اطرح الثابت ثم اقسم';
-                    explanation=`${a}س + ${c} = ${d}\nالخطوة ①: اطرح ${c} → ${a}س = ${d-c}\nالخطوة ②: اقسم على ${a} → س = ${d-c}÷${a} = ${b}\n✓ تحقق: ${a}×${b}+${c} = ${d} ✓`;
+                    text=`${a}x + ${c} = ${d}`; hint='الخطوتان: اطرح الثابت ثم اقسم';
+                    explanation=`${a}x + ${c} = ${d}\nالخطوة ①: اطرح ${c} → ${a}x = ${d-c}\nالخطوة ②: اقسم على ${a} → x = ${d-c}÷${a} = ${b}\n✓ تحقق: ${a}×${b}+${c} = ${d} ✓`;
                 } else if (t === 'quadratic_simple') {
                     const r=rnd(2,9); ans=r*r;
-                    text=`س² = ${r*r} → س = ؟`; hint='خذ الجذر التربيعي (القيمة الموجبة)';
-                    explanation=`س² = ${r*r}\nس = √${r*r} = ${r}\n✓ تحقق: ${r}² = ${r}×${r} = ${r*r} ✓`;
+                    text=`x² = ${r*r} → x = ؟`; hint='خذ الجذر التربيعي (القيمة الموجبة)';
+                    explanation=`x² = ${r*r}\nx = √${r*r} = ${r}\n✓ تحقق: ${r}² = ${r}×${r} = ${r*r} ✓`;
                     ans=r;
                 } else if (t === 'system') {
                     const x=rnd(2,8),y=rnd(2,8);
-                    text=`س+ص=${x+y} وس−ص=${x-y}، قيمة س = ؟`; ans=x; hint='اجمع المعادلتين لإلغاء ص';
-                    explanation=`المعادلة ①: س+ص=${x+y}\nالمعادلة ②: س−ص=${x-y}\nاجمعهما: 2س = ${x+y}+${x-y} = ${2*x}\nس = ${2*x}÷2 = ${x}`;
+                    text=`①: x+y=${x+y}\n②: x−y=${x-y}\nأوجد x`; ans=x; hint='اجمع المعادلتين لإلغاء y';
+                    explanation=`المعادلة ①: x+y=${x+y}\nالمعادلة ②: x−y=${x-y}\nاجمعهما: 2x = ${x+y}+${x-y} = ${2*x}\nx = ${2*x}÷2 = ${x}`;
                 } else if (t === 'eq_frac') {
                     /* س/k = n → س = k×n */
                     const k=rnd(2,6); const n=rnd(2,10); ans=k*n;
-                    text=`س ÷ ${k} = ${n}`; hint='اضرب الطرفين في المقام';
-                    explanation=`س ÷ ${k} = ${n}\nاضرب الطرفين في ${k}:\nس = ${n} × ${k} = ${ans}\n✓ تحقق: ${ans}÷${k} = ${n} ✓`;
+                    text=`x ÷ ${k} = ${n}`; hint='اضرب الطرفين في المقام';
+                    explanation=`x ÷ ${k} = ${n}\nاضرب الطرفين في ${k}:\nx = ${n} × ${k} = ${ans}\n✓ تحقق: ${ans}÷${k} = ${n} ✓`;
                 } else if (t === 'eq_bracket') {
                     const k=rnd(2,5),add=rnd(1,6); ans=rnd(2,8); const rhs=k*(ans+add);
-                    text=`${k}(س + ${add}) = ${rhs}`; hint='افتح القوس أو اقسم على المعامل أولاً';
-                    explanation=`${k}(س + ${add}) = ${rhs}\nالطريقة: اقسم على ${k}:\nس + ${add} = ${rhs/k}\nس = ${rhs/k} − ${add} = ${ans}\n✓ تحقق: ${k}(${ans}+${add}) = ${k}×${ans+add} = ${rhs} ✓`;
+                    text=`${k}(x + ${add}) = ${rhs}`; hint='افتح القوس أو اقسم على المعامل أولاً';
+                    explanation=`${k}(x + ${add}) = ${rhs}\nالطريقة: اقسم على ${k}:\nx + ${add} = ${rhs/k}\nx = ${rhs/k} − ${add} = ${ans}\n✓ تحقق: ${k}(${ans}+${add}) = ${k}×${ans+add} = ${rhs} ✓`;
                 } else {
                     /* معادلة بسالب */
                     const a=rnd(2,8); ans=rnd(1,10); const rhs2=a-ans;
-                    text=`${a} − س = ${rhs2}`; hint='أعزل س بإضافته لأحد الطرفين';
-                    explanation=`${a} − س = ${rhs2}\nأضف س للطرفين: ${a} = ${rhs2} + س\nس = ${a} − ${rhs2} = ${ans}\n✓ تحقق: ${a}−${ans} = ${rhs2} ✓`;
+                    text=`${a} − x = ${rhs2}`; hint='أعزل x بإضافته لأحد الطرفين';
+                    explanation=`${a} − x = ${rhs2}\nأضف x للطرفين: ${a} = ${rhs2} + x\nx = ${a} − ${rhs2} = ${ans}\n✓ تحقق: ${a}−${ans} = ${rhs2} ✓`;
                 }
                 const wr=new Set(); let s=0;
                 while(wr.size<3&&s<200){s++; const o=rnd(-5,5); if(o!==0&&ans+o>0) wr.add(ans+o);}
@@ -586,20 +586,20 @@ if (typeof getCatStatsKey === 'undefined') {
                     text=`ظا(${v.deg}°) = ؟`; hint='ظا = جا ÷ جتا';
                     explanation=`ظا(${v.deg}°) = جا÷جتا = ${v.frac} = ${v.val}\n💡 ${v.mem}`;
                 } else if (t === 'angle_from_sin') {
-                    const pairs=[[0,0,'جا(س) = 0'],[0.5,30,'جا(س) = ½'],[1,90,'جا(س) = 1'],[0.87,60,'جا(س) = √3/2']];
+                    const pairs=[[0,0,'جا(x) = 0'],[0.5,30,'جا(x) = ½'],[1,90,'جا(x) = 1'],[0.87,60,'جا(x) = √3/2']];
                     const p=pairs[rnd(0,pairs.length-1)]; ans=p[1];
-                    text=`${p[2]}، إذن س = ؟°`; hint='ارجع للجدول واعكس الدالة';
-                    explanation=`${p[2]}\n→ س = جا⁻¹(${p[0]}) = ${p[1]}°\n💡 تذكر: جا(${p[1]}°) = ${p[0]}`;
+                    text=`${p[2]}، إذن x = ؟°`; hint='ارجع للجدول واعكس الدالة';
+                    explanation=`${p[2]}\n→ x = جا⁻¹(${p[0]}) = ${p[1]}°\n💡 تذكر: جا(${p[1]}°) = ${p[0]}`;
                 } else if (t === 'angle_from_cos') {
-                    const pairs=[[1,0,'جتا(س) = 1'],[0.87,30,'جتا(س) = √3/2'],[0.5,60,'جتا(س) = ½'],[0,90,'جتا(س) = 0']];
+                    const pairs=[[1,0,'جتا(x) = 1'],[0.87,30,'جتا(x) = √3/2'],[0.5,60,'جتا(x) = ½'],[0,90,'جتا(x) = 0']];
                     const p=pairs[rnd(0,pairs.length-1)]; ans=p[1];
-                    text=`${p[2]}، إذن س = ؟°`; hint='ارجع للجدول واعكس الدالة';
-                    explanation=`${p[2]}\n→ س = جتا⁻¹(${p[0]}) = ${p[1]}°\n💡 تذكر: جتا(${p[1]}°) = ${p[0]}`;
+                    text=`${p[2]}، إذن x = ؟°`; hint='ارجع للجدول واعكس الدالة';
+                    explanation=`${p[2]}\n→ x = جتا⁻¹(${p[0]}) = ${p[1]}°\n💡 تذكر: جتا(${p[1]}°) = ${p[0]}`;
                 } else if (t === 'pythagorean_id') {
                     const degs=[30,45,60]; const d=degs[rnd(0,degs.length-1)];
                     ans=1; text=`جا²(${d}°) + جتا²(${d}°) = ؟`; hint='الهوية المثلثية الأساسية';
                     const sv=sinVals.find(x=>x.deg===d); const cv=cosVals.find(x=>x.deg===d);
-                    explanation=`جا²(${d}°) + جتا²(${d}°)\n= (${sv.frac})² + (${cv.frac})²\n= دائماً = 1\n📌 هوية فيثاغورس: sin²θ + cos²θ = 1`;
+                    explanation=`جا²(${d}°) + جتا²(${d}°)\n= (${sv.frac})² + (${cv.frac})²\n= دائماً = 1\n📌 هوية فيثاغورx: sin²θ + cos²θ = 1`;
                 } else {
                     /* مقارنة قيم */
                     const v1=sinVals[rnd(1,3)]; const v2=cosVals[rnd(1,3)];
@@ -624,7 +624,7 @@ if (typeof getCatStatsKey === 'undefined') {
                     { text: 'ما محيط دائرة نصف قطرها 5 (π≈3.14)؟', ans: 31.4,
                         explanation: 'المحيط = 2×π×نق = 2×3.14×5 = 31.4' },
                     { text: 'جذر 144 = ؟', ans: 12, explanation: '12² = 144' },
-                    { text: 'إذا كان س + 5 = 12، فما قيمة س؟', ans: 7, explanation: 'س = 12-5 = 7' },
+                    { text: 'حل: x + 5 = 12', ans: 7, explanation: 'x = 12-5 = 7' },
                     { text: 'قانون الجمع التبادلي: 8 + 3 = 3 + ...؟', ans: 8,
                 explanation: '8+3 = 3+8' },
                     { text: 'ما ناتج (-3) × (-4)؟', ans: 12, explanation: 'ضرب عددين سالبين يعطي موجب' },
@@ -632,7 +632,7 @@ if (typeof getCatStatsKey === 'undefined') {
                         explanation: 'العرض = المساحة/الطول = 4' },
                     { text: 'ما قيمة 2³ × 2⁴؟', ans: 128, explanation: '2⁷ = 128' },
                     { text: 'ما متوسط الأعداد 4, 8, 12؟', ans: 8, explanation: '(4+8+12)/3 = 24/3=8' },
-                    { text: 'حل المعادلة: 2س = 16', ans: 8, explanation: 'س = 16/2 = 8' },
+                    { text: 'حل المعادلة: 2x = 16', ans: 8, explanation: 'x = 16/2 = 8' },
                     { text: 'إذا كان ثمن 5 أقلام 15 ديناراً، فثمن القلم الواحد؟', ans: 3,
                     explanation: '15/5 = 3' },
                     { text: 'ناتج (1/2) ÷ (1/4) = ؟', ans: 2, explanation: '(1/2)×4 = 2' },
@@ -725,9 +725,9 @@ if (typeof getCatStatsKey === 'undefined') {
                     30);
                 b = rnd(a + 1, a + 50);
                 ans = b - a;
-                text = `س + ${a} = ${b}`;
+                text = `x + ${a} = ${b}`;
                 hint = 'ما قيمة س؟';
-                explanation = `س = ${b} - ${a} = ${ans}`; } else if (ch === 'sequence') { a = rnd(1, 15);
+                explanation = `x = ${b} - ${a} = ${ans}`; } else if (ch === 'sequence') { a = rnd(1, 15);
                 b = rnd(2, 10);
                 text = `${a}, ${a+b}, ${a+2*b}, ?`;
                 ans = a + 3 * b;
@@ -1090,7 +1090,7 @@ if (typeof getCatStatsKey === 'undefined') {
                 lives           = 3;     /* 3 قلوب — الصعوبة هي التحدي */
                 G._rocketStage  = 0;     /* المرحلة الحالية: 0=سهل، 1=سهل+، 2=متوسط، 3=صعب، 4=عبقري */
                 G._rocketBest   = 0;     /* أفضل مرحلة وصلها */
-                G._rocketStageLabels = ['سهل', 'سهل+', 'متوسط', 'صعب', 'عبقري'];
+                G._rocketStageLabels = ['سهل', 'سهل+', 'متوسط', 'yعب', 'عبقري'];
                 /* تعيين الصعوبة الابتدائية = سهل بغض النظر عن اختيار اللاعب */
                 G._rocketDiff   = 'easy';
 
@@ -1123,7 +1123,7 @@ if (typeof getCatStatsKey === 'undefined') {
                 chain:      '🔗 وضع السلسلة',
                 sudden:     '⚡ ضد الساعة',
                 rocket:     '🚀 وضع الصاروخ',
-                adv_roots:  '🔢 الأسس والجذور',
+                adv_roots:  '🔢 الأxx والجذور',
                 adv_log:    '📊 اللوغاريتم',
                 adv_geo:    '📐 الهندسة',
                 adv_eq:     '🔣 المعادلات',
@@ -1625,7 +1625,7 @@ function genAdvancedDiverseQ(diff) {
             const total = rnd(20, 100);
             ans = Math.round((a / (a + b)) * total);
             text = `قُسّمت ${total} بنسبة ${a}:${b}، الحصة الأولى = ؟`;
-            hint = 'قسّم بمجموع نسبَي الحصص';
+            hint = 'قسّم بمجموع نسبَي الحyy';
             explanation = `الحصة الأولى = ${a}/(${a}+${b}) × ${total} = ${ans}`;
             break;
         }
@@ -1663,18 +1663,18 @@ function genAdvancedDiverseQ(diff) {
             ans = rnd(-10, 15);
             b = rnd(2, 8);
             const rhs = b + ans;
-            text = `س + ${b} = ${rhs}`;
+            text = `x + ${b} = ${rhs}`;
             hint = 'عزل المجهول';
-            explanation = `س = ${rhs} - ${b} = ${ans}`;
+            explanation = `x = ${rhs} - ${b} = ${ans}`;
             break;
         }
         case 'eq_two_step': {
             ans = rnd(1, 10);
             const coef = rnd(2, 5), con = rnd(1, 8);
             const rhs2 = coef * ans + con;
-            text = `${coef}س + ${con} = ${rhs2}`;
+            text = `${coef}x + ${con} = ${rhs2}`;
             hint = 'اطرح أولاً ثم اقسم';
-            explanation = `${coef}س = ${rhs2 - con}، س = ${ans}`;
+            explanation = `${coef}x = ${rhs2 - con}، x = ${ans}`;
             break;
         }
         case 'eq_fraction': {
@@ -1682,10 +1682,10 @@ function genAdvancedDiverseQ(diff) {
             const _den  = rnd(2, 5);
             const _rhs3 = rnd(2, 12);
             const _xAct = _rhs3 * _den;
-            text = `س ÷ ${_den} = ${_rhs3}`;
+            text = `x ÷ ${_den} = ${_rhs3}`;
             ans  = _xAct;
             hint = 'اضرب الطرفين في المقام';
-            explanation = `س = ${_rhs3} × ${_den} = ${_xAct}`;
+            explanation = `x = ${_rhs3} × ${_den} = ${_xAct}`;
             break;
         }
 
@@ -1711,7 +1711,7 @@ function genAdvancedDiverseQ(diff) {
             a = rnd(5, 20); const d = -rnd(1, 4);
             text = `${a}, ${a+d}, ${a+2*d}, ${a+3*d}, ؟`;
             ans = a + 4 * d;
-            hint = 'المتتالية تتناقص';
+            hint = 'المتتالية تتناقy';
             explanation = `الفرق = ${d}، الحد التالي = ${ans}`;
             break;
         }
@@ -1775,7 +1775,7 @@ function genAdvancedDiverseQ(diff) {
             a = rnd(2, 5); b = rnd(1, 3); c = rnd(1, 2);
             ans = Math.pow(a, b + c);
             text = `${a}^${b} × ${a}^${c} = ؟`;
-            hint = 'قانون الأسس: اجمع الأسس';
+            hint = 'قانون الأxx: اجمع الأxx';
             explanation = `${a}^(${b}+${c}) = ${a}^${b+c} = ${ans}`;
             break;
         }
@@ -1794,8 +1794,8 @@ function genAdvancedDiverseQ(diff) {
             const whole = rnd(10, 50);
             const frac = [2, 3, 4, 5][rnd(0, 3)];
             ans = Math.round(whole / frac);
-            text = `قُسّمت ${whole} تفاحة بالتساوي على ${frac} أشخاص. نصيب كل شخص = ؟`;
-            hint = 'قسمة على الأشخاص';
+            text = `قُسّمت ${whole} تفاحة بالتساوي على ${frac} أشخاy. نصيب كل شخص = ؟`;
+            hint = 'قسمة على الأشخاy';
             explanation = `${whole} ÷ ${frac} = ${ans}`;
             break;
         }
@@ -1881,13 +1881,13 @@ const EXTENDED_LAWS_POOL = [
     /* الجبر والمعادلات */
     { text: 'ما ناتج 3 × (4 + 5) وفق قانون التوزيع؟', ans: 27, explanation: '3×4 + 3×5 = 12+15 = 27' },
     { text: 'ما قيمة 5⁰؟', ans: 1, explanation: 'أي عدد غير صفري مرفوع للأس صفر = 1' },
-    { text: 'حل: 2س + 4 = 16', ans: 6, explanation: '2س = 12، س = 6' },
-    { text: 'حل: 3س − 9 = 0', ans: 3, explanation: '3س = 9، س = 3' },
-    { text: 'حل: س/4 = 5', ans: 20, explanation: 'س = 5 × 4 = 20' },
-    { text: 'حل: 5(س − 2) = 15', ans: 5, explanation: 'س − 2 = 3، س = 5' },
+    { text: 'حل: 2x + 4 = 16', ans: 6, explanation: '2x = 12، x = 6' },
+    { text: 'حل: 3x − 9 = 0', ans: 3, explanation: '3x = 9، x = 3' },
+    { text: 'حل: x/4 = 5', ans: 20, explanation: 'x = 5 × 4 = 20' },
+    { text: 'حل: 5(x − 2) = 15', ans: 5, explanation: 'x − 2 = 3، x = 5' },
     { text: 'ما قيمة 2⁸؟', ans: 256, explanation: '2⁸ = 256' },
     { text: 'ما قيمة 3⁴؟', ans: 81, explanation: '3×3×3×3 = 81' },
-    { text: '2³ × 2² = 2^؟', ans: 5, explanation: 'قانون الأسس: نجمع الأسس → 2^5 = 32، الأس = 5' },
+    { text: '2³ × 2² = 2^؟', ans: 5, explanation: 'قانون الأxx: نجمع الأxx → 2^5 = 32، الأس = 5' },
     { text: 'ما قيمة 10³ ÷ 10²؟', ans: 10, explanation: '10^(3-2) = 10¹ = 10' },
     /* الهندسة */
     { text: 'مساحة مربع طول ضلعه 7؟', ans: 49, explanation: 'المساحة = الضلع² = 49' },
