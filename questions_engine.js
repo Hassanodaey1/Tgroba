@@ -41,7 +41,7 @@ var LEVEL_PHASES = [
       nMin:20, nMax_start:80,  nMax_end:120, mMin:4, mMax:18,
       ops:['mul','div','percent','equation_simple','fraction_simple','fraction_add','power','sqrt','sequence','word_hard'] },
 
-    { from: 31, to: 45, label:'صعب',    diff:'hard',
+    { from: 31, to: 45, label:'yعب',    diff:'hard',
       nMin:30, nMax_start:150, nMax_end:300, mMin:5, mMax:22,
       ops:['mul','div','percent','fraction_add','power','sqrt','algebra','sequence','word_hard','geo_area'] },
 
@@ -580,16 +580,13 @@ function _build(op, diff, cfg, age) {
             ans = rnd(mMin, mMax);
             b   = rnd(mMin, mMax);
             a   = ans * b;
-            var divVariant = rnd(0, diff === 'easy' ? 0 : 2);
+            var divVariant = rnd(0, diff === 'easy' ? 0 : 1);
             if (divVariant === 0) {
                 text = a + ' ÷ ' + b;
                 hint = 'اقسم للحصول على الناتج';
-            } else if (divVariant === 1) {
+            } else {
                 text = a + ' / ' + b + ' = ؟';
                 hint = 'حوّل إلى قسمة وأوجد الناتج';
-            } else {
-                text = '؟ × ' + b + ' = ' + a;
-                hint = 'اقسم ' + a + ' على ' + b;
             }
             explanation = a + ' ÷ ' + b + ' = ' + ans + '\nتحقق: ' + ans + ' × ' + b + ' = ' + a + ' ✓';
             catKey      = 'division';
@@ -657,28 +654,28 @@ function _build(op, diff, cfg, age) {
             if (eqType === 0) {
                 /* س + a = b */
                 a = rnd(4, Math.min(50, nMax)); ans = rnd(3, Math.min(40, nMax)); b = a + ans;
-                text = 'س + ' + a + ' = ' + b;
+                text = 'x + ' + a + ' = ' + b;
                 hint = 'اطرح ' + a + ' من الطرفين';
-                explanation = 'س + ' + a + ' = ' + b + '\nس = ' + b + ' − ' + a + ' = ' + ans;
+                explanation = 'x + ' + a + ' = ' + b + '\nx = ' + b + ' − ' + a + ' = ' + ans;
             } else if (eqType === 1) {
                 /* s - a = b */
                 ans = rnd(3, Math.min(40, nMax)); a = rnd(2, Math.min(30, nMax));
                 b = ans - a; if (b < 0) { ans = a + rnd(1, 20); b = ans - a; }
-                text = 'س − ' + a + ' = ' + b;
+                text = 'x − ' + a + ' = ' + b;
                 hint = 'أضف ' + a + ' للطرفين';
-                explanation = 'س − ' + a + ' = ' + b + '\nس = ' + b + ' + ' + a + ' = ' + ans;
+                explanation = 'x − ' + a + ' = ' + b + '\nx = ' + b + ' + ' + a + ' = ' + ans;
             } else if (eqType === 2) {
                 /* a × س = b */
                 a = rnd(2, Math.min(12, mMax)); ans = rnd(2, Math.min(20, mMax)); b = a * ans;
-                text = a + 'س = ' + b;
+                text = a + 'x = ' + b;
                 hint = 'اقسم الطرفين على ' + a;
-                explanation = a + 'س = ' + b + '\nس = ' + b + ' ÷ ' + a + ' = ' + ans;
+                explanation = a + 'x = ' + b + '\nx = ' + b + ' ÷ ' + a + ' = ' + ans;
             } else {
                 /* s/a = b */
                 a = rnd(2, Math.min(10, mMax)); ans = rnd(2, Math.min(20, mMax)); b = ans;
-                text = 'س ÷ ' + a + ' = ' + b;
+                text = 'x ÷ ' + a + ' = ' + b;
                 hint = 'اضرب الطرفين في ' + a;
-                explanation = 'س ÷ ' + a + ' = ' + b + '\nس = ' + b + ' × ' + a + ' = ' + (ans * a);
+                explanation = 'x ÷ ' + a + ' = ' + b + '\nx = ' + b + ' × ' + a + ' = ' + (ans * a);
                 ans = ans * a;
             }
             catKey = 'algebra';
@@ -689,9 +686,9 @@ function _build(op, diff, cfg, age) {
         case 'algebra': {
             var coef = rnd(2, Math.min(8, mMax)); ans = rnd(2, Math.min(20, mMax)); var con = rnd(1, 15);
             b = coef * ans + con;
-            text = coef + 'س + ' + con + ' = ' + b;
+            text = coef + 'x + ' + con + ' = ' + b;
             hint = '① اطرح ' + con + '  ② اقسم على ' + coef;
-            explanation = coef + 'س + ' + con + ' = ' + b + '\nالخطوة ①: ' + coef + 'س = ' + (b-con) + '\nالخطوة ②: س = ' + (b-con) + ' ÷ ' + coef + ' = ' + ans;
+            explanation = coef + 'x + ' + con + ' = ' + b + '\nالخطوة ①: ' + coef + 'x = ' + (b-con) + '\nالخطوة ②: x = ' + (b-con) + ' ÷ ' + coef + ' = ' + ans;
             catKey = 'algebra';
             break;
         }
@@ -793,7 +790,7 @@ function _build(op, diff, cfg, age) {
                 a = rnd(2,5); var pm=rnd(1,3), pn=rnd(1,3);
                 ans = Math.pow(a, pm+pn);
                 text = a+'^'+pm+' × '+a+'^'+pn;
-                hint = 'قانون الأسس: اجمع الأسس';
+                hint = 'قانون الأxx: اجمع الأxx';
                 explanation = a+'^'+pm+' × '+a+'^'+pn+' = '+a+'^'+(pm+pn)+' = '+ans;
             } else {
                 /* قوة السالب أو التحدي */
@@ -922,25 +919,25 @@ function _build(op, diff, cfg, age) {
                 var roots2 = [2,3,4,5,6,7,8,9,10,11,12];
                 ans = roots2[rnd(0, roots2.length-1)];
                 var n2 = ans * ans;
-                text = 'س² = ' + n2;
+                text = 'x² = ' + n2;
                 hint = 'خذ الجذر التربيعي (القيمة الموجبة)';
-                explanation = 'س² = ' + n2 + '\nس = √' + n2 + ' = ' + ans;
+                explanation = 'x² = ' + n2 + '\nx = √' + n2 + ' = ' + ans;
             } else if (eqqType === 1) {
                 /* س² - a = b */
                 ans = rnd(3, 10);
                 a = rnd(1, 10);
                 var qb = ans * ans - a;
-                text = 'س² − ' + a + ' = ' + qb;
+                text = 'x² − ' + a + ' = ' + qb;
                 hint = 'أضف ' + a + ' للطرفين ثم خذ الجذر';
-                explanation = 'س² = ' + (qb+a) + '\nس = √' + (qb+a) + ' = ' + ans;
+                explanation = 'x² = ' + (qb+a) + '\nx = √' + (qb+a) + ' = ' + ans;
             } else {
                 /* (س + a)² = b² */
                 ans = rnd(2, 8);
                 a = rnd(1, 5);
                 var qb2 = (ans + a) * (ans + a);
-                text = '(س + ' + a + ')² = ' + qb2;
+                text = '(x + ' + a + ')² = ' + qb2;
                 hint = 'خذ الجذر ثم اطرح ' + a;
-                explanation = 'س + ' + a + ' = √' + qb2 + ' = ' + (ans+a) + '\nس = ' + (ans+a) + ' − ' + a + ' = ' + ans;
+                explanation = 'x + ' + a + ' = √' + qb2 + ' = ' + (ans+a) + '\nx = ' + (ans+a) + ' − ' + a + ' = ' + ans;
             }
             catKey = 'algebra';
             break;
