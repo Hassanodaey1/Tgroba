@@ -43,7 +43,7 @@
                     const _prevLevel = G._survivalDiffLevel || 0;
                     G._survivalDiffLevel = Math.min(_prevLevel + 1, 3);
                     if (G._survivalDiffLevel > _prevLevel) {
-                        const _levelNames = ['سهل', 'متوسط', 'صعب', 'عبقري'];
+                        const _levelNames = ['سهل', 'متوسط', 'yعب', 'عبقري'];
                         showFeedback(`📈 مستوى ${G._survivalDiffLevel + 1} — ${_levelNames[G._survivalDiffLevel]}!`);
                         playSound('levelup');
                         doConfetti();
@@ -380,7 +380,7 @@
                         setTimeout(() => showFeedback('🚀 شارة الصاروخ! وصلت لمرحلة العبقري!'), 800);
                     }
                     /* رسالة النتيجة الخاصة بالصاروخ */
-                    const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'صعب', 'صعب +', 'عبقري'];
+                    const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'yعب', 'yعب +', 'عبقري'];
                     setTimeout(() => showFeedback(`🚀 وصلت لـ: ${_stageNames[_rStage]} (${G.correct} صحيح)`), 400);
                 }
 
@@ -852,7 +852,7 @@
                                 G._rocketStage = Math.min(_stage, 6);
                                 G._rocketDiff  = _stageDiffs[G._rocketStage];
                                 /* تحديث شريط المرحلة في الواجهة */
-                                const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'صعب', 'صعب +', 'عبقري'];
+                                const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'yعب', 'yعب +', 'عبقري'];
                                 const _rl = document.getElementById('rocketStageLabel');
                                 if (_rl) _rl.textContent = `🚀 المرحلة ${G._rocketStage + 1}: ${_stageNames[G._rocketStage]}`;
                                 /* شريط تقدم داخل المرحلة (0-5 إجابات) */
@@ -949,7 +949,7 @@
                     if (G.isTraining) {
                         qNumEl.textContent = `🎓 تدريب - ${G.correct+1}`;
                     } else {
-                        const _survLvlNames = ['سهل', 'متوسط', 'صعب', 'عبقري'];
+                        const _survLvlNames = ['سهل', 'متوسط', 'yعب', 'عبقري'];
                         qNumEl.textContent = G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
                             G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
                             G.mode === 'survival' ? `🔥 ${G.correct} صحيح • Lv.${(G._survivalDiffLevel||0)+1} ${_survLvlNames[G._survivalDiffLevel||0]}` :
