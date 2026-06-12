@@ -542,6 +542,8 @@ function endChallengeGame() {
                     // تحديث hero stats أيضاً
                     _lbCache = players; _lbCacheTime = Date.now(); _lbCacheType = 'challenge';
                     updateCompMyStats(players);
+                    /* ── تحديث موسم التحدي: يعتمد على لائحة التحدي فقط ── */
+                    try { if (typeof updateFirstPlaceTracking === 'function') updateFirstPlaceTracking(players); } catch(e) {}
                 }).catch(() => {});
         }
     }, 1200);
@@ -944,6 +946,8 @@ function _fetchCompHeroStats() {
                 const myIdx = players.findIndex(p => p.id === myKey);
                 rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
             }
+            /* ── تحديث موسم التحدي عند فتح صفحة المنافسة ── */
+            try { if (typeof updateFirstPlaceTracking === 'function') updateFirstPlaceTracking(players); } catch(e) {}
         }).catch(() => {});
 }
 
@@ -2358,7 +2362,7 @@ function _fetchSeasonLeaderboard(tab) {
         ? `season_leaderboard/${weekKey}`
         : 'season_leaderboard_all';
 
-    try {
+   try {
         window.database.ref(refPath)
             .orderByChild('seasonPoints')
             .limitToLast(100)
