@@ -43,7 +43,7 @@
                     const _prevLevel = G._survivalDiffLevel || 0;
                     G._survivalDiffLevel = Math.min(_prevLevel + 1, 3);
                     if (G._survivalDiffLevel > _prevLevel) {
-                        const _levelNames = ['سهل', 'متوسط', 'yعب', 'عبقري'];
+                        const _levelNames = ['سهل', 'متوسط', 'صعب', 'عبقري'];
                         showFeedback(`📈 مستوى ${G._survivalDiffLevel + 1} — ${_levelNames[G._survivalDiffLevel]}!`);
                         playSound('levelup');
                         doConfetti();
@@ -75,14 +75,17 @@
                     G.coinsEarned += _streakBonus;
                 }
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
-                if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
-                /* ✅ SmartAI تكامل: تسجيل الإجابة الصحيحة مع وقت الاستجابة */
-                if (typeof SmartAI !== 'undefined' && G.op) {
-                    const _respMs = G._questionStartTime ? (Date.now() - G._questionStartTime) : 0;
-                    SmartAI.onCorrect(G.op, _respMs);
+                /* ✅ UNIFIED: نقطة واحدة لتسجيل الإجابة — تتولى AdaptiveAI + SessionProgress + SmartAI */
+                const _respMs = G._questionStartTime ? (Date.now() - G._questionStartTime) : 0;
+                const _skipSession = (G.mode === 'survival' || G.mode === 'rocket');
+                if (typeof recordAnswer === 'function' && G.op) {
+                    recordAnswer(G.op, true, _respMs, _skipSession);
+                } else {
+                    /* fallback إذا لم يُحمَّل questions_engine بعد */
+                    if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
+                    if (!_skipSession && typeof SessionProgress !== 'undefined') SessionProgress.onCorrect();
+                    if (typeof SmartAI !== 'undefined' && G.op) SmartAI.onCorrect(G.op, _respMs);
                 }
-                /* ✅ SessionProgress: تحديث حرارة الجلسة */
-                if (typeof SessionProgress !== 'undefined') SessionProgress.onCorrect();
                 playSound('correct');
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive && G.mode !== 'sudden') {
@@ -123,15 +126,19 @@
                 });
                 G.wrong++;
                 G.streak = 0;
-                /* ✅ SmartAI + AdaptiveAI: تسجيل الخطأ مع تحليل نوعه */
-                if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, false);
-                if (typeof SmartAI !== 'undefined' && G.op) {
-                    const _respMsW = G._questionStartTime ? (Date.now() - G._questionStartTime) : 0;
-                    const _chosenVal = btn ? parseFloat(btn.getAttribute('data-val')) : null;
-                    SmartAI.onWrong(G.op, G.correctAnswer, _chosenVal, _respMsW);
+                /* ✅ UNIFIED: نقطة واحدة لتسجيل الإجابة */
+                const _respMsW = G._questionStartTime ? (Date.now() - G._questionStartTime) : 0;
+                const _skipSessionW = (G.mode === 'survival' || G.mode === 'rocket');
+                if (typeof recordAnswer === 'function' && G.op) {
+                    recordAnswer(G.op, false, _respMsW, _skipSessionW);
+                } else {
+                    if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, false);
+                    if (!_skipSessionW && typeof SessionProgress !== 'undefined') SessionProgress.onWrong();
+                    if (typeof SmartAI !== 'undefined' && G.op) {
+                        const _chosenVal = btn ? parseFloat(btn.getAttribute('data-val')) : null;
+                        SmartAI.onWrong(G.op, G.correctAnswer, _chosenVal, _respMsW);
+                    }
                 }
-                /* ✅ SessionProgress: خفض الحرارة عند الخطأ */
-                if (typeof SessionProgress !== 'undefined') SessionProgress.onWrong();
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive) {
                     G.timeLeft = Math.max(0, G.timeLeft - 1);
@@ -380,7 +387,7 @@
                         setTimeout(() => showFeedback('🚀 شارة الصاروخ! وصلت لمرحلة العبقري!'), 800);
                     }
                     /* رسالة النتيجة الخاصة بالصاروخ */
-                    const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'yعب', 'yعب +', 'عبقري'];
+                    const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'صعب', 'صعب +', 'عبقري'];
                     setTimeout(() => showFeedback(`🚀 وصلت لـ: ${_stageNames[_rStage]} (${G.correct} صحيح)`), 400);
                 }
 
@@ -846,17 +853,19 @@
                                 }
 
                             } else if (G.mode === 'rocket') {
-                                /* 🚀 وضع الصاروخ: الصعوبة تتصاعد كل 5 إجابات صحيحة */
+                                /* 🚀 وضع الصاروخ: الصعوبة تتصاعد بناءً على الصافي (صحيح - خاطئ×2)
+                                   يمنع الاستمرار في الصعب رغم كثرة الأخطاء */
                                 const _stageDiffs = ['easy', 'easy', 'medium', 'medium', 'hard', 'hard', 'genius'];
-                                const _stage = Math.floor(G.correct / 5);
+                                const _netScore   = Math.max(0, G.correct - G.wrong * 2);
+                                const _stage      = Math.floor(_netScore / 5);
                                 G._rocketStage = Math.min(_stage, 6);
                                 G._rocketDiff  = _stageDiffs[G._rocketStage];
                                 /* تحديث شريط المرحلة في الواجهة */
-                                const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'yعب', 'yعب +', 'عبقري'];
+                                const _stageNames = ['سهل', 'سهل +', 'متوسط', 'متوسط +', 'صعب', 'صعب +', 'عبقري'];
                                 const _rl = document.getElementById('rocketStageLabel');
                                 if (_rl) _rl.textContent = `🚀 المرحلة ${G._rocketStage + 1}: ${_stageNames[G._rocketStage]}`;
-                                /* شريط تقدم داخل المرحلة (0-5 إجابات) */
-                                const _progressInStage = (G.correct % 5) / 5 * 100;
+                                /* شريط تقدم داخل المرحلة (0-5 إجابات صافية) */
+                                const _progressInStage = (_netScore % 5) / 5 * 100;
                                 const _rf = document.getElementById('rocketStageProgress');
                                 if (_rf) _rf.style.width = _progressInStage + '%';
                                 /* إشعار عند الترقي لمرحلة جديدة */
@@ -897,19 +906,8 @@
                             attempts++;
                             continue;
                         }
-                        if (!G.isTraining) {
-                            const qKey = (q.text || '') + '|' + q.answer;
-                            if (G.askedQuestions && G.askedQuestions.includes(qKey) && attempts < maxAttempts - 5) {
-                                q = null;
-                                attempts++;
-                                continue;
-                            }
-                            if (!G.askedQuestions) G.askedQuestions = [];
-                            if (!G.askedQuestions.includes(qKey)) {
-                                G.askedQuestions.push(qKey);
-                                if (G.askedQuestions.length > 150) G.askedQuestions.shift();
-                            }
-                        }
+                        /* ✅ منع التكرار يُعالَج بالكامل في questions_engine.js (_sessionMem)
+                           لا نحتاج نظاماً ثانياً هنا — حُذف لتجنب التعارض */
                         break;
                     } catch(e) {
                         console.error("Error generating question:", e);
@@ -939,7 +937,11 @@
                     qt.style.animation = 'none';
                     void qt.offsetWidth;
                     qt.style.animation = '';
-                    qt.textContent = (q.text.includes('؟') || q.text.includes('?')) ? q.text : q.text + ' = ?';
+                    /* ✅ FIX: لا نضيف "= ?" إذا كان النص يحتوي على ؟ أو ? أو = بالفعل
+                       يمنع ظهور "x + 5 = 12 = ?" أو "مساحة = ؟ = ?" */
+                    const _hasQ   = q.text.includes('؟') || q.text.includes('?');
+                    const _hasEq  = q.text.includes('=');
+                    qt.textContent = (_hasQ || _hasEq) ? q.text : q.text + ' = ?';
                 }
                 const hintEl = document.getElementById('questionHint');
                 if (hintEl) hintEl.textContent = q.hint || 'ما هو الجواب؟';
@@ -949,7 +951,7 @@
                     if (G.isTraining) {
                         qNumEl.textContent = `🎓 تدريب - ${G.correct+1}`;
                     } else {
-                        const _survLvlNames = ['سهل', 'متوسط', 'yعب', 'عبقري'];
+                        const _survLvlNames = ['سهل', 'متوسط', 'صعب', 'عبقري'];
                         qNumEl.textContent = G.mode === 'speed' ? `⚡ السؤال ${G.correct+1}` :
                             G.mode === 'frenzy' ? `💥 ${G.correct+1} إجابة` :
                             G.mode === 'survival' ? `🔥 ${G.correct} صحيح • Lv.${(G._survivalDiffLevel||0)+1} ${_survLvlNames[G._survivalDiffLevel||0]}` :
