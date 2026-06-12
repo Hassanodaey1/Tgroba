@@ -87,7 +87,7 @@ if (typeof getCatStatsKey === 'undefined') {
                     a = rnd(2,5); const m=rnd(1,3), n=rnd(1,3);
                     ans = Math.pow(a, m+n);
                     text = `${a}^${m} × ${a}^${n}`;
-                    hint = 'قانون الأxx: اجمع الأxx عند الضرب بنفس القاعدة';
+                    hint = 'قانون الأسس: اجمع الأسس عند الضرب بنفس القاعدة';
                     explanation = `${a}^${m} × ${a}^${n} = ${a}^(${m}+${n}) = ${a}^${m+n} = ${ans}`;
 
                 } else if (ch === 'sqrt') {
@@ -106,20 +106,20 @@ if (typeof getCatStatsKey === 'undefined') {
 
                 } else if (ch === 'equation_simple') {
                     a = rnd(4,20); ans = rnd(3,25); b = a + ans;
-                    text = `x + ${a} = ${b}`;
+                    text = `x + ${a} = ${b}، x = ؟`;
                     hint = 'اطرح الثابت من الطرفين لعزل x';
                     explanation = `x + ${a} = ${b}\nالخطوة: اطرح ${a} من الطرفين\nx = ${b} − ${a} = ${ans}`;
 
                 } else if (ch === 'equation_two_step') {
                     const coef=rnd(2,6); ans=rnd(2,10); const con=rnd(1,8); b=coef*ans+con;
-                    text = `${coef}x + ${con} = ${b}`;
+                    text = `${coef}x + ${con} = ${b}، x = ؟`;
                     hint = 'أولاً اطرح الثابت، ثم اقسم على المعامل';
                     explanation = `${coef}x + ${con} = ${b}\nالخطوة ①: اطرح ${con}: ${coef}x = ${b-con}\nالخطوة ②: اقسم على ${coef}: x = ${b-con}÷${coef} = ${ans}`;
 
                 } else if (ch === 'equation_bracket') {
                     const k=rnd(2,5); ans=rnd(2,8); const c2=rnd(1,6);
                     b = k*(ans+c2);
-                    text = `${k}(x + ${c2}) = ${b}`;
+                    text = `${k}(x + ${c2}) = ${b}، x = ؟`;
                     hint = 'افتح القوس أو اقسم على المعامل أولاً';
                     explanation = `${k}(x + ${c2}) = ${b}\nالخطوة ①: اقسم على ${k}: x + ${c2} = ${b/k}\nالخطوة ②: اطرح ${c2}: x = ${b/k} − ${c2} = ${ans}`;
 
@@ -313,8 +313,8 @@ if (typeof getCatStatsKey === 'undefined') {
                     /* قانون: a^m × a^n = a^(m+n) */
                     a = rnd(2,4); const m=rnd(1,3),n=rnd(1,3);
                     ans = Math.pow(a,m+n);
-                    text = `${a}^${m} × ${a}^${n} = ؟`; hint = 'اجمع الأxx عند الضرب بنفس القاعدة';
-                    explanation = `القاعدة نفسها (${a}) → اجمع الأxx\n${a}^${m} × ${a}^${n} = ${a}^(${m}+${n}) = ${a}^${m+n} = ${ans}`;
+                    text = `${a}^${m} × ${a}^${n} = ؟`; hint = 'اجمع الأسس عند الضرب بنفس القاعدة';
+                    explanation = `القاعدة نفسها (${a}) → اجمع الأسس\n${a}^${m} × ${a}^${n} = ${a}^(${m}+${n}) = ${a}^${m+n} = ${ans}`;
                 } else {
                     const opts = [[16,0.25,2,'⁴√16'],[81,0.25,3,'⁴√81'],[32,0.2,2,'⁵√32'],[64,1/3,4,'∛64']];
                     const pick = opts[rnd(0,opts.length-1)];
@@ -725,7 +725,7 @@ if (typeof getCatStatsKey === 'undefined') {
                     30);
                 b = rnd(a + 1, a + 50);
                 ans = b - a;
-                text = `x + ${a} = ${b}`;
+                text = `x + ${a} = ${b}، x = ؟`;
                 hint = 'ما قيمة س؟';
                 explanation = `x = ${b} - ${a} = ${ans}`; } else if (ch === 'sequence') { a = rnd(1, 15);
                 b = rnd(2, 10);
@@ -1090,7 +1090,7 @@ if (typeof getCatStatsKey === 'undefined') {
                 lives           = 3;     /* 3 قلوب — الصعوبة هي التحدي */
                 G._rocketStage  = 0;     /* المرحلة الحالية: 0=سهل، 1=سهل+، 2=متوسط، 3=صعب، 4=عبقري */
                 G._rocketBest   = 0;     /* أفضل مرحلة وصلها */
-                G._rocketStageLabels = ['سهل', 'سهل+', 'متوسط', 'yعب', 'عبقري'];
+                G._rocketStageLabels = ['سهل', 'سهل+', 'متوسط', 'صعب', 'عبقري'];
                 /* تعيين الصعوبة الابتدائية = سهل بغض النظر عن اختيار اللاعب */
                 G._rocketDiff   = 'easy';
 
@@ -1123,7 +1123,7 @@ if (typeof getCatStatsKey === 'undefined') {
                 chain:      '🔗 وضع السلسلة',
                 sudden:     '⚡ ضد الساعة',
                 rocket:     '🚀 وضع الصاروخ',
-                adv_roots:  '🔢 الأxx والجذور',
+                adv_roots:  '🔢 الأسس والجذور',
                 adv_log:    '📊 اللوغاريتم',
                 adv_geo:    '📐 الهندسة',
                 adv_eq:     '🔣 المعادلات',
@@ -1625,7 +1625,7 @@ function genAdvancedDiverseQ(diff) {
             const total = rnd(20, 100);
             ans = Math.round((a / (a + b)) * total);
             text = `قُسّمت ${total} بنسبة ${a}:${b}، الحصة الأولى = ؟`;
-            hint = 'قسّم بمجموع نسبَي الحyy';
+            hint = 'قسّم بمجموع نسبَي الحصتين';
             explanation = `الحصة الأولى = ${a}/(${a}+${b}) × ${total} = ${ans}`;
             break;
         }
@@ -1663,7 +1663,7 @@ function genAdvancedDiverseQ(diff) {
             ans = rnd(-10, 15);
             b = rnd(2, 8);
             const rhs = b + ans;
-            text = `x + ${b} = ${rhs}`;
+            text = `x + ${b} = ${rhs}، x = ؟`;
             hint = 'عزل المجهول';
             explanation = `x = ${rhs} - ${b} = ${ans}`;
             break;
@@ -1672,7 +1672,7 @@ function genAdvancedDiverseQ(diff) {
             ans = rnd(1, 10);
             const coef = rnd(2, 5), con = rnd(1, 8);
             const rhs2 = coef * ans + con;
-            text = `${coef}x + ${con} = ${rhs2}`;
+            text = `${coef}x + ${con} = ${rhs2}، x = ؟`;
             hint = 'اطرح أولاً ثم اقسم';
             explanation = `${coef}x = ${rhs2 - con}، x = ${ans}`;
             break;
@@ -1682,7 +1682,7 @@ function genAdvancedDiverseQ(diff) {
             const _den  = rnd(2, 5);
             const _rhs3 = rnd(2, 12);
             const _xAct = _rhs3 * _den;
-            text = `x ÷ ${_den} = ${_rhs3}`;
+            text = `x ÷ ${_den} = ${_rhs3}، x = ؟`;
             ans  = _xAct;
             hint = 'اضرب الطرفين في المقام';
             explanation = `x = ${_rhs3} × ${_den} = ${_xAct}`;
@@ -1711,7 +1711,7 @@ function genAdvancedDiverseQ(diff) {
             a = rnd(5, 20); const d = -rnd(1, 4);
             text = `${a}, ${a+d}, ${a+2*d}, ${a+3*d}, ؟`;
             ans = a + 4 * d;
-            hint = 'المتتالية تتناقy';
+            hint = 'المتتالية تتناقص';
             explanation = `الفرق = ${d}، الحد التالي = ${ans}`;
             break;
         }
@@ -1775,13 +1775,13 @@ function genAdvancedDiverseQ(diff) {
             a = rnd(2, 5); b = rnd(1, 3); c = rnd(1, 2);
             ans = Math.pow(a, b + c);
             text = `${a}^${b} × ${a}^${c} = ؟`;
-            hint = 'قانون الأxx: اجمع الأxx';
+            hint = 'قانون الأسس: اجمع الأسس عند الضرب بنفس القاعدة';
             explanation = `${a}^(${b}+${c}) = ${a}^${b+c} = ${ans}`;
             break;
         }
 
         /* ─── مسائل لفظية متنوعة ─── */
-       case 'word_neg': {
+      case 'word_neg': {
             const temp1 = -rnd(5, 20);
             const rise = rnd(1, 10);
             ans = temp1 + rise;
@@ -1794,8 +1794,8 @@ function genAdvancedDiverseQ(diff) {
             const whole = rnd(10, 50);
             const frac = [2, 3, 4, 5][rnd(0, 3)];
             ans = Math.round(whole / frac);
-            text = `قُسّمت ${whole} تفاحة بالتساوي على ${frac} أشخاy. نصيب كل شخص = ؟`;
-            hint = 'قسمة على الأشخاy';
+            text = `قُسّمت ${whole} تفاحة بالتساوي على ${frac} أشخاص. نصيب كل شخص = ؟`;
+            hint = 'قسمة على الأشخاص';
             explanation = `${whole} ÷ ${frac} = ${ans}`;
             break;
         }
@@ -1887,7 +1887,7 @@ const EXTENDED_LAWS_POOL = [
     { text: 'حل: 5(x − 2) = 15', ans: 5, explanation: 'x − 2 = 3، x = 5' },
     { text: 'ما قيمة 2⁸؟', ans: 256, explanation: '2⁸ = 256' },
     { text: 'ما قيمة 3⁴؟', ans: 81, explanation: '3×3×3×3 = 81' },
-    { text: '2³ × 2² = 2^؟', ans: 5, explanation: 'قانون الأxx: نجمع الأxx → 2^5 = 32، الأس = 5' },
+    { text: '2³ × 2² = 2^؟', ans: 5, explanation: 'قانون الأسس: نجمع الأسس → 2^5 = 32، الأس = 5' },
     { text: 'ما قيمة 10³ ÷ 10²؟', ans: 10, explanation: '10^(3-2) = 10¹ = 10' },
     /* الهندسة */
     { text: 'مساحة مربع طول ضلعه 7؟', ans: 49, explanation: 'المساحة = الضلع² = 49' },
