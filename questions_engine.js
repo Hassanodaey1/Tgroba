@@ -330,7 +330,11 @@ function genSmartQ(op, baseDiff, strict) {
     /* الأنواع المتقدمة تُعالَج مباشرة بـ genQ */
     var _advOps = ['adv_roots','adv_log','adv_geo','adv_eq','adv_seq','adv_trig'];
     if (_advOps.indexOf(op) >= 0) {
-        if (typeof genQ === 'function') return genQ(op, baseDiff || 'medium');
+        /* نحسب الصعوبة الفعلية قبل التفويض لـ genQ */
+        var _advDiff = strict
+            ? (baseDiff || 'medium')
+            : _resolveActualDiff(op, baseDiff || 'medium', false);
+        if (typeof genQ === 'function') return genQ(op, _advDiff);
     }
 
     var cfg  = _getLevelConfig();
@@ -437,9 +441,14 @@ function _pickOp(cfg, diff, age) {
         }
     }
 
-    /* المستويات 31+: نسبة متقدمة 50% */
+    /* المستويات 31+: نسبة متقدمة 50% — نشمل adv_* للمستويات العالية */
     if (level >= 31) {
-        var advPool31 = ['power','sqrt','algebra','sequence','fraction_add','fraction_mul','geo_area','log_simple','equation_quad'];
+        /* المستويات 66+: أضف الأنواع المتقدمة الكاملة */
+        var advPool31 = level >= 66
+            ? ['power','sqrt','algebra','sequence','fraction_add','fraction_mul','geo_area',
+               'log_simple','equation_quad','adv_roots','adv_log','adv_geo','adv_eq','adv_seq']
+            : ['power','sqrt','algebra','sequence','fraction_add','fraction_mul','geo_area',
+               'log_simple','equation_quad'];
         if (rnd(0,1) === 0) {
             var p31 = advPool31.filter(function(o){ return !_opOverused(o); });
             return (p31.length > 0 ? p31 : advPool31)[rnd(0, (p31.length > 0 ? p31 : advPool31).length-1)];
@@ -1085,8 +1094,13 @@ function _build(op, diff, cfg, age) {
             break;
         }
 
-        /* افتراضي */
+        /* افتراضي: أنواع غير مُعرَّفة في _build → تُفوَّض لـ genQ */
         default: {
+            if (typeof genQ === 'function') {
+                var _fallbackQ = genQ(op, diff);
+                if (_fallbackQ && typeof _fallbackQ.answer !== 'undefined') return _fallbackQ;
+            }
+            /* الحل الأخير: جمع بسيط */
             a = rnd(nMin, nMax); b = rnd(nMin, nMax);
             ans = a + b;
             text = a + ' + ' + b; hint = 'اجمع'; explanation = a + ' + ' + b + ' = ' + ans;
@@ -1279,11 +1293,23 @@ function showSmartExplanation(explanation, correctAnswer) {
 ═══════════════════════════════════════════════════════════════ */
 
 function getNextQuestion(op, diff, strict) {
+    var q = null;
+    /* الأنواع المتقدمة والجداول تذهب مباشرة لـ genQ */
     if (op === 'table' || op === 'laws' || op === 'advanced' ||
         ['adv_roots','adv_log','adv_geo','adv_eq','adv_seq','adv_trig'].includes(op)) {
-        if (typeof genQ === 'function') return genQ(op, diff);
+        if (typeof genQ === 'function') {
+            q = genQ(op, diff);
+            /* تحقق من صحة السؤال المُرجَع */
+            if (q && typeof q.answer !== 'undefined' && q.choices && q.choices.length >= 2) return q;
+        }
     }
-    return genSmartQ(op, diff, strict || false);
+    /* باقي الأنواع عبر المحرك الذكي */
+    q = genSmartQ(op, diff, strict || false);
+    /* fallback آمن إذا فشل التوليد */
+    if (!q || typeof q.answer === 'undefined' || !q.choices || q.choices.length < 2) {
+        if (typeof genQ === 'function') q = genQ(op || 'add', diff || 'easy');
+    }
+    return q;
 }
 
 
