@@ -1094,3 +1094,49 @@ window._simulateStreak = function(n) {
     for (var i = 0; i < (n || 10); i++) SessionProgress.onCorrect();
     window._debugHeat();
 };
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ⑫ ربط _startHeatMonitor / _stopHeatMonitor بأحداث اللعبة
+   يُشغَّل تلقائياً عند بدء اللعبة وإيقافها
+═══════════════════════════════════════════════════════════════ */
+(function _patchHeatMonitorToGame() {
+    /* ننتظر حتى تكتمل تهيئة الصفحة */
+    window.addEventListener('load', function () {
+        /* نُغلّف startGameWith إن وُجدت */
+        if (typeof window.startGameWith === 'function' && !window._heatPatched) {
+            var _origStartGame = window.startGameWith;
+            window.startGameWith = function () {
+                _origStartGame.apply(this, arguments);
+                try { if (typeof window._startHeatMonitor === 'function') window._startHeatMonitor(); } catch(e) {}
+            };
+        }
+        /* نُغلّف endGame إن وُجدت */
+        if (typeof window.endGame === 'function' && !window._heatPatched) {
+            var _origEndGame = window.endGame;
+            window.endGame = function () {
+                _origEndGame.apply(this, arguments);
+                try { if (typeof window._stopHeatMonitor === 'function') window._stopHeatMonitor(); } catch(e) {}
+            };
+        }
+        window._heatPatched = true;
+    });
+})();
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ⑬ getDifficultyByLevel — guard عالمي
+   تُستدعى من questions.js وgame.js — إن لم تُعرَّف في state.js نُعرّفها هنا
+═══════════════════════════════════════════════════════════════ */
+if (typeof getDifficultyByLevel === 'undefined') {
+    window.getDifficultyByLevel = function () {
+        try {
+            if (typeof st === 'undefined') return 'easy';
+            var lvl = st.level || 1;
+            if (lvl <= 6)   return 'easy';
+            if (lvl <= 22)  return 'medium';
+            if (lvl <= 65)  return 'hard';
+            return 'genius';
+        } catch(e) { return 'easy'; }
+    };
+}
