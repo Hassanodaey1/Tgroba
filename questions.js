@@ -1,5 +1,24 @@
 /* QUESTIONS & GAME MODES */
-        /* ✅ FIX-2.3: دالة تبسيط الكسر — تُعرض الكسور بشكل رياضي صحيح */
+        /* ✅ guard: getCatStatsKey — تستخدمها genQ. إن لم تكن معرّفة في ملف آخر نُعرّفها هنا */
+if (typeof getCatStatsKey === 'undefined') {
+    window.getCatStatsKey = function(op) {
+        var _map = {
+            add:'addition', sub:'subtraction', mul:'multiplication', div:'division',
+            percent:'percentage', fraction_simple:'fractions', fraction_add:'fractions',
+            fraction_mul:'fractions', fraction_diff:'fractions',
+            power:'algebra', sqrt:'algebra', equation_simple:'algebra',
+            algebra:'algebra', equation_quad:'algebra',
+            sequence:'sequences', geo_area:'geometry',
+            log_simple:'algebra', table:'multiplication',
+            word_add:'wordproblems', word_mul:'wordproblems',
+            word_hard:'wordproblems', word_genius:'wordproblems',
+            laws:'mathlaws'
+        };
+        return _map[op] || 'algebra';
+    };
+}
+
+/* ✅ FIX-2.3: دالة تبسيط الكسر — تُعرض الكسور بشكل رياضي صحيح */
         function simplifyFraction(num, den) {
             function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
             const g = gcd(Math.abs(num), Math.abs(den));
@@ -129,8 +148,8 @@
                     function gcdA2(x,y){return y===0?x:gcdA2(y,x%y);}
                     const g4=gcdA2(num,lcm2);
                     const simpN4=num/g4, simpD4=lcm2/g4;
-                    /* الجواب ككسر مبسط وليس عدد عشري */
-                    ans = simpD4===1 ? simpN4 : num;
+                    /* الجواب: عدد صحيح عند التبسيط، وإلا كسر عشري للمقارنة */
+                    ans = simpD4===1 ? simpN4 : Math.round((num/lcm2) * 1000) / 1000;
                     text = `${n1}/${d1} + ${n2}/${d2}`;
                     hint = `أوجد المقام المشترك (${lcm2}) ثم اجمع البسطَين`;
                     explanation = `المقام المشترك = ${lcm2}\n${n1}/${d1} = ${n1*(lcm2/d1)}/${lcm2}\n${n2}/${d2} = ${n2*(lcm2/d2)}/${lcm2}\nالمجموع = ${num}/${lcm2}` + (g4>1?` = ${simpN4}/${simpD4}`:'') + (simpD4===1?` = ${simpN4}`:'');
@@ -141,7 +160,7 @@
                     function gcdFm(x,y){return y===0?x:gcdFm(y,x%y);}
                     const gf=gcdFm(np,dp);
                     const fmSimpN=np/gf, fmSimpD=dp/gf;
-                    ans = fmSimpD===1 ? fmSimpN : np;
+                    ans = fmSimpD===1 ? fmSimpN : Math.round((np/dp) * 1000) / 1000;
                     text = `${n1}/${d1} × ${n2}/${d2}`;
                     hint = 'اضرب البسطَين مع بعض، والمقامَين مع بعض';
                     explanation = `(${n1}×${n2}) / (${d1}×${d2}) = ${np}/${dp}` + (gf>1?` = ${fmSimpN}/${fmSimpD}`:'') + (fmSimpD===1?` = ${fmSimpN}`:'');
@@ -239,8 +258,17 @@
                     const wr3=[]; for(const v of shuffle([...allTrig])){if(v!==ansN){wr3.push(v);if(wr3.length===3)break;}}
                     choices=shuffle([ansN,...wr3]);
                 } else if (ch==='fraction_diff'||ch==='fraction_mul') {
-                    const vals=[ansN+0.25,ansN-0.25,ansN+0.5,ansN+0.1].filter(v=>v>=0&&v!==ansN);
-                    const wr4=vals.slice(0,3); while(wr4.length<3) wr4.push(ansN+wr4.length*0.1+0.1);
+                    /* خيارات خاطئة ذكية للكسور: فروق بسيطة لكن مميزة */
+                    const _fSteps = [0.25, 0.33, 0.5, 0.17, 0.2, 0.1];
+                    const wr4 = [];
+                    for (const s of _fSteps) {
+                        if (wr4.length >= 3) break;
+                        const c1 = Math.round((ansN + s) * 1000) / 1000;
+                        const c2 = Math.round((ansN - s) * 1000) / 1000;
+                        if (c1 !== ansN && c1 > 0 && !wr4.includes(c1)) wr4.push(c1);
+                        if (wr4.length < 3 && c2 !== ansN && c2 > 0 && !wr4.includes(c2)) wr4.push(c2);
+                    }
+                    while (wr4.length < 3) wr4.push(Math.round((ansN + (wr4.length + 1) * 0.25) * 1000) / 1000);
                     choices=shuffle([ansN,...wr4]);
                 } else {
                     const sp=Math.max(2,Math.ceil(Math.abs(ansN)*0.2)+1);
@@ -840,8 +868,11 @@
             G.hasTimer = false;
             G.helpersUsed = { skip: false, remove: false, heart: false }; /* ✅ FIX-HEART: تتبع استخدام القلب مرة واحدة فقط */
             G.askedQuestions = [];
-            /* ✅ إعادة ضبط ذاكرة التكرار عند كل لعبة جديدة */
-            if (typeof clearSessionMemory === 'function') clearSessionMemory();
+            /* ✅ إعادة ضبط كامل للجلسة: ذاكرة التكرار + SessionProgress + PlayerModel + SpacedRepetition */
+            if (typeof window.resetSessionProgress === 'function') window.resetSessionProgress();
+            else if (typeof clearSessionMemory === 'function') clearSessionMemory();
+            if (typeof SmartAI !== 'undefined') SmartAI.onGameStart();
+            else if (typeof PlayerModel !== 'undefined') PlayerModel.resetSession();
             /* ✅ إعادة ضبط ذاكرة جدول الضرب */
             if (typeof genQ._tableUsed !== 'undefined') genQ._tableUsed = {};
             document.getElementById('gameModeTitle').textContent = '🎓 تدريب';
@@ -946,8 +977,11 @@
             G.askedQuestions = [];
             G._challengeBadge = null; /* شارة التحدي */
             G._purchasedInstant = {}; /* ✅ إعادة ضبط قفل الشراء الفوري — لكل جلسة من جديد */
-            /* ✅ الإصلاح: إعادة ضبط ذاكرة التكرار عند كل لعبة جديدة (وليس التدريب فحسب) */
-            if (typeof clearSessionMemory === 'function') clearSessionMemory();
+            /* ✅ إعادة ضبط كامل للجلسة: ذاكرة التكرار + SessionProgress + PlayerModel + SpacedRepetition */
+            if (typeof window.resetSessionProgress === 'function') window.resetSessionProgress();
+            else if (typeof clearSessionMemory === 'function') clearSessionMemory();
+            if (typeof SmartAI !== 'undefined') SmartAI.onGameStart();
+            else if (typeof PlayerModel !== 'undefined') PlayerModel.resetSession();
             /* ✅ إعادة ضبط ذاكرة جدول الضرب لمنع التكرار */
             if (typeof genQ._tableUsed !== 'undefined') genQ._tableUsed = {};
             let hasTimer = false;
@@ -1412,358 +1446,21 @@
             let extra = 1;
             while (wr.size < 3) { wr.add(ans + extra * 3); extra++; }
 
+            /* catKey صحيح حسب العملية الفعلية */
+            const _cgCatMap = { add:'addition', sub:'subtraction', mul:'multiplication', div:'division' };
             return {
                 text, hint, answer: ans,
                 choices: shuffle([ans, ...wr]),
                 explanation,
-                catKey: 'addition',
+                catKey: _cgCatMap[op] || 'addition',
                 level
             };
         }
 
         /* ═══════════ CHALLENGE GAME STATE ═══════════ */
-        // ── CG و helpers نُقلت إلى competition_logic.js ──
-        // var CG = {
-        // active: false,
-        // score: 0,
-        // questionIndex: 0,
-        // answered: false,
-        // ended: false,
-        // correctAnswer: 0,
-        // currentExplanation: '',
-        // askedQuestions: [],
-        // consecutiveWrong: 0  /* عداد الأخطاء المتتالية */
-        // };
-        // /* ✅ ANTI-CHEAT: مصدر داخلي للنقاط — يمنع التلاعب عبر Console */
-        // var _cgScoreInternal = 0;
-        // function _cgAddScore(delta) {
-        // _cgScoreInternal = Math.max(0, _cgScoreInternal + delta);
-        // CG.score = _cgScoreInternal;
-        // }
-        // function _cgResetScore() { _cgScoreInternal = 0; CG.score = 0; }
-        //
-        // ── الدوال القديمة استُبدلت بـ competition_logic.js ──
-        // function startChallengeGame() {
-        // _cgResetScore();
-        // /* ✅ FIX: تحديث خصائص CG بدون إعادة التعيين الكاملة لحفظ مرجع الدوال */
-        // CG.active = true;
-        // CG.score = 0;
-        // CG.questionIndex = 0;
-        // CG.answered = false;
-        // CG.ended = false;
-        // CG.correctAnswer = 0;
-        // CG.currentExplanation = '';
-        // CG.askedQuestions = [];
-        // CG.timeLeft = 60;
-        // CG.maxTime = 60;
-        // if (CG.timer) { clearInterval(CG.timer); CG.timer = null; }
-        // CG.helpersUsed = { skip: false, remove: false, time: false };
-        // CG.consecutiveWrong = 0;
-        // // إخفاء واجهة الترحيب وإظهار واجهة اللعبة
-        // document.getElementById('challengeWelcome').style.display = 'none';
-        // document.getElementById('challengeGameArea').style.display = 'flex';
-        // document.getElementById('challengeScoreDisplay').textContent = '0';
-        // // تهيئة المؤقت
-        // updateChallengeTimerUI();
-        // startChallengeTimer();
-        // // تهيئة المساعدات
-        // resetChallengeHelpers();
-        // loadChallengeQuestion();
-        // }
-        //
-        // function startChallengeTimer() {
-        // if (CG.timer) clearInterval(CG.timer);
-        // CG.timer = setInterval(() => {
-        // if (CG.ended) { clearInterval(CG.timer); return; }
-        // CG.timeLeft--;
-        // updateChallengeTimerUI();
-        // if (CG.timeLeft <= 10) {
-        // playSound('tick');
-        // document.getElementById('challengeTimerDisplay').style.color = 'var(--red)';
-        // document.getElementById('challengeTimerBar').style.background = 'linear-gradient(90deg,var(--red),#ff6b6b)';
-        // } else {
-        // document.getElementById('challengeTimerDisplay').style.color = 'var(--accent2)';
-        // document.getElementById('challengeTimerBar').style.background = 'linear-gradient(90deg,var(--accent2),var(--accent))';
-        // }
-        // if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); }
-        // }, 1000);
-        // }
-        //
-        // function updateChallengeTimerUI() {
-        // const el = document.getElementById('challengeTimerDisplay');
-        // const bar = document.getElementById('challengeTimerBar');
-        // if (el) el.textContent = CG.timeLeft;
-        // if (bar) bar.style.width = Math.max(0, (CG.timeLeft / CG.maxTime) * 100) + '%';
-        // }
-        //
-        // function resetChallengeHelpers() {
-        // CG.helpersUsed = { skip: false, remove: false, time: false };
-        // ['challengeHelperSkip','challengeHelperRemove','challengeHelperTime'].forEach(id => {
-        // const el = document.getElementById(id);
-        // if (el) { el.classList.remove('used'); el.style.opacity = '1'; }
-        // });
-        // }
-        //
-        // function useChallengeHelper(type) {
-        // if (CG.ended || CG.answered) return;
-        // if (type === 'skip') {
-        // if (CG.helpersUsed.skip) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
-        // if (st.coins < 3) { showFeedback('💸 لا يكفي!'); return; }
-        // st.coins -= 3;
-        // CG.helpersUsed.skip = true;
-        // const el = document.getElementById('challengeHelperSkip');
-        // if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
-        // showFeedback('⏭️ تم التخطي');
-        // playSound('click');
-        // CG.answered = true;
-        // setTimeout(() => { if (!CG.ended) loadChallengeQuestion(); }, 300);
-        // } else if (type === 'remove') {
-        // if (CG.helpersUsed.remove) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
-        // if (st.coins < 4) { showFeedback('💸 لا يكفي!'); return; }
-        // st.coins -= 4;
-        // CG.helpersUsed.remove = true;
-        // const el = document.getElementById('challengeHelperRemove');
-        // if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
-        // // حذف إجابة خاطئة عشوائية
-        // const btns = [...document.querySelectorAll('#challengeAnswersGrid .answer-btn:not(:disabled)')];
-        // const wrong = btns.filter(b => parseInt(b.getAttribute('data-val')) !== CG.correctAnswer);
-        // if (wrong.length > 0) {
-        // const r = wrong[Math.floor(Math.random() * wrong.length)];
-        // r.style.opacity = '0.15';
-        // r.disabled = true;
-        // }
-        // showFeedback('🗑️ تم حذف إجابة');
-        // playSound('click');
-        // } else if (type === 'time') {
-        // if (CG.helpersUsed.time) { showFeedback('⚠️ استخدمت هذه المساعدة'); return; }
-        // if (st.coins < 5) { showFeedback('💸 لا يكفي!'); return; }
-        // st.coins -= 5;
-        // CG.helpersUsed.time = true;
-        // const el = document.getElementById('challengeHelperTime');
-        // if (el) { el.classList.add('used'); el.style.opacity = '0.5'; }
-        // CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 10);
-        // updateChallengeTimerUI();
-        // showFeedback('⏰ +10 ثانية!');
-        // playSound('correct');
-        // }
-        // saveSt();
-        // updateGameCoinsDisplay();
-        // }
-        //
-        // function endChallengeGame() {
-        // if (CG.ended) return;
-        // CG.ended = true;
-        // CG.active = false;
-        // if (CG.timer) clearInterval(CG.timer);
-        // /* ✅ FIX-V5b: تحقق منطقي من نتيجة التحدي قبل الحفظ */
-        // CG.score = Math.max(0, Math.min(Math.floor(_cgScoreInternal || 0), 9999)); _cgScoreInternal = CG.score;
-        // // حفظ النتيجة في الـ state
-        // if (CG.score > (st.challengeBestScore || 0)) {
-        // st.challengeBestScore = CG.score;
-        // saveSt();
-        // }
-        // // مزامنة مع لائحة المتصدرين
-        // syncChallengeScore(CG.score);
-        // // إظهار نتيجة التحدي
-        // document.getElementById('challengeGameArea').style.display = 'none';
-        // document.getElementById('challengeResultArea').style.display = 'flex';
-        // document.getElementById('challengeFinalScore').textContent = CG.score;
-        // document.getElementById('challengeBestScore').textContent = st.challengeBestScore || CG.score;
-        // const msg = CG.score >= 50 ? '🏆 أداء مذهل!' : CG.score >= 30 ? '⭐ رائع!' : CG.score >= 15 ? '😊 جيد جداً!' : '💪 حاول مجدداً!';
-        // document.getElementById('challengeResultMsg').textContent = msg;
-        // if (CG.score >= 15) doConfetti();
-        // }
-        //
-        // function loadChallengeQuestion() {
-        // if (CG.ended) return;
-        // CG.answered = false;
-        // document.getElementById('challengeExplanation').innerHTML = '';
-        // document.getElementById('challengeExplanation').style.display = 'none';
-        //
-        // let q;
-        // let attempts = 0;
-        // do {
-        // q = genChallengeQ(CG.questionIndex);
-        // const qKey = q.text + '|' + q.answer;
-        // if (!CG.askedQuestions.includes(qKey)) {
-        // CG.askedQuestions.push(qKey);
-        // // الاحتفاظ بآخر 100 سؤال فقط لتجنب تراكم الذاكرة
-        // if (CG.askedQuestions.length > 100) CG.askedQuestions.shift();
-        // break;
-        // }
-        // attempts++;
-        // if (attempts > 60) break;
-        // } while (true);
-        //
-        // CG.correctAnswer = q.answer;
-        // CG.currentExplanation = q.explanation || '';
-        //
-        // // تحديث رقم السؤال والصعوبة
-        // document.getElementById('challengeQNum').textContent = `السؤال ${CG.questionIndex + 1}`;
-        // const levelLabels = ['سهل جداً','سهل','متوسط','متوسط+','صعب','صعب+','عبقري'];
-        // document.getElementById('challengeDiffLabel').textContent = levelLabels[q.level] || 'عبقري';
-        //
-        // // عرض السؤال
-        // const qt = document.getElementById('challengeQuestionText');
-        // qt.style.animation = 'none';
-        // void qt.offsetWidth;
-        // qt.style.animation = '';
-        // qt.textContent = `${q.text} = ?`;
-        // document.getElementById('challengeHint').textContent = q.hint || 'ما هو الجواب؟';
-        //
-        // // عرض الأزرار
-        // const grid = document.getElementById('challengeAnswersGrid');
-        // grid.innerHTML = '';
-        // (q.choices || []).forEach(c => {
-        // const btn = document.createElement('button');
-        // btn.className = 'answer-btn';
-        // btn.textContent = c;
-        // btn.setAttribute('data-val', c);
-        // btn.onclick = () => checkChallengeAnswer(btn);
-        // grid.appendChild(btn);
-        // });
-        // }
-        //
-        // function checkChallengeAnswer(btn) {
-        // if (CG.answered || CG.ended) return;
-        // CG.answered = true;
-        // const val = parseFloat(btn.getAttribute('data-val'));
-        // document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => b.disabled = true);
-        //
-        // if (val === CG.correctAnswer) {
-        // btn.classList.add('correct');
-        // /* +1 نقطة لكل إجابة صحيحة */
-        // _cgAddScore(1);
-        // CG.questionIndex++;
-        // CG.consecutiveWrong = 0; /* إعادة عداد الأخطاء */
-        // document.getElementById('challengeScoreDisplay').textContent = CG.score;
-        // /* +1 ثانية عند الإجابة الصحيحة */
-        // CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 1);
-        // updateChallengeTimerUI();
-        // showFeedback('✅ +1 نقطة');
-        // playSound('correct');
-        // if (CG.score % 10 === 0 && CG.score > 0) { doConfetti(); showComboEffect(CG.score); }
-        // showFloatXP(1);
-        // } else {
-        // btn.classList.add('wrong');
-        // document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => {
-        // if (parseInt(b.getAttribute('data-val')) === CG.correctAnswer) b.classList.add('correct');
-        // });
-        // /* عداد الأخطاء المتتالية: كل خطأين يخصمان نقطة واحدة */
-        // CG.consecutiveWrong = (CG.consecutiveWrong || 0) + 1;
-        // if (CG.consecutiveWrong >= 2) {
-        // _cgAddScore(-1);
-        // CG.consecutiveWrong = 0;
-        // document.getElementById('challengeScoreDisplay').textContent = CG.score;
-        // showFeedback('❌ ×2 → -1 نقطة');
-        // } else {
-        // showFeedback('❌ خطأ');
-        // }
-        // playSound('wrong');
-        // /* -2 ثانية عند الإجابة الخاطئة */
-        // CG.timeLeft = Math.max(0, CG.timeLeft - 2);
-        // updateChallengeTimerUI();
-        // /* إظهار الشرح */
-        // const expArea = document.getElementById('challengeExplanation');
-        // expArea.innerHTML = `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${CG.correctAnswer}</strong><br>الشرح: ${CG.currentExplanation}</div>`;
-        // expArea.style.display = 'block';
-        // if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); return; }
-        // }
-        // /* إعادة ضبط المساعدات للسؤال التالي */
-        // CG.helpersUsed = { skip: false, remove: false, time: false };
-        // resetChallengeHelpers();
-        //
-        // setTimeout(() => {
-        // if (CG.ended) return;
-        // loadChallengeQuestion();
-        // }, val === CG.correctAnswer ? 350 : 700);
-        // }
-        //
-        // function quitChallengeGame() {
-        // showConfirm('إنهاء التحدي', 'هل تريد إنهاء اللعبة؟ ستُحفظ نتيجتك الحالية.', 'نعم', 'استمرار', ok => {
-        // if (ok) endChallengeGame();
-        // });
-        // }
-        //
-        // function restartChallengeGame() {
-        // if (CG.timer) clearInterval(CG.timer);
-        // document.getElementById('challengeResultArea').style.display = 'none';
-        // document.getElementById('challengeWelcome').style.display = 'flex';
-        // }
-        //
-        // /* ═══════════ مزامنة نتيجة التحدي مع Firebase ═══════════ */
-        // /* ✅ FIX-V11: تتبع آخر مرة لُعب فيها تحدي اليوم */
-        // function hasDailyBeenPlayed() {
-        // return st._dailyGameDate === (typeof todayStr === 'function' ? todayStr() : '');
-        // }
-        // function markDailyPlayed() {
-        // st._dailyGameDate = typeof todayStr === 'function' ? todayStr() : '';
-        // saveSt();
-        // }
-        //
-        // function syncChallengeScore(score) {
-        // if (!database) return;
-        // /* ✅ FIX-V3b+V10: serialNumber كـ key + حد أقصى للنتيجة */
-        // if (!st.serialNumber) return;
-        // try {
-        // const safeScore = Math.max(0, Math.min(Math.floor(score || 0), 9999));
-        // const safeLevel = Math.min(st.level || 1, 200);
-        // const playerKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-        // const ref = database.ref('challenge_leaderboard/' + playerKey);
-        // ref.once('value', snap => {
-        // const existing = snap.val();
-        // if (!existing || safeScore > (existing.challengeScore || 0)) {
-        // ref.set({
-        // name:           st.name,
-        // avatar:         st.avatar || '🧑',
-        // level:          safeLevel,
-        // challengeScore: safeScore,
-        // serialNumber:   st.serialNumber,
-        // lastUpdated:    Date.now()
-        // }).catch(() => {});
-        // }
-        // }).catch(() => {});
-        // } catch (e) {}
-        // }
-        //
-        // /* ═══════════ تحميل لائحة المتصدرين للتحدي ═══════════ */
-        // function loadChallengeLeaderboard() {
-        // const container = document.getElementById('challengeLeaderboardList');
-        // if (!container) return;
-        // if (!database) {
-        // container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:16px;">⚠️ قاعدة البيانات غير متصلة</div>';
-        // return;
-        // }
-        // container.innerHTML = '<div style="text-align:center;padding:16px;">⏳ جاري التحميل...</div>';
-        // try {
-        // database.ref('challenge_leaderboard').orderByChild('challengeScore').limitToLast(10).once('value', (snapshot) => {
-        // const players = [];
-        // snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-        // players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
-        // if (players.length === 0) {
-        // container.innerHTML = '<div style="text-align:center;padding:16px;">لا توجد نتائج بعد — كن الأول!</div>';
-        // return;
-        // }
-        // const medals = ['🥇','🥈','🥉'];
-        // let html = '';
-        // players.forEach((p, idx) => {
-        // const isMe = p.id === st.serialNumber;
-        // html += `<div class="lb-row${isMe?' lb-row-me':''}">`
-        // + `<span>${medals[idx] || (idx+1)}</span>`
-        // + `<span>${p.avatar||'🧑'} ${p.name}</span>`
-        // + `<span>${p.level||1}</span>`
-        // + `<span style="color:var(--gold);font-weight:900;">${p.challengeScore||0}</span>`
-        // + `</div>`;
-        // });
-        // container.innerHTML = html;
-        // }).catch(() => {
-        // container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ فشل التحميل</div>';
-        // });
-        // } catch (e) {
-        // container.innerHTML = '<div style="text-align:center;padding:16px;">⚠️ قاعدة البيانات غير متاحة</div>';
-        // }
-        // }
-        // ── نهاية ──
+
+        /* ═══ ChallengeGame logic moved to competition_logic.js ═══ */
+
 
 
         function renderVisualAid(q) {
@@ -1816,6 +1513,13 @@
  * يولّد سؤالاً عشوائياً من مجموعة موسّعة تشمل:
  * أعداداً سالبة، كسور، نسب مئوية، متتاليات، معادلات، ألغاز، هندسة
  */
+/* ═══ دالة مساعدة: أكبر قاسم مشترك — مُعرَّفة هنا لتكون متاحة لكل الدوال ═══ */
+function gcd(a, b) {
+    a = Math.abs(Math.round(a)); b = Math.abs(Math.round(b));
+    while (b) { const t = b; b = a % b; a = t; }
+    return a || 1;
+}
+
 function genAdvancedDiverseQ(diff) {
     const types = [
         'neg_add', 'neg_sub', 'neg_mul', 'neg_div',
@@ -2077,7 +1781,7 @@ function genAdvancedDiverseQ(diff) {
         }
 
         /* ─── مسائل لفظية متنوعة ─── */
-        case 'word_neg': {
+       case 'word_neg': {
             const temp1 = -rnd(5, 20);
             const rise = rnd(1, 10);
             ans = temp1 + rise;
@@ -2159,13 +1863,6 @@ function genAdvancedDiverseQ(diff) {
     };
 }
 
-/** دالة مساعدة: أكبر قاسم مشترك */
-function gcd(a, b) {
-    a = Math.abs(Math.round(a)); b = Math.abs(Math.round(b));
-    while (b) { const t = b; b = a % b; a = t; }
-    return a || 1;
-}
-
 /** تحديد catKey لأنواع الأسئلة المتنوعة */
 function getCatStatsKeyDiverse(ch) {
     if (ch.startsWith('neg_')) return 'subtraction';
@@ -2207,7 +1904,7 @@ const EXTENDED_LAWS_POOL = [
     { text: 'ما النسبة المئوية لـ 15 من 60؟', ans: 25, explanation: '15/60 × 100 = 25%' },
     { text: 'ما 1/3 من 99؟', ans: 33, explanation: '99 ÷ 3 = 33' },
     { text: 'ناتج (1/2) ÷ (1/4) = ؟', ans: 2, explanation: '(1/2) × 4 = 2' },
-    { text: 'ما قيمة 1/2 + 1/3؟ (اختر أقرب قيمة)', ans: 0.83, explanation: '3/6 + 2/6 = 5/6 ≈ 0.83' },
+    { text: 'ما بسط الكسر 5/6 في أبسط صورة؟ (أجب: بسط×10)', ans: 50, explanation: '5/6 في أبسط صورة: البسط=5، البسط×10=50' },
     /* أعداد سالبة */
     { text: 'ما ناتج (−3) × (−4)؟', ans: 12, explanation: 'سالب × سالب = موجب' },
     { text: 'ما ناتج (−5) × 3؟', ans: -15, explanation: 'سالب × موجب = سالب' },
@@ -2224,9 +1921,9 @@ const EXTENDED_LAWS_POOL = [
     /* متتاليات وأنماط */
     { text: 'ما الحد التالي: 1، 4، 9، 16، ؟', ans: 25, explanation: 'مربعات: 5² = 25' },
     { text: 'ما الحد التالي: 2، 6، 18، 54، ؟', ans: 162, explanation: 'كل حد يُضرب في 3' },
-    { text: 'ما الحد التالي: 100، 50، 25، ؟', ans: 12.5, explanation: 'كل حد يُقسم على 2' },
+    { text: 'ما الحد التالي: 2، 6، 18، 54، 162، ؟', ans: 486, explanation: 'كل حد يُضرب في 3: 162×3=486' },
     /* قوانين احتمالات ومتوسطات */
-    { text: 'إذا رمينا حجر نرد احتمال ظهور 3 = ؟ (كسر)', ans: 0.17, explanation: '1/6 ≈ 0.17' },
+    { text: 'إذا رمينا حجر نرد، كم وجهاً يحتوي النرد؟', ans: 6, explanation: 'النرد له 6 وجوه: 1،2،3،4،5،6' },
     { text: 'المدى للأعداد 3، 7، 15، 2، 10 = ؟', ans: 13, explanation: 'أكبر − أصغر = 15 − 2 = 13' },
     { text: 'الوسيط للأعداد 1، 3، 5، 7، 9 = ؟', ans: 5, explanation: 'العدد الأوسط في المتسلسلة = 5' },
 ];
@@ -2239,332 +1936,40 @@ const EXTENDED_LAWS_POOL = [
    ألعاب الرياضيات المتقدمة — كل قسم منفصل
 ═══════════════════════════════════════════════════════════════ */
 
-/* 1️⃣ الأسس والجذور */
+
+/* genPowerSqrtQ → wrapper يستدعي genQ('adv_roots') مباشرة لتجنب تكرار الكود */
 function genPowerSqrtQ() {
-    const type = rnd(0, 3);
-    let a, b, ans, text, hint, explanation;
-
-    if (type === 0) {
-        // جذر تربيعي
-        const squares = [4,9,16,25,36,49,64,81,100,121,144,169,196,225,256];
-        a = squares[rnd(0, squares.length - 1)];
-        ans = Math.sqrt(a);
-        text = `√${a} = ؟`;
-        hint = 'ما العدد الذي إذا ضربته في نفسه أعطاك ' + a + '؟';
-        explanation = `√${a} = ${ans} لأن ${ans}² = ${a}`;
-    } else if (type === 1) {
-        // جذر تكعيبي
-        const cubes = [{n:8,r:2},{n:27,r:3},{n:64,r:4},{n:125,r:5},{n:216,r:6},{n:343,r:7},{n:512,r:8}];
-        const c = cubes[rnd(0, cubes.length - 1)];
-        ans = c.r; a = c.n;
-        text = `∛${a} = ؟`;
-        hint = 'ما العدد الذي إذا ضربته في نفسه مرتين أعطاك ' + a + '؟';
-        explanation = `∛${a} = ${ans} لأن ${ans}³ = ${a}`;
-    } else if (type === 2) {
-        // أسس
-        a = rnd(2, 7); b = rnd(2, 4);
-        ans = Math.pow(a, b);
-        text = `${a}^${b} = ؟`;
-        hint = `اضرب ${a} في نفسه ${b} مرات`;
-        explanation = `${a}^${b} = ${[...Array(b)].map(()=>a).join(' × ')} = ${ans}`;
-    } else {
-        // مقارنة أسس
-        a = rnd(2, 5); b = rnd(2, 4); const c2 = rnd(1, 4);
-        ans = Math.pow(a, b + c2);
-        text = `${a}^${b} × ${a}^${c2} = ${a}^؟`;
-        hint = 'قانون الأسس: اجمع الأسس عند الضرب';
-        explanation = `${a}^${b} × ${a}^${c2} = ${a}^(${b}+${c2}) = ${a}^${b+c2}، الأس = ${b+c2}`;
-        ans = b + c2;
-    }
-
-    const spread = Math.max(2, Math.ceil(Math.abs(ans) * 0.3) + 1);
-    const wrongs = new Set();
-    let safety = 0;
-    while (wrongs.size < 3 && safety < 200) {
-        safety++;
-        const off = rnd(-spread, spread);
-        if (off === 0) continue;
-        const w = Math.round(ans + off);
-        if (w !== ans && w > 0) wrongs.add(w);
-    }
-    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 1);
-    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+    return (typeof genQ === 'function') ? genQ('adv_roots', 'medium') : null;
 }
 
-/* 2️⃣ اللوغاريتم */
+
+/* genLogQ → wrapper يستدعي genQ('adv_log') مباشرة لتجنب تكرار الكود */
 function genLogQ() {
-    const type = rnd(0, 3);
-    let ans, text, hint, explanation;
-
-    if (type === 0) {
-        // log₁₀ بسيط
-        const exp = rnd(1, 5);
-        ans = exp;
-        text = `log₁₀(10^${exp}) = ؟`;
-        hint = 'log₁₀(10^n) = n دائماً';
-        explanation = `log₁₀(10^${exp}) = ${exp}`;
-    } else if (type === 1) {
-        // log₁₀ لأعداد بسيطة
-        const vals = [{n:10,a:1},{n:100,a:2},{n:1000,a:3},{n:10000,a:4}];
-        const v = vals[rnd(0, vals.length - 1)];
-        ans = v.a; text = `log₁₀(${v.n}) = ؟`;
-        hint = '10 مرفوعة لأي أس تعطي هذا العدد؟';
-        explanation = `log₁₀(${v.n}) = ${v.a} لأن 10^${v.a} = ${v.n}`;
-    } else if (type === 2) {
-        // ln بسيط
-        const lnVals = [{n:'e',a:1},{n:'e²',a:2},{n:'e³',a:3},{n:'1',a:0}];
-        const v = lnVals[rnd(0, lnVals.length - 1)];
-        ans = v.a; text = `ln(${v.n}) = ؟`;
-        hint = 'ln(eⁿ) = n و ln(1) = 0';
-        explanation = `ln(${v.n}) = ${v.a}`;
-    } else {
-        // خاصية اللوغاريتم
-        const a = rnd(1, 4), b = rnd(1, 4);
-        ans = a + b;
-        text = `log₁₀(10^${a}) + log₁₀(10^${b}) = ؟`;
-        hint = 'log(A) + log(B) = log(A×B)';
-        explanation = `${a} + ${b} = ${ans}`;
-    }
-
-    const wrongs = new Set();
-    const options = [ans-2, ans-1, ans+1, ans+2, ans+3].filter(x => x !== ans && x >= 0);
-    while (wrongs.size < 3 && options.length > 0) wrongs.add(options.splice(rnd(0, options.length-1), 1)[0]);
-    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 1);
-    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+    return (typeof genQ === 'function') ? genQ('adv_log', 'medium') : null;
 }
 
-/* 3️⃣ الهندسة */
+
+/* genGeometryQ → wrapper يستدعي genQ('adv_geo') مباشرة لتجنب تكرار الكود */
 function genGeometryQ() {
-    const type = rnd(0, 5);
-    let ans, text, hint, explanation;
-
-    if (type === 0) {
-        // مساحة دائرة
-        const r = rnd(2, 8);
-        ans = Math.round(Math.PI * r * r);
-        text = `مساحة دائرة نصف قطرها ${r} (π≈3.14)`;
-        hint = 'المساحة = π × نق²';
-        explanation = `π × ${r}² = 3.14 × ${r*r} ≈ ${ans}`;
-    } else if (type === 1) {
-        // مساحة مثلث
-        const base = rnd(4, 14) * 2; const h = rnd(3, 10);
-        ans = base * h / 2;
-        text = `مساحة مثلث قاعدته ${base} وارتفاعه ${h}`;
-        hint = 'المساحة = ½ × القاعدة × الارتفاع';
-        explanation = `½ × ${base} × ${h} = ${ans}`;
-    } else if (type === 2) {
-        // حجم متوازي مستطيلات
-        const l = rnd(2, 8), w = rnd(2, 8), h2 = rnd(2, 6);
-        ans = l * w * h2;
-        text = `حجم متوازي مستطيلات أبعاده ${l}، ${w}، ${h2}`;
-        hint = 'الحجم = الطول × العرض × الارتفاع';
-        explanation = `${l} × ${w} × ${h2} = ${ans}`;
-    } else if (type === 3) {
-        // محيط دائرة
-        const r2 = rnd(3, 9);
-        ans = Math.round(2 * Math.PI * r2);
-        text = `محيط دائرة نصف قطرها ${r2} (π≈3.14)`;
-        hint = 'المحيط = 2 × π × نق';
-        explanation = `2 × 3.14 × ${r2} ≈ ${ans}`;
-    } else if (type === 4) {
-        // مساحة شبه منحرف
-        const a2 = rnd(4, 10), b2 = rnd(4, 10), h3 = rnd(3, 8);
-        ans = Math.round((a2 + b2) * h3 / 2);
-        text = `مساحة شبه منحرف قاعدتاه ${a2} و${b2} وارتفاعه ${h3}`;
-        hint = 'المساحة = ½ × (ق₁+ق₂) × الارتفاع';
-        explanation = `½ × (${a2}+${b2}) × ${h3} = ${ans}`;
-    } else {
-        // نظرية فيثاغورس
-        const triples = [[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15]];
-        const tr = triples[rnd(0, triples.length - 1)];
-        ans = tr[2];
-        text = `مثلث قائم ساقاه ${tr[0]} و${tr[1]}، ما الوتر؟`;
-        hint = 'الوتر² = الساق₁² + الساق₂² (فيثاغورس)';
-        explanation = `√(${tr[0]}² + ${tr[1]}²) = √(${tr[0]*tr[0]+tr[1]*tr[1]}) = ${ans}`;
-    }
-
-    const spread = Math.max(3, Math.ceil(ans * 0.2));
-    const wrongs = new Set();
-    let safety = 0;
-    while (wrongs.size < 3 && safety < 300) {
-        safety++;
-        const off = rnd(-spread, spread);
-        if (off === 0) continue;
-        const w = Math.round(ans + off);
-        if (w !== ans && w > 0) wrongs.add(w);
-    }
-    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 2);
-    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+    return (typeof genQ === 'function') ? genQ('adv_geo', 'medium') : null;
 }
 
-/* 4️⃣ المعادلات */
+
+/* genEquationsQ → wrapper يستدعي genQ('adv_eq') مباشرة لتجنب تكرار الكود */
 function genEquationsQ() {
-    const type = rnd(0, 4);
-    let ans, text, hint, explanation;
-
-    if (type === 0) {
-        // درجة أولى بسيطة
-        ans = rnd(2, 15);
-        const a = rnd(2, 6);
-        const b = a * ans;
-        text = `${a}س = ${b}`;
-        hint = `اقسم الطرفين على ${a}`;
-        explanation = `${a}س = ${b}\nس = ${b} ÷ ${a} = ${ans}\n✓ تحقق: ${a}×${ans} = ${b} ✓`;
-    } else if (type === 1) {
-        // درجة أولى خطوتين
-        ans = rnd(2, 10);
-        const a = rnd(2, 5), c = rnd(1, 10);
-        const b = a * ans + c;
-        text = `${a}س + ${c} = ${b}`;
-        hint = `الخطوة ①: اطرح ${c} — الخطوة ②: اقسم على ${a}`;
-        explanation = `${a}س + ${c} = ${b}\n${a}س = ${b}−${c} = ${b-c}\nس = ${b-c}÷${a} = ${ans}\n✓ تحقق: ${a}×${ans}+${c} = ${b} ✓`;
-    } else if (type === 2) {
-        // معادلة بمجهول على الطرفين
-        ans = rnd(2, 8);
-        const a = rnd(3, 7), b = rnd(1, a-1), c = rnd(1, 10);
-        const rhs = (a - b) * ans + c;
-        text = `${a}س = ${b}س + ${rhs}`;
-        hint = 'انقل المجاهيل لطرف واحد والأعداد للطرف الآخر';
-        explanation = `${a}س − ${b}س = ${rhs}\n${a-b}س = ${rhs}\nس = ${rhs}÷${a-b} = ${ans}\n✓ تحقق: ${a}×${ans} = ${b}×${ans}+${rhs} ✓`;
-    } else if (type === 3) {
-        // معادلة تربيعية بسيطة س²=n
-        const roots = [2,3,4,5,6,7,8,9,10,11,12];
-        ans = roots[rnd(0, roots.length - 1)];
-        const n = ans * ans;
-        text = `س² = ${n}`;
-        hint = 'خذ الجذر التربيعي للطرفين (القيمة الموجبة)';
-        explanation = `س² = ${n}\nس = √${n} = ${ans}\n✓ تحقق: ${ans}² = ${ans}×${ans} = ${n} ✓`;
-    } else {
-        // معادلة بكسر
-        ans = rnd(3, 12);
-        const a = rnd(2, 5);
-        const b = ans * a;
-        text = `س ÷ ${a} = ${ans}`;
-        hint = `اضرب الطرفين في ${a} لعزل س`;
-        explanation = `س ÷ ${a} = ${ans}\nاضرب الطرفين في ${a}:\nس = ${ans} × ${a} = ${b}\n✓ تحقق: ${b}÷${a} = ${ans} ✓`;
-        ans = b;
-    }
-
-    const spread = Math.max(2, Math.ceil(Math.abs(ans) * 0.3) + 1);
-    const wrongs = new Set();
-    let safety = 0;
-    while (wrongs.size < 3 && safety < 200) {
-        safety++;
-        const off = rnd(-spread, spread);
-        if (off === 0) continue;
-        const w = ans + off;
-        if (w !== ans) wrongs.add(w);
-    }
-    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 1);
-    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+    return (typeof genQ === 'function') ? genQ('adv_eq', 'medium') : null;
 }
 
-/* 5️⃣ المتتاليات */
+
+/* genSequenceQ → wrapper يستدعي genQ('adv_seq') مباشرة لتجنب تكرار الكود */
 function genSequenceQ() {
-    const type = rnd(0, 4);
-    let ans, text, hint, explanation;
-
-    if (type === 0) {
-        // متتالية حسابية
-        const a = rnd(1, 15), d = rnd(2, 9);
-        text = `${a}، ${a+d}، ${a+2*d}، ${a+3*d}، ؟`;
-        ans = a + 4 * d;
-        hint = `الفرق الثابت = ${d}`;
-        explanation = `كل حد يزيد بـ${d}، التالي = ${a+3*d} + ${d} = ${ans}`;
-    } else if (type === 1) {
-        // متتالية هندسية
-        const a = rnd(1, 5), r = rnd(2, 4);
-        text = `${a}، ${a*r}، ${a*r*r}، ${a*r*r*r}، ؟`;
-        ans = a * Math.pow(r, 4);
-        hint = `كل حد يُضرب في ${r}`;
-        explanation = `${a*r*r*r} × ${r} = ${ans}`;
-    } else if (type === 2) {
-        // مربعات
-        text = `1، 4، 9، 16، 25، ؟`;
-        ans = 36;
-        hint = 'مربعات الأعداد الطبيعية';
-        explanation = `6² = 36`;
-    } else if (type === 3) {
-        // فيبوناتشي
-        const a = rnd(1, 5), b = rnd(a, a+5);
-        const c = a+b, d2 = b+c, e = c+d2;
-        text = `${a}، ${b}، ${c}، ${d2}، ؟`;
-        ans = e;
-        hint = 'كل حد = مجموع الحدين اللذين قبله';
-        explanation = `${c} + ${d2} = ${ans}`;
-    } else {
-        // متتالية تناقصية
-        const a = rnd(50, 100), d = rnd(5, 15);
-        text = `${a}، ${a-d}، ${a-2*d}، ${a-3*d}، ؟`;
-        ans = a - 4 * d;
-        hint = `الفرق الثابت = −${d}`;
-        explanation = `${a-3*d} − ${d} = ${ans}`;
-    }
-
-    const spread = Math.max(3, Math.ceil(Math.abs(ans) * 0.2));
-    const wrongs = new Set();
-    let safety = 0;
-    while (wrongs.size < 3 && safety < 200) {
-        safety++;
-        const off = rnd(-spread, spread);
-        if (off === 0) continue;
-        const w = ans + off;
-        if (w !== ans) wrongs.add(w);
-    }
-    while (wrongs.size < 3) wrongs.add(ans + wrongs.size + 2);
-    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+    return (typeof genQ === 'function') ? genQ('adv_seq', 'medium') : null;
 }
 
-/* 6️⃣ المثلثات */
+
+/* genTrigQ → wrapper يستدعي genQ('adv_trig') مباشرة لتجنب تكرار الكود */
 function genTrigQ() {
-    const type = rnd(0, 2);
-    let ans, text, hint, explanation;
-
-    const sinVals = [
-        {deg:0,  val:0,    frac:'0',    mem:'الزاوية الصفر → جا=0'},
-        {deg:30, val:0.5,  frac:'½',   mem:'30° → جا=½'},
-        {deg:45, val:0.71, frac:'√2/2', mem:'45° → جا=جتا=√2/2≈0.71'},
-        {deg:60, val:0.87, frac:'√3/2', mem:'60° → جا=√3/2≈0.87'},
-        {deg:90, val:1,    frac:'1',    mem:'90° → جا=1 (الحد الأقصى)'}
-    ];
-    const cosVals = [
-        {deg:0,  val:1,    frac:'1',    mem:'0° → جتا=1'},
-        {deg:30, val:0.87, frac:'√3/2', mem:'30° → جتا=√3/2≈0.87'},
-        {deg:45, val:0.71, frac:'√2/2', mem:'45° → جا=جتا'},
-        {deg:60, val:0.5,  frac:'½',   mem:'60° → جتا=½'},
-        {deg:90, val:0,    frac:'0',    mem:'90° → جتا=0'}
-    ];
-    const tanVals = [
-        {deg:0,  val:0,    frac:'0',    mem:'ظا(0°)=0'},
-        {deg:30, val:0.58, frac:'1/√3', mem:'ظا(30°)=1/√3≈0.58'},
-        {deg:45, val:1,    frac:'1',    mem:'ظا(45°)=1'},
-        {deg:60, val:1.73, frac:'√3',   mem:'ظا(60°)=√3≈1.73'}
-    ];
-
-    if (type === 0) {
-        const v = sinVals[rnd(0, sinVals.length - 1)];
-        ans = v.val; text = `جا(${v.deg}°) = ؟`;
-        hint = 'جيب الزاوية = الضلع المقابل ÷ الوتر';
-        explanation = `جا(${v.deg}°) = ${v.frac} = ${v.val}\n💡 ${v.mem}`;
-    } else if (type === 1) {
-        const v = cosVals[rnd(0, cosVals.length - 1)];
-        ans = v.val; text = `جتا(${v.deg}°) = ؟`;
-        hint = 'جيب التمام = الضلع المجاور ÷ الوتر';
-        explanation = `جتا(${v.deg}°) = ${v.frac} = ${v.val}\n💡 ${v.mem}`;
-    } else {
-        const v = tanVals[rnd(0, tanVals.length - 1)];
-        ans = v.val; text = `ظا(${v.deg}°) = ؟`;
-        hint = 'ظا = جا ÷ جتا';
-        explanation = `ظا(${v.deg}°) = جا÷جتا = ${v.frac} = ${v.val}\n💡 ${v.mem}`;
-    }
-
-    const allVals = [0, 0.5, 0.58, 0.71, 0.87, 1, 1.73];
-    const wrongs = new Set();
-    for (const v of shuffle(allVals)) {
-        if (v !== ans) { wrongs.add(v); if (wrongs.size === 3) break; }
-    }
-    while (wrongs.size < 3) wrongs.add(Math.round((ans + wrongs.size * 0.1) * 100) / 100);
-    return { text, hint, answer: ans, choices: shuffle([ans, ...[...wrongs]]), explanation, catKey: 'algebra' };
+    return (typeof genQ === 'function') ? genQ('adv_trig', 'medium') : null;
 }
 
 function genExtendedLawQ() {
@@ -2591,4 +1996,4 @@ function genExtendedLawQ() {
         explanation: q.explanation,
         catKey: 'mathlaws'
     };
-   }
+   } 
