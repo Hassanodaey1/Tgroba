@@ -76,6 +76,13 @@
                 }
                 showFeedback(G.streak >= 5 ? `🔥×${G.streak}` : '✅');
                 if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, true);
+                /* ✅ SmartAI تكامل: تسجيل الإجابة الصحيحة مع وقت الاستجابة */
+                if (typeof SmartAI !== 'undefined' && G.op) {
+                    const _respMs = G._questionStartTime ? (Date.now() - G._questionStartTime) : 0;
+                    SmartAI.onCorrect(G.op, _respMs);
+                }
+                /* ✅ SessionProgress: تحديث حرارة الجلسة */
+                if (typeof SessionProgress !== 'undefined') SessionProgress.onCorrect();
                 playSound('correct');
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive && G.mode !== 'sudden') {
@@ -116,6 +123,15 @@
                 });
                 G.wrong++;
                 G.streak = 0;
+                /* ✅ SmartAI + AdaptiveAI: تسجيل الخطأ مع تحليل نوعه */
+                if (typeof AdaptiveAI !== 'undefined' && G.op) AdaptiveAI.record(G.op, false);
+                if (typeof SmartAI !== 'undefined' && G.op) {
+                    const _respMsW = G._questionStartTime ? (Date.now() - G._questionStartTime) : 0;
+                    const _chosenVal = btn ? parseFloat(btn.getAttribute('data-val')) : null;
+                    SmartAI.onWrong(G.op, G.correctAnswer, _chosenVal, _respMsW);
+                }
+                /* ✅ SessionProgress: خفض الحرارة عند الخطأ */
+                if (typeof SessionProgress !== 'undefined') SessionProgress.onWrong();
                 const timerActive = G.hasTimer && G.maxTime > 0 && !G.isTraining;
                 if (timerActive) {
                     G.timeLeft = Math.max(0, G.timeLeft - 1);
@@ -908,6 +924,7 @@
                 
                 G.correctAnswer = q.answer;
                 G.currentExplanation = q.explanation || '';
+                G._questionStartTime = Date.now(); /* ✅ لحساب وقت الاستجابة */
                 /* ✅ تتبع إحصائيات كل جدول ضرب بشكل مستقل */
                 G.currentCatKey = (G.op === 'table' && G.customTable)
                     ? 'table_' + G.customTable
