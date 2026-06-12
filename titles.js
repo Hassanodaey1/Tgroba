@@ -268,3 +268,107 @@ function getTitleBadgeHTML(titleId) {
     if (!t) return '';
     return `<span class="comp-title-badge ${t.cssClass}">${t.icon} ${t.name.replace(/^[^ ]+ /, '')}</span>`;
 }
+
+/* ═══════════════════════════════════════════════════════
+   overlay موسم التحدي في صفحة المنافسة
+═══════════════════════════════════════════════════════ */
+
+function openCompTitlesOverlay() {
+    const overlay = document.getElementById('compTitlesOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    renderCompTitlesOverlay();
+    playSound && playSound('click');
+}
+
+function closeCompTitlesOverlay() {
+    const overlay = document.getElementById('compTitlesOverlay');
+    if (overlay) overlay.style.display = 'none';
+    playSound && playSound('click');
+}
+
+function renderCompTitlesOverlay() {
+    const activeTitle = getActiveTitle();
+    const streak      = (st.firstPlaceData && st.firstPlaceData.streak) || 0;
+    const season      = getCurrentSeason();
+
+    /* شارة الموسم */
+    const badge = document.getElementById('ctSeasonBadge');
+    if (badge) badge.textContent = `🏆 الموسم ${season.seasonNum} • يتبقى ${season.daysLeft} يوم`;
+
+    /* بطاقة اللقب الحالي */
+    const activeTitleCard = document.getElementById('ctActiveTitleCard');
+    if (activeTitleCard) {
+        if (activeTitle) {
+            const titleDef  = COMPETITION_TITLES.find(t => t.id === activeTitle.id);
+            const expiresIn = Math.ceil((activeTitle.expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
+            activeTitleCard.innerHTML = `
+            <div class="ct-active-card">
+                <div class="ct-active-icon">${titleDef ? titleDef.icon : '🏆'}</div>
+                <div class="ct-active-info">
+                    <div class="ct-active-name">${activeTitle.name}</div>
+                    <div class="ct-active-desc">${titleDef ? titleDef.desc : ''}</div>
+                    <div class="ct-active-expiry">⏳ ينتهي خلال ${expiresIn} يوم</div>
+                </div>
+            </div>`;
+        } else {
+            activeTitleCard.innerHTML = `
+            <div class="ct-no-title">
+                <div class="ct-no-title-icon">🎯</div>
+                <div class="ct-no-title-text">لا يوجد لقب حالياً</div>
+                <div class="ct-no-title-hint">تصدّر لائحة التحدي 3 أيام متتالية للحصول على أول لقب</div>
+            </div>`;
+        }
+    }
+
+    /* شريط التقدم */
+    const streakVal    = document.getElementById('ctStreakVal');
+    const progressFill = document.getElementById('ctProgressFill');
+    const nextTarget   = document.getElementById('ctNextTarget');
+    if (streakVal) streakVal.textContent = `${streak} يوم`;
+
+    const nextTitle = COMPETITION_TITLES.find(t => streak < t.daysRequired);
+    if (nextTitle) {
+        const prev    = COMPETITION_TITLES.slice().reverse().find(t => t.daysRequired <= streak);
+        const fromDays = prev ? prev.daysRequired : 0;
+        const pct = Math.min(100, Math.round(((streak - fromDays) / (nextTitle.daysRequired - fromDays)) * 100));
+        if (progressFill) progressFill.style.width = pct + '%';
+        if (nextTarget)   nextTarget.textContent   = `الهدف التالي: ${nextTitle.icon} ${nextTitle.name} (${nextTitle.daysRequired} يوم)`;
+    } else {
+        if (progressFill) progressFill.style.width = '100%';
+        if (nextTarget)   nextTarget.textContent   = '🏆 حققت أعلى لقب في الموسم!';
+    }
+
+    /* قائمة كل الألقاب */
+    const list = document.getElementById('ctTitlesList');
+    if (!list) return;
+    list.innerHTML = COMPETITION_TITLES.map(t => {
+        const earned   = st.firstPlaceData && st.firstPlaceData.titles && st.firstPlaceData.titles.includes(t.id);
+        const isActive = activeTitle && activeTitle.id === t.id;
+        const pctDone  = Math.min(100, Math.round((streak / t.daysRequired) * 100));
+        return `
+        <div class="ct-title-row ${earned ? 'ct-earned' : ''} ${isActive ? 'ct-active-title' : ''}">
+            <div class="ct-title-icon-wrap" style="background:${earned ? t.color + '22' : 'var(--surface3)'};border-color:${earned ? t.color : 'var(--border2)'};">
+                <span class="ct-title-icon" style="filter:${earned ? 'none' : 'grayscale(1) opacity(0.4)'};">${t.icon}</span>
+            </div>
+            <div class="ct-title-body">
+                <div class="ct-title-name" style="color:${earned ? t.color : 'var(--text2)'};">${t.name}</div>
+                <div class="ct-title-desc">${t.desc}</div>
+                ${!earned ? `
+                <div class="ct-title-mini-track">
+                    <div class="ct-title-mini-fill" style="width:${pctDone}%;background:${t.color};"></div>
+                </div>` : ''}
+            </div>
+            <div class="ct-title-badge-col">
+                ${earned
+                    ? `<div class="ct-earned-badge" style="background:${t.color}22;color:${t.color};border-color:${t.color}55;">✅ محقق</div>`
+                    : `<div class="ct-days-badge">${t.daysRequired}<span>يوم</span></div>`}
+                ${isActive ? `<div class="ct-active-badge">نشط</div>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+window.openCompTitlesOverlay   = openCompTitlesOverlay;
+window.closeCompTitlesOverlay  = closeCompTitlesOverlay;
+window.renderCompTitlesOverlay = renderCompTitlesOverlay;
