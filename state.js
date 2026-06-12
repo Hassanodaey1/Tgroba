@@ -169,6 +169,9 @@
                 /* ✅ STATS-V2: أرشيف الأسابيع */
                 weeklyHistory: [],
                 ownedEmojis: ['👦'],
+                /* ═══ الإطارات ═══ */
+                ownedFrames: ['frame_none'],
+                activeFrame: 'frame_none',
                 hearts: 3,
                 dailyStreak: 0,
                 lastDailyDate: null,
@@ -269,6 +272,10 @@
             /* ✅ FIX-XP: الحد الأدنى 460 = calcXpToNext(1) تقريباً لتجنب قيم مشوهة */
             if (typeof s.xpToNext !== 'number' || s.xpToNext < 100) s.xpToNext = 560;
             if (!s.ownedEmojis || !Array.isArray(s.ownedEmojis)) s.ownedEmojis = ['👦'];
+            /* ═══ الإطارات ═══ */
+            if (!s.ownedFrames || !Array.isArray(s.ownedFrames)) s.ownedFrames = ['frame_none'];
+            if (!s.ownedFrames.includes('frame_none')) s.ownedFrames.unshift('frame_none');
+            if (typeof s.activeFrame !== 'string') s.activeFrame = 'frame_none';
             if (!s.stats || typeof s.stats !== 'object') s.stats = {};
             if (!s.history) s.history = [];
             if (!s.catCounter) s.catCounter = { correct: 0, total: 0 };
