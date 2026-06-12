@@ -551,8 +551,10 @@ function openAvatarPickerOverlay() {
     /* إظهار/إخفاء زر الحذف */
     const removeOpt = document.getElementById('removePhotoOption');
     if (removeOpt) removeOpt.style.display = st.profilePhoto ? 'block' : 'none';
-    /* رسم الرموز المملوكة فقط */
+    /* رسم الرموز المملوكة */
     renderOwnedEmojiGrid();
+    /* رسم الإطارات المملوكة */
+    renderOwnedFramesGrid();
     overlay.style.display = 'flex';
     playSound && playSound('click');
 }
@@ -635,7 +637,103 @@ function goToEmojiShop() {
     }, 200);
 }
 
-/* اختيار مصدر الصورة الشخصية مباشرة من الأزرار في الواجهة */
+/* ═══════════════════════════════════════════════════════
+   🖼️ شبكة الإطارات المملوكة في avatar picker
+═══════════════════════════════════════════════════════ */
+function renderOwnedFramesGrid() {
+    const grid = document.getElementById('ownedFramesGrid');
+    if (!grid) return;
+
+    /* ضمان وجود البيانات */
+    if (!st.ownedFrames || !Array.isArray(st.ownedFrames)) st.ownedFrames = ['frame_none'];
+    if (!st.ownedFrames.includes('frame_none')) st.ownedFrames.unshift('frame_none');
+    const currentFrame = st.activeFrame || 'frame_none';
+
+    /* جلب كتالوج الإطارات من shop.js */
+    const catalog = (typeof FRAMES_CATALOG !== 'undefined') ? FRAMES_CATALOG : [];
+
+    /* إطار "بدون إطار" يكون دائماً موجوداً */
+    const noneEntry = { id: 'frame_none', label: 'بدون إطار', icon: '⭕', color: '#888' };
+    const ownedList = [noneEntry, ...catalog.filter(f => f.id !== 'frame_none' && st.ownedFrames.includes(f.id))];
+
+    if (ownedList.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;font-size:0.72em;
+            color:var(--text2);padding:12px;">لا توجد إطارات — اضغط المتجر للحصول على إطارات</div>`;
+        return;
+    }
+
+    grid.innerHTML = ownedList.map(frame => {
+        const active = currentFrame === frame.id;
+        /* معاينة SVG مصغّرة إن وُجدت */
+        const svgContent = (frame.svgContent && typeof frame.svgContent === 'function')
+            ? frame.svgContent() : '';
+
+        return `<div onclick="selectFrameFromPicker('${frame.id}')" style="
+            background:${active ? 'linear-gradient(135deg,rgba(240,185,11,0.25),rgba(124,58,237,0.15))' : 'var(--surface3)'};
+            border:2px solid ${active ? 'var(--gold)' : 'var(--border2)'};
+            border-radius:14px;padding:8px 4px 6px;text-align:center;cursor:pointer;
+            transition:all 0.18s ease;transform:${active ? 'scale(1.06)' : 'scale(1)'};
+            box-shadow:${active ? '0 4px 14px rgba(240,185,11,0.35)' : 'none'};">
+
+            <!-- معاينة الإطار -->
+            <div style="position:relative;width:46px;height:46px;margin:0 auto 5px;">
+                <div style="width:46px;height:46px;border-radius:50%;
+                    background:var(--surface2);display:flex;align-items:center;
+                    justify-content:center;font-size:1.4em;overflow:hidden;">
+                    ${st.avatar || '🧑'}
+                </div>
+                ${svgContent ? `<svg style="position:absolute;inset:-7px;
+                    width:calc(100% + 14px);height:calc(100% + 14px);
+                    pointer-events:none;" viewBox="0 0 130 130">${svgContent}</svg>` : ''}
+            </div>
+
+            <!-- اسم الإطار -->
+            <div style="font-size:0.58em;font-weight:800;
+                color:${active ? 'var(--gold)' : 'var(--text)'};
+                line-height:1.2;margin-bottom:2px;">
+                ${frame.label || frame.name || frame.id}
+            </div>
+
+            <!-- حالة التفعيل -->
+            ${active ? `<div style="font-size:0.5em;color:var(--gold);font-weight:900;">✅ مفعّل</div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+/* اختيار إطار من الـ picker */
+function selectFrameFromPicker(frameId) {
+    if (frameId !== 'frame_none' && (!st.ownedFrames || !st.ownedFrames.includes(frameId))) return;
+    st.activeFrame = frameId;
+    saveSt();
+    /* تطبيق الإطار على كل مكان */
+    if (typeof _applyActiveFrameGlobally === 'function') _applyActiveFrameGlobally();
+    if (typeof applyProfilePhoto === 'function') applyProfilePhoto();
+    renderOwnedFramesGrid();
+    updateUI();
+    playSound && playSound('click');
+    const catalog = (typeof FRAMES_CATALOG !== 'undefined') ? FRAMES_CATALOG : [];
+    const frame = frameId === 'frame_none'
+        ? { label: 'بدون إطار' }
+        : catalog.find(f => f.id === frameId);
+    showFeedback(`✅ تم تفعيل الإطار: ${frame ? (frame.label || frame.name) : frameId}`);
+}
+
+/* الذهاب لتبويب الإطارات في المتجر */
+function goToFrameShop() {
+    closeAvatarPickerOverlay();
+    goTab('shop');
+    setTimeout(() => {
+        if (typeof renderShop === 'function') renderShop();
+        /* حاول الانتقال لتبويب الإطارات */
+        setTimeout(() => {
+            const btn = document.querySelector('[onclick*="showShopTab(\'frames\')"]')
+                     || document.querySelector('[data-tab="frames"]');
+            if (btn) btn.click();
+        }, 350);
+    }, 200);
+}
+
+
 function pickPhotoSource(source) {
     const inp = document.getElementById('profilePhotoInput');
     if (!inp) return;
