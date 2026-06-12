@@ -286,22 +286,6 @@
                     <span class="inv-icon">💡</span>
                     <span class="inv-count" id="invHintCount">0</span>
                 </div>
-                <div class="inv-chip" id="invRevealChip" onclick="useHelper('reveal')" title="استخدم كشف جزئي">
-                    <span class="inv-icon">🔍</span>
-                    <span class="inv-count" id="invRevealCount">0</span>
-                </div>
-                <div class="inv-chip" id="invFreezeChip" onclick="useHelper('freeze')" title="تجميد الوقت">
-                    <span class="inv-icon">🧊</span>
-                    <span class="inv-count" id="invFreezeCount">0</span>
-                </div>
-                <div class="inv-chip" id="invArmorChip" onclick="useHelper('armor')" title="تفعيل حصانة القلب">
-                    <span class="inv-icon">💜</span>
-                    <span class="inv-count" id="invArmorCount">0</span>
-                </div>
-                <div class="inv-chip" id="invComboChip" onclick="useHelper('combo')" title="تفعيل الضربة المضاعفة">
-                    <span class="inv-icon">⚡</span>
-                    <span class="inv-count" id="invComboCount">0</span>
-                </div>
             </div>
             <button class="return-home-btn" onclick="confirmQuit()">🏠 العودة إلى القائمة الرئيسية</button>
         </div>
@@ -893,7 +877,117 @@
 
     </div><!-- /competitionMainView -->
 
+    <!-- ══════════════════════════════════════════
+         الملف الشخصي للاعب (Player Profile Modal)
+    ══════════════════════════════════════════ -->
+    <div id="playerProfileModal" class="pp-modal-backdrop" onclick="closePlayerProfile(event)" style="display:none;">
+        <div class="pp-modal" id="playerProfileCard">
 
+            <!-- زر الإغلاق -->
+            <button class="pp-close-btn" onclick="closePlayerProfile()">✕</button>
+
+            <!-- زر مشاركة ملفي (يظهر فقط لـ "أنا") -->
+            <button class="pp-share-btn" id="ppShareBtn" onclick="ppShareProfile()" style="display:none;" title="شارك ملفك">
+                <span>🔗</span>
+            </button>
+
+            <!-- شارة "ملفي" تظهر فقط عند اللاعب الحالي -->
+            <div class="pp-self-badge" id="ppSelfBadge" style="display:none;">👤 ملفي الشخصي</div>
+
+            <!-- رأس البطاقة: Avatar + إطار + اسم + مستوى + ترتيب -->
+            <div class="pp-header">
+                <div class="pp-avatar-wrapper">
+                    <div class="pp-avatar-ring" id="ppAvatarRing">
+                        <div class="pp-avatar" id="ppAvatar">🧑</div>
+                    </div>
+                    <!-- إطار SVG يُرسم فوق الـ avatar -->
+                    <svg class="pp-frame-svg" id="ppFrameSvg" viewBox="0 0 130 130"></svg>
+                </div>
+                <div class="pp-name" id="ppName">لاعب</div>
+                <div class="pp-header-badges">
+                    <div class="pp-level-badge">
+                        <span class="pp-level-lbl">Lv.</span>
+                        <span class="pp-level-val" id="ppLevel">1</span>
+                    </div>
+                    <!-- ترتيب اللاعب في اللائحة -->
+                    <div class="pp-rank-badge" id="ppRankBadge" style="display:none;">
+                        <span class="pp-rank-icon" id="ppRankIcon">🏅</span>
+                        <span class="pp-rank-val" id="ppRankVal">#—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الألقاب -->
+            <div class="pp-titles-section" id="ppTitlesSection">
+                <div class="pp-section-label">🏅 الألقاب</div>
+                <div class="pp-titles-list" id="ppTitlesList">
+                    <span class="pp-no-titles">لا توجد ألقاب بعد</span>
+                </div>
+            </div>
+
+            <!-- الإحصائيات -->
+            <div class="pp-stats-grid">
+                <div class="pp-stat-card pp-stat-correct">
+                    <div class="pp-stat-icon">✅</div>
+                    <div class="pp-stat-val" id="ppCorrect">—</div>
+                    <div class="pp-stat-lbl">إجابات صحيحة</div>
+                </div>
+                <div class="pp-stat-card pp-stat-wrong">
+                    <div class="pp-stat-icon">❌</div>
+                    <div class="pp-stat-val" id="ppWrong">—</div>
+                    <div class="pp-stat-lbl">إجابات خاطئة</div>
+                </div>
+                <div class="pp-stat-card pp-stat-streak">
+                    <div class="pp-stat-icon">🔥</div>
+                    <div class="pp-stat-val" id="ppStreak">—</div>
+                    <div class="pp-stat-lbl">أعلى تتابع</div>
+                </div>
+                <div class="pp-stat-card pp-stat-score">
+                    <div class="pp-stat-icon">⭐</div>
+                    <div class="pp-stat-val" id="ppBestScore">—</div>
+                    <div class="pp-stat-lbl">أعلى نتيجة تحدي</div>
+                </div>
+            </div>
+
+            <!-- نسبة الدقة -->
+            <div class="pp-accuracy-section">
+                <div class="pp-accuracy-label">
+                    <span>دقة الإجابات</span>
+                    <span class="pp-accuracy-pct" id="ppAccuracyPct">—%</span>
+                </div>
+                <div class="pp-accuracy-bar-bg">
+                    <div class="pp-accuracy-bar-fill" id="ppAccuracyBar" style="width:0%"></div>
+                </div>
+            </div>
+
+            <!-- مقارنة أنا vs اللاعب -->
+            <div class="pp-compare-section" id="ppCompareSection" style="display:none;">
+                <div class="pp-section-label">⚔️ أنا مقابل هذا اللاعب</div>
+                <div class="pp-compare-grid" id="ppCompareGrid"></div>
+            </div>
+
+            <!-- زر تحدي -->
+            <button class="pp-challenge-btn" id="ppChallengeBtn" onclick="ppStartChallenge()" style="display:none;">
+                <span class="pp-challenge-icon">⚔️</span>
+                <span>تحدّه الآن!</span>
+            </button>
+
+            <!-- تحميل -->
+            <div class="pp-loading" id="ppLoading" style="display:none;">
+                <div class="pp-spinner"></div>
+                <span>جاري التحميل…</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- إشعار "تحدّاك لاعب" — يظهر فوق كل شيء -->
+    <div id="ppChallengeNotif" class="pp-notif-bar" style="display:none;" onclick="ppDismissNotif()">
+        <span class="pp-notif-icon">⚔️</span>
+        <span class="pp-notif-text" id="ppNotifText">لاعب يتحدّاك!</span>
+        <button class="pp-notif-accept" onclick="ppAcceptChallenge(event)">العب الآن</button>
+        <button class="pp-notif-dismiss">✕</button>
+    </div>
 
 
     <!-- ══════════════════════════════════════════
@@ -1571,7 +1665,7 @@
             </div>
 
             <!-- زر العودة إلى الإعدادات -->
-            <button onclick="closeSettingsSubPage('subPageThemeOverlay'); goTab('settings');" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.9em;font-weight:900;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 العودة إلى الإعدادات</button>
+           <button onclick="closeSettingsSubPage('subPageThemeOverlay'); goTab('settings');" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Tajawal',sans-serif;font-size:0.9em;font-weight:900;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">🏠 العودة إلى الإعدادات</button>
         </div>
     </div>
 
@@ -2299,4 +2393,4 @@ function closeSettingsSubPage(overlayId) {
 </html>
           
          
-       
+        
