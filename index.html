@@ -826,6 +826,11 @@
                 <span class="comp-bottom-btn-label">مهام التحدي</span>
                 <span class="comp-bottom-btn-badge" id="challengeTasksBtnProgress">0/10</span>
             </button>
+            <button class="comp-bottom-btn comp-titles-btn" onclick="openCompTitlesOverlay()">
+                <span class="comp-bottom-btn-icon">🏆</span>
+                <span class="comp-bottom-btn-label">الألقاب الموسمية</span>
+                <span class="comp-bottom-btn-arrow">›</span>
+            </button>
             <button class="comp-bottom-btn" onclick="openLbOverlay('challenge')">
                 <span class="comp-bottom-btn-icon">⚔️</span>
                 <span class="comp-bottom-btn-label">لائحة الصدارة للعبة التحدي</span>
@@ -872,6 +877,49 @@
                     <div style="text-align:center;padding:24px;color:var(--text2);">جاري التحميل…</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ══ Overlay الألقاب الموسمية ══ -->
+    <div id="compTitlesOverlay" style="display:none;position:absolute;inset:0;z-index:30;background:var(--bg);flex-direction:column;overflow:hidden;">
+
+        <!-- رأس الـ overlay -->
+        <div class="cto-header">
+            <button class="cto-back-btn" onclick="closeCompTitlesOverlay()">‹</button>
+            <span class="cto-title">🏆 الألقاب الموسمية</span>
+            <div style="width:36px;"></div>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 14px 32px;">
+
+            <!-- شارة الموسم -->
+            <div class="ct-season-badge" id="ctSeasonBadge">🏆 الموسم 1 • يتبقى — يوم</div>
+
+            <!-- اللقب الحالي -->
+            <div id="ctActiveTitleCard" style="margin-bottom:14px;"></div>
+
+            <!-- شريط أيام التصدر -->
+            <div class="ct-streak-box">
+                <div class="ct-streak-row">
+                    <span class="ct-streak-label">🔥 أيام التصدر المتتالية</span>
+                    <span class="ct-streak-val" id="ctStreakVal">0 يوم</span>
+                </div>
+                <div class="ct-progress-track">
+                    <div class="ct-progress-fill" id="ctProgressFill" style="width:0%"></div>
+                </div>
+                <div class="ct-next-target" id="ctNextTarget">الهدف التالي: —</div>
+            </div>
+
+            <!-- ملاحظة: الصدارة تعتمد على لعبة التحدي -->
+            <div class="ct-info-note">
+                <span class="ct-info-icon">ℹ️</span>
+                <span>الألقاب تُمنح بناءً على تصدّر <strong>لائحة لعبة التحدي</strong> بشكل متواصل</span>
+            </div>
+
+            <!-- قائمة كل الألقاب -->
+            <div class="ct-section-label">كل الألقاب</div>
+            <div id="ctTitlesList" style="display:flex;flex-direction:column;gap:10px;"></div>
+
         </div>
     </div>
 
@@ -1531,12 +1579,6 @@
                 </div>
             </div>
 
-            <!-- الألقاب -->
-            <div class="profile-section">
-                <div class="profile-section-title">🎖️ الألقاب</div>
-                <div id="spProfileTitlesSection"></div>
-            </div>
-
             <!-- الرقم التسلسلي — يظهر فقط بعد حفظ الملف الشخصي -->
             <div class="profile-section" id="serialSection" style="display:none;">
                 <div class="profile-section-title">🔢 رقمك التسلسلي</div>
@@ -1900,11 +1942,6 @@
             if (overlayId === 'subPageProfileOverlay') {
                 try { if (typeof loadProfileForm === 'function') loadProfileForm(); } catch(e) {}
                 try { if (typeof applyProfilePhoto === 'function') applyProfilePhoto(); } catch(e) {}
-                try { if (typeof renderProfileTitles === 'function') {
-                    const old = document.getElementById('profileTitlesSection');
-                    const nw  = document.getElementById('spProfileTitlesSection');
-                    if (nw && old) nw.innerHTML = old.innerHTML;
-                }} catch(e) {}
                 /* مزامنة الإحصائيات من st مباشرة */
                if (typeof st !== 'undefined') {
                     const xpPct = Math.min(100, Math.round((st.xp / st.xpToNext) * 100));
@@ -2409,3 +2446,4 @@ function closeSettingsSubPage(overlayId) {
           
          
         
+                    
