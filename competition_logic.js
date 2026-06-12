@@ -680,18 +680,91 @@ function syncChallengeScore(score) {
         ref.once('value', snap => {
             const existing = snap.val();
             if (!existing || safeScore > (existing.challengeScore || 0)) {
+                /* ── حساب الألقاب المفعّلة للعرض في الملف الشخصي ── */
+                let _titlesForProfile = [];
+                try {
+                    /* ألقاب المنافسة من COMPETITION_TITLES */
+                    if (typeof COMPETITION_TITLES !== 'undefined' && Array.isArray(st.competitionTitles)) {
+                        _titlesForProfile = st.competitionTitles
+                            .filter(t => t && t.id)
+                            .map(t => ({ id: t.id, name: t.name || t.id, icon: t.icon || '🏅' }))
+                            .slice(0, 10);
+                    }
+                    /* ألقاب الإنجازات العامة */
+                    if (Array.isArray(st.achievementsUnlocked) && st.achievementsUnlocked.length > 0) {
+                        const _achTitles = st.achievementsUnlocked.slice(0, 5).map(id => ({ id, name: id, icon: '🏅' }));
+                        _titlesForProfile = _titlesForProfile.concat(_achTitles).slice(0, 10);
+                    }
+                } catch(_te) {}
+
                 ref.set({
                     name:           st.name,
-                    avatar:         st.avatar || '🧑',
+                    avatar:         st.avatar  || '🧑',
                     level:          safeLevel,
                     challengeScore: safeScore,
                     serialNumber:   st.serialNumber,
-                    lastUpdated:    now
+                    lastUpdated:    now,
+                    /* ══ بيانات الملف الشخصي ══ */
+                    correctTotal:   Math.min(st.correctTotal  || 0, 9999999),
+                    wrongTotal:     Math.min(st.wrongTotal    || 0, 9999999),
+                    bestStreak:     Math.min(st.bestStreak    || 0, 9999),
+                    bestScore:      Math.min(st.bestScore     || 0, 999999),
+                    totalGames:     Math.min(st.totalGames    || 0, 9999999),
+                    titles:         _titlesForProfile,
+                    activeFrame:    st.activeFrame  || 'none',
                 }).catch(() => {});
             }
         }).catch(() => {});
     } catch(e) {}
 }
+
+/* ══════════════════════════════════════
+   مزامنة الملف الشخصي — تُحدَّث حقول
+   الإحصائيات حتى بدون لعب التحدي
+   (تُستدعى مرة كل جلسة من fixes_init)
+══════════════════════════════════════ */
+function syncPlayerProfile() {
+    if (!window.database || !st.serialNumber) return;
+    try {
+        const playerKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const ref = window.database.ref('challenge_leaderboard/' + playerKey);
+        ref.once('value', snap => {
+            const existing = snap.val();
+            if (!existing) return; /* لاعب لم يلعب التحدي بعد — لا نُنشئ سجلاً فارغاً */
+
+            /* ── حساب الألقاب ── */
+            let _titles = [];
+            try {
+                if (Array.isArray(st.competitionTitles)) {
+                    _titles = st.competitionTitles
+                        .filter(t => t && t.id)
+                        .map(t => ({ id: t.id, name: t.name || t.id, icon: t.icon || '🏅' }))
+                        .slice(0, 10);
+                }
+                if (Array.isArray(st.achievementsUnlocked) && st.achievementsUnlocked.length > 0) {
+                    const _ach = st.achievementsUnlocked.slice(0, 5).map(id => ({ id, name: id, icon: '🏅' }));
+                    _titles = _titles.concat(_ach).slice(0, 10);
+                }
+            } catch(_te) {}
+
+            /* نُحدّث فقط الحقول الإضافية — لا نمسّ challengeScore */
+            ref.update({
+                name:         st.name,
+                avatar:       st.avatar  || '🧑',
+                level:        Math.min(st.level || 1, 200),
+                correctTotal: Math.min(st.correctTotal || 0, 9999999),
+                wrongTotal:   Math.min(st.wrongTotal   || 0, 9999999),
+                bestStreak:   Math.min(st.bestStreak   || 0, 9999),
+                bestScore:    Math.min(st.bestScore    || 0, 999999),
+                totalGames:   Math.min(st.totalGames   || 0, 9999999),
+                titles:       _titles,
+                activeFrame:  st.activeFrame || 'none',
+                lastUpdated:  Date.now(),
+            }).catch(() => {});
+        }).catch(() => {});
+    } catch(e) {}
+}
+window.syncPlayerProfile = syncPlayerProfile;
 
 /* ══════════════════════════════════════
    تحميل لوحة الصدارة الموحدة
@@ -780,7 +853,14 @@ function renderLeaderboardList(container, players, scoreKey) {
     players.forEach((p, idx) => {
         const isMe = p.id === myKey;
         const rank = idx < 3 ? medals[idx] : (idx + 1);
-        html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}">`
+        const dataAttr = `data-player='${JSON.stringify({
+            id: p.id, name: p.name, avatar: p.avatar,
+            level: p.level, challengeScore: p.challengeScore,
+            bestScore: p.bestScore, correctTotal: p.correctTotal,
+            wrongTotal: p.wrongTotal, bestStreak: p.bestStreak,
+            titles: p.titles || [], serialNumber: p.serialNumber
+        }).replace(/'/g,"&#39;")}'`;
+        html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}" onclick="openPlayerProfile(JSON.parse(this.dataset.player))" ${dataAttr}>`
             + `<span>${rank}</span>`
             + `<span>${p.avatar || '🧑'} ${p.name || 'لاعب'}</span>`
             + `<span>${p.level || 1}</span>`
@@ -825,6 +905,9 @@ function initCompetitionPage() {
 
     // تحديث زر الموسم
     try { _updateSeasonBtn(); } catch(e) {}
+
+    // ✅ مزامنة الملف الشخصي (إحصائيات + ألقاب) مع Firebase
+    try { setTimeout(syncPlayerProfile, 1500); } catch(e) {}
 }
 
 /* جلب إحصائيات Hero (المرتبة + عدد المنافسين) مباشرة من Firebase */
@@ -938,7 +1021,14 @@ function _fetchLbOverlay() {
                 players.forEach((p, idx) => {
                     const isMe = p.id === myKey;
                     const rank = idx < 3 ? medals[idx] : (idx+1);
-                    html += '<div class="lb-row'+(isMe?' lb-row-me':'')+'">'
+                    const dataAttr = `data-player='${JSON.stringify({
+                        id: p.id, name: p.name, avatar: p.avatar,
+                        level: p.level, challengeScore: p.challengeScore,
+                        bestScore: p.bestScore, correctTotal: p.correctTotal,
+                        wrongTotal: p.wrongTotal, bestStreak: p.bestStreak,
+                        titles: p.titles || [], serialNumber: p.serialNumber
+                    }).replace(/'/g,"&#39;")}'`;
+                    html += '<div class="lb-row'+(isMe?' lb-row-me':'')+'" onclick="openPlayerProfile(JSON.parse(this.dataset.player))" '+dataAttr+'>'
                         +'<span>'+rank+'</span>'
                         +'<span>'+(p.avatar||'🧑')+' '+(p.name||'لاعب')+'</span>'
                         +'<span>'+(p.level||1)+'</span>'
@@ -953,6 +1043,465 @@ function _fetchLbOverlay() {
     } catch(e) {
         container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.8em;">⚠️ خطأ</div>';
     }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🪪 الملف الشخصي للاعب — Player Profile (النسخة الكاملة)
+   المرحلة الرابعة: إطار Avatar + ترتيب + مشاركة + إشعار تحدي
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════════ */
+
+/* ── تعريف الإطارات (مطابق لـ frames_preview.html) ── */
+const _PP_FRAMES = {
+    none: () => '',
+    calculator: () => {
+        const items = ['1','2','3','+','×','÷','=','%','π','∞','√','7'];
+        return items.map((char, i) => {
+            const angle = (i / items.length) * 360 - 90;
+            const rad = angle * Math.PI / 180;
+            const x = 65 + 56 * Math.cos(rad), y = 65 + 56 * Math.sin(rad);
+            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="900" fill="#f0b90b" font-family="monospace" transform="rotate(${angle+90},${x},${y})">${char}</text>`;
+        }).join('') + `<circle cx="65" cy="65" r="53" fill="none" stroke="#f0b90b" stroke-width="2.5" stroke-dasharray="4 3" opacity="0.5"/>`;
+    },
+    tools: () => {
+        const icons = ['✏️','📐','📏','📚','🖊️','📓','✏️','📐'];
+        return icons.map((icon, i) => {
+            const angle = (i / icons.length) * 360 - 90;
+            const rad = angle * Math.PI / 180;
+            const x = 65 + 54 * Math.cos(rad), y = 65 + 54 * Math.sin(rad);
+            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11" transform="rotate(${angle+90},${x},${y})">${icon}</text>`;
+        }).join('') + `<circle cx="65" cy="65" r="51" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.6"/><circle cx="65" cy="65" r="57" fill="none" stroke="#06b6d4" stroke-width="1" stroke-dasharray="2 4" opacity="0.3"/>`;
+    },
+    equations: () => {
+        const items = ['a²','b²','=','c²','∑','∫','Δ','∓','≠','≈','∝','∞'];
+        return items.map((char, i) => {
+            const angle = (i / items.length) * 360 - 90;
+            const rad = angle * Math.PI / 180;
+            const x = 65 + 55 * Math.cos(rad), y = 65 + 55 * Math.sin(rad);
+            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="700" fill="#10b981" font-family="serif" transform="rotate(${angle+90},${x},${y})">${char}</text>`;
+        }).join('') + `<circle cx="65" cy="65" r="52" fill="none" stroke="#10b981" stroke-width="2.5" opacity="0.6"/>`;
+    },
+    stars: () => {
+        const items = ['⭐','5','🌟','10','⭐','15','🌟','20'];
+        return items.map((icon, i) => {
+            const angle = (i / items.length) * 360 - 90;
+            const rad = angle * Math.PI / 180;
+            const x = 65 + 54 * Math.cos(rad), y = 65 + 54 * Math.sin(rad);
+            return isNaN(icon)
+                ? `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="12">${icon}</text>`
+                : `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="7" font-weight="900" fill="#f59e0b" font-family="monospace">${icon}</text>`;
+        }).join('') + `<circle cx="65" cy="65" r="51" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0.5"/>`;
+    },
+    geometry: () => {
+        return [
+            `<polygon points="65,11 72,24 58,24" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
+            `<circle cx="119" cy="65" r="7" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
+            `<rect x="54" y="106" width="22" height="14" rx="3" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
+            `<circle cx="11" cy="65" r="7" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
+            `<polygon points="38,30 45,43 31,43" fill="none" stroke="#a855f7" stroke-width="1.5"/>`,
+            `<polygon points="92,88 99,101 85,101" fill="none" stroke="#a855f7" stroke-width="1.5"/>`,
+        ].join('') + `<circle cx="65" cy="65" r="53" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5 3" opacity="0.5"/>`;
+    },
+    champion: () => {
+        const items = ['🏆','1','🥇','★','🏆','∞','🥇','★'];
+        return items.map((icon, i) => {
+            const angle = (i / items.length) * 360 - 90;
+            const rad = angle * Math.PI / 180;
+            const x = 65 + 54 * Math.cos(rad), y = 65 + 54 * Math.sin(rad);
+            return (isNaN(icon.replace('★','')) || icon === '★')
+                ? `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="${icon==='★'?'14':'13'}" fill="${icon==='★'?'#f0b90b':''}">${icon}</text>`
+                : `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="900" fill="#f0b90b">${icon}</text>`;
+        }).join('') + `<circle cx="65" cy="65" r="51" fill="none" stroke="#f0b90b" stroke-width="3" opacity="0.7"/><circle cx="65" cy="65" r="57" fill="none" stroke="#f0b90b" stroke-width="1" stroke-dasharray="2 3" opacity="0.3"/>`;
+    },
+    science: () => {
+        const items = ['🔬','⚗️','🔭','🧪','⚛️','🧲','🔬','⚗️'];
+        return items.map((icon, i) => {
+            const angle = (i / items.length) * 360 - 90;
+            const rad = angle * Math.PI / 180;
+            const x = 65 + 54 * Math.cos(rad), y = 65 + 54 * Math.sin(rad);
+            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="12" transform="rotate(${angle+90},${x},${y})">${icon}</text>`;
+        }).join('') + `<circle cx="65" cy="65" r="51" fill="none" stroke="#22d3ee" stroke-width="2" opacity="0.5"/>`;
+    },
+    legend: () => {
+        const items = ['π','e','∞','√','∑','∫','Δ','φ','α','β','γ','θ'];
+        const outer = items.map((char, i) => {
+            const angle = (i / items.length) * 360 - 90;
+            const rad = angle * Math.PI / 180;
+            const x = 65 + 57 * Math.cos(rad), y = 65 + 57 * Math.sin(rad);
+            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="900" font-family="serif" fill="url(#ppGoldGrad)" transform="rotate(${angle+90},${x},${y})">${char}</text>`;
+        }).join('');
+        return `<defs><linearGradient id="ppGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f0b90b"/><stop offset="50%" stop-color="#fff5b0"/><stop offset="100%" stop-color="#e5a800"/></linearGradient></defs>` + outer +
+            `<circle cx="65" cy="65" r="53" fill="none" stroke="url(#ppGoldGrad)" stroke-width="3" opacity="0.8"/><circle cx="65" cy="65" r="59" fill="none" stroke="#f0b90b" stroke-width="1" stroke-dasharray="1 4" opacity="0.4"/>`;
+    },
+};
+
+/* ── كاش بيانات اللائحة لحساب الترتيب بدون طلب إضافي ── */
+let _ppLastLbData = null;
+
+/* ── فتح الملف الشخصي ── */
+function openPlayerProfile(playerData) {
+    const modal = document.getElementById('playerProfileModal');
+    if (!modal) return;
+
+    const myKey  = (typeof st !== 'undefined' && st.serialNumber)
+        ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
+    const isSelf = !!(playerData.id && myKey && playerData.id === myKey);
+
+    modal._isSelf      = isSelf;
+    modal._playerData  = playerData;
+
+    /* ── إظهار/إخفاء العناصر ── */
+    const selfBadge      = document.getElementById('ppSelfBadge');
+    const shareBtn       = document.getElementById('ppShareBtn');
+    const challengeBtn   = document.getElementById('ppChallengeBtn');
+    const compareSection = document.getElementById('ppCompareSection');
+    const avatarRing     = document.getElementById('ppAvatarRing');
+    const rankBadge      = document.getElementById('ppRankBadge');
+
+    if (selfBadge)      selfBadge.style.display      = isSelf ? 'block' : 'none';
+    if (shareBtn)       shareBtn.style.display        = 'flex';
+    if (challengeBtn)   challengeBtn.style.display    = isSelf ? 'none' : 'flex';
+    if (compareSection) compareSection.style.display  = 'none';
+    if (rankBadge)      rankBadge.style.display       = 'none';
+
+    /* لون حلقة الـ avatar */
+    if (avatarRing) {
+        avatarRing.style.background = isSelf
+            ? 'linear-gradient(135deg, #06b6d4, #3b82f6)'
+            : 'linear-gradient(135deg, #f0b90b, #7c3aed)';
+    }
+
+    /* تصفير شريط الدقة */
+    const barEl = document.getElementById('ppAccuracyBar');
+    if (barEl) barEl.style.width = '0%';
+
+    modal.style.display = 'flex';
+    _fillPlayerProfile(playerData, isSelf);
+    _computeAndShowRank(playerData);
+
+    /* جلب بيانات أحدث من Firebase */
+    if (playerData.serialNumber && window.database) {
+        _fetchFullPlayerData(playerData.serialNumber, playerData, isSelf);
+    }
+}
+
+/* ── ملء بيانات الملف الشخصي ── */
+function _fillPlayerProfile(p, isSelf) {
+    const avatar = document.getElementById('ppAvatar');
+    const name   = document.getElementById('ppName');
+    const level  = document.getElementById('ppLevel');
+    if (avatar) avatar.textContent = p.avatar || '🧑';
+    if (name)   name.textContent   = p.name   || 'لاعب';
+    if (level)  level.textContent  = p.level  || 1;
+
+    /* إطار الـ avatar */
+    _renderAvatarFrame(p.activeFrame || 'none');
+
+    /* أنيميشن عدّ */
+    _animateCount('ppCorrect',   p.correctTotal);
+    _animateCount('ppWrong',     p.wrongTotal);
+    _animateCount('ppStreak',    p.bestStreak);
+    _animateCount('ppBestScore', p.challengeScore || p.bestScore);
+
+    /* شريط الدقة */
+    const total = (p.correctTotal || 0) + (p.wrongTotal || 0);
+    const pct   = total > 0 ? Math.round((p.correctTotal || 0) / total * 100) : null;
+    const pctEl = document.getElementById('ppAccuracyPct');
+    const barEl = document.getElementById('ppAccuracyBar');
+    if (pctEl) pctEl.textContent = pct !== null ? pct + '%' : '—%';
+    if (barEl) {
+        setTimeout(() => {
+            barEl.style.width = (pct !== null ? pct : 0) + '%';
+            if      (pct >= 80) barEl.style.background = 'linear-gradient(90deg,#10b981,#34d399)';
+            else if (pct >= 60) barEl.style.background = 'linear-gradient(90deg,#f0b90b,#fcd34d)';
+            else if (pct !== null) barEl.style.background = 'linear-gradient(90deg,#ef4444,#f87171)';
+        }, 80);
+    }
+
+    _renderProfileTitles(p.titles || []);
+    if (!isSelf) _renderComparison(p);
+}
+
+/* ── رسم إطار الـ avatar ── */
+function _renderAvatarFrame(frameId) {
+    const svg = document.getElementById('ppFrameSvg');
+    if (!svg) return;
+    const fn = _PP_FRAMES[frameId] || _PP_FRAMES['none'];
+    svg.innerHTML = fn();
+}
+
+/* ── حساب وعرض ترتيب اللاعب ── */
+function _computeAndShowRank(playerData) {
+    const rankBadge = document.getElementById('ppRankBadge');
+    const rankVal   = document.getElementById('ppRankVal');
+    const rankIcon  = document.getElementById('ppRankIcon');
+    if (!rankBadge || !rankVal) return;
+
+    const _applyRank = (idx) => {
+        if (idx < 0) return;
+        const rank = idx + 1;
+        rankVal.textContent  = '#' + rank;
+        if (rankIcon) rankIcon.textContent = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏅';
+        rankBadge.style.display = 'flex';
+    };
+
+    /* من الكاش أولاً */
+    if (_ppLastLbData) {
+        const idx = _ppLastLbData.findIndex(p => p.id === playerData.id || p.name === playerData.name);
+        _applyRank(idx);
+        return;
+    }
+
+    /* وإلا من Firebase */
+    if (!window.database) return;
+    try {
+        window.database.ref('challenge_leaderboard')
+            .orderByChild('challengeScore').limitToLast(100)
+            .once('value', snap => {
+                const all = [];
+                snap.forEach(c => all.push(Object.assign({ id: c.key }, c.val())));
+                all.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
+                _ppLastLbData = all;
+                const idx = all.findIndex(p => p.id === playerData.id || p.name === playerData.name);
+                _applyRank(idx);
+            }).catch(() => {});
+    } catch(e) {}
+}
+
+/* ── مشاركة الملف الشخصي ── */
+function ppShareProfile() {
+    const modal = document.getElementById('playerProfileModal');
+    const p = modal ? modal._playerData : null;
+    if (!p) return;
+
+    const name  = p.name  || 'لاعب';
+    const level = p.level || 1;
+    const total = (p.correctTotal || 0) + (p.wrongTotal || 0);
+    const pct   = total > 0 ? Math.round((p.correctTotal || 0) / total * 100) + '%' : '—';
+
+    const text =
+        `🎓 HO Math — ملف ${name}\n` +
+        `📊 المستوى: Lv.${level}\n` +
+        `✅ إجابات صحيحة: ${_fmtNum(p.correctTotal)}\n` +
+        `🔥 أعلى تتابع: ${_fmtNum(p.bestStreak)}\n` +
+        `⭐ أعلى نتيجة تحدي: ${_fmtNum(p.challengeScore || p.bestScore)}\n` +
+        `🎯 دقة الإجابات: ${pct}\n\n` +
+        `💡 تحدّني في HO Math! © 2026 Hassan Odaey`;
+
+    if (navigator.share) {
+        navigator.share({ title: 'HO Math — ملف لاعب', text }).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(text)
+            .then(()  => _ppToast('✅ تم نسخ الملف الشخصي!'))
+            .catch(()  => _ppToast('📋 فشل النسخ — جرّب يدوياً'));
+    }
+}
+
+/* ── رسالة toast خفيفة ── */
+function _ppToast(msg) {
+    let t = document.getElementById('ppToastMsg');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'ppToastMsg';
+        t.style.cssText = [
+            'position:fixed','bottom:28px','left:50%','transform:translateX(-50%)',
+            'background:rgba(15,15,30,0.92)','color:#fff',
+            'padding:9px 20px','border-radius:22px','font-size:0.82em',
+            'z-index:99999','pointer-events:none',
+            'border:1px solid rgba(240,185,11,0.3)',
+            'transition:opacity 0.3s,transform 0.3s',
+            'font-family:inherit',
+        ].join(';');
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateX(-50%) translateY(8px)';
+    }, 2400);
+}
+
+/* ── إرسال إشعار التحدي عبر Firebase ── */
+function ppSendChallengeNotif(targetPlayerData) {
+    if (!window.database || !st.serialNumber || !targetPlayerData.serialNumber) return;
+    try {
+        const targetKey = targetPlayerData.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
+        window.database.ref('challenge_requests/' + targetKey).set({
+            from:       st.serialNumber,
+            fromName:   st.name   || 'لاعب',
+            fromAvatar: st.avatar || '🧑',
+            timestamp:  Date.now(),
+        }).catch(() => {});
+    } catch(e) {}
+}
+
+/* ── الاستماع لإشعارات التحدي الواردة ── */
+let _ppNotifListener = null;
+
+function _startListeningForChallenges() {
+    if (!window.database || !st.serialNumber || _ppNotifListener) return;
+    try {
+        const myKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const ref   = window.database.ref('challenge_requests/' + myKey);
+        _ppNotifListener = ref.on('value', snap => {
+            const data = snap.val();
+            if (!data || !data.fromName) return;
+            /* تجاهل الإشعارات القديمة (أكثر من 30 ثانية) */
+            if (Date.now() - (data.timestamp || 0) > 30000) return;
+            _showChallengeNotif(data.fromName, data.fromAvatar || '🧑');
+            ref.remove().catch(() => {}); /* احذف بعد القراءة */
+        });
+    } catch(e) {}
+}
+
+/* ── عرض شريط إشعار التحدي ── */
+function _showChallengeNotif(fromName, fromAvatar) {
+    const bar  = document.getElementById('ppChallengeNotif');
+    const text = document.getElementById('ppNotifText');
+    if (!bar) return;
+    if (text) text.textContent = `${fromAvatar} ${fromName} يتحدّاك!`;
+    bar.style.display = 'flex';
+    clearTimeout(bar._timer);
+    bar._timer = setTimeout(ppDismissNotif, 8000);
+}
+
+function ppDismissNotif() {
+    const bar = document.getElementById('ppChallengeNotif');
+    if (bar) bar.style.display = 'none';
+}
+
+function ppAcceptChallenge(event) {
+    if (event) event.stopPropagation();
+    ppDismissNotif();
+    setTimeout(() => {
+        if (typeof launchChallengeCountdown === 'function') launchChallengeCountdown();
+    }, 150);
+}
+
+/* ── عرض الألقاب ── */
+function _renderProfileTitles(titles) {
+    const list = document.getElementById('ppTitlesList');
+    if (!list) return;
+    if (!titles || !titles.length) { list.innerHTML = '<span class="pp-no-titles">لا توجد ألقاب بعد</span>'; return; }
+    const chips = titles.map(t => {
+        const icon = (typeof t === 'object' && t.icon) ? t.icon : '🏅';
+        const nm   = (typeof t === 'object' && t.name) ? t.name : (typeof t === 'string' ? t : '');
+        return nm ? `<span class="pp-title-chip">${icon} ${nm}</span>` : '';
+    }).filter(Boolean).join('');
+    list.innerHTML = chips || '<span class="pp-no-titles">لا توجد ألقاب بعد</span>';
+}
+
+/* ── مقارنة أنا vs اللاعب ── */
+function _renderComparison(p) {
+    const section = document.getElementById('ppCompareSection');
+    const grid    = document.getElementById('ppCompareGrid');
+    if (!section || !grid || typeof st === 'undefined') return;
+
+    const rows = [
+        { label:'دقة الإجابات', icon:'🎯', myVal:_calcAccuracy(st.correctTotal,st.wrongTotal), hisVal:_calcAccuracy(p.correctTotal,p.wrongTotal), fmt: v => v!==null?v+'%':'—', higher:true },
+        { label:'أعلى تتابع',   icon:'🔥', myVal:st.bestStreak||0, hisVal:p.bestStreak||0, fmt:_fmtNum, higher:true },
+        { label:'نتيجة التحدي', icon:'⭐', myVal:st.challengeBestScore||st.bestScore||0, hisVal:p.challengeScore||p.bestScore||0, fmt:_fmtNum, higher:true },
+    ];
+
+    const myAv  = st.avatar || '👤';
+    const hisAv = p.avatar  || '🧑';
+    const html  = rows.map(r => {
+        const myW  = r.myVal!==null&&r.hisVal!==null&&(r.higher?r.myVal>r.hisVal:r.myVal<r.hisVal);
+        const hisW = r.myVal!==null&&r.hisVal!==null&&(r.higher?r.hisVal>r.myVal:r.hisVal<r.myVal);
+        return `<div class="pp-cmp-row">
+            <div class="pp-cmp-mine${myW?' pp-cmp-winner':''}">${r.fmt(r.myVal)}</div>
+            <div class="pp-cmp-label"><span class="pp-cmp-icon">${r.icon}</span>${r.label}</div>
+            <div class="pp-cmp-his${hisW?' pp-cmp-winner':''}">${r.fmt(r.hisVal)}</div>
+        </div>`;
+    }).join('');
+
+    grid.innerHTML = `<div class="pp-cmp-header"><span>${myAv} أنا</span><span></span><span>${hisAv} هو</span></div>${html}`;
+    section.style.display = 'block';
+}
+
+function _calcAccuracy(c, w) {
+    c = Number(c)||0; w = Number(w)||0;
+    return c+w > 0 ? Math.round(c/(c+w)*100) : null;
+}
+
+/* ── أنيميشن عدّ الأرقام ── */
+function _animateCount(elId, targetVal) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const n = Number(targetVal);
+    if (isNaN(n) || targetVal == null) { el.textContent = '—'; return; }
+    if (n >= 10000) { el.textContent = _fmtNum(n); return; }
+    const steps = 30, dur = 600, step = n / steps;
+    let cur = 0, cnt = 0;
+    el.textContent = '0';
+    const t = setInterval(() => {
+        cnt++;
+        cur = cnt >= steps ? n : Math.round(step * cnt);
+        el.textContent = _fmtNum(cur);
+        if (cnt >= steps) clearInterval(t);
+    }, dur / steps);
+}
+
+/* ── جلب بيانات اللاعب من Firebase ── */
+function _fetchFullPlayerData(serialNumber, fallback, isSelf) {
+    const loading = document.getElementById('ppLoading');
+    if (loading) loading.style.display = 'flex';
+    try {
+        const key = serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
+        window.database.ref('challenge_leaderboard/' + key)
+            .once('value', snap => {
+                if (loading) loading.style.display = 'none';
+                const data = snap.val();
+                if (data) _fillPlayerProfile(Object.assign({}, fallback, data), isSelf);
+            }).catch(() => { if (loading) loading.style.display = 'none'; });
+    } catch(e) { if (loading) loading.style.display = 'none'; }
+}
+
+/* ── إغلاق المودال ── */
+function closePlayerProfile(event) {
+    if (event && event.target !== document.getElementById('playerProfileModal')) return;
+    const modal = document.getElementById('playerProfileModal');
+    if (modal) modal.style.display = 'none';
+}
+
+/* ── بدء التحدي + إرسال إشعار ── */
+function ppStartChallenge() {
+    const modal = document.getElementById('playerProfileModal');
+    const p = modal ? modal._playerData : null;
+    if (p) ppSendChallengeNotif(p);
+    closePlayerProfile();
+    setTimeout(() => {
+        if (typeof launchChallengeCountdown === 'function') launchChallengeCountdown();
+    }, 200);
+}
+
+/* ── تنسيق الأرقام ── */
+function _fmtNum(n) {
+    if (n == null) return '—';
+    n = Number(n);
+    if (isNaN(n)) return '—';
+    if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+    if (n >= 1000)    return (n/1000).toFixed(1)+'K';
+    return n.toString();
+}
+
+/* ── تصدير للنافذة ── */
+window.openPlayerProfile  = openPlayerProfile;
+window.closePlayerProfile = closePlayerProfile;
+window.ppStartChallenge   = ppStartChallenge;
+window.ppShareProfile     = ppShareProfile;
+window.ppDismissNotif     = ppDismissNotif;
+window.ppAcceptChallenge  = ppAcceptChallenge;
+window.ppSetLbCache       = (data) => { _ppLastLbData = data; };
+
+/* ── بدء الاستماع للإشعارات بعد تهيئة Firebase ── */
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(_startListeningForChallenges, 3000));
+} else {
+    setTimeout(_startListeningForChallenges, 3000);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1117,18 +1666,15 @@ function _seasonUpdateAfterGame(gameData) {
     _updateSeasonBtn();
 }
 
-/* ── فحص الجوائز المستحقة — تُعلم اللاعب فقط ولا تمنح تلقائياً ── */
+/* ── فحص الجوائز المستحقة وإظهار popup ── */
 function _seasonCheckRewards() {
     if (typeof SEASON_TRACK_REWARDS === 'undefined') return;
-    const pts = st.season.points || 0;
-    const hasNew = SEASON_TRACK_REWARDS.some(r =>
-        pts >= r.pts && !st.season.claimedRewards.includes(r.pts)
-    );
-    if (hasNew) {
-        /* تحديث زر المسار ليُظهر "جائزة جاهزة للاستلام" */
-        try { _updateTrackBtn(pts); } catch(e) {}
-        try { showFeedback('🎁 لديك جائزة جاهزة في مسار الموسم!'); } catch(e) {}
-    }
+    SEASON_TRACK_REWARDS.forEach(reward => {
+        if (st.season.points >= reward.pts && !st.season.claimedRewards.includes(reward.pts)) {
+            st.season.claimedRewards.push(reward.pts);
+            _seasonGrantReward(reward);
+        }
+    });
 }
 
 /* ── منح الجائزة فعلياً ── */
@@ -1159,23 +1705,7 @@ function _seasonGrantReward(rewardDef) {
             case 'frame':
                 st.ownedFrames = st.ownedFrames || ['frame_none'];
                 if (!st.ownedFrames.includes(r.value)) st.ownedFrames.push(r.value);
-                /* ── جوائز مركّبة: إطار + لقب حسب المحطة ── */
-                if (r.value === 'frame_silver_star') {
-                    /* 500 — فضية: إطار + لقب "نجم الموسم" */
-                    st.ownedTitles = st.ownedTitles || [];
-                    if (!st.ownedTitles.includes('title_silver_star')) st.ownedTitles.push('title_silver_star');
-                    try { showFeedback(`🥈 جائزة فضية! إطار "الفضي" + لقب "نجم الموسم"!`); } catch(e) {}
-                } else if (r.value === 'frame_gold_season') {
-                    /* 750 — ذهبية: إطار + لقب "رياضي الموسم" */
-                    st.ownedTitles = st.ownedTitles || [];
-                    if (!st.ownedTitles.includes('title_gold_season')) st.ownedTitles.push('title_gold_season');
-                    try { showFeedback(`🥇 جائزة ذهبية! إطار "الذهبي" + لقب "رياضي الموسم"!`); } catch(e) {}
-                } else if (r.value === 'frame_epic_warrior') {
-                    /* 250 — ملحمية: إطار "المحارب" */
-                    try { showFeedback(`⚔️ جائزة ملحمية! إطار "المحارب" حصري!`); } catch(e) {}
-                } else {
-                    try { showFeedback(`🎁 إطار حصري: ${rewardDef.label}!`); } catch(e) {}
-                }
+                try { showFeedback(`🎁 إطار حصري: ${rewardDef.label}!`); } catch(e) {}
                 break;
             case 'title':
                 st.ownedTitles = st.ownedTitles || [];
@@ -1183,12 +1713,11 @@ function _seasonGrantReward(rewardDef) {
                 try { showFeedback(`🎁 لقب جديد: ${rewardDef.label}!`); } catch(e) {}
                 break;
             case 'season_complete':
-                /* 1000 — أسطورية: إطار + لقب "بطل الموسم" */
+                /* إطار + لقب البطولة معاً */
                 st.ownedFrames = st.ownedFrames || ['frame_none'];
                 st.ownedTitles = st.ownedTitles || [];
                 if (!st.ownedFrames.includes('frame_season_champ')) st.ownedFrames.push('frame_season_champ');
                 if (!st.ownedTitles.includes('title_season_champ')) st.ownedTitles.push('title_season_champ');
-                try { showFeedback(`👑 جائزة أسطورية! لقب "بطل الموسم" + إطار الأبطال!`); } catch(e) {}
                 /* شاشة الإتمام */
                 setTimeout(() => {
                     const sc = document.getElementById('spCompleteScreen');
@@ -1403,82 +1932,8 @@ function claimSeasonReward(pts) {
     _seasonGrantReward(rewardDef);
     saveSt();
 
-    /* ── popup يوضح أين ذهبت الجائزة ── */
-    _showRewardClaimedPopup(rewardDef);
-
     /* إعادة رسم المسار */
     _renderSeasonTrack(st.season.points || 0);
-    try { _renderRewardTrackOverlay(); } catch(e) {}
-    try { _updateTrackBtn(st.season.points || 0); } catch(e) {}
-}
-
-/* ── popup "تم الاستلام" مع وصف وجهة الجائزة ── */
-function _showRewardClaimedPopup(rewardDef) {
-    const r = rewardDef.reward;
-
-    /* تحديد وصف الوجهة */
-    let destIcon = '🎁';
-    let destText = 'أُضيفت إلى حسابك';
-    switch (r.type) {
-        case 'coins':
-            destIcon = '💰';
-            destText = `أُضيف ${r.value} عملة إلى رصيدك`;
-            break;
-        case 'inventory_skip':
-            destIcon = '⏭️';
-            destText = `أُضيف ${r.value} تخطيات إلى حقيبة المساعدات`;
-            break;
-        case 'shield':
-            destIcon = '🛡️';
-            destText = `أُضيف ${r.value} درع إلى حقيبة المساعدات`;
-            break;
-        case 'xp_boost':
-            destIcon = '⚡';
-            destText = `مضاعف XP ×${r.value} فعّال لـ 24 ساعة`;
-            break;
-        case 'frame':
-            destIcon = '🖼️';
-            destText = 'أُضيف الإطار إلى مجموعة إطاراتك';
-            if (r.value === 'frame_silver_star') destText = 'إطار "الفضي" + لقب "نجم الموسم" أُضيفا لملفك';
-            if (r.value === 'frame_gold_season') destText = 'إطار "الذهبي" + لقب "رياضي الموسم" أُضيفا لملفك';
-            if (r.value === 'frame_epic_warrior') destText = 'إطار "المحارب الملحمي" أُضيف لمجموعة إطاراتك';
-            break;
-        case 'title':
-            destIcon = '🏷️';
-            destText = 'أُضيف اللقب إلى مجموعة ألقابك';
-            break;
-        case 'season_complete':
-            destIcon = '👑';
-            destText = 'إطار الأبطال + لقب "بطل الموسم" أُضيفا لملفك';
-            break;
-    }
-
-    /* بناء الـ popup */
-    const existing = document.getElementById('rewardClaimedPopup');
-    if (existing) existing.remove();
-
-    const popup = document.createElement('div');
-    popup.id = 'rewardClaimedPopup';
-    popup.innerHTML = `
-        <div class="rcp-overlay" onclick="document.getElementById('rewardClaimedPopup').remove()">
-            <div class="rcp-box" onclick="event.stopPropagation()">
-                <div class="rcp-icon">${rewardDef.icon}</div>
-                <div class="rcp-title">تم الاستلام! 🎉</div>
-                <div class="rcp-label">${rewardDef.label}</div>
-                <div class="rcp-dest">
-                    <span class="rcp-dest-icon">${destIcon}</span>
-                    <span class="rcp-dest-text">${destText}</span>
-                </div>
-                <button class="rcp-ok-btn" onclick="document.getElementById('rewardClaimedPopup').remove()">رائع! ✓</button>
-            </div>
-        </div>`;
-    document.body.appendChild(popup);
-
-    /* إزالة تلقائية بعد 4 ثواني */
-    setTimeout(() => {
-        const p = document.getElementById('rewardClaimedPopup');
-        if (p) p.remove();
-    }, 4000);
 }
 
 /* ── تحديث تقدم مهام الموسم من اللعبة العادية ── */
