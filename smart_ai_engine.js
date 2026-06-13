@@ -49,9 +49,9 @@ var KNOWLEDGE_MAP = (function () {
         { id:'fraction_mul',      name:'ضرب الكسور',                    requires:['fraction_add_diff'],           difficulty:6,  ops:['fraction_mul'],                 category:'fractions',     ageMin:11 },
 
         /* ══════════════ القوى والجذور ══════════════ */
-        { id:'power_basic',     name:'الأxx والقوى',                    requires:['mul_multi'],                   difficulty:5,  ops:['power'],                        category:'algebra',       ageMin:11 },
+        { id:'power_basic',     name:'الأسس والقوى',                    requires:['mul_multi'],                   difficulty:5,  ops:['power'],                        category:'algebra',       ageMin:11 },
         { id:'sqrt_basic',      name:'الجذر التربيعي',                  requires:['power_basic'],                 difficulty:6,  ops:['sqrt'],                         category:'algebra',       ageMin:12 },
-        { id:'power_laws',      name:'قوانين الأxx',                    requires:['power_basic'],                 difficulty:7,  ops:['power'],                        category:'algebra',       ageMin:13 },
+        { id:'power_laws',      name:'قوانين الأسس',                    requires:['power_basic'],                 difficulty:7,  ops:['power'],                        category:'algebra',       ageMin:13 },
 
         /* ══════════════ الجبر ══════════════ */
         { id:'equation_simple', name:'المعادلة البسيطة',                requires:['add_carry','sub_borrow'],      difficulty:5,  ops:['equation_simple'],              category:'algebra',       ageMin:11 },
@@ -67,7 +67,7 @@ var KNOWLEDGE_MAP = (function () {
         { id:'geo_area_basic',  name:'مساحة المربع والمستطيل',          requires:['mul_table'],                   difficulty:4,  ops:['geo_area'],                     category:'geometry',      ageMin:9  },
         { id:'geo_area_tri',    name:'مساحة المثلث',                    requires:['geo_area_basic','div_simple'], difficulty:5,  ops:['geo_area'],                     category:'geometry',      ageMin:10 },
         { id:'geo_area_circle', name:'مساحة الدائرة',                   requires:['geo_area_tri','percent_basic'],difficulty:6,  ops:['geo_area','adv_geo'],           category:'geometry',      ageMin:11 },
-        { id:'geo_pythagoras',  name:'نظرية فيثاغورx',                  requires:['sqrt_basic','geo_area_basic'], difficulty:7,  ops:['geo_area','adv_geo'],           category:'geometry',      ageMin:12 },
+        { id:'geo_pythagoras',  name:'نظرية فيثاغورس',                  requires:['sqrt_basic','geo_area_basic'], difficulty:7,  ops:['geo_area','adv_geo'],           category:'geometry',      ageMin:12 },
         { id:'geo_volume',      name:'الحجم والأجسام الثلاثية',         requires:['geo_area_circle'],             difficulty:7,  ops:['geo_area','adv_geo'],           category:'geometry',      ageMin:13 },
 
         /* ══════════════ المتقدم ══════════════ */
@@ -1270,7 +1270,7 @@ var FeedbackEngine = (function () {
         correct_normal: [
             'ممتاز! 🌟',
             'أحسنت! 👏',
-            'yحيح تماماً! ✅',
+            'صحيح تماماً! ✅',
             'رائع! واصل! 💪'
         ],
 
@@ -1298,13 +1298,13 @@ var FeedbackEngine = (function () {
         /* خطأ — لا يفهم المفهوم */
         wrong_conceptual: [
             '📚 هذا المفهوم يحتاج مراجعة، تعلّمت شيئاً جديداً اليوم!',
-            '🧠 لا بأx! هذا المفهوم يحتاج تدريباً أكثر.',
-            '💡 راجع الشرح، xتفهمه بالتأكيد!'
+            '🧠 لا بأس! هذا المفهوم يحتاج تدريباً أكثر.',
+            '💡 راجع الشرح، ستفهمه بالتأكيد!'
         ],
 
         /* خطأ — خطأ حسابي بسيط */
         wrong_arithmetic: [
-            '🔢 خطأ حسابي yغير! أعد الحساب ببطء.',
+            '🔢 خطأ حسابي صغير! أعد الحساب ببطء.',
             '📐 كدت تصيب! راجع خطوة الحساب.',
             '✏️ قريب جداً! تحقق من العملية الحسابية.'
         ],
@@ -1325,9 +1325,9 @@ var FeedbackEngine = (function () {
 
         /* وقت المراجعة */
         review_time: [
-            '🔄 وقت مراجعة xريعة لتثبيت ما تعلمته!',
+            '🔄 وقت مراجعة سريعة لتثبيت ما تعلمته!',
             '📖 مراجعة ذكية لا تنسى المعلومات!',
-            '🎯 xؤال مراجعة — هل لا تزال تتذكره؟'
+            '🎯 سؤال مراجعة — هل لا تزال تتذكره؟'
         ]
     };
 
@@ -1702,7 +1702,7 @@ var LAW_BANK = (function () {
         },
         {
             id: 'power_law_mul', conceptId: 'power_laws',
-            name: 'قانون ضرب الأxx (قاعدة مشتركة)', formula: 'أ^م × أ^ن = أ^(م+ن)',
+            name: 'قانون ضرب الأسس (قاعدة مشتركة)', formula: 'أ^م × أ^ن = أ^(م+ن)',
             difficulty: ['hard','genius'],
             generate: function(diff) {
                 var base = r(2,7), e1 = r(2,4), e2 = r(2,4);
@@ -1839,7 +1839,7 @@ var LAW_BANK = (function () {
                     a1:a1, d:d, seq:seq, ans:ans,
                     steps: [
                         'المتتالية: '+seq.join(', ')+', ___',
-                        'الأساx = '+seq[1]+' − '+seq[0]+' = '+d,
+                        'الأساس = '+seq[1]+' − '+seq[0]+' = '+d,
                         'الحد التالي = '+seq[seq.length-1]+' + '+d+' = '+ans
                     ],
                     formula_applied: seq.join(', ')+', '+ans
@@ -1882,7 +1882,7 @@ var LAW_BANK = (function () {
                     a1:a1, q:q, seq:seq, ans:ans,
                     steps: [
                         'المتتالية: '+seq.join(', ')+', ___',
-                        'الأساx = '+seq[1]+' ÷ '+seq[0]+' = '+q,
+                        'الأساس = '+seq[1]+' ÷ '+seq[0]+' = '+q,
                         'الحد التالي = '+seq[seq.length-1]+' × '+q+' = '+ans
                     ],
                     formula_applied: seq.join(', ')+', '+ans
@@ -1951,7 +1951,7 @@ var LAW_BANK = (function () {
         },
         {
             id: 'geo_pythagoras', conceptId: 'geo_pythagoras',
-            name: 'نظرية فيثاغورx', formula: 'وتر² = ض₁² + ض₂²',
+            name: 'نظرية فيثاغورس', formula: 'وتر² = ض₁² + ض₂²',
             difficulty: ['medium','hard','genius'],
             generate: function(diff) {
                 var triples = [[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15],[7,24,25]];
@@ -1974,7 +1974,7 @@ var LAW_BANK = (function () {
         /* ─────────────── اللوغاريتم ─────────────── */
         {
             id: 'log_basic_b10', conceptId: 'log_basic',
-            name: 'لوغاريتم أساx ١٠', formula: 'log₁₀(١٠^ن) = ن',
+            name: 'لوغاريتم أساس ١٠', formula: 'log₁₀(١٠^ن) = ن',
             difficulty: ['medium','hard'],
             generate: function(diff) {
                 var n = r(1, diff==='medium' ? 4 : 6);
@@ -2096,9 +2096,9 @@ var LAW_BANK = (function () {
 var TEMPLATE_BANK = (function () {
 
     /* أسماء وأشياء للمسائل الكلامية */
-    var NAMES  = ['أحمد','xارة','خالد','ليلى','محمد','هند','عمر','نورة','يوسف','رنا','علي','فاطمة'];
+    var NAMES  = ['أحمد','سارة','خالد','ليلى','محمد','هند','عمر','نورة','يوسف','رنا','علي','فاطمة'];
     var ITEMS  = ['كتاب','قلم','تفاحة','لعبة','بطاقة','طابع','كرة','بالون','ورقة','حلوى'];
-    var UNITS  = ['متر','كيلومتر','ريال','دينار','درهم','كيلوغرام','ليتر','xاعة'];
+    var UNITS  = ['متر','كيلومتر','ريال','دينار','درهم','كيلوغرام','ليتر','ساعة'];
     var PLACES = ['المدرسة','المتجر','الحديقة','البيت','المكتبة','الملعب','المستودع'];
 
     function name()  { return NAMES[Math.floor(Math.random()*NAMES.length)]; }
@@ -2111,39 +2111,39 @@ var TEMPLATE_BANK = (function () {
 
         'add_basic': [
             function(d) { var n=name(),i=item(); return 'لدى '+n+' '+d.a+' '+i+'، اشترى '+d.b+' '+i+' أخرى. كم '+i+' لديه الآن؟'; },
-            function(d) { var n=name(); return 'مشى '+n+' '+d.a+' كيلومتراً yباحاً و'+d.b+' مساءً. المسافة الكلية = ؟'; },
-            function(d) { var pl=place(); return 'في '+pl+' '+d.a+' شجرة حمراء و'+d.b+' شجرة yفراء. المجموع = ؟'; },
+            function(d) { var n=name(); return 'مشى '+n+' '+d.a+' كيلومتراً صباحاً و'+d.b+' مساءً. المسافة الكلية = ؟'; },
+            function(d) { var pl=place(); return 'في '+pl+' '+d.a+' شجرة حمراء و'+d.b+' شجرة صفراء. المجموع = ؟'; },
             function(d) { var n=name(),u=unit(); return 'ربح '+n+' '+d.a+' '+u+' في اليوم الأول و'+d.b+' في الثاني. الإجمالي = ؟'; },
             function(d) { return 'في ملعب '+d.a+' لاعباً فريق أ و'+d.b+' لاعباً فريق ب. إجمالي اللاعبين = ؟'; }
         ],
 
         'sub_basic': [
             function(d) { var n=name(),i=item(); return 'كان لدى '+n+' '+d.a+' '+i+'، أعطى '+d.b+'. كم تبقّى؟'; },
-            function(d) { var n=name(); return 'xافر '+n+' '+d.a+' كيلومتراً وقطع '+d.b+'. كم تبقّى؟'; },
-            function(d) { var n=name(),u=unit(); return 'كان معه '+d.a+' '+u+'، yرف '+d.b+'. ما المتبقي؟'; },
-            function(d) { return 'في المستودع '+d.a+' yندوقاً، شُحن '+d.b+' yندوقاً. الباقي = ؟'; }
+            function(d) { var n=name(); return 'سافر '+n+' '+d.a+' كيلومتراً وقطع '+d.b+'. كم تبقّى؟'; },
+            function(d) { var n=name(),u=unit(); return 'كان معه '+d.a+' '+u+'، صرف '+d.b+'. ما المتبقي؟'; },
+            function(d) { return 'في المستودع '+d.a+' صندوقاً، شُحن '+d.b+' صندوقاً. الباقي = ؟'; }
         ],
 
         'mul_basic': [
             function(d) { var i=item(),u=unit(); return 'ثمن '+i+' واحد '+d.a+' '+u+'. ثمن '+d.b+' منه = ؟'; },
             function(d) { return 'ملعب طوله '+d.a+' متراً وعرضه '+d.b+' متراً. مساحته = ؟'; },
-            function(d) { return d.a+' yناديق، في كل yندوق '+d.b+' وحدة. الإجمالي = ؟'; },
-            function(d) { var n=name(); return 'يعمل '+n+' '+d.a+' xاعة يومياً. في '+d.b+' أيام يعمل = ؟ xاعة'; },
-            function(d) { return 'مزرعة بها '+d.a+' yفوف، في كل yف '+d.b+' شجرة. الإجمالي = ؟'; }
+            function(d) { return d.a+' صناديق، في كل صندوق '+d.b+' وحدة. الإجمالي = ؟'; },
+            function(d) { var n=name(); return 'يعمل '+n+' '+d.a+' ساعة يومياً. في '+d.b+' أيام يعمل = ؟ ساعة'; },
+            function(d) { return 'مزرعة بها '+d.a+' صفوف، في كل صف '+d.b+' شجرة. الإجمالي = ؟'; }
         ],
 
         'div_exact': [
-            function(d) { var i=item(); return 'قُسِم '+d.a+' '+i+' بالتساوي على '+d.b+' أشخاy. لكل شخy = ؟'; },
-            function(d) { var n=name(); return 'قطع '+n+' '+d.a+' كيلومتراً في '+d.b+' xاعات. السرعة = ؟ كم/xاعة'; },
-            function(d) { return 'كيx فيه '+d.a+' حلوى يُوزَّع على '+d.b+' أطفال بالتساوي. نصيب كل طفل = ؟'; },
+            function(d) { var i=item(); return 'قُسِم '+d.a+' '+i+' بالتساوي على '+d.b+' أشخاص. لكل شخص = ؟'; },
+            function(d) { var n=name(); return 'قطع '+n+' '+d.a+' كيلومتراً في '+d.b+' ساعات. السرعة = ؟ كم/ساعة'; },
+            function(d) { return 'كيس فيه '+d.a+' حلوى يُوزَّع على '+d.b+' أطفال بالتساوي. نصيب كل طفل = ؟'; },
             function(d) { return 'حقل مساحته '+d.a+' م² طوله '+d.b+' م. عرضه = ؟ م'; }
         ],
 
         'percent_of': [
             function(d) { return d.a+'% من '+d.b+' طالب حضروا الاختبار. عددهم = ؟'; },
             function(d) { var n=name(),u=unit(); return 'ادّخر '+n+' '+d.a+'% من راتبه '+d.b+' '+u+'. المبلغ المدّخر = ؟'; },
-            function(d) { return 'خصم '+d.a+'% من xعر '+d.b+' ريال. قيمة الخصم = ؟'; },
-            function(d) { return d.a+'% من مساحة ملعب '+d.b+' م² مخyyة للعشب. المساحة = ؟ م²'; }
+            function(d) { return 'خصم '+d.a+'% من سعر '+d.b+' ريال. قيمة الخصم = ؟'; },
+            function(d) { return d.a+'% من مساحة ملعب '+d.b+' م² مخصصة للعشب. المساحة = ؟ م²'; }
         ],
 
         'seq_arith_next': [
@@ -2159,13 +2159,13 @@ var TEMPLATE_BANK = (function () {
         ],
 
         'geo_rect_area': [
-            function(d) { return 'مستطيل طوله '+d.a+' xم وعرضه '+d.b+' xم. مساحته = ؟ xم²'; },
+            function(d) { return 'مستطيل طوله '+d.a+' سم وعرضه '+d.b+' سم. مساحته = ؟ سم²'; },
             function(d) { return 'غرفة بأبعاد '+d.a+' م × '+d.b+' م. مساحتها = ؟ م²'; },
             function(d) { return 'حديقة طولها '+d.a+' م وعرضها '+d.b+' م. احسب مساحتها.'; }
         ],
 
         'geo_triangle_area': [
-            function(d) { return 'مثلث قاعدته '+d.a+' xم وارتفاعه '+d.b+' xم. مساحته = ؟'; },
+            function(d) { return 'مثلث قاعدته '+d.a+' سم وارتفاعه '+d.b+' سم. مساحته = ؟'; },
             function(d) { return 'قطعة أرض مثلثة الشكل قاعدتها '+d.a+' م وارتفاعها '+d.b+' م. مساحتها = ؟'; }
         ]
     };
@@ -2447,7 +2447,7 @@ var LawBank = (function () {
     /* ─── ضمان أن الرقم ليس صفراً ─── */
     function _nz(min, max) { var v; do { v = _r(min, max); } while (v === 0); return v; }
 
-        /*
+    /*
      * بنية كل قانون:
      *   id          — معرف فريد
      *   conceptId   — المفهوم المرتبط في خريطة المعرفة
@@ -2528,7 +2528,7 @@ var LawBank = (function () {
                 return {
                     text: `${a} ÷ ${b}`,
                     answer: ans,
-                    hint: `القسمة عكx الضرب — ${ans} × ${b} = ${a}`,
+                    hint: `القسمة عكس الضرب — ${ans} × ${b} = ${a}`,
                     explanation: `${a} ÷ ${b} = ${ans}\nلأن: ${ans} × ${b} = ${a} ✓`,
                     catKey: 'division',
                     wrongHints: [ans+1, ans*2, b]
@@ -2589,7 +2589,7 @@ var LawBank = (function () {
                 var new_ = inc ? Math.round(old_ * (1 + pct/100)) : Math.round(old_ * (1 - pct/100));
                 var ans  = pct * (inc ? 1 : -1);
                 return {
-                    text: `xعر تغيّر من ${old_} إلى ${new_}. نسبة التغيير = ؟%`,
+                    text: `سعر تغيّر من ${old_} إلى ${new_}. نسبة التغيير = ؟%`,
                     answer: ans,
                     hint: `نسبة التغيير = (${new_} − ${old_}) ÷ ${old_} × 100`,
                     explanation: `= (${new_} − ${old_}) ÷ ${old_} × 100\n= ${new_-old_} ÷ ${old_} × 100\n= ${ans}%` + (ans>0?' (زيادة)':' (نقصان)'),
@@ -2702,7 +2702,7 @@ var LawBank = (function () {
         },
 
         {
-            id: 'power_mul_law', conceptId: 'power_laws', name: 'قانون ضرب القوى (نفx الأساx)',
+            id: 'power_mul_law', conceptId: 'power_laws', name: 'قانون ضرب القوى (نفس الأساس)',
             formula: 'أⁿ × أᵐ = أⁿ⁺ᵐ', difficulty: 6,
             generate: function (diff) {
                 var a = _r(2,7), n = _r(1,4), m = _r(1,4);
@@ -2710,7 +2710,7 @@ var LawBank = (function () {
                 return {
                     text: `${a}^${n} × ${a}^${m} = ${a}^؟`,
                     answer: ans,
-                    hint: `نفx الأساx — اجمع الأxxَين: ${n}+${m}`,
+                    hint: `نفس الأساس — اجمع الأسسَين: ${n}+${m}`,
                     explanation: `${a}^${n} × ${a}^${m} = ${a}^(${n}+${m}) = ${a}^${ans}`,
                     catKey: 'algebra',
                     wrongHints: [n*m, ans+1, ans-1]
@@ -2719,7 +2719,7 @@ var LawBank = (function () {
         },
 
         {
-            id: 'power_div_law', conceptId: 'power_laws', name: 'قانون قسمة القوى (نفx الأساx)',
+            id: 'power_div_law', conceptId: 'power_laws', name: 'قانون قسمة القوى (نفس الأساس)',
             formula: 'أⁿ ÷ أᵐ = أⁿ⁻ᵐ', difficulty: 6,
             generate: function (diff) {
                 var a = _r(2,7), m = _r(1,3), n = m + _r(1,4);
@@ -2727,7 +2727,7 @@ var LawBank = (function () {
                 return {
                     text: `${a}^${n} ÷ ${a}^${m} = ${a}^؟`,
                     answer: ans,
-                    hint: `نفx الأساx — اطرح الأxxَين: ${n}−${m}`,
+                    hint: `نفس الأساس — اطرح الأسسَين: ${n}−${m}`,
                     explanation: `${a}^${n} ÷ ${a}^${m} = ${a}^(${n}−${m}) = ${a}^${ans}`,
                     catKey: 'algebra',
                     wrongHints: [n+m, n/m, ans+1]
@@ -2881,8 +2881,8 @@ var LawBank = (function () {
                 return {
                     text: `${seq.join('، ')}، ؟`,
                     answer: ans,
-                    hint: `الأساx الثابت = ${r} — اضرب الحد الأخير في ${r}`,
-                    explanation: `الأساx الثابت = ${r}\nالحد التالي = ${seq[seq.length-1]} × ${r} = ${ans}`,
+                    hint: `الأساس الثابت = ${r} — اضرب الحد الأخير في ${r}`,
+                    explanation: `الأساس الثابت = ${r}\nالحد التالي = ${seq[seq.length-1]} × ${r} = ${ans}`,
                     catKey: 'sequences',
                     wrongHints: [ans+r, seq[seq.length-1]+r, ans*r]
                 };
@@ -2945,7 +2945,7 @@ var LawBank = (function () {
         },
 
         {
-            id: 'pythagoras', conceptId: 'geo_pythagoras', name: 'نظرية فيثاغورx',
+            id: 'pythagoras', conceptId: 'geo_pythagoras', name: 'نظرية فيثاغورس',
             formula: 'ج² = أ² + ب²', difficulty: 7,
             generate: function (diff) {
                 /* ثلاثيات فيثاغورس المضمونة */
@@ -2969,7 +2969,7 @@ var LawBank = (function () {
                     text: text,
                     answer: ans,
                     hint: `ج² = أ² + ب²  ←  ${a}²+${b}² = ${a*a}+${b*b} = ${c*c} = ${c}²`,
-                    explanation: `نظرية فيثاغورx: ج² = أ² + ب²\n${a}² + ${b}² = ${a*a} + ${b*b} = ${c*c}\nج = √${c*c} = ${c}`,
+                    explanation: `نظرية فيثاغورس: ج² = أ² + ب²\n${a}² + ${b}² = ${a*a} + ${b*b} = ${c*c}\nج = √${c*c} = ${c}`,
                     catKey: 'geometry',
                     wrongHints: [a+b, ans+1, ans-1]
                 };
@@ -3059,7 +3059,7 @@ var LawBank = (function () {
                     text: `جتا(${v.deg}°) = ؟`,
                     answer: v.val,
                     hint: `جيب التمام ${v.deg}° = ${v.frac}`,
-                    explanation: `جتا(${v.deg}°) = ${v.frac} = ${v.val}\n💡 جتا = عكx جا (جتا0°=1، جتا90°=0)`,
+                    explanation: `جتا(${v.deg}°) = ${v.frac} = ${v.val}\n💡 جتا = عكس جا (جتا0°=1، جتا90°=0)`,
                     catKey: 'advanced',
                     wrongHints: [1-v.val, v.val===0?0.5:0, v.val+0.1]
                 };
@@ -3130,10 +3130,10 @@ var WordProblemGenerator = (function () {
     function _r(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
     /* أسماء ومفردات متنوعة */
-    var NAMES   = ['أحمد','xارة','خالد','ليلى','محمد','هند','عمر','نورة','يوسف','رنا','علي','منى','تركي','ريم'];
+    var NAMES   = ['أحمد','سارة','خالد','ليلى','محمد','هند','عمر','نورة','يوسف','رنا','علي','منى','تركي','ريم'];
     var ITEMS   = ['تفاحة','كتاب','قلم','بطاقة','طابع','لعبة','قطعة','ورقة','درهم','ريال'];
     var PLACES  = ['المكتبة','السوق','المدرسة','الحديقة','المتجر','المخزن','المستودع','الملعب'];
-    var UNITS   = ['كيلومتر','متر','xاعة','يوم','yندوق','شجرة','طالب','وحدة'];
+    var UNITS   = ['كيلومتر','متر','ساعة','يوم','صندوق','شجرة','طالب','وحدة'];
 
     function _n()  { return NAMES [_r(0, NAMES.length -1)]; }
     function _it() { return ITEMS [_r(0, ITEMS.length -1)]; }
@@ -3164,9 +3164,9 @@ var WordProblemGenerator = (function () {
         var a   = _r(2, max), b = _r(2, max);
         var templates = [
             { t:`ثمن ${_it()} الواحد ${a} ريال. ثمن ${b} قطعة = ؟`,    e:`${b}×${a}=${a*b} ريال` },
-            { t:`xيارة تقطع ${a} كم/xاعة. في ${b} xاعات تقطع = ؟`,     e:`${a}×${b}=${a*b} كم` },
-            { t:`${a} yفوف، في كل yف ${b} طالباً. المجموع = ؟`,         e:`${a}×${b}=${a*b} طالب` },
-            { t:`yندوق يحتوي ${a} ${_it()}. ${b} yندوق تحتوي = ؟`,      e:`${a}×${b}=${a*b}` },
+            { t:`سيارة تقطع ${a} كم/ساعة. في ${b} ساعات تقطع = ؟`,     e:`${a}×${b}=${a*b} كم` },
+            { t:`${a} صفوف، في كل صف ${b} طالباً. المجموع = ؟`,         e:`${a}×${b}=${a*b} طالب` },
+            { t:`صندوق يحتوي ${a} ${_it()}. ${b} صندوق تحتوي = ؟`,      e:`${a}×${b}=${a*b}` },
             { t:`قطعة أرض طولها ${a}م وعرضها ${b}م. مساحتها = ؟`,       e:`${a}×${b}=${a*b} م²` }
         ];
         var tmpl = templates[_r(0, templates.length-1)];
@@ -3204,7 +3204,7 @@ var WordProblemGenerator = (function () {
               e:`①: ${a}−${b}=${a-b}  ②: ${a-b}×${c}=${(a-b)*c}  ③: +${d}=${ans}` },
             { t:`مستودع: ${a} وحدة → شُحن ${b} → تضاعف ${c}× → أُضيف ${d}. الإجمالي = ؟`,
               e:`①: ${a-b}  ②: ${(a-b)*c}  ③: ${ans}` },
-            { t:`رصيد ${a} → yُرف ${b} → ضوعف ${c}× → أُودع ${d}. الرصيد النهائي = ؟`,
+            { t:`رصيد ${a} → صُرف ${b} → ضوعف ${c}× → أُودع ${d}. الرصيد النهائي = ؟`,
               e:`①: ${a}−${b}=${a-b}  ②: ×${c}=${(a-b)*c}  ③: +${d}=${ans}` }
         ];
         var tmpl = templates[_r(0, templates.length-1)];
@@ -3221,7 +3221,7 @@ var WordProblemGenerator = (function () {
         var base  = _r(2,20)*10;
         var ans   = Math.round(base*pct/100);
         var templates = [
-            { t:`xعر ${_it()} ${base} ريال، خُفِّض بنسبة ${pct}%. التخفيض بالريال = ؟`,    e:`${base}×${pct}%=${ans}` },
+            { t:`سعر ${_it()} ${base} ريال، خُفِّض بنسبة ${pct}%. التخفيض بالريال = ؟`,    e:`${base}×${pct}%=${ans}` },
             { t:`راتب ${_n()} ${base} ريال، رُفع ${pct}%. قيمة الزيادة = ؟`,               e:`${base}×${pct}/100=${ans}` },
             { t:`من فصل مكوّن من ${base} طالب، ${pct}% غائبون. عدد الغائبين = ؟`,          e:`${base}×${pct}%=${ans}` }
         ];
@@ -3421,8 +3421,20 @@ var SmartQuestionBuilder = (function () {
     /* ─── إعادة ضبط الذاكرة ─── */
     function reset() { _seen.clear(); }
 
+    /* ─── بناء سؤال بعملية محددة مباشرة ─── */
+    function buildFromOp(op, diff) {
+        var conceptId = (typeof SmartAI !== 'undefined') ? SmartAI.conceptOf(op) : op;
+        var law = LawBank.pick(conceptId, diff || 'medium');
+        if (!law) {
+            /* احتياطي: جرب المفهوم مباشرة */
+            var allLaws = LawBank.all;
+            law = allLaws[Math.floor(Math.random() * allLaws.length)];
+        }
+        return law ? build(law.id, diff || 'medium') : null;
+    }
+
     return { build: build, buildFromLaw: buildFromLaw, buildWordProblem: buildWordProblem,
-             buildFromDecision: buildFromDecision, reset: reset };
+             buildFromDecision: buildFromDecision, buildFromOp: buildFromOp, reset: reset };
 })();
 
 
@@ -3432,4 +3444,3 @@ SmartAI.buildFromLaw     = SmartQuestionBuilder.buildFromLaw;
 SmartAI.buildWordProblem = SmartQuestionBuilder.buildWordProblem;
 SmartAI.laws             = LawBank;
 SmartAI.wordGen          = WordProblemGenerator;
-
