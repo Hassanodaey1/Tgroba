@@ -654,26 +654,26 @@ function _build(op, diff, cfg, age) {
             if (eqType === 0) {
                 /* س + a = b */
                 a = rnd(4, Math.min(50, nMax)); ans = rnd(3, Math.min(40, nMax)); b = a + ans;
-                text = 'x + ' + a + ' = ' + b + '، x = ؟';
+                text = 'x + ' + a + ' = ' + b;
                 hint = 'اطرح ' + a + ' من الطرفين';
                 explanation = 'x + ' + a + ' = ' + b + '\nx = ' + b + ' − ' + a + ' = ' + ans;
             } else if (eqType === 1) {
                 /* s - a = b */
                 ans = rnd(3, Math.min(40, nMax)); a = rnd(2, Math.min(30, nMax));
                 b = ans - a; if (b < 0) { ans = a + rnd(1, 20); b = ans - a; }
-                text = 'x − ' + a + ' = ' + b + '، x = ؟';
+                text = 'x − ' + a + ' = ' + b;
                 hint = 'أضف ' + a + ' للطرفين';
                 explanation = 'x − ' + a + ' = ' + b + '\nx = ' + b + ' + ' + a + ' = ' + ans;
             } else if (eqType === 2) {
                 /* a × س = b */
                 a = rnd(2, Math.min(12, mMax)); ans = rnd(2, Math.min(20, mMax)); b = a * ans;
-                text = a + 'x = ' + b + '، x = ؟';
+                text = a + 'x = ' + b;
                 hint = 'اقسم الطرفين على ' + a;
                 explanation = a + 'x = ' + b + '\nx = ' + b + ' ÷ ' + a + ' = ' + ans;
             } else {
                 /* s/a = b */
                 a = rnd(2, Math.min(10, mMax)); ans = rnd(2, Math.min(20, mMax)); b = ans;
-                text = 'x ÷ ' + a + ' = ' + b + '، x = ؟';
+                text = 'x ÷ ' + a + ' = ' + b;
                 hint = 'اضرب الطرفين في ' + a;
                 explanation = 'x ÷ ' + a + ' = ' + b + '\nx = ' + b + ' × ' + a + ' = ' + (ans * a);
                 ans = ans * a;
@@ -686,7 +686,7 @@ function _build(op, diff, cfg, age) {
         case 'algebra': {
             var coef = rnd(2, Math.min(8, mMax)); ans = rnd(2, Math.min(20, mMax)); var con = rnd(1, 15);
             b = coef * ans + con;
-            text = coef + 'x + ' + con + ' = ' + b + '، x = ؟';
+            text = coef + 'x + ' + con + ' = ' + b;
             hint = '① اطرح ' + con + '  ② اقسم على ' + coef;
             explanation = coef + 'x + ' + con + ' = ' + b + '\nالخطوة ①: ' + coef + 'x = ' + (b-con) + '\nالخطوة ②: x = ' + (b-con) + ' ÷ ' + coef + ' = ' + ans;
             catKey = 'algebra';
@@ -790,7 +790,7 @@ function _build(op, diff, cfg, age) {
                 a = rnd(2,5); var pm=rnd(1,3), pn=rnd(1,3);
                 ans = Math.pow(a, pm+pn);
                 text = a+'^'+pm+' × '+a+'^'+pn;
-                hint = 'قانون الأسس: اجمع الأسس عند الضرب بنفس القاعدة';
+                hint = 'قانون الأسس: اجمع الأسس';
                 explanation = a+'^'+pm+' × '+a+'^'+pn+' = '+a+'^'+(pm+pn)+' = '+ans;
             } else {
                 /* قوة السالب أو التحدي */
@@ -919,7 +919,7 @@ function _build(op, diff, cfg, age) {
                 var roots2 = [2,3,4,5,6,7,8,9,10,11,12];
                 ans = roots2[rnd(0, roots2.length-1)];
                 var n2 = ans * ans;
-                text = 'x² = ' + n2 + '، x = ؟';
+                text = 'x² = ' + n2;
                 hint = 'خذ الجذر التربيعي (القيمة الموجبة)';
                 explanation = 'x² = ' + n2 + '\nx = √' + n2 + ' = ' + ans;
             } else if (eqqType === 1) {
@@ -927,7 +927,7 @@ function _build(op, diff, cfg, age) {
                 ans = rnd(3, 10);
                 a = rnd(1, 10);
                 var qb = ans * ans - a;
-                text = 'x² − ' + a + ' = ' + qb + '، x = ؟';
+                text = 'x² − ' + a + ' = ' + qb;
                 hint = 'أضف ' + a + ' للطرفين ثم خذ الجذر';
                 explanation = 'x² = ' + (qb+a) + '\nx = √' + (qb+a) + ' = ' + ans;
             } else {
@@ -935,7 +935,7 @@ function _build(op, diff, cfg, age) {
                 ans = rnd(2, 8);
                 a = rnd(1, 5);
                 var qb2 = (ans + a) * (ans + a);
-                text = '(x + ' + a + ')² = ' + qb2 + '، x = ؟';
+                text = '(x + ' + a + ')² = ' + qb2;
                 hint = 'خذ الجذر ثم اطرح ' + a;
                 explanation = 'x + ' + a + ' = √' + qb2 + ' = ' + (ans+a) + '\nx = ' + (ans+a) + ' − ' + a + ' = ' + ans;
             }
@@ -1254,29 +1254,20 @@ function _gcd(a, b) {
 ═══════════════════════════════════════════════════════════════ */
 
 /*
- * النقطة الوحيدة لتسجيل إجابة اللاعب — تُستدعى من game.js حصراً
- *
- * @param {string}  op          — نوع العملية (add, mul, ...)
- * @param {boolean} isCorrect   — صحيح أم خطأ
- * @param {number}  [respMs]    — وقت الاستجابة بالمللي ثانية (اختياري)
- * @param {boolean} [skipSession] — true للأوضاع التي تدير تصعيدها بنفسها
- *                                  (survival, rocket) كي لا تُلوِّث حرارة الجلسة
+ * يجب استدعاء هذه الدالة من game.js عند كل إجابة
+ * بدلاً من استدعاء AdaptiveAI.record مباشرة
  */
-function recordAnswer(op, isCorrect, respMs, skipSession) {
-    /* ① AdaptiveAI — يتعلم دائماً بغض النظر عن الوضع */
+function recordAnswer(op, isCorrect) {
+    /* تحديث AdaptiveAI */
     if (typeof AdaptiveAI !== 'undefined') AdaptiveAI.record(op, isCorrect);
-
-    /* ② SessionProgress — فقط للأوضاع العادية */
-    if (!skipSession) {
-        if (isCorrect) SessionProgress.onCorrect();
-        else           SessionProgress.onWrong();
-    }
-
-    /* ③ SmartAI — مع وقت الاستجابة */
+    /* تحديث تصاعد الجلسة */
+    if (isCorrect) SessionProgress.onCorrect();
+    else           SessionProgress.onWrong();
+    /* تحديث SmartAI إن وُجد */
     try {
         if (typeof SmartAI !== 'undefined') {
-            if (isCorrect) SmartAI.onCorrect(op, respMs || 0);
-            else           SmartAI.onWrong(op, null, null, respMs || 0);
+            if (isCorrect) SmartAI.onCorrect(op);
+            else           SmartAI.onWrong(op);
         }
     } catch(e) {}
 }
