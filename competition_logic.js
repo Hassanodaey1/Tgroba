@@ -542,8 +542,6 @@ function endChallengeGame() {
                     // تحديث hero stats أيضاً
                     _lbCache = players; _lbCacheTime = Date.now(); _lbCacheType = 'challenge';
                     updateCompMyStats(players);
-                    /* ── تحديث موسم التحدي: يعتمد على لائحة التحدي فقط ── */
-                    try { if (typeof updateFirstPlaceTracking === 'function') updateFirstPlaceTracking(players); } catch(e) {}
                 }).catch(() => {});
         }
     }, 1200);
@@ -946,8 +944,6 @@ function _fetchCompHeroStats() {
                 const myIdx = players.findIndex(p => p.id === myKey);
                 rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
             }
-            /* ── تحديث موسم التحدي عند فتح صفحة المنافسة ── */
-            try { if (typeof updateFirstPlaceTracking === 'function') updateFirstPlaceTracking(players); } catch(e) {}
         }).catch(() => {});
 }
 
@@ -1682,56 +1678,135 @@ function _seasonCheckRewards() {
 }
 
 /* ── منح الجائزة فعلياً ── */
+/* ═══════════════════════════════════════════════════════════════
+   🎁 giveReward — دالة موحّدة لمنح جميع أنواع الجوائز
+   تضمن وصول كل جائزة للمكان الصحيح في st
+═══════════════════════════════════════════════════════════════ */
+function giveReward(type, value, label) {
+    /* تأمين الكائنات الأساسية */
+    if (!st.inventory)   st.inventory   = { skip: 0, heart: 0, remove: 0, hint: 0 };
+    if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
+    if (!st.ownedTitles) st.ownedTitles = [];
+    if (!st.ownedEmojis) st.ownedEmojis = ['👦'];
+
+    switch (type) {
+
+        /* ── نقود ── */
+        case 'coins':
+            st.coins = Math.min(999999, (st.coins || 0) + (value || 0));
+            try { showFeedback(`💰 +${value} عملة!`); doConfetti && doConfetti(); } catch(e) {}
+            break;
+
+        /* ── ماس ── */
+        case 'diamonds':
+        case 'diamond':
+            st.diamonds = Math.min(9999, (st.diamonds || 0) + (value || 0));
+            try { showFeedback(`💎 +${value} ماس!`); doConfetti && doConfetti(); } catch(e) {}
+            break;
+
+        /* ── مخزون: تخطي ── */
+        case 'skip':
+        case 'inventory_skip':
+        case 'skips':
+            st.inventory.skip = Math.min(99, (st.inventory.skip || 0) + (value || 1));
+            try { showFeedback(`⏭️ +${value} تخطي في المخزون!`); } catch(e) {}
+            break;
+
+        /* ── مخزون: قلب ── */
+        case 'heart':
+        case 'hearts':
+            st.inventory.heart = Math.min(99, (st.inventory.heart || 0) + (value || 1));
+            try { showFeedback(`❤️ +${value} قلب في المخزون!`); } catch(e) {}
+            break;
+
+        /* ── مخزون: حذف خيار ── */
+        case 'remove':
+            st.inventory.remove = Math.min(99, (st.inventory.remove || 0) + (value || 1));
+            try { showFeedback(`🗑️ +${value} حذف خيار في المخزون!`); } catch(e) {}
+            break;
+
+        /* ── مخزون: تلميح ── */
+        case 'hint':
+            st.inventory.hint = Math.min(99, (st.inventory.hint || 0) + (value || 1));
+            try { showFeedback(`💡 +${value} تلميح في المخزون!`); } catch(e) {}
+            break;
+
+        /* ── درع الـ streak (يحمي تتابع الموسم) ── */
+        case 'shield':
+        case 'shields':
+        case 'streakShield':
+            if (st.season) {
+                st.season.streakShields = Math.min(10, (st.season.streakShields || 0) + (value || 1));
+            }
+            try { showFeedback(`🛡️ +${value} درع Streak محفوظ!`); } catch(e) {}
+            break;
+
+        /* ── مضاعف XP ── */
+        case 'xpBoost':
+        case 'xp_boost':
+            st._xpBoostMultiplier = value || 2;
+            st._xpBoostExpires    = Date.now() + 24 * 60 * 60 * 1000;
+            try { showFeedback(`⚡ مضاعف XP ×${value} لمدة 24 ساعة!`); } catch(e) {}
+            break;
+
+        /* ── إطار ── */
+        case 'frame':
+            if (value && !st.ownedFrames.includes(value)) st.ownedFrames.push(value);
+            try { showFeedback(`🖼️ إطار جديد: ${label || value}!`); doConfetti && doConfetti(); } catch(e) {}
+            break;
+
+        /* ── رمز تعبيري ── */
+        case 'emoji':
+        case 'avatar':
+            if (value && !st.ownedEmojis.includes(value)) st.ownedEmojis.push(value);
+            try { showFeedback(`🎭 رمز جديد: ${value}!`); doConfetti && doConfetti(); } catch(e) {}
+            break;
+
+        /* ── لقب ── */
+        case 'title':
+            if (value && !st.ownedTitles.includes(value)) st.ownedTitles.push(value);
+            if (label && !st.activeTitle) st.activeTitle = label;
+            try { showFeedback(`🏷️ لقب جديد: ${label || value}!`); doConfetti && doConfetti(); } catch(e) {}
+            break;
+
+        /* ── حزمة مركّبة ── */
+        case 'bundle':
+        case 'season_complete':
+            if (Array.isArray(value)) {
+                value.forEach(item => giveReward(item.type, item.value || item.val, item.label));
+            }
+            break;
+    }
+
+    /* تحديث واجهة المخزون إن كانت مفتوحة */
+    try { if (typeof _updateInventoryBar === 'function') _updateInventoryBar(); } catch(e) {}
+    /* تحديث عداد العملات */
+    try { if (typeof updateUI === 'function') updateUI(); } catch(e) {}
+
+    saveSt();
+}
+
+/* ── ربط الأسماء القديمة بـ giveReward ── */
 function _seasonGrantReward(rewardDef) {
     const r = rewardDef.reward;
     try {
-        switch (r.type) {
-            case 'coins':
-                st.coins = (st.coins || 0) + r.value;
-                try { showFeedback(`🎁 جائزة الموسم: +${r.value} عملة!`); } catch(e) {}
-                break;
-            case 'inventory_skip':
-                st.inventory = st.inventory || {};
-                st.inventory.skips = (st.inventory.skips || 0) + r.value;
-                try { showFeedback(`🎁 +${r.value} تخطيات مجانية!`); } catch(e) {}
-                break;
-            case 'xp_boost':
-                st.xpBoostActive = true;
-                st.xpBoostMultiplier = r.value;
-                st.xpBoostExpiry = Date.now() + 24 * 60 * 60 * 1000;
-                try { showFeedback(`🎁 مضاعف XP ×${r.value} لمدة 24 ساعة!`); } catch(e) {}
-                break;
-            case 'shield':
-                st.inventory = st.inventory || {};
-                st.inventory.shields = (st.inventory.shields || 0) + r.value;
-                try { showFeedback(`🎁 درع حماية مجاني!`); } catch(e) {}
-                break;
-            case 'frame':
-                st.ownedFrames = st.ownedFrames || ['frame_none'];
-                if (!st.ownedFrames.includes(r.value)) st.ownedFrames.push(r.value);
-                try { showFeedback(`🎁 إطار حصري: ${rewardDef.label}!`); } catch(e) {}
-                break;
-            case 'title':
-                st.ownedTitles = st.ownedTitles || [];
-                if (!st.ownedTitles.includes(r.value)) st.ownedTitles.push(r.value);
-                try { showFeedback(`🎁 لقب جديد: ${rewardDef.label}!`); } catch(e) {}
-                break;
-            case 'season_complete':
-                /* إطار + لقب البطولة معاً */
-                st.ownedFrames = st.ownedFrames || ['frame_none'];
-                st.ownedTitles = st.ownedTitles || [];
-                if (!st.ownedFrames.includes('frame_season_champ')) st.ownedFrames.push('frame_season_champ');
-                if (!st.ownedTitles.includes('title_season_champ')) st.ownedTitles.push('title_season_champ');
-                /* شاشة الإتمام */
-                setTimeout(() => {
-                    const sc = document.getElementById('spCompleteScreen');
-                    if (sc) sc.style.display = 'flex';
-                }, 800);
-                break;
+        if (r.type === 'season_complete') {
+            /* إطار + لقب البطولة */
+            giveReward('frame', 'frame_season_champ', 'إطار بطل الموسم');
+            giveReward('title', 'title_season_champ', '🏆 بطل الموسم');
+            saveSt();
+            setTimeout(() => {
+                const sc = document.getElementById('spCompleteScreen');
+                if (sc) sc.style.display = 'flex';
+            }, 800);
+        } else {
+            giveReward(r.type, r.value, rewardDef.label);
         }
-        saveSt();
     } catch(e) {}
 }
+
+window.giveReward = giveReward;
+
 
 /* ── تحديث زر الموسم في صفحة المنافسة ── */
 function _updateSeasonBtn() {
@@ -2182,13 +2257,13 @@ function _seasonChestCheck() {
 function openSeasonChest() {
     if (!st.season.chestAvailable || st.season.chestOpened) return;
 
-    /* جوائز عشوائية من قائمة */
+    /* جوائز عشوائية من قائمة — تستخدم giveReward للتوزيع الصحيح */
     const prizes = [
-        { icon:'💰', text:'+100 عملة ذهبية!',      action: () => { st.coins = (st.coins||0) + 100; } },
-        { icon:'⏭️', text:'+5 تخطيات مجانية!',      action: () => { st.inventory = st.inventory||{}; st.inventory.skips = (st.inventory.skips||0)+5; } },
-        { icon:'🛡️', text:'+2 درع Streak!',         action: () => { st.season.streakShields = (st.season.streakShields||0)+2; } },
-        { icon:'⚡', text:'مضاعف XP ×2 ليوم كامل!', action: () => { st.xpBoostActive=true; st.xpBoostMultiplier=2; st.xpBoostExpiry=Date.now()+86400000; } },
-        { icon:'💎', text:'+150 عملة + درع!',        action: () => { st.coins=(st.coins||0)+150; st.season.streakShields=(st.season.streakShields||0)+1; } },
+        { icon:'💰', text:'+100 عملة ذهبية!',      action: () => giveReward('coins',   100) },
+        { icon:'⏭️', text:'+5 تخطيات مجانية!',      action: () => giveReward('skip',      5) },
+        { icon:'🛡️', text:'+2 درع Streak!',         action: () => giveReward('shield',    2) },
+        { icon:'⚡', text:'مضاعف XP ×2 ليوم كامل!', action: () => giveReward('xpBoost',   2) },
+        { icon:'💎', text:'+150 عملة + درع!',        action: () => { giveReward('coins', 150); giveReward('shield', 1); } },
     ];
     const prize = prizes[Math.floor(Math.random() * prizes.length)];
     prize.action();
@@ -2362,7 +2437,7 @@ function _fetchSeasonLeaderboard(tab) {
         ? `season_leaderboard/${weekKey}`
         : 'season_leaderboard_all';
 
-   try {
+    try {
         window.database.ref(refPath)
             .orderByChild('seasonPoints')
             .limitToLast(100)
