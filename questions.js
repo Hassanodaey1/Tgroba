@@ -106,20 +106,20 @@ if (typeof getCatStatsKey === 'undefined') {
 
                 } else if (ch === 'equation_simple') {
                     a = rnd(4,20); ans = rnd(3,25); b = a + ans;
-                    text = `x + ${a} = ${b}، x = ؟`;
+                    text = `x + ${a} = ${b}`;
                     hint = 'اطرح الثابت من الطرفين لعزل x';
                     explanation = `x + ${a} = ${b}\nالخطوة: اطرح ${a} من الطرفين\nx = ${b} − ${a} = ${ans}`;
 
                 } else if (ch === 'equation_two_step') {
                     const coef=rnd(2,6); ans=rnd(2,10); const con=rnd(1,8); b=coef*ans+con;
-                    text = `${coef}x + ${con} = ${b}، x = ؟`;
+                    text = `${coef}x + ${con} = ${b}`;
                     hint = 'أولاً اطرح الثابت، ثم اقسم على المعامل';
                     explanation = `${coef}x + ${con} = ${b}\nالخطوة ①: اطرح ${con}: ${coef}x = ${b-con}\nالخطوة ②: اقسم على ${coef}: x = ${b-con}÷${coef} = ${ans}`;
 
                 } else if (ch === 'equation_bracket') {
                     const k=rnd(2,5); ans=rnd(2,8); const c2=rnd(1,6);
                     b = k*(ans+c2);
-                    text = `${k}(x + ${c2}) = ${b}، x = ؟`;
+                    text = `${k}(x + ${c2}) = ${b}`;
                     hint = 'افتح القوس أو اقسم على المعامل أولاً';
                     explanation = `${k}(x + ${c2}) = ${b}\nالخطوة ①: اقسم على ${k}: x + ${c2} = ${b/k}\nالخطوة ②: اطرح ${c2}: x = ${b/k} − ${c2} = ${ans}`;
 
@@ -421,7 +421,7 @@ if (typeof getCatStatsKey === 'undefined') {
                 } else if (t === 'pythagoras') {
                     const pairs=[[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15],[7,24,25]];
                     const p=pairs[rnd(0,pairs.length-1)]; ans=p[2];
-                    text=`مثلث قائم أضلاعه ${p[0]} و ${p[1]}، ما الوتر؟`; hint='نظرية فيثاغورx: الوتر² = مجموع مربعَي الضلعين';
+                    text=`مثلث قائم أضلاعه ${p[0]} و ${p[1]}، ما الوتر؟`; hint='نظرية فيثاغورس: الوتر² = مجموع مربعَي الضلعين';
                     explanation=`الوتر² = ${p[0]}² + ${p[1]}²\n= ${p[0]*p[0]} + ${p[1]*p[1]}\n= ${p[0]*p[0]+p[1]*p[1]}\nالوتر = √${p[0]*p[0]+p[1]*p[1]} = ${p[2]}`;
                 } else {
                     /* قطر المستطيل */
@@ -599,7 +599,7 @@ if (typeof getCatStatsKey === 'undefined') {
                     const degs=[30,45,60]; const d=degs[rnd(0,degs.length-1)];
                     ans=1; text=`جا²(${d}°) + جتا²(${d}°) = ؟`; hint='الهوية المثلثية الأساسية';
                     const sv=sinVals.find(x=>x.deg===d); const cv=cosVals.find(x=>x.deg===d);
-                    explanation=`جا²(${d}°) + جتا²(${d}°)\n= (${sv.frac})² + (${cv.frac})²\n= دائماً = 1\n📌 هوية فيثاغورx: sin²θ + cos²θ = 1`;
+                    explanation=`جا²(${d}°) + جتا²(${d}°)\n= (${sv.frac})² + (${cv.frac})²\n= دائماً = 1\n📌 هوية فيثاغورس: sin²θ + cos²θ = 1`;
                 } else {
                     /* مقارنة قيم */
                     const v1=sinVals[rnd(1,3)]; const v2=cosVals[rnd(1,3)];
@@ -725,7 +725,7 @@ if (typeof getCatStatsKey === 'undefined') {
                     30);
                 b = rnd(a + 1, a + 50);
                 ans = b - a;
-                text = `x + ${a} = ${b}، x = ؟`;
+                text = `x + ${a} = ${b}`;
                 hint = 'ما قيمة س؟';
                 explanation = `x = ${b} - ${a} = ${ans}`; } else if (ch === 'sequence') { a = rnd(1, 15);
                 b = rnd(2, 10);
@@ -1625,7 +1625,7 @@ function genAdvancedDiverseQ(diff) {
             const total = rnd(20, 100);
             ans = Math.round((a / (a + b)) * total);
             text = `قُسّمت ${total} بنسبة ${a}:${b}، الحصة الأولى = ؟`;
-            hint = 'قسّم بمجموع نسبَي الحصتين';
+            hint = 'قسّم بمجموع نسبَي الحصص';
             explanation = `الحصة الأولى = ${a}/(${a}+${b}) × ${total} = ${ans}`;
             break;
         }
@@ -1663,7 +1663,7 @@ function genAdvancedDiverseQ(diff) {
             ans = rnd(-10, 15);
             b = rnd(2, 8);
             const rhs = b + ans;
-            text = `x + ${b} = ${rhs}، x = ؟`;
+            text = `x + ${b} = ${rhs}`;
             hint = 'عزل المجهول';
             explanation = `x = ${rhs} - ${b} = ${ans}`;
             break;
@@ -1672,7 +1672,7 @@ function genAdvancedDiverseQ(diff) {
             ans = rnd(1, 10);
             const coef = rnd(2, 5), con = rnd(1, 8);
             const rhs2 = coef * ans + con;
-            text = `${coef}x + ${con} = ${rhs2}، x = ؟`;
+            text = `${coef}x + ${con} = ${rhs2}`;
             hint = 'اطرح أولاً ثم اقسم';
             explanation = `${coef}x = ${rhs2 - con}، x = ${ans}`;
             break;
@@ -1682,7 +1682,7 @@ function genAdvancedDiverseQ(diff) {
             const _den  = rnd(2, 5);
             const _rhs3 = rnd(2, 12);
             const _xAct = _rhs3 * _den;
-            text = `x ÷ ${_den} = ${_rhs3}، x = ؟`;
+            text = `x ÷ ${_den} = ${_rhs3}`;
             ans  = _xAct;
             hint = 'اضرب الطرفين في المقام';
             explanation = `x = ${_rhs3} × ${_den} = ${_xAct}`;
@@ -1775,13 +1775,13 @@ function genAdvancedDiverseQ(diff) {
             a = rnd(2, 5); b = rnd(1, 3); c = rnd(1, 2);
             ans = Math.pow(a, b + c);
             text = `${a}^${b} × ${a}^${c} = ؟`;
-            hint = 'قانون الأسس: اجمع الأسس عند الضرب بنفس القاعدة';
+            hint = 'قانون الأسس: اجمع الأسس';
             explanation = `${a}^(${b}+${c}) = ${a}^${b+c} = ${ans}`;
             break;
         }
 
         /* ─── مسائل لفظية متنوعة ─── */
-      case 'word_neg': {
+       case 'word_neg': {
             const temp1 = -rnd(5, 20);
             const rise = rnd(1, 10);
             ans = temp1 + rise;
