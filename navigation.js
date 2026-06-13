@@ -227,7 +227,7 @@
             const suddenBadge = bestSudden >= 10
                 ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#ef4444,#f97316);">⚡' + bestSudden + '</div>'
                 : '<div class="mode-card-badge" style="background:#ef4444">حار</div>';
-            const rocketStageNames = ['سهل', 'سهل+', 'متوسط', 'متوسط+', 'yعب', 'yعب+', 'عبقري'];
+            const rocketStageNames = ['سهل', 'سهل+', 'متوسط', 'متوسط+', 'صعب', 'صعب+', 'عبقري'];
             const rocketBadge = bestRocket >= 4
                 ? '<div class="mode-card-badge" style="background:linear-gradient(135deg,#7c3aed,#06b6d4);">🚀 ' + rocketStageNames[bestRocket] + '</div>'
                 : '<div class="mode-card-badge" style="background:#7c3aed">جديد</div>';
@@ -278,7 +278,7 @@
                 <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('classic','adv_roots', null, true)" style="border:1px solid rgba(240,185,11,0.35);">
                     <div class="mode-card-badge" style="background:linear-gradient(135deg,#f0b90b,#f97316);">جديد</div>
                     <span class="mode-card-icon">🔢</span>
-                    <div class="mode-card-name">الأxx والجذور</div>
+                    <div class="mode-card-name">الأسس والجذور</div>
                     <div class="mode-card-desc">قوى • جذور تربيعية • جذور تكعيبية</div>
                 </div>
                 <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('classic','adv_log', null, true)" style="border:1px solid rgba(6,182,212,0.35);">
@@ -291,7 +291,7 @@
                     <div class="mode-card-badge" style="background:#10b981;">جديد</div>
                     <span class="mode-card-icon">📐</span>
                     <div class="mode-card-name">الهندسة</div>
-                    <div class="mode-card-desc">مساحات • محيطات • حجوم • فيثاغورx</div>
+                    <div class="mode-card-desc">مساحات • محيطات • حجوم • فيثاغورس</div>
                 </div>
                 <div class="mode-card" onclick="closeSheet('opSheet'); startGameWith('classic','adv_eq', null, true)" style="border:1px solid rgba(239,68,68,0.35);">
                     <div class="mode-card-badge" style="background:#ef4444;">جديد</div>
