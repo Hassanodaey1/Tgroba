@@ -2273,63 +2273,49 @@ function buyExclusive(id) {
 
 function _applyExclusiveItem(item) {
     try {
+        const _give = typeof giveReward === 'function' ? giveReward : _fallbackGive;
+
         if (item.type === 'frame') {
-            if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
-            if (item.preview && !st.ownedFrames.includes(item.preview)) st.ownedFrames.push(item.preview);
+            _give('frame', item.preview, item.name);
+            /* تفعيل الإطار فوراً */
             st.activeFrame = item.preview;
             if (typeof _applyActiveFrameGlobally === 'function') _applyActiveFrameGlobally();
+
         } else if (item.type === 'title') {
-            if (!st.ownedTitles) st.ownedTitles = [];
-            if (!st.ownedTitles.includes(item.titleValue)) st.ownedTitles.push(item.titleValue);
+            _give('title', item.titleValue, item.titleLabel);
             st.activeTitle = item.titleLabel;
-            if (typeof renderProfileTitles === 'function') renderProfileTitles();
+
         } else if (item.type === 'avatar') {
-            if (!st.ownedEmojis) st.ownedEmojis = [];
-            if (!st.ownedEmojis.includes(item.emojiValue)) st.ownedEmojis.push(item.emojiValue);
+            _give('emoji', item.emojiValue || item.icon, item.name);
+
         } else if (item.type === 'bundle' && item.bundleItems) {
             item.bundleItems.forEach(bi => {
-                switch (bi.type) {
-                    case 'coins':
-                        st.coins = (st.coins || 0) + Math.min(bi.val, 500);
-                        break;
-                    case 'shields':
-                    case 'shield':
-                        st.dailyShieldUsed = false;
-                        st.lastShieldDate  = null;
-                        if (bi.val > 1 && st.season) {
-                            st.season.streakShields = Math.min(10, (st.season.streakShields || 0) + Math.floor(bi.val / 2));
-                        }
-                        break;
-                    case 'xpBoost':
-                        if (typeof _shopState !== 'undefined') {
-                            _shopState.xpBoostActive = true;
-                            _shopState.xpBoostMultiplier = bi.val || 2;
-                        }
-                        st._xpBoostMultiplier = bi.val || 2;
-                        const _durationMs = (bi.durationHours || 24) * 3600 * 1000;
-                        st._xpBoostExpires = Date.now() + _durationMs;
-                        break;
-                    case 'frame':
-                        if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
-                        if (!st.ownedFrames.includes(bi.val)) st.ownedFrames.push(bi.val);
-                        break;
-                    case 'title':
-                        if (!st.ownedTitles) st.ownedTitles = [];
-                        if (bi.val && !st.ownedTitles.includes(bi.val)) st.ownedTitles.push(bi.val);
-                        if (bi.label) st.activeTitle = bi.label;
-                        break;
-                    case 'skip':
-                        if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0 };
-                        st.inventory.skip = Math.min(99, (st.inventory.skip || 0) + bi.val);
-                        break;
-                    case 'hearts':
-                        if (!st.inventory) st.inventory = { skip: 0, heart: 0, remove: 0, hint: 0 };
-                        st.inventory.heart = Math.min(99, (st.inventory.heart || 0) + bi.val);
-                        break;
-                }
+                _give(bi.type, bi.val, bi.label);
             });
         }
     } catch(e) { console.warn('[Exclusives] _applyExclusiveItem error:', e); }
+}
+
+/* fallback بسيط إذا لم تُحمَّل competition_logic بعد */
+function _fallbackGive(type, value, label) {
+    if (!st.inventory)   st.inventory   = { skip: 0, heart: 0, remove: 0, hint: 0 };
+    if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
+    if (!st.ownedTitles) st.ownedTitles = [];
+    if (!st.ownedEmojis) st.ownedEmojis = ['👦'];
+    switch (type) {
+        case 'coins':    st.coins = Math.min(999999, (st.coins||0)+(value||0)); break;
+        case 'diamonds': st.diamonds = Math.min(9999, (st.diamonds||0)+(value||0)); break;
+        case 'skip': case 'skips':   st.inventory.skip   = Math.min(99,(st.inventory.skip||0)+(value||1)); break;
+        case 'heart': case 'hearts': st.inventory.heart  = Math.min(99,(st.inventory.heart||0)+(value||1)); break;
+        case 'remove':               st.inventory.remove = Math.min(99,(st.inventory.remove||0)+(value||1)); break;
+        case 'hint':                 st.inventory.hint   = Math.min(99,(st.inventory.hint||0)+(value||1)); break;
+        case 'shield': case 'shields': if(st.season) st.season.streakShields=Math.min(10,(st.season.streakShields||0)+(value||1)); break;
+        case 'xpBoost': st._xpBoostMultiplier=value||2; st._xpBoostExpires=Date.now()+86400000; break;
+        case 'frame':   if(value&&!st.ownedFrames.includes(value)) st.ownedFrames.push(value); break;
+        case 'emoji': case 'avatar': if(value&&!st.ownedEmojis.includes(value)) st.ownedEmojis.push(value); break;
+        case 'title':   if(value&&!st.ownedTitles.includes(value)) st.ownedTitles.push(value); break;
+    }
+    saveSt();
 }
 
 /* ─── تصدير الدوال ─── */
