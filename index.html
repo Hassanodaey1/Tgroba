@@ -2119,31 +2119,57 @@ function closeSettingsSubPage(overlayId) {
 
         /* ═══ مهام التحدي اليومية ═══ */
         var CHALLENGE_TASKS = [
-            { icon:'⚡', name:'المبتدئ',   desc:'اجمع 5 نقاط في التحدي',  target:5,  reward:2  },
-            { icon:'🔥', name:'المتحمس',   desc:'اجمع 15 نقطة في التحدي', target:15, reward:4  },
-            { icon:'💪', name:'المقاتل',   desc:'اجمع 30 نقطة في التحدي', target:30, reward:6  },
-            { icon:'🏅', name:'المحترف',   desc:'اجمع 50 نقطة في التحدي', target:50, reward:10 },
-            { icon:'👑', name:'الأسطورة',  desc:'اجمع 80 نقطة في التحدي', target:80, reward:20 }
+            /* ── سهل ── */
+            { icon:'⚡', name:'المبتدئ',         desc:'اجمع 5 نقاط في التحدي',              target:5,    reward:2,  diff:'سهل' },
+            { icon:'🔰', name:'أول خطوة',        desc:'العب لعبة تحدي واحدة',               target:1,    reward:2,  diff:'سهل', type:'games' },
+            { icon:'🌱', name:'البداية',          desc:'أجب على 10 أسئلة صحيحة في التحدي',  target:10,   reward:3,  diff:'سهل', type:'correct' },
+            /* ── متوسط ── */
+            { icon:'🔥', name:'المتحمس',          desc:'اجمع 15 نقطة في التحدي',             target:15,   reward:4,  diff:'متوسط' },
+            { icon:'💪', name:'المقاتل',          desc:'اجمع 30 نقطة في التحدي',             target:30,   reward:6,  diff:'متوسط' },
+            { icon:'🎯', name:'المركّز',          desc:'أجب على 25 سؤالاً صحيحاً في التحدي', target:25,   reward:5,  diff:'متوسط', type:'correct' },
+            { icon:'🏃', name:'المثابر',          desc:'العب 5 ألعاب تحدي',                  target:5,    reward:5,  diff:'متوسط', type:'games' },
+            /* ── صعب ── */
+            { icon:'🏅', name:'المحترف',          desc:'اجمع 50 نقطة في التحدي',             target:50,   reward:10, diff:'صعب' },
+            { icon:'🔱', name:'المتسلق',          desc:'اجمع 75 نقطة في التحدي',             target:75,   reward:12, diff:'صعب' },
+            { icon:'⚔️', name:'المحارب',         desc:'أجب على 50 سؤالاً صحيحاً في التحدي', target:50,   reward:10, diff:'صعب', type:'correct' },
+            { icon:'🌟', name:'نجم التحدي',       desc:'العب 15 لعبة تحدي',                  target:15,   reward:10, diff:'صعب', type:'games' },
+            /* ── عبقري ── */
+            { icon:'👑', name:'الأسطورة',         desc:'اجمع 80 نقطة في التحدي',             target:80,   reward:20, diff:'عبقري' },
+            { icon:'💎', name:'الماسي',           desc:'اجمع 120 نقطة في التحدي',            target:120,  reward:25, diff:'عبقري' },
+            { icon:'🦅', name:'نسر الأرقام',      desc:'أجب على 100 سؤال صحيح في التحدي',   target:100,  reward:20, diff:'عبقري', type:'correct' },
+            { icon:'🔭', name:'عالم التحدي',      desc:'العب 30 لعبة تحدي',                  target:30,   reward:18, diff:'عبقري', type:'games' },
+            /* ── مستحيل ── */
+            { icon:'🌌', name:'خارق الحدود',      desc:'اجمع 200 نقطة في التحدي',            target:200,  reward:40, diff:'مستحيل' },
+            { icon:'🏆', name:'لا يُهزم',         desc:'أجب على 200 سؤال صحيح في التحدي',   target:200,  reward:35, diff:'مستحيل', type:'correct' },
+            { icon:'👁️', name:'العين الساهرة',    desc:'العب 50 لعبة تحدي',                  target:50,   reward:30, diff:'مستحيل', type:'games' },
         ];
 
         function renderChallengeDailyTasks() {
             var list = document.getElementById('challengeDailyTasksList');
             if (!list) return;
-            var score = (typeof st !== 'undefined') ? (st.challengeBestScore || 0) : 0;
+            var score   = (typeof st !== 'undefined') ? (st.challengeBestScore   || 0) : 0;
+            var correct = (typeof st !== 'undefined') ? (st.challengeCorrectTotal || st.totalCorrect || 0) : 0;
+            var games   = (typeof st !== 'undefined') ? (st.challengeGamesPlayed  || 0) : 0;
             updateChallengeTasksBtn();
+            var diffColor = { '\u0633\u0647\u0644':'#10b981','\u0645\u062a\u0648\u0633\u0637':'#f0b90b','\u0635\u0639\u0628':'#f97316','\u0639\u0628\u0642\u0631\u064a':'#7c3aed','\u0645\u0633\u062a\u062d\u064a\u0644':'#ef4444' };
             list.innerHTML = CHALLENGE_TASKS.map(function(t) {
-                var prog = Math.min(100, Math.round((score / t.target) * 100));
-                var done = score >= t.target;
+                var val  = t.type === 'correct' ? correct : t.type === 'games' ? games : score;
+                var prog = Math.min(100, Math.round((val / t.target) * 100));
+                var done = val >= t.target;
+                var dc   = (t.diff && diffColor[t.diff]) ? diffColor[t.diff] : 'var(--gold)';
+                var diffBadge = t.diff ? '<span style="font-size:0.55em;padding:2px 7px;border-radius:20px;font-weight:900;background:' + dc + '22;color:' + dc + ';border:1px solid ' + dc + '44;">' + t.diff + '</span>' : '';
                 return '<div class="task-item' + (done ? ' done' : '') + '">' +
                     '<div class="task-item-icon">' + t.icon + '</div>' +
                     '<div class="task-item-info">' +
-                        '<div class="task-item-name">' + t.name + '</div>' +
+                        '<div style="display:flex;align-items:center;gap:6px;">' +
+                            '<div class="task-item-name">' + t.name + '</div>' + diffBadge +
+                        '</div>' +
                         '<div class="task-item-desc">' + t.desc + '</div>' +
                         '<div class="task-prog-bar"><div class="task-prog-fill" style="width:' + prog + '%"></div></div>' +
                     '</div>' +
                     '<div class="task-right">' +
                         '<div class="task-reward">+' + t.reward + '💰</div>' +
-                        '<div class="task-prog-txt">' + Math.min(score, t.target) + '/' + t.target + '</div>' +
+                        '<div class="task-prog-txt">' + Math.min(val, t.target) + '/' + t.target + '</div>' +
                         (done ? '<div style="font-size:0.7em;color:var(--green);">✅</div>' : '') +
                     '</div>' +
                 '</div>';
@@ -2155,18 +2181,25 @@ function closeSettingsSubPage(overlayId) {
             var ov = document.getElementById('challengeTasksOverlay');
             if (!ov) return;
             ov.style.display = 'flex';
+            renderChallengeDailyTasks();
         }
         function closeChallengeTasksOverlay() {
             var ov = document.getElementById('challengeTasksOverlay');
             if (ov) ov.style.display = 'none';
         }
         function updateChallengeTasksBtn() {
-            var score = (typeof st !== 'undefined') ? (st.challengeBestScore || 0) : 0;
-            var done = CHALLENGE_TASKS.filter(function(t){ return score >= t.target; }).length;
+            var score   = (typeof st !== 'undefined') ? (st.challengeBestScore   || 0) : 0;
+            var correct = (typeof st !== 'undefined') ? (st.challengeCorrectTotal || st.totalCorrect || 0) : 0;
+            var games   = (typeof st !== 'undefined') ? (st.challengeGamesPlayed  || 0) : 0;
+            var done = CHALLENGE_TASKS.filter(function(t) {
+                var val = t.type === 'correct' ? correct : t.type === 'games' ? games : score;
+                return val >= t.target;
+            }).length;
+            var total = CHALLENGE_TASKS.length;
             var el = document.getElementById('challengeTasksBtnProgress');
             if (el) {
-                el.textContent = done + '/5';
-                el.style.color = done === 5 ? 'var(--green)' : 'var(--gold)';
+                el.textContent = done + '/' + total;
+                el.style.color = done === total ? 'var(--green)' : 'var(--gold)';
             }
         }
 
@@ -2442,4 +2475,4 @@ function closeSettingsSubPage(overlayId) {
 </html>
           
          
-         
+        
