@@ -1,2944 +1,4436 @@
 /* ═══════════════════════════════════════════════════════════
-   صفحة المنافسة — JavaScript الكامل
-   استبدل/أضف هذه الدوال في ملف questions.js
-   (أو في ملف منفصل يُحمَّل بعد questions.js)
+   صفحة المنافسة — CSS الحماسي
+   أضف هذا في آخر ملف styles.css أو في ملف منفصل
    © 2026 Hassan Odaey
 ═══════════════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════
-   متغيرات حالة التحدي
-══════════════════════════════════════ */
-window.CG = window.CG || {};
-
-// سجل داخلي لمنع التلاعب بالنقاط
-let _cgScoreInternal = 0;
-let _cgStreak = 0; // تتابع الإجابات الصحيحة في التحدي
-
-function _cgResetScore() { _cgScoreInternal = 0; _cgStreak = 0; }
-function _cgAddScore(n) {
-    _cgScoreInternal = Math.max(0, _cgScoreInternal + n);
-    CG.score = _cgScoreInternal;
+/* ══════════════════════════════════════════
+   Hero Banner — البطل الرئيسي
+══════════════════════════════════════════ */
+.comp-hero-banner {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    margin-top: 10px;
+    padding: 24px 18px 18px;
+    background: linear-gradient(145deg, #0e0b1f 0%, #1a0a2e 40%, #0b1a2e 100%);
+    border: 1.5px solid rgba(240, 185, 11, 0.3);
+    box-shadow: 0 8px 40px rgba(124, 58, 237, 0.2), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
-/* ══════════════════════════════════════
-   تهيئة الجسيمات في الـ Hero Banner
-══════════════════════════════════════ */
-function initCompHeroSparks() {
-    const el = document.getElementById('compHeroBgSparks');
-    if (!el) return;
-    el.innerHTML = '';
-    for (let i = 0; i < 18; i++) {
-        const s = document.createElement('div');
-        s.className = 'comp-spark';
-        const x = Math.random() * 100;
-        const y = 60 + Math.random() * 40;
-        s.style.cssText = `
-            left:${x}%;top:${y}%;
-            --dur:${2.5 + Math.random() * 3.5}s;
-            --delay:${Math.random() * 4}s;
-            --tx:${(Math.random() - 0.5) * 80}px;
-            --ty:${-50 - Math.random() * 60}px;
-            background:${Math.random() > 0.5 ? '#f0b90b' : '#7c3aed'};
-            width:${1.5 + Math.random() * 2}px;
-            height:${1.5 + Math.random() * 2}px;
-        `;
-        el.appendChild(s);
-    }
+.comp-hero-bg-sparks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
 }
 
-/* خطوط متحركة في العد التنازلي */
-function initCdoBgLines() {
-    const el = document.getElementById('cdoBgLines');
-    if (!el) return;
-    el.innerHTML = '';
-    for (let i = 0; i < 12; i++) {
-        const l = document.createElement('div');
-        l.className = 'cdo-line';
-        l.style.cssText = `
-            left:${5 + i * 8}%;
-            height:${60 + Math.random() * 40}%;
-            --dur:${2 + Math.random() * 2.5}s;
-            --delay:${Math.random() * 3}s;
-        `;
-        el.appendChild(l);
-    }
+.comp-spark {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: sparkFly var(--dur, 4s) linear infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
 }
 
-/* ══════════════════════════════════════
-   تحديث إحصائياتي في الـ Hero
-══════════════════════════════════════ */
-function updateCompMyStats(playersData) {
-    const myBest = document.getElementById('challengeBestDisplay');
-    if (myBest) myBest.textContent = st.challengeBestScore || 0;
-
-    if (!playersData) return;
-
-    const total = document.getElementById('compTotalPlayers');
-    if (total) total.textContent = playersData.length;
-
-    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
-    if (!myKey) return;
-    const myIdx = playersData.findIndex(p => p.id === myKey);
-    const rankEl = document.getElementById('compMyRank');
-    if (rankEl) rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
+@keyframes sparkFly {
+    0%   { transform: translate(0,0) scale(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.6; }
+    100% { transform: translate(var(--tx, 60px), var(--ty, -80px)) scale(2); opacity: 0; }
 }
 
-/* ══════════════════════════════════════
-   العد التنازلي قبل البدء
-══════════════════════════════════════ */
-function launchChallengeCountdown() {
-    const mainView = document.getElementById('competitionMainView');
-    const overlay  = document.getElementById('challengeCountdownOverlay');
-    if (!mainView || !overlay) { startChallengeGame(); return; }
-
-    // إخفاء الواجهة الرئيسية
-    mainView.style.display = 'none';
-    overlay.style.display = 'flex';
-    initCdoBgLines();
-
-    const numEl = document.getElementById('cdoNumber');
-    const subEl = document.getElementById('cdoSub');
-    let count = 3;
-
-    function tick() {
-        if (!numEl) return;
-        // إعادة تشغيل الأنيميشن
-        numEl.style.animation = 'none';
-        void numEl.offsetWidth;
-        numEl.style.animation = 'cdoNumPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
-
-        if (count > 0) {
-            numEl.textContent = count;
-            numEl.style.color = count === 1 ? '#ef4444' : count === 2 ? '#f97316' : '#f0b90b';
-            try { playSound('click'); } catch(e) {}
-            count--;
-            setTimeout(tick, 900);
-        } else {
-            // انطلق!
-            numEl.textContent = '🚀';
-            numEl.style.color = '#10b981';
-            if (subEl) subEl.textContent = 'انطلق!';
-            try { playSound('correct'); } catch(e) {}
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                startChallengeGame();
-            }, 600);
-        }
-    }
-    tick();
+.comp-hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    z-index: 1;
 }
 
-/* ══════════════════════════════════════
-   بدء لعبة التحدي
-══════════════════════════════════════ */
-function startChallengeGame() {
-    _cgResetScore();
-    _cgStreak = 0;
-
-    CG.active     = true;
-    CG.score      = 0;
-    CG.questionIndex = 0;
-    CG.answered   = false;
-    CG.ended      = false;
-    CG.correctAnswer  = 0;
-    CG.currentExplanation = '';
-    CG.askedQuestions = [];
-    CG.timeLeft   = 60;
-    CG.maxTime    = 60;
-    CG.consecutiveWrong = 0;
-    CG.helpersUsedSession = { skip: 0, remove: 0, time: 0 };
-    /* ✅ ANTI-CHEAT: تسجيل وقت البدء الحقيقي لرفض النتائج المستحيلة */
-    CG._sessionStartMs = Date.now();
-    CG._lastAnswerTime = 0;
-
-    if (CG.timer) { clearInterval(CG.timer); CG.timer = null; }
-
-    // إخفاء كل الطبقات وإظهار اللعبة
-    const views = ['competitionMainView','challengeCountdownOverlay','challengeResultArea'];
-    views.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-
-    const gameArea = document.getElementById('challengeGameArea');
-    if (gameArea) gameArea.style.display = 'flex';
-
-    // تحديث الواجهة الأولية
-    const scoreEl = document.getElementById('challengeScoreDisplay');
-    if (scoreEl) scoreEl.textContent = '0';
-
-    updateChallengeTimerUI();
-    resetChallengeHelpers();
-    updateCgaStreakBanner(0);
-    startChallengeTimer();
-    loadChallengeQuestion();
+.comp-hero-icon-wrap {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
 }
 
-/* ══════════════════════════════════════
-   المؤقت
-══════════════════════════════════════ */
-function startChallengeTimer() {
-    if (CG.timer) clearInterval(CG.timer);
-    CG.timer = setInterval(() => {
-        if (CG.ended) { clearInterval(CG.timer); return; }
-        CG.timeLeft--;
-        updateChallengeTimerUI();
-        if (CG.timeLeft <= 10) {
-            try { playSound('tick'); } catch(e) {}
-        }
-        if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); }
-    }, 1000);
+.comp-hero-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold), var(--accent), #ef4444, var(--gold));
+    animation: spin 3s linear infinite;
+    opacity: 0.8;
 }
 
-function updateChallengeTimerUI() {
-    const numEl  = document.getElementById('challengeTimerDisplay');
-    const barEl  = document.getElementById('challengeTimerBar');
-    const glowEl = document.getElementById('cgaTimerGlow');
-
-    if (!numEl) return;
-
-    const pct = Math.max(0, (CG.timeLeft / CG.maxTime) * 100);
-    numEl.textContent = CG.timeLeft;
-
-    const isDanger = CG.timeLeft <= 10;
-    numEl.classList.toggle('danger', isDanger);
-    if (barEl) {
-        barEl.style.width = pct + '%';
-        barEl.classList.toggle('danger-bar', isDanger);
-    }
-    if (glowEl) {
-        glowEl.style.background = isDanger ? '#ef4444' : '#06b6d4';
-        glowEl.style.right = (100 - pct) + '%';
-    }
+.comp-hero-ring::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: #1a0a2e;
 }
 
-/* ══════════════════════════════════════
-   تحميل سؤال التحدي
-══════════════════════════════════════ */
-function loadChallengeQuestion() {
-    if (CG.ended) return;
-    CG.answered = false;
-
-    // مسح الشرح
-    const expEl = document.getElementById('challengeExplanation');
-    if (expEl) { expEl.innerHTML = ''; expEl.style.display = 'none'; }
-
-    // إزالة تأثيرات البطاقة
-    const card = document.getElementById('cgaQuestionCard');
-    if (card) { card.classList.remove('card-correct', 'card-wrong'); }
-
-    let q, attempts = 0;
-    do {
-        q = genChallengeQ(CG.questionIndex);
-        const qKey = q.text + '|' + q.answer;
-        if (!CG.askedQuestions.includes(qKey)) {
-            CG.askedQuestions.push(qKey);
-            if (CG.askedQuestions.length > 100) CG.askedQuestions.shift();
-            break;
-        }
-        attempts++;
-        if (attempts > 60) break;
-    } while (true);
-
-    CG.correctAnswer = q.answer;
-    CG.currentExplanation = q.explanation || '';
-
-    // تحديث رقم السؤال والصعوبة
-    const qNum = CG.questionIndex + 1;
-    ['challengeQNum', 'cgaQNumLabel'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = `السؤال ${qNum}`;
-    });
-
-    // تلوين بادج الصعوبة
-    const diffLabels = ['سهل جداً','سهل','متوسط','متوسط+','صعب','صعب+','عبقري'];
-    const diffClasses = ['diff-easy','diff-easy','diff-medium','diff-medium','diff-hard','diff-hard','diff-genius'];
-    const diffEl = document.getElementById('challengeDiffLabel');
-    if (diffEl) {
-        diffEl.textContent = diffLabels[q.level] || 'عبقري';
-        diffEl.className = 'cga-diff-badge ' + (diffClasses[q.level] || 'diff-genius');
-    }
-
-    // عرض السؤال مع أنيميشن
-    const qtEl = document.getElementById('challengeQuestionText');
-    if (qtEl) {
-        qtEl.style.animation = 'none';
-        void qtEl.offsetWidth;
-        qtEl.style.animation = 'qPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        qtEl.textContent = `${q.text} = ?`;
-    }
-
-    const hintEl = document.getElementById('challengeHint');
-    if (hintEl) hintEl.textContent = q.hint || 'ما هو الجواب؟';
-
-    // عرض الأزرار
-    const grid = document.getElementById('challengeAnswersGrid');
-    if (grid) {
-        grid.innerHTML = '';
-        (q.choices || []).forEach(c => {
-            const btn = document.createElement('button');
-            btn.className = 'answer-btn';
-            btn.textContent = c;
-            btn.setAttribute('data-val', c);
-            btn.onclick = () => checkChallengeAnswer(btn);
-            grid.appendChild(btn);
-        });
-    }
+.comp-hero-icon {
+    font-size: 2.2em;
+    position: relative;
+    z-index: 1;
+    animation: heroPulse 2s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 12px rgba(240,185,11,0.6));
 }
 
-/* ══════════════════════════════════════
-   فحص الإجابة
-══════════════════════════════════════ */
-function checkChallengeAnswer(btn) {
-    if (CG.answered || CG.ended) return;
-    /* ✅ ANTI-CHEAT: منع النقر المتسارع (debounce 200ms) */
-    const _now = Date.now();
-    if (CG._lastAnswerTime && _now - CG._lastAnswerTime < 200) return;
-    CG._lastAnswerTime = _now;
-    CG.answered = true;
-
-    const val = parseFloat(btn.getAttribute('data-val'));
-    document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => b.disabled = true);
-
-    const card = document.getElementById('cgaQuestionCard');
-
-    if (Math.abs(val - CG.correctAnswer) < 0.001) {
-        btn.classList.add('correct');
-        if (card) card.classList.add('card-correct');
-
-        _cgStreak++;
-
-        // نظام النقاط المتطور:
-        // نقطة أساسية + بونص التتابع
-        let pts = 1;
-        if (_cgStreak >= 10) pts = 3;       // تتابع ×10 → +3
-        else if (_cgStreak >= 5) pts = 2;   // تتابع ×5 → +2
-
-        _cgAddScore(pts);
-        CG.questionIndex++;
-        CG.consecutiveWrong = 0;
-
-        // تحديث النقاط مع أنيميشن
-        const scoreEl = document.getElementById('challengeScoreDisplay');
-        if (scoreEl) {
-            scoreEl.textContent = CG.score;
-            scoreEl.classList.remove('score-bump');
-            void scoreEl.offsetWidth;
-            scoreEl.classList.add('score-bump');
-        }
-
-        // +1 ثانية (لا تتجاوز الحد الأقصى)
-        CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 1);
-        updateChallengeTimerUI();
-
-        // تحديث بانر التتابع
-        updateCgaStreakBanner(_cgStreak);
-
-        // Feedback
-        const fbMsg = pts > 1 ? `✅ +${pts} 🔥×${_cgStreak}` : '✅ +1';
-        try { showFeedback(fbMsg); } catch(e) {}
-        try { playSound('correct'); } catch(e) {}
-
-        // احتفال كل 10 نقاط
-        if (CG.score > 0 && CG.score % 10 === 0) {
-            try { doConfetti(); } catch(e) {}
-            try { showComboEffect(CG.score); } catch(e) {}
-        }
-
-        // XP عائم
-        try { showFloatXP(pts); } catch(e) {}
-
-    } else {
-        btn.classList.add('wrong');
-        document.querySelectorAll('#challengeAnswersGrid .answer-btn').forEach(b => {
-            if (Math.abs(parseFloat(b.getAttribute('data-val')) - CG.correctAnswer) < 0.001) b.classList.add('correct');
-        });
-        if (card) card.classList.add('card-wrong');
-
-        _cgStreak = 0; // كسر التتابع
-        updateCgaStreakBanner(0);
-
-        // عداد الأخطاء المتتالية
-        CG.consecutiveWrong = (CG.consecutiveWrong || 0) + 1;
-        if (CG.consecutiveWrong >= 2) {
-            _cgAddScore(-1);
-            CG.consecutiveWrong = 0;
-            const scoreEl = document.getElementById('challengeScoreDisplay');
-            if (scoreEl) scoreEl.textContent = CG.score;
-            try { showFeedback('❌ ×2 → -1 نقطة'); } catch(e) {}
-        } else {
-            try { showFeedback('❌ -2 ثانية'); } catch(e) {}
-        }
-
-        try { playSound('wrong'); } catch(e) {}
-
-        // -2 ثانية
-        CG.timeLeft = Math.max(0, CG.timeLeft - 2);
-        updateChallengeTimerUI();
-
-        // شرح الإجابة
-        const expEl = document.getElementById('challengeExplanation');
-        if (expEl) {
-            expEl.innerHTML = `<div class="explanation-box">📝 الإجابة الصحيحة: <strong>${CG.correctAnswer}</strong><br>${CG.currentExplanation || ''}</div>`;
-            expEl.style.display = 'block';
-        }
-
-        if (CG.timeLeft <= 0) { clearInterval(CG.timer); endChallengeGame(); return; }
-    }
-
-    // ✅ FIX: المساعدات تُعاد لكل سؤال (بحد أقصى استخدام واحد لكل مساعدة في الجلسة الكاملة)
-    // لا نعيد ضبطها هنا، بل نتركها locked طوال الجلسة — تم الإصلاح بإزالة السطر الذي كان يعيد ضبطها
-
-    setTimeout(() => {
-        if (CG.ended) return;
-        loadChallengeQuestion();
-    }, Math.abs(val - CG.correctAnswer) < 0.001 ? 320 : 700);
+@keyframes heroPulse {
+    from { transform: scale(1); filter: drop-shadow(0 0 8px rgba(240,185,11,0.4)); }
+    to   { transform: scale(1.08); filter: drop-shadow(0 0 20px rgba(240,185,11,0.9)); }
 }
 
-/* ══════════════════════════════════════
-   بانر التتابع
-══════════════════════════════════════ */
-function updateCgaStreakBanner(streak) {
-    const banner = document.getElementById('cgaStreakBanner');
-    const text   = document.getElementById('cgaStreakText');
-    if (!banner) return;
-
-    if (streak >= 3) {
-        text.textContent = streak >= 10 ? `⚡ تتابع ×${streak} — خارق!` :
-                           streak >= 5  ? `🔥 تتابع ×${streak} — رائع!` :
-                                          `🔥 ×${streak}`;
-        banner.style.display = 'block';
-    } else {
-        banner.style.display = 'none';
-    }
+.comp-hero-title {
+    font-size: 1.55em;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 1px;
+    text-shadow: 0 0 20px rgba(240,185,11,0.3);
 }
 
-/* ══════════════════════════════════════
-   إنهاء لعبة التحدي
-══════════════════════════════════════ */
-function endChallengeGame() {
-    if (CG.ended) return;
-    CG.ended  = true;
-    CG.active = false;
-    if (CG.timer) clearInterval(CG.timer);
-
-    /* ✅ ANTI-CHEAT: تحقق من مدة الجلسة — لا يمكن الحصول على نقاط عالية في وقت قصير جداً */
-    const _sessionMs = Date.now() - (CG._sessionStartMs || Date.now());
-    const _minExpectedMs = (CG.questionIndex || 0) * 800; /* 800ms على الأقل لكل سؤال */
-    if (CG.questionIndex > 5 && _sessionMs < _minExpectedMs) {
-        console.warn('[HO Math] جلسة تحدي مشبوهة — سرعة مستحيلة');
-        /* تقليص النتيجة إلى صفر لجلسات مشبوهة */
-        _cgScoreInternal = 0;
-    }
-
-    CG.score = Math.max(0, Math.min(Math.floor(_cgScoreInternal || 0), 180));
-    _cgScoreInternal = CG.score;
-
-    const isNewRecord = CG.score > (st.challengeBestScore || 0);
-    if (isNewRecord) st.challengeBestScore = CG.score;
-    st.challengeGamesPlayed = (st.challengeGamesPlayed || 0) + 1;
-
-    /* ── تحديث مهام الموسم بناءً على نتيجة هذه الجلسة ── */
-    try { _seasonUpdateAfterGame({ score: CG.score, mode: 'challenge' }); } catch(e) {}
-
-    /* ═══ 💎 ماس من التحدي ═══ */
-    try {
-        if (typeof st.diamonds === 'number') {
-            const _today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
-            if (!st._diamondSources) st._diamondSources = {};
-            let _cd = 0;
-            /* أول مرة تصل لـ 30 نقطة في التحدي — يومياً */
-            if (CG.score >= 30) {
-                const _k = 'challenge30_' + _today;
-                if (!st._diamondSources[_k]) { st._diamondSources[_k] = true; _cd += 1; }
-            }
-            /* سجل شخصي جديد في التحدي */
-            if (isNewRecord && CG.score >= 20) {
-                const _k2 = 'challenge_record_' + _today;
-                if (!st._diamondSources[_k2]) { st._diamondSources[_k2] = true; _cd += 1; }
-            }
-            if (_cd > 0) {
-                st.diamonds = Math.min(9999, st.diamonds + _cd);
-                setTimeout(() => {
-                    try { showFeedback(`💎 +${_cd} ماس نادر!`); } catch(e) {}
-                    try { if (typeof _showDiamondFloat === 'function') _showDiamondFloat(_cd); } catch(e) {}
-                }, 800);
-            }
-        }
-    } catch(_de) {}
-
-    saveSt();
-
-    // مزامنة Firebase
-    syncChallengeScore(CG.score);
-
-    // انتقال لشاشة النتيجة
-    const gameArea = document.getElementById('challengeGameArea');
-    const resultArea = document.getElementById('challengeResultArea');
-    if (gameArea) gameArea.style.display = 'none';
-    if (resultArea) resultArea.style.display = 'flex';
-
-    // تعبئة بيانات النتيجة
-    const finalScore = document.getElementById('challengeFinalScore');
-    const bestScore  = document.getElementById('challengeBestScore');
-    const resultMsg  = document.getElementById('challengeResultMsg');
-    const medalIcon  = document.getElementById('cgrMedalIcon');
-
-    if (finalScore) finalScore.textContent = CG.score;
-    if (bestScore)  bestScore.textContent  = st.challengeBestScore || CG.score;
-
-    // رسالة + ميدالية حسب النتيجة
-    let msg = '💪 حاول مجدداً!', medal = '🎯';
-    if (CG.score >= 60) { msg = '⭐ أسطورة!';      medal = '🏆'; }
-    else if (CG.score >= 40) { msg = '🔥 رائع جداً!'; medal = '🥇'; }
-    else if (CG.score >= 25) { msg = '⚡ ممتاز!';     medal = '🥈'; }
-    else if (CG.score >= 15) { msg = '😊 جيد جداً!'; medal = '🥉'; }
-
-    if (resultMsg) resultMsg.textContent = msg;
-    if (medalIcon) medalIcon.textContent = medal;
-
-    // سجل جديد؟
-    const recordBadge = document.getElementById('cgrRecordBadge');
-    if (recordBadge) recordBadge.style.display = isNewRecord ? 'block' : 'none';
-
-    // مقارنة بالسابق
-    const compareRow = document.getElementById('cgrCompareRow');
-    const compareText = document.getElementById('cgrCompareText');
-    if (compareRow && compareText && st.history && st.history.length >= 1) {
-        const lastScore = st.challengeBestScore === CG.score && !isNewRecord
-            ? (st.history[1] ? st.history[1].score : 0)
-            : (st.challengeBestScore - CG.score);
-        const diff = isNewRecord ? null : CG.score - (st.challengeBestScore - CG.score);
-        if (isNewRecord) {
-            compareText.innerHTML = `🎉 تجاوزت رقمك القياسي السابق!`;
-            compareRow.style.display = 'block';
-        } else {
-            compareRow.style.display = 'none';
-        }
-    } else if (compareRow) {
-        compareRow.style.display = 'none';
-    }
-
-    // احتفال
-    if (CG.score >= 15) {
-        try { doConfetti(); } catch(e) {}
-    }
-
-    // تحديث مرتبتي بعد المزامنة
-    setTimeout(() => {
-        if (database) {
-            database.ref('challenge_leaderboard')
-                .orderByChild('challengeScore')
-                .limitToLast(200)
-                .once('value', snapshot => {
-                    const players = [];
-                    snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                    players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
-                    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
-                    const myIdx = myKey ? players.findIndex(p => p.id === myKey) : -1;
-                    // تحديث نتيجة اللعبة
-                    const rankEl = document.getElementById('cgrRank');
-                    if (rankEl) rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
-                    // تحديث hero stats أيضاً
-                    _lbCache = players; _lbCacheTime = Date.now(); _lbCacheType = 'challenge';
-                    updateCompMyStats(players);
-                }).catch(() => {});
-        }
-    }, 1200);
+.comp-hero-sub {
+    font-size: 0.72em;
+    color: var(--text2);
+    margin-bottom: 4px;
 }
 
-/* ══════════════════════════════════════
-   المساعدات (مُصلَحة — مرة واحدة فقط لكل نوع في الجلسة)
-══════════════════════════════════════ */
-function resetChallengeHelpers() {
-    // لا نعيد ضبط الـ session counter — فقط إزالة تأثيرات الـ UI
-    ['challengeHelperSkip','challengeHelperRemove','challengeHelperTime'].forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const helperType = id.replace('challengeHelper','').toLowerCase();
-        // إذا استُخدمت في هذه الجلسة → تبقى locked
-        if (CG.helpersUsedSession && CG.helpersUsedSession[helperType] > 0) {
-            el.classList.add('used');
-            el.style.opacity = '0.3';
-        } else {
-            el.classList.remove('used');
-            el.style.opacity = '1';
-        }
-    });
+/* إحصائياتي الثلاث */
+.comp-my-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 4px;
 }
 
-function useChallengeHelper(type) {
-    if (CG.ended || CG.answered) return;
-    if (!CG.helpersUsedSession) CG.helpersUsedSession = { skip: 0, remove: 0, time: 0 };
-
-    if (type === 'skip') {
-        if (CG.helpersUsedSession.skip > 0) { try { showFeedback('⚠️ استخدمت هذه المساعدة'); } catch(e) {} return; }
-        if (st.coins < 3) { try { showFeedback('💸 لا يكفي!'); } catch(e) {} return; }
-        st.coins -= 3;
-        CG.helpersUsedSession.skip++;
-        const el = document.getElementById('challengeHelperSkip');
-        if (el) { el.classList.add('used'); el.style.opacity = '0.3'; }
-        try { showFeedback('⏭️ تم التخطي'); playSound('click'); } catch(e) {}
-        CG.answered = true;
-        _cgStreak = 0;
-        updateCgaStreakBanner(0);
-        setTimeout(() => { if (!CG.ended) loadChallengeQuestion(); }, 300);
-
-    } else if (type === 'remove') {
-        if (CG.helpersUsedSession.remove > 0) { try { showFeedback('⚠️ استخدمت هذه المساعدة'); } catch(e) {} return; }
-        if (st.coins < 4) { try { showFeedback('💸 لا يكفي!'); } catch(e) {} return; }
-        st.coins -= 4;
-        CG.helpersUsedSession.remove++;
-        const el = document.getElementById('challengeHelperRemove');
-        if (el) { el.classList.add('used'); el.style.opacity = '0.3'; }
-        const btns = [...document.querySelectorAll('#challengeAnswersGrid .answer-btn:not(:disabled)')];
-        const wrong = btns.filter(b => Math.abs(parseFloat(b.getAttribute('data-val')) - CG.correctAnswer) >= 0.001);
-        if (wrong.length > 0) {
-            const r = wrong[Math.floor(Math.random() * wrong.length)];
-            r.style.opacity = '0.15';
-            r.disabled = true;
-        }
-        try { showFeedback('🗑️ تم حذف إجابة'); playSound('click'); } catch(e) {}
-
-    } else if (type === 'time') {
-        if (CG.helpersUsedSession.time > 0) { try { showFeedback('⚠️ استخدمت هذه المساعدة'); } catch(e) {} return; }
-        if (st.coins < 5) { try { showFeedback('💸 لا يكفي!'); } catch(e) {} return; }
-        st.coins -= 5;
-        CG.helpersUsedSession.time++;
-        const el = document.getElementById('challengeHelperTime');
-        if (el) { el.classList.add('used'); el.style.opacity = '0.3'; }
-        CG.timeLeft = Math.min(CG.maxTime, CG.timeLeft + 10);
-        updateChallengeTimerUI();
-        try { showFeedback('⏰ +10 ثانية!'); playSound('correct'); } catch(e) {}
-    }
-
-    try { saveSt(); updateGameCoinsDisplay(); } catch(e) {}
+.comp-my-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px;
+    gap: 2px;
 }
 
-/* ══════════════════════════════════════
-   الخروج من التحدي
-══════════════════════════════════════ */
-function quitChallengeGame() {
-    try {
-        showConfirm('إنهاء التحدي', 'هل تريد إنهاء اللعبة؟ ستُحفظ نتيجتك الحالية.', 'نعم', 'استمرار', ok => {
-            if (ok) endChallengeGame();
-        });
-    } catch(e) {
-        endChallengeGame();
-    }
+.comp-my-stat-val {
+    font-size: 1.25em;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
 }
 
-/* ══════════════════════════════════════
-   العودة للواجهة الرئيسية للمنافسة
-══════════════════════════════════════ */
-function restartChallengeGame() {
-    if (CG.timer) clearInterval(CG.timer);
-
-    // إخفاء كل الشاشات
-    ['challengeCountdownOverlay','challengeGameArea','challengeResultArea'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-
-    // إظهار الواجهة الرئيسية
-    const main = document.getElementById('competitionMainView');
-    if (main) main.style.display = 'flex';
-
-    // تحديث أفضل نتيجة في الـ Hero
-    const bestEl = document.getElementById('challengeBestDisplay');
-    if (bestEl) bestEl.textContent = st.challengeBestScore || 0;
-
-    // إعادة تهيئة الجسيمات
-    initCompHeroSparks();
-
-    // تحديث لوحة الصدارة
-    try { loadCombinedLeaderboard(); } catch(e) {}
+.comp-my-stat-lbl {
+    font-size: 0.54em;
+    color: var(--text2);
+    font-weight: 600;
 }
 
-/* ══════════════════════════════════════
-   مزامنة نتيجة التحدي مع Firebase
-   (مُحسَّنة: Rate limiting + تحقق أقوى)
-══════════════════════════════════════ */
-let _lastCgSync = 0;
-
-function syncChallengeScore(score) {
-    if (!window.database) return;
-    if (!st.serialNumber) return;
-
-    // Rate limit: لا مزامنة أكثر من مرة كل 30 ثانية
-    const now = Date.now();
-    if (now - _lastCgSync < 30000 && _lastCgSync > 0 && score <= (st.challengeBestScore || 0)) return;
-    _lastCgSync = now;
-
-    try {
-        /* ✅ ANTI-CHEAT: الحد النظري الأقصى = 3 نقاط × 60 ثانية = 180 */
-        const _theoreticalMax = 180;
-        const safeScore = Math.max(0, Math.min(Math.floor(score || 0), _theoreticalMax));
-        const safeLevel = Math.min(st.level || 1, 200);
-        const playerKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const ref = window.database.ref('challenge_leaderboard/' + playerKey);
-        ref.once('value', snap => {
-            const existing = snap.val();
-            if (!existing || safeScore > (existing.challengeScore || 0)) {
-                /* ── حساب الألقاب المفعّلة للعرض في الملف الشخصي ── */
-                let _titlesForProfile = [];
-                try {
-                    /* ألقاب المنافسة من COMPETITION_TITLES */
-                    if (typeof COMPETITION_TITLES !== 'undefined' && Array.isArray(st.competitionTitles)) {
-                        _titlesForProfile = st.competitionTitles
-                            .filter(t => t && t.id)
-                            .map(t => ({ id: t.id, name: t.name || t.id, icon: t.icon || '🏅' }))
-                            .slice(0, 10);
-                    }
-                    /* ألقاب الإنجازات العامة */
-                    if (Array.isArray(st.achievementsUnlocked) && st.achievementsUnlocked.length > 0) {
-                        const _achTitles = st.achievementsUnlocked.slice(0, 5).map(id => ({ id, name: id, icon: '🏅' }));
-                        _titlesForProfile = _titlesForProfile.concat(_achTitles).slice(0, 10);
-                    }
-                } catch(_te) {}
-
-                ref.set({
-                    name:           st.name,
-                    avatar:         st.avatar  || '🧑',
-                    level:          safeLevel,
-                    challengeScore: safeScore,
-                    serialNumber:   st.serialNumber,
-                    lastUpdated:    now,
-                    /* ══ بيانات الملف الشخصي ══ */
-                    correctTotal:   Math.min(st.correctTotal  || 0, 9999999),
-                    wrongTotal:     Math.min(st.wrongTotal    || 0, 9999999),
-                    bestStreak:     Math.min(st.bestStreak    || 0, 9999),
-                    bestScore:      Math.min(st.bestScore     || 0, 999999),
-                    totalGames:     Math.min(st.totalGames    || 0, 9999999),
-                    titles:         _titlesForProfile,
-                    activeFrame:    st.activeFrame  || 'none',
-                }).catch(() => {});
-            }
-        }).catch(() => {});
-    } catch(e) {}
+.comp-my-stat-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255,255,255,0.1);
+    flex-shrink: 0;
 }
 
-/* ══════════════════════════════════════
-   مزامنة الملف الشخصي — تُحدَّث حقول
-   الإحصائيات حتى بدون لعب التحدي
-   (تُستدعى مرة كل جلسة من fixes_init)
-══════════════════════════════════════ */
-function syncPlayerProfile() {
-    if (!window.database || !st.serialNumber) return;
-    try {
-        const playerKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const ref = window.database.ref('challenge_leaderboard/' + playerKey);
-        ref.once('value', snap => {
-            const existing = snap.val();
-            if (!existing) return; /* لاعب لم يلعب التحدي بعد — لا نُنشئ سجلاً فارغاً */
-
-            /* ── حساب الألقاب ── */
-            let _titles = [];
-            try {
-                if (Array.isArray(st.competitionTitles)) {
-                    _titles = st.competitionTitles
-                        .filter(t => t && t.id)
-                        .map(t => ({ id: t.id, name: t.name || t.id, icon: t.icon || '🏅' }))
-                        .slice(0, 10);
-                }
-                if (Array.isArray(st.achievementsUnlocked) && st.achievementsUnlocked.length > 0) {
-                    const _ach = st.achievementsUnlocked.slice(0, 5).map(id => ({ id, name: id, icon: '🏅' }));
-                    _titles = _titles.concat(_ach).slice(0, 10);
-                }
-            } catch(_te) {}
-
-            /* نُحدّث فقط الحقول الإضافية — لا نمسّ challengeScore */
-            ref.update({
-                name:         st.name,
-                avatar:       st.avatar  || '🧑',
-                level:        Math.min(st.level || 1, 200),
-                correctTotal: Math.min(st.correctTotal || 0, 9999999),
-                wrongTotal:   Math.min(st.wrongTotal   || 0, 9999999),
-                bestStreak:   Math.min(st.bestStreak   || 0, 9999),
-                bestScore:    Math.min(st.bestScore    || 0, 999999),
-                totalGames:   Math.min(st.totalGames   || 0, 9999999),
-                titles:       _titles,
-                activeFrame:  st.activeFrame || 'none',
-                lastUpdated:  Date.now(),
-            }).catch(() => {});
-        }).catch(() => {});
-    } catch(e) {}
-}
-window.syncPlayerProfile = syncPlayerProfile;
-
-/* ══════════════════════════════════════
-   تحميل لوحة الصدارة الموحدة
-   (مُحسَّنة: Cache 60 ثانية)
-══════════════════════════════════════ */
-let _lbCache = null, _lbCacheTime = 0, _lbCacheType = null;
-let _activeLbTab = 'challenge';
-
-function showLbTab(tab) {
-    _activeLbTab = tab;
-
-    // تحديث أزرار التبويب
-    document.querySelectorAll('.comp-lb-tab').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById(tab === 'challenge' ? 'lbTabChallenge' : 'lbTabGeneral');
-    if (activeBtn) activeBtn.classList.add('active');
-
-    // تحديث رأس الجدول
-    const header = document.getElementById('lbScoreHeader');
-    if (header) header.textContent = tab === 'challenge' ? 'نقاط التحدي' : 'أفضل نقطة';
-
-    // تحديث Cache أو استخدامه
-    if (_lbCache && _lbCacheType === tab && Date.now() - _lbCacheTime < 60000) {
-        const scoreKey = tab === 'challenge' ? 'challengeScore' : 'bestScore';
-        renderLeaderboardList(
-            document.getElementById('combinedLeaderboardList'),
-            _lbCache,
-            scoreKey
-        );
-    } else {
-        loadCombinedLeaderboard();
-    }
+/* زر البدء الرئيسي */
+.comp-start-btn {
+    position: relative;
+    width: 100%;
+    margin-top: 14px;
+    padding: 16px 20px 14px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #f0b90b 0%, #ffd54f 50%, #f0b90b 100%);
+    background-size: 200% 100%;
+    color: #000;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+    box-shadow: 0 6px 28px rgba(240,185,11,0.45), 0 2px 0 rgba(255,255,255,0.2) inset;
+    animation: btnShimmer 2.5s ease infinite;
 }
 
-function loadCombinedLeaderboard() {
-    const container = document.getElementById('combinedLeaderboardList');
-    if (!container) return;
-
-    if (!window.database) {
-        container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:16px;font-size:0.82em;">⚠️ غير متصل بقاعدة البيانات</div>';
-        return;
-    }
-
-    container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);font-size:0.8em;">⏳ جاري التحميل…</div>';
-
-    const tab = _activeLbTab || 'challenge';
-    const refPath  = tab === 'general' ? 'leaderboard'          : 'challenge_leaderboard';
-    const scoreKey = tab === 'general' ? 'bestScore'            : 'challengeScore';
-
-    try {
-        window.database.ref(refPath)
-            .orderByChild(scoreKey)
-            .limitToLast(50)
-            .once('value', snapshot => {
-                const players = [];
-                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                players.sort((a, b) => (b[scoreKey] || 0) - (a[scoreKey] || 0));
-
-                // حفظ في Cache
-                _lbCache = players;
-                _lbCacheTime = Date.now();
-                _lbCacheType = tab;
-
-                // تحديث إحصائياتي
-                updateCompMyStats(players);
-
-                if (players.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);font-size:0.82em;">لا توجد نتائج بعد — كن الأول! 🚀</div>';
-                    return;
-                }
-
-                renderLeaderboardList(container, players, scoreKey);
-            }).catch(() => {
-                container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--red);font-size:0.8em;">⚠️ فشل التحميل</div>';
-            });
-    } catch(e) {
-        container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--red);font-size:0.8em;">⚠️ خطأ</div>';
-    }
+@keyframes btnShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
-function renderLeaderboardList(container, players, scoreKey) {
-    if (!container) return;
-    const medals = ['🥇','🥈','🥉'];
-    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
-
-    let html = '';
-    players.forEach((p, idx) => {
-        const isMe = p.id === myKey;
-        const rank = idx < 3 ? medals[idx] : (idx + 1);
-        const dataAttr = `data-player='${JSON.stringify({
-            id: p.id, name: p.name, avatar: p.avatar,
-            level: p.level, challengeScore: p.challengeScore,
-            bestScore: p.bestScore, correctTotal: p.correctTotal,
-            wrongTotal: p.wrongTotal, bestStreak: p.bestStreak,
-            titles: p.titles || [], serialNumber: p.serialNumber
-        }).replace(/'/g,"&#39;")}'`;
-        html += `<div class="lb-row${isMe ? ' lb-row-me' : ''}" onclick="openPlayerProfile(JSON.parse(this.dataset.player))" ${dataAttr}>`
-            + `<span>${rank}</span>`
-            + `<span>${p.avatar || '🧑'} ${p.name || 'لاعب'}</span>`
-            + `<span>${p.level || 1}</span>`
-            + `<span style="color:var(--gold);font-weight:900;">${p[scoreKey] || 0}</span>`
-            + `</div>`;
-    });
-
-    container.innerHTML = html || '<div style="text-align:center;padding:16px;color:var(--text2);">لا توجد نتائج</div>';
+.comp-start-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 12px rgba(240,185,11,0.3);
 }
 
-/* ══════════════════════════════════════
-   تهيئة عند فتح صفحة المنافسة
-   (تُستدعى من goTab في navigation.js)
-══════════════════════════════════════ */
-function initCompetitionPage() {
-    // تأكد من إظهار الواجهة الرئيسية فقط
-    ['challengeCountdownOverlay','challengeGameArea','challengeResultArea'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-    const main = document.getElementById('competitionMainView');
-    if (main) main.style.display = 'flex';
-
-    // تحديث أفضل نتيجة فوراً
-    const bestEl = document.getElementById('challengeBestDisplay');
-    if (bestEl) bestEl.textContent = st.challengeBestScore || 0;
-
-    // تحديث المرتبة والمنافسين من Firebase مباشرة
-    _fetchCompHeroStats();
-
-    // جسيمات الـ Hero
-    initCompHeroSparks();
-
-    // مهام التحدي
-    try {
-        if (typeof renderChallengeTasks === 'function') {
-            renderChallengeTasks();
-        } else if (typeof renderChallengeDailyTasks === 'function') {
-            renderChallengeDailyTasks();
-        }
-    } catch(e) {}
-
-    // تحديث زر الموسم
-    try { _updateSeasonBtn(); } catch(e) {}
-
-    // ✅ مزامنة الملف الشخصي (إحصائيات + ألقاب) مع Firebase
-    try { setTimeout(syncPlayerProfile, 1500); } catch(e) {}
+.comp-start-btn-glow {
+    position: absolute;
+    inset: -4px;
+    border-radius: 22px;
+    background: rgba(240,185,11,0.2);
+    filter: blur(12px);
+    animation: glowPulse 1.8s ease infinite alternate;
+    pointer-events: none;
+    z-index: 0;
 }
 
-/* جلب إحصائيات Hero (المرتبة + عدد المنافسين) مباشرة من Firebase */
-function _fetchCompHeroStats() {
-    const rankEl  = document.getElementById('compMyRank');
-    const totalEl = document.getElementById('compTotalPlayers');
-
-    // إذا كان عندنا cache حديث نستخدمه فوراً
-    if (_lbCache && _lbCacheType === 'challenge' && (Date.now() - _lbCacheTime) < 60000) {
-        updateCompMyStats(_lbCache);
-        return;
-    }
-
-    if (!window.database) return;
-
-    const myKey = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
-
-    window.database.ref('challenge_leaderboard')
-        .orderByChild('challengeScore')
-        .limitToLast(200)
-        .once('value', snapshot => {
-            const players = [];
-            snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-            players.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
-
-            // حفظ في cache
-            _lbCache     = players;
-            _lbCacheTime = Date.now();
-            _lbCacheType = 'challenge';
-
-            // تحديث العناصر
-            if (totalEl) totalEl.textContent = players.length || '—';
-            if (myKey && rankEl) {
-                const myIdx = players.findIndex(p => p.id === myKey);
-                rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
-            }
-        }).catch(() => {});
+@keyframes glowPulse {
+    from { opacity: 0.4; }
+    to   { opacity: 1; }
 }
 
-/* ══════════════════════════════════════
-   تعديل goTab لاستدعاء initCompetitionPage
-   أضف هذا السطر في navigation.js داخل goTab
-   عند: if (tab === 'leaderboard') { ... }
-══════════════════════════════════════ */
-// if (tab === 'leaderboard') {
-//     initCompetitionPage();
-// }
+.comp-start-btn-text {
+    display: block;
+    font-size: 1.1em;
+    font-weight: 900;
+    position: relative;
+    z-index: 1;
+}
+
+.comp-start-btn-sub {
+    display: block;
+    font-size: 0.62em;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ══ بطاقات الأقسام ══ */
+.comp-section-card {
+    background: var(--surface2);
+    border: 1px solid var(--gold-border);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.comp-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.comp-section-title {
+    font-size: 0.88em;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.comp-section-sub {
+    font-size: 0.62em;
+    color: var(--text2);
+    margin-top: 2px;
+}
+
+.comp-chevron {
+    font-size: 0.85em;
+    color: var(--gold);
+    transition: transform 0.3s;
+}
+
+/* ══ تبويبات لوحة الصدارة ══ */
+.comp-lb-tabs {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 8px;
+}
+
+.comp-lb-tab {
+    flex: 1;
+    padding: 9px 8px;
+    border-radius: 12px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.78em;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1.5px solid var(--border2);
+    background: var(--surface3);
+    color: var(--text2);
+}
+
+.comp-lb-tab.active {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    border-color: var(--gold);
+    box-shadow: 0 3px 12px rgba(240,185,11,0.3);
+}
+
+.comp-lb-card {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.comp-lb-hint {
+    font-size: 0.62em;
+    color: var(--text2);
+    text-align: center;
+    padding: 6px 0 2px;
+}
+
+/* ══════════════════════════════════════════
+   OVERLAY مشترك — كل الشاشات الحماسية
+══════════════════════════════════════════ */
+/* challenge-overlay مقيّدة داخل صفحة المنافسة فقط */
+#page-leaderboard .challenge-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    background: #07090f;
+    overflow: hidden;
+}
+
+/* ══════════════════════════════════════════
+   شاشة العد التنازلي
+══════════════════════════════════════════ */
+#challengeCountdownOverlay {
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #1a0b30 0%, #07090f 70%);
+}
+
+.cdo-bg-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.cdo-line {
+    position: absolute;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(240,185,11,0.15), transparent);
+    animation: lineSlide var(--dur, 3s) linear infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+}
+
+@keyframes lineSlide {
+    0%   { transform: translateY(-100%); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 0.5; }
+    100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.cdo-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 24px;
+}
+
+.cdo-title {
+    font-size: 1em;
+    font-weight: 800;
+    color: var(--text2);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.cdo-number {
+    font-size: 7em;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    text-shadow: 0 0 60px rgba(240,185,11,0.7), 0 0 120px rgba(240,185,11,0.3);
+    animation: cdoNumPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes cdoNumPop {
+    from { transform: scale(0.3); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.cdo-sub {
+    font-size: 0.8em;
+    color: var(--text2);
+    animation: fadeIn 0.4s ease 0.2s both;
+}
+
+.cdo-rules {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin-top: 8px;
+    animation: fadeIn 0.4s ease 0.3s both;
+}
+
+.cdo-rule {
+    font-size: 0.76em;
+    color: var(--text2);
+}
+
+.cdo-rule strong {
+    color: var(--text);
+}
+
+/* ══════════════════════════════════════════
+   واجهة اللعب الحماسية (Challenge Game Arena)
+══════════════════════════════════════════ */
+#challengeGameArea {
+    background: #060810;
+    flex-direction: column;
+}
+
+/* خلفية نابضة ديناميكية */
+.cga-bg-pulse {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 20%, rgba(124,58,237,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(239,68,68,0.08) 0%, transparent 50%);
+    animation: bgPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse {
+    from { opacity: 0.6; }
+    to   { opacity: 1; }
+}
+
+/* شبكة خلفية */
+.cga-bg-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 80%);
+}
+
+/* Header */
+.cga-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--safe-top) + 12px) 14px 10px;
+    flex-shrink: 0;
+    background: rgba(6,8,16,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    z-index: 5;
+}
+
+.cga-quit-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: var(--red);
+    font-size: 0.85em;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cga-quit-btn:active { transform: scale(0.88); background: rgba(239,68,68,0.25); }
+
+.cga-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.cga-q-label {
+    font-size: 0.62em;
+    color: var(--text2);
+    font-weight: 700;
+}
+
+.cga-diff-badge {
+    font-size: 0.65em;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(6,182,212,0.15);
+    border: 1px solid rgba(6,182,212,0.3);
+    color: var(--accent2);
+    transition: background 0.4s, border-color 0.4s, color 0.4s;
+}
+
+.cga-diff-badge.diff-easy   { background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.35); color:#10b981; }
+.cga-diff-badge.diff-medium { background:rgba(6,182,212,0.15);  border-color:rgba(6,182,212,0.35);  color:#06b6d4; }
+.cga-diff-badge.diff-hard   { background:rgba(249,115,22,0.15); border-color:rgba(249,115,22,0.35); color:#f97316; }
+.cga-diff-badge.diff-genius { background:rgba(239,68,68,0.15);  border-color:rgba(239,68,68,0.35);  color:#ef4444; }
+
+.cga-score-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(240,185,11,0.1);
+    border: 1.5px solid rgba(240,185,11,0.3);
+    border-radius: 14px;
+    padding: 6px 12px;
+}
+
+.cga-score-icon { font-size: 0.9em; }
+
+.cga-score-num {
+    font-size: 1.3em;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    min-width: 28px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.cga-score-num.score-bump {
+    animation: scoreBump 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scoreBump {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.35); color: #ffd54f; }
+    100% { transform: scale(1); }
+}
+
+/* شريط الوقت */
+.cga-timer-section {
+    flex-shrink: 0;
+    padding: 8px 14px 4px;
+    position: relative;
+    z-index: 4;
+    background: rgba(6,8,16,0.7);
+}
+
+.cga-timer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.cga-timer-label {
+    font-size: 0.62em;
+    color: var(--text2);
+}
+
+.cga-timer-num {
+    font-size: 1.6em;
+    font-weight: 900;
+    color: var(--accent2);
+    line-height: 1;
+    transition: color 0.3s;
+    font-variant-numeric: tabular-nums;
+}
+
+.cga-timer-num.danger {
+    color: var(--red);
+    animation: timerPulse 0.45s ease-in-out infinite alternate;
+}
+
+.cga-timer-track {
+    position: relative;
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    overflow: visible;
+}
+
+.cga-timer-fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--accent2), #7c3aed);
+    transition: width 0.3s linear, background 0.5s;
+    position: relative;
+    box-shadow: 0 0 10px rgba(6,182,212,0.5);
+}
+
+.cga-timer-fill.danger-bar {
+    background: linear-gradient(90deg, #ef4444, #f97316);
+    box-shadow: 0 0 14px rgba(239,68,68,0.6);
+    animation: dangerFlash 0.5s ease infinite alternate;
+}
+
+@keyframes dangerFlash {
+    from { box-shadow: 0 0 8px rgba(239,68,68,0.4); }
+    to   { box-shadow: 0 0 20px rgba(239,68,68,0.9); }
+}
+
+.cga-timer-glow {
+    position: absolute;
+    top: -3px;
+    right: -2px;
+    width: 12px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent2);
+    filter: blur(4px);
+    transition: background 0.5s;
+}
+
+/* Streak Banner */
+.cga-streak-banner {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(239,68,68,0.15));
+    border-bottom: 1px solid rgba(240,185,11,0.25);
+    padding: 6px 14px;
+    text-align: center;
+    position: relative;
+    z-index: 4;
+    animation: streakSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes streakSlideIn {
+    from { transform: translateY(-100%); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+#cgaStreakText {
+    font-size: 0.9em;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(240,185,11,0.5);
+}
+
+/* Body اللعبة */
+.cga-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 14px 12px;
+    gap: 10px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 3;
+}
+
+/* بطاقة السؤال */
+.cga-question-card {
+    width: 100%;
+    background: linear-gradient(145deg, #0f1220, #141830);
+    border: 2px solid rgba(124,58,237,0.3);
+    border-radius: 24px;
+    padding: 22px 18px 18px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(124,58,237,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: border-color 0.3s;
+}
+
+.cga-question-card.card-correct {
+    border-color: rgba(16,185,129,0.6);
+    box-shadow: 0 4px 30px rgba(16,185,129,0.2);
+}
+
+.cga-question-card.card-wrong {
+    border-color: rgba(239,68,68,0.6);
+    box-shadow: 0 4px 30px rgba(239,68,68,0.2);
+    animation: cardShake 0.4s ease;
+}
+
+@keyframes cardShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.cga-question-glow {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%);
+    pointer-events: none;
+}
+
+.cga-q-num-label {
+    font-size: 0.6em;
+    color: var(--text2);
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.cga-question-text {
+    font-size: 2.8em;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.2;
+    direction: ltr;
+    unicode-bidi: embed;
+    animation: qPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cga-question-hint {
+    font-size: 0.66em;
+    color: var(--text2);
+    margin-top: 5px;
+}
+
+/* شبكة الإجابات */
+.cga-answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.cga-answers-grid .answer-btn {
+    background: linear-gradient(145deg, #111525, #171e30);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 16px 10px;
+    font-size: 1.35em;
+    font-weight: 900;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Tajawal', sans-serif;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+}
+
+.cga-answers-grid .answer-btn:active {
+    transform: scale(0.94);
+}
+
+.cga-answers-grid .answer-btn:hover:not(:disabled) {
+    border-color: rgba(240,185,11,0.4);
+    background: linear-gradient(145deg, #171825, #1e2438);
+}
+
+.cga-answers-grid .answer-btn.correct {
+    background: linear-gradient(145deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1));
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 20px rgba(16,185,129,0.3);
+    animation: correctBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cga-answers-grid .answer-btn.wrong {
+    background: linear-gradient(145deg, rgba(239,68,68,0.18), rgba(239,68,68,0.08));
+    border-color: var(--red);
+    color: var(--red);
+    animation: wrongShake 0.36s ease;
+}
+
+@keyframes correctBounce {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* شريط المساعدات */
+.cga-helpers-bar {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.cga-helper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: linear-gradient(145deg, #111525, #151d2e);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 8px 4px 9px;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+}
+
+.cga-helper:active {
+    transform: scale(0.92);
+    border-color: var(--gold);
+}
+
+.cga-helper.used {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.cga-helper-icon { font-size: 1.25em; line-height: 1; }
+.cga-helper-name { font-size: 0.52em; color: var(--text2); font-weight: 700; }
+.cga-helper-cost {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--gold);
+    color: #000;
+    font-size: 0.5em;
+    font-weight: 900;
+    padding: 2px 5px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════
+   شاشة النتيجة
+══════════════════════════════════════════ */
+#challengeResultArea {
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #15102a 0%, #060810 60%);
+}
+
+.cgr-bg-rays {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: conic-gradient(from 0deg at 50% 40%,
+        transparent 0deg,
+        rgba(240,185,11,0.03) 10deg,
+        transparent 20deg,
+        rgba(240,185,11,0.03) 30deg,
+        transparent 40deg,
+        rgba(240,185,11,0.03) 50deg,
+        transparent 60deg
+    );
+    animation: raysRotate 20s linear infinite;
+}
+
+@keyframes raysRotate {
+    to { transform: rotate(360deg); }
+}
+
+.cgr-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+    padding: 24px 18px;
+    width: 100%;
+    max-width: 380px;
+}
+
+.cgr-medal-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cgr-medal-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold) 0%, #ffd54f 25%, var(--gold) 50%, #f97316 75%, var(--gold) 100%);
+    animation: spin 4s linear infinite;
+}
+
+.cgr-medal-ring::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: #15102a;
+}
+
+.cgr-medal-icon {
+    font-size: 2.4em;
+    position: relative;
+    z-index: 1;
+    animation: medalBounce 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes medalBounce {
+    0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.cgr-title {
+    font-size: 1.6em;
+    font-weight: 900;
+    color: var(--text);
+    text-shadow: 0 0 20px rgba(240,185,11,0.3);
+}
+
+.cgr-sub {
+    font-size: 0.72em;
+    color: var(--text2);
+    margin-top: -4px;
+}
+
+.cgr-stats-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.cgr-stat {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 14px 6px;
+    text-align: center;
+}
+
+.cgr-stat-best {
+    background: rgba(240,185,11,0.08);
+    border-color: rgba(240,185,11,0.25);
+}
+
+.cgr-stat-num {
+    font-size: 1.7em;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+}
+
+.cgr-stat-lbl {
+    font-size: 0.58em;
+    color: var(--text2);
+    margin-top: 4px;
+}
+
+.cgr-compare-row {
+    background: rgba(6,182,212,0.08);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 0.75em;
+    color: var(--accent2);
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+}
+
+.cgr-record-badge {
+    background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(249,115,22,0.15));
+    border: 1.5px solid rgba(240,185,11,0.4);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.82em;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(240,185,11,0.4);
+    animation: recordPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes recordPop {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.cgr-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.cgr-btn-primary {
+    width: 100%;
+    padding: 15px;
+    border-radius: 16px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.97em;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    box-shadow: 0 4px 20px rgba(240,185,11,0.35);
+    transition: 0.2s;
+}
+
+.cgr-btn-primary:active { transform: scale(0.97); }
+
+.cgr-btn-secondary {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.88em;
+    font-weight: 700;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text2);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.cgr-btn-secondary:active { background: rgba(255,255,255,0.09); }
+
+/* ══ Responsive adjustments ══ */
+
+
+/* ═══ Layout Fixes — معزولة عن styles.css العام ═══ */
+
+#page-leaderboard {
+    padding: 0 !important;
+    gap: 0 !important;
+}
+
+#page-leaderboard .challenge-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+}
+
+#page-leaderboard .comp-start-btn  { border: none !important; }
+#page-leaderboard .cgr-btn-primary  { border: none !important; }
+#page-leaderboard .comp-lb-tab.active { border: none !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   🔧 FIX: إجبار اللون الأبيض على كل النصوص والأرقام في واجهة التحدي
+   يضمن القراءة الجيدة بغض النظر عن وضع الثيم (فاتح/داكن)
+═══════════════════════════════════════════════════════════════ */
+
+/* --- شاشة العد التنازلي --- */
+#challengeCountdownOverlay,
+#challengeCountdownOverlay * {
+    color: inherit;
+}
+
+#challengeCountdownOverlay .cdo-title,
+#challengeCountdownOverlay .cdo-sub,
+#challengeCountdownOverlay .cdo-rule {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+#challengeCountdownOverlay .cdo-number {
+    color: var(--gold, #f0b90b) !important;
+}
+
+#challengeCountdownOverlay .cdo-rule strong {
+    color: #ffffff !important;
+}
+
+/* --- منطقة اللعب الحماسية --- */
+#challengeGameArea .cga-q-label,
+#challengeGameArea .cga-timer-label,
+#challengeGameArea .cga-helper-name {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+#challengeGameArea .cga-q-num-label,
+#challengeGameArea .cga-question-hint {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+#challengeGameArea .cga-question-text {
+    color: #ffffff !important;
+}
+
+#challengeGameArea .cga-score-num {
+    color: var(--gold, #f0b90b) !important;
+}
+
+#challengeGameArea .cga-timer-num {
+    color: #ffffff !important;
+}
+
+#challengeGameArea .cga-timer-num.danger {
+    color: #ff6b6b !important;
+}
+
+/* أزرار الإجابة */
+#challengeGameArea .cga-answers-grid .answer-btn {
+    color: #ffffff !important;
+}
+
+#challengeGameArea .cga-answers-grid .answer-btn.correct {
+    color: #4ade80 !important;
+}
+
+#challengeGameArea .cga-answers-grid .answer-btn.wrong {
+    color: #ff6b6b !important;
+}
+
+/* شريط المساعدات */
+#challengeGameArea .cga-helper-cost {
+    color: #000000 !important;
+}
+
+/* --- شاشة النتيجة --- */
+#challengeResultArea .cgr-title {
+    color: #ffffff !important;
+}
+
+#challengeResultArea .cgr-sub,
+#challengeResultArea .cgr-stat-lbl {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+#challengeResultArea .cgr-stat-num {
+    color: var(--gold, #f0b90b) !important;
+}
+
+#challengeResultArea .cgr-compare-row {
+    color: #67e8f9 !important;
+}
+
+#challengeResultArea .cgr-record-badge {
+    color: var(--gold, #f0b90b) !important;
+}
+
+/* --- لوحة الصدارة العامة (comp-hero-banner) --- */
+.comp-hero-title {
+    color: #ffffff !important;
+}
+
+.comp-hero-sub,
+.comp-my-stat-lbl {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.comp-my-stat-val {
+    color: var(--gold, #f0b90b) !important;
+}
+
+.comp-section-title {
+    color: #ffffff !important;
+}
+
+.comp-section-sub {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* ══ عنوان "مهام التحدي" — بارز بلون عكسي ══ */
+.challenge-tasks-title,
+#page-leaderboard .comp-section-title {
+    color: var(--accent2) !important;
+    text-shadow: 0 0 12px rgba(6,182,212,0.50);
+    font-weight: 900;
+    font-size: 0.95em;
+    letter-spacing: 0.3px;
+}
+
+/* ══ التبويبات غير النشطة ══ */
+.comp-lb-tab {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.comp-lb-tab.active {
+    color: #000000 !important;
+}
+
+/* الـ streak banner */
+#cgaStreakText {
+    color: var(--gold, #f0b90b) !important;
+}
+
+/* نص زر البدء */
+.comp-start-btn-text {
+    color: #000000 !important;
+}
+
+.comp-start-btn-sub {
+    color: rgba(0, 0, 0, 0.7) !important;
+}
 
 
 /* ═══════════════════════════════════════════════════════════
-   ✅ Overlay لائحة الصدارة — فتح / إغلاق / تحديث
+   ✅ لوحة الصدارة — أزرار + Overlay
 ═══════════════════════════════════════════════════════════ */
 
-let _lbOverlayTab = 'challenge';
-
-function openLbOverlay(tab) {
-    _lbOverlayTab = tab || 'challenge';
-    const overlay = document.getElementById('lbOverlay');
-    const title   = document.getElementById('lbOverlayTitle');
-    const header  = document.getElementById('lbOverlayScoreHeader');
-    if (!overlay) return;
-    if (title)  title.textContent  = tab === 'challenge' ? '⚔️ لائحة التحدي' : '📊 لائحة النقاط';
-    if (header) header.textContent = tab === 'challenge' ? 'نقاط التحدي'    : 'أفضل نقطة';
-    overlay.style.display = 'flex';
-    _fetchLbOverlay();
+/* ══ أزرار لائحة الصدارة — متناسقة مع الثيم ══ */
+.comp-lb-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 800;
+    color: var(--text);
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+    text-align: right;
+    border: 1.5px solid var(--border2);
+    background: var(--surface2);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.comp-lb-tab-btn:active {
+    transform: scale(0.96);
 }
 
-function closeLbOverlay() {
-    const overlay = document.getElementById('lbOverlay');
-    if (overlay) overlay.style.display = 'none';
+/* زر التحدي — ذهبي */
+.comp-lb-tab-btn:first-child {
+    border-color: rgba(var(--gold-rgb, 240,185,11), 0.40);
+    border-color: color-mix(in srgb, var(--gold) 40%, transparent);
+    background: linear-gradient(135deg,
+        rgba(240,185,11,0.10),
+        rgba(240,185,11,0.04));
+    box-shadow: 0 2px 10px rgba(240,185,11,0.10);
+}
+.comp-lb-tab-btn:first-child:hover,
+.comp-lb-tab-btn:first-child:focus {
+    background: linear-gradient(135deg,
+        rgba(240,185,11,0.18),
+        rgba(240,185,11,0.08));
+    box-shadow: 0 4px 16px rgba(240,185,11,0.22);
+}
+.comp-lb-tab-btn:first-child .comp-lb-tab-arrow {
+    color: var(--gold);
+}
+.comp-lb-tab-btn:first-child .comp-lb-tab-icon {
+    filter: drop-shadow(0 0 6px rgba(240,185,11,0.55));
 }
 
-function refreshLbOverlay() {
-    const btn = document.getElementById('lbRefreshBtn');
-    if (btn) {
-        btn.classList.add('spinning');
-        setTimeout(() => btn.classList.remove('spinning'), 650);
-    }
-    _fetchLbOverlay();
+/* زر النقاط — سماوي */
+.comp-lb-tab-btn:last-child {
+    border-color: rgba(6,182,212,0.40);
+    background: linear-gradient(135deg,
+        rgba(6,182,212,0.10),
+        rgba(6,182,212,0.04));
+    box-shadow: 0 2px 10px rgba(6,182,212,0.10);
+}
+.comp-lb-tab-btn:last-child:hover,
+.comp-lb-tab-btn:last-child:focus {
+    background: linear-gradient(135deg,
+        rgba(6,182,212,0.18),
+        rgba(6,182,212,0.08));
+    box-shadow: 0 4px 16px rgba(6,182,212,0.22);
+}
+.comp-lb-tab-btn:last-child .comp-lb-tab-arrow {
+    color: var(--accent2);
+}
+.comp-lb-tab-btn:last-child .comp-lb-tab-icon {
+    filter: drop-shadow(0 0 6px rgba(6,182,212,0.55));
 }
 
-function _fetchLbOverlay() {
-    const container = document.getElementById('lbOverlayList');
-    if (!container) return;
-    if (!window.database) {
-        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">⚠️ غير متصل بقاعدة البيانات</div>';
-        return;
-    }
-    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.8em;">⏳ جاري التحميل…</div>';
-    const isChallenge = _lbOverlayTab === 'challenge';
-    const refPath  = isChallenge ? 'challenge_leaderboard' : 'leaderboard';
-    const scoreKey = isChallenge ? 'challengeScore'        : 'bestScore';
-    try {
-        window.database.ref(refPath)
-            .orderByChild(scoreKey)
-            .limitToLast(50)
-            .once('value', function(snapshot) {
-                const players = [];
-                snapshot.forEach(function(child) {
-                    players.push(Object.assign({ id: child.key }, child.val()));
-                });
-                players.sort((a, b) => (b[scoreKey]||0) - (a[scoreKey]||0));
-                if (players.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.82em;">لا توجد نتائج بعد — كن الأول! 🚀</div>';
-                    return;
-                }
-                const medals = ['🥇','🥈','🥉'];
-                const myKey  = (typeof st !== 'undefined' && st.serialNumber)
-                               ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g,'_') : null;
-                let html = '';
-                players.forEach((p, idx) => {
-                    const isMe = p.id === myKey;
-                    const rank = idx < 3 ? medals[idx] : (idx+1);
-                    const dataAttr = `data-player='${JSON.stringify({
-                        id: p.id, name: p.name, avatar: p.avatar,
-                        level: p.level, challengeScore: p.challengeScore,
-                        bestScore: p.bestScore, correctTotal: p.correctTotal,
-                        wrongTotal: p.wrongTotal, bestStreak: p.bestStreak,
-                        titles: p.titles || [], serialNumber: p.serialNumber
-                    }).replace(/'/g,"&#39;")}'`;
-                    html += '<div class="lb-row'+(isMe?' lb-row-me':'')+'" onclick="openPlayerProfile(JSON.parse(this.dataset.player))" '+dataAttr+'>'
-                        +'<span>'+rank+'</span>'
-                        +'<span>'+(p.avatar||'🧑')+' '+(p.name||'لاعب')+'</span>'
-                        +'<span>'+(p.level||1)+'</span>'
-                        +'<span style="color:var(--gold);font-weight:900;">'+(p[scoreKey]||0)+'</span>'
-                        +'</div>';
-                });
-                container.innerHTML = html;
-            })
-            .catch(() => {
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.8em;">⚠️ فشل التحميل</div>';
-            });
-    } catch(e) {
-        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red);font-size:0.8em;">⚠️ خطأ</div>';
-    }
+.comp-lb-tab-icon  { font-size: 1.4em; flex-shrink: 0; }
+.comp-lb-tab-label { flex: 1; font-size: 0.92em; font-weight: 900; color: var(--text); }
+.comp-lb-tab-arrow { font-size: 1.4em; font-weight: 400; }
+
+.lb-overlay-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--surface2);
+    flex-shrink: 0;
+    gap: 12px;
+}
+.lb-overlay-back {
+    width:38px; height:38px; border-radius:50%;
+    background:var(--surface3); border:1.5px solid var(--border2);
+    color:var(--text); font-size:1.4em; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:background 0.15s; line-height:1; padding-bottom:2px;
+}
+.lb-overlay-back:active { background:var(--border2); }
+.lb-overlay-title {
+    flex:1; font-family:'Tajawal',sans-serif;
+    font-size:1.05em; font-weight:900; color:var(--text); text-align:center;
+}
+.lb-overlay-refresh {
+    width:38px; height:38px; border-radius:50%;
+    background:var(--surface3); border:1.5px solid var(--border2);
+    color:var(--gold); font-size:1.25em; font-weight:900;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:background 0.15s;
+}
+.lb-overlay-refresh:active { background:rgba(240,185,11,0.15); }
+.lb-overlay-refresh.spinning #lbRefreshIcon {
+    display:inline-block;
+    animation:lbSpin 0.6s linear;
+}
+@keyframes lbSpin {
+    from { transform:rotate(0deg); }
+    to   { transform:rotate(360deg); }
+}
+.lb-overlay-body {
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:14px 16px 20px;
+}
+#lbOverlayList { max-height:calc(100vh - 160px); }
+#lbOverlay { animation:lbSlideIn 0.25s cubic-bezier(0.34,1.2,0.64,1); }
+@keyframes lbSlideIn {
+    from { transform:translateY(30px); opacity:0; }
+    to   { transform:translateY(0);    opacity:1; }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   🪪 الملف الشخصي للاعب — Player Profile (النسخة الكاملة)
-   المرحلة الرابعة: إطار Avatar + ترتيب + مشاركة + إشعار تحدي
+/* ═══════════════════════════════════════════════════
+   زر مهام التحدي + Overlay
+═══════════════════════════════════════════════════ */
+
+/* الزر الرئيسي */
+.challenge-tasks-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(240,185,11,0.12), rgba(124,58,237,0.08));
+    border: 1.5px solid rgba(240,185,11,0.28);
+    border-radius: 18px;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+}
+.challenge-tasks-btn:active {
+    transform: scale(0.97);
+    background: linear-gradient(135deg, rgba(240,185,11,0.2), rgba(124,58,237,0.14));
+}
+.challenge-tasks-btn-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.challenge-tasks-btn-icon {
+    font-size: 1.6em;
+    line-height: 1;
+}
+.challenge-tasks-btn-title {
+    font-size: 0.92em;
+    font-weight: 900;
+    color: var(--text);
+    text-align: right;
+}
+.challenge-tasks-btn-sub {
+    font-size: 0.68em;
+    color: var(--text2);
+    margin-top: 2px;
+    text-align: right;
+}
+.challenge-tasks-btn-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.challenge-tasks-btn-progress {
+    font-size: 0.82em;
+    font-weight: 900;
+    color: var(--gold);
+    background: rgba(240,185,11,0.12);
+    border: 1px solid rgba(240,185,11,0.25);
+    border-radius: 20px;
+    padding: 3px 10px;
+}
+.challenge-tasks-btn-arrow {
+    font-size: 1.4em;
+    color: var(--text2);
+    font-weight: 700;
+}
+
+/* هيدر الـ overlay */
+.cto-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+}
+.cto-back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    font-size: 1.4em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    transition: background 0.15s;
+}
+.cto-back-btn:active {
+    background: var(--surface3);
+}
+.cto-title {
+    font-size: 1em;
+    font-weight: 900;
+    color: var(--text);
+}
+
+/* cto-body و cto-desc معرّفان في القسم أدناه */
+
+/* ═══════════════════════════════════════════════════
+   هيكل صفحة المنافسة الجديد
+═══════════════════════════════════════════════════ */
+
+/* الحاوية الرئيسية — flex column يملأ الصفحة */
+.comp-main-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px 14px 0;
+    gap: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Hero يتمدد ليملأ المساحة المتبقية */
+.comp-hero-expanded {
+    flex: 1;
+    margin-top: 0 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+}
+
+/* شريط الأزرار الثلاثة — عمودي واحد تحت الآخر */
+.comp-bottom-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.comp-bottom-btn {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 16px;
+    padding: 13px 16px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+}
+.comp-bottom-btn:active {
+    transform: scale(0.98);
+    background: var(--surface3);
+}
+.comp-bottom-btn-icon {
+    font-size: 1.3em;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.comp-bottom-btn-label {
+    flex: 1;
+    font-size: 0.88em;
+    font-weight: 800;
+    color: var(--text);
+    text-align: right;
+}
+.comp-bottom-btn-arrow {
+    font-size: 1.2em;
+    color: var(--text2);
+    flex-shrink: 0;
+}
+.comp-bottom-btn-badge {
+    font-size: 0.72em;
+    font-weight: 900;
+    color: var(--gold);
+    background: rgba(240,185,11,0.15);
+    border: 1px solid rgba(240,185,11,0.3);
+    border-radius: 20px;
+    padding: 2px 9px;
+    flex-shrink: 0;
+}
+
+/* ═══ overlay مهام التحدي — يمتد على كامل الصفحة مع scroll ═══ */
+.cto-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+}
+.cto-desc {
+    font-size: 0.72em;
+    color: var(--text2);
+    text-align: center;
+    padding: 4px 0 6px;
+    flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   🏆 SEASON PASS — موسم الرياضيات CSS
    © 2026 Hassan Odaey
-═══════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════ */
 
-/* ── تعريف الإطارات (مطابق لـ frames_preview.html) ── */
-const _PP_FRAMES = {
-    none: () => '',
-    calculator: () => {
-        const items = ['1','2','3','+','×','÷','=','%','π','∞','√','7'];
-        return items.map((char, i) => {
-            const angle = (i / items.length) * 360 - 90;
-            const rad = angle * Math.PI / 180;
-            const x = 65 + 56 * Math.cos(rad), y = 65 + 56 * Math.sin(rad);
-            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="900" fill="#f0b90b" font-family="monospace" transform="rotate(${angle+90},${x},${y})">${char}</text>`;
-        }).join('') + `<circle cx="65" cy="65" r="53" fill="none" stroke="#f0b90b" stroke-width="2.5" stroke-dasharray="4 3" opacity="0.5"/>`;
-    },
-    tools: () => {
-        const icons = ['✏️','📐','📏','📚','🖊️','📓','✏️','📐'];
-        return icons.map((icon, i) => {
-            const angle = (i / icons.length) * 360 - 90;
-            const rad = angle * Math.PI / 180;
-            const x = 65 + 54 * Math.cos(rad), y = 65 + 54 * Math.sin(rad);
-            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11" transform="rotate(${angle+90},${x},${y})">${icon}</text>`;
-        }).join('') + `<circle cx="65" cy="65" r="51" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.6"/><circle cx="65" cy="65" r="57" fill="none" stroke="#06b6d4" stroke-width="1" stroke-dasharray="2 4" opacity="0.3"/>`;
-    },
-    equations: () => {
-        const items = ['a²','b²','=','c²','∑','∫','Δ','∓','≠','≈','∝','∞'];
-        return items.map((char, i) => {
-            const angle = (i / items.length) * 360 - 90;
-            const rad = angle * Math.PI / 180;
-            const x = 65 + 55 * Math.cos(rad), y = 65 + 55 * Math.sin(rad);
-            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="700" fill="#10b981" font-family="serif" transform="rotate(${angle+90},${x},${y})">${char}</text>`;
-        }).join('') + `<circle cx="65" cy="65" r="52" fill="none" stroke="#10b981" stroke-width="2.5" opacity="0.6"/>`;
-    },
-    stars: () => {
-        const items = ['⭐','5','🌟','10','⭐','15','🌟','20'];
-        return items.map((icon, i) => {
-            const angle = (i / items.length) * 360 - 90;
-            const rad = angle * Math.PI / 180;
-            const x = 65 + 54 * Math.cos(rad), y = 65 + 54 * Math.sin(rad);
-            return isNaN(icon)
-                ? `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="12">${icon}</text>`
-                : `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="7" font-weight="900" fill="#f59e0b" font-family="monospace">${icon}</text>`;
-        }).join('') + `<circle cx="65" cy="65" r="51" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0.5"/>`;
-    },
-    geometry: () => {
-        return [
-            `<polygon points="65,11 72,24 58,24" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
-            `<circle cx="119" cy="65" r="7" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
-            `<rect x="54" y="106" width="22" height="14" rx="3" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
-            `<circle cx="11" cy="65" r="7" fill="none" stroke="#7c3aed" stroke-width="2"/>`,
-            `<polygon points="38,30 45,43 31,43" fill="none" stroke="#a855f7" stroke-width="1.5"/>`,
-            `<polygon points="92,88 99,101 85,101" fill="none" stroke="#a855f7" stroke-width="1.5"/>`,
-        ].join('') + `<circle cx="65" cy="65" r="53" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5 3" opacity="0.5"/>`;
-    },
-    champion: () => {
-        const items = ['🏆','1','🥇','★','🏆','∞','🥇','★'];
-        return items.map((icon, i) => {
-            const angle = (i / items.length) * 360 - 90;
-            const rad = angle * Math.PI / 180;
-            const x = 65 + 54 * Math.cos(rad), y = 65 + 54 * Math.sin(rad);
-            return (isNaN(icon.replace('★','')) || icon === '★')
-                ? `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="${icon==='★'?'14':'13'}" fill="${icon==='★'?'#f0b90b':''}">${icon}</text>`
-                : `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="900" fill="#f0b90b">${icon}</text>`;
-        }).join('') + `<circle cx="65" cy="65" r="51" fill="none" stroke="#f0b90b" stroke-width="3" opacity="0.7"/><circle cx="65" cy="65" r="57" fill="none" stroke="#f0b90b" stroke-width="1" stroke-dasharray="2 3" opacity="0.3"/>`;
-    },
-    science: () => {
-        const items = ['🔬','⚗️','🔭','🧪','⚛️','🧲','🔬','⚗️'];
-        return items.map((icon, i) => {
-            const angle = (i / items.length) * 360 - 90;
-            const rad = angle * Math.PI / 180;
-            const x = 65 + 54 * Math.cos(rad), y = 65 + 54 * Math.sin(rad);
-            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="12" transform="rotate(${angle+90},${x},${y})">${icon}</text>`;
-        }).join('') + `<circle cx="65" cy="65" r="51" fill="none" stroke="#22d3ee" stroke-width="2" opacity="0.5"/>`;
-    },
-    legend: () => {
-        const items = ['π','e','∞','√','∑','∫','Δ','φ','α','β','γ','θ'];
-        const outer = items.map((char, i) => {
-            const angle = (i / items.length) * 360 - 90;
-            const rad = angle * Math.PI / 180;
-            const x = 65 + 57 * Math.cos(rad), y = 65 + 57 * Math.sin(rad);
-            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="900" font-family="serif" fill="url(#ppGoldGrad)" transform="rotate(${angle+90},${x},${y})">${char}</text>`;
-        }).join('');
-        return `<defs><linearGradient id="ppGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f0b90b"/><stop offset="50%" stop-color="#fff5b0"/><stop offset="100%" stop-color="#e5a800"/></linearGradient></defs>` + outer +
-            `<circle cx="65" cy="65" r="53" fill="none" stroke="url(#ppGoldGrad)" stroke-width="3" opacity="0.8"/><circle cx="65" cy="65" r="59" fill="none" stroke="#f0b90b" stroke-width="1" stroke-dasharray="1 4" opacity="0.4"/>`;
-    },
-};
-
-/* ── كاش بيانات اللائحة لحساب الترتيب بدون طلب إضافي ── */
-let _ppLastLbData = null;
-
-/* ── فتح الملف الشخصي ── */
-function openPlayerProfile(playerData) {
-    const modal = document.getElementById('playerProfileModal');
-    if (!modal) return;
-
-    const myKey  = (typeof st !== 'undefined' && st.serialNumber)
-        ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
-    const isSelf = !!(playerData.id && myKey && playerData.id === myKey);
-
-    modal._isSelf      = isSelf;
-    modal._playerData  = playerData;
-
-    /* ── إظهار/إخفاء العناصر ── */
-    const selfBadge      = document.getElementById('ppSelfBadge');
-    const shareBtn       = document.getElementById('ppShareBtn');
-    const challengeBtn   = document.getElementById('ppChallengeBtn');
-    const compareSection = document.getElementById('ppCompareSection');
-    const avatarRing     = document.getElementById('ppAvatarRing');
-    const rankBadge      = document.getElementById('ppRankBadge');
-
-    if (selfBadge)      selfBadge.style.display      = isSelf ? 'block' : 'none';
-    if (shareBtn)       shareBtn.style.display        = 'flex';
-    if (challengeBtn)   challengeBtn.style.display    = isSelf ? 'none' : 'flex';
-    if (compareSection) compareSection.style.display  = 'none';
-    if (rankBadge)      rankBadge.style.display       = 'none';
-
-    /* لون حلقة الـ avatar */
-    if (avatarRing) {
-        avatarRing.style.background = isSelf
-            ? 'linear-gradient(135deg, #06b6d4, #3b82f6)'
-            : 'linear-gradient(135deg, #f0b90b, #7c3aed)';
-    }
-
-    /* تصفير شريط الدقة */
-    const barEl = document.getElementById('ppAccuracyBar');
-    if (barEl) barEl.style.width = '0%';
-
-    modal.style.display = 'flex';
-    _fillPlayerProfile(playerData, isSelf);
-    _computeAndShowRank(playerData);
-
-    /* جلب بيانات أحدث من Firebase */
-    if (playerData.serialNumber && window.database) {
-        _fetchFullPlayerData(playerData.serialNumber, playerData, isSelf);
-    }
+/* ── زر موسم الرياضيات المميز في شريط الأزرار ── */
+.comp-season-btn {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0e1a3a 100%) !important;
+    border-color: rgba(240,185,11,0.45) !important;
+    box-shadow: 0 0 16px rgba(240,185,11,0.12);
+    align-items: center;
+}
+.comp-season-btn-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: right;
+}
+.comp-season-btn-title {
+    font-size: 0.9em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.comp-season-btn-sub {
+    font-size: 0.65em;
+    color: var(--text2);
+}
+.comp-season-btn-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.comp-season-mini-bar {
+    width: 72px;
+    height: 5px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.comp-season-mini-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #fff176);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+.comp-season-pts-badge {
+    font-size: 0.6em;
+    font-weight: 900;
+    color: var(--gold);
 }
 
-/* ── ملء بيانات الملف الشخصي ── */
-function _fillPlayerProfile(p, isSelf) {
-    const avatar = document.getElementById('ppAvatar');
-    const name   = document.getElementById('ppName');
-    const level  = document.getElementById('ppLevel');
-    if (avatar) avatar.textContent = p.avatar || '🧑';
-    if (name)   name.textContent   = p.name   || 'لاعب';
-    if (level)  level.textContent  = p.level  || 1;
+/* ── Header صفحة الموسم ── */
+.sp-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.sp-back-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    font-size: 1.5em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+.sp-back-btn:active {
+    background: rgba(255,255,255,0.1);
+    transform: scale(0.92);
+}
+.sp-header-center {
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+}
+.sp-header-title {
+    font-size: 1em;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 0.3px;
+}
+.sp-header-sub {
+    font-size: 0.7em;
+    color: var(--text3);
+    margin-top: 2px;
+    font-weight: 500;
+}
+.sp-header-timer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-size: 0.65em;
+    font-weight: 800;
+    color: var(--text2);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.sp-timer-icon { font-size: 1em; opacity: 0.7; }
 
-    /* إطار الـ avatar */
-    _renderAvatarFrame(p.activeFrame || 'none');
-
-    /* أنيميشن عدّ */
-    _animateCount('ppCorrect',   p.correctTotal);
-    _animateCount('ppWrong',     p.wrongTotal);
-    _animateCount('ppStreak',    p.bestStreak);
-    _animateCount('ppBestScore', p.challengeScore || p.bestScore);
-
-    /* شريط الدقة */
-    const total = (p.correctTotal || 0) + (p.wrongTotal || 0);
-    const pct   = total > 0 ? Math.round((p.correctTotal || 0) / total * 100) : null;
-    const pctEl = document.getElementById('ppAccuracyPct');
-    const barEl = document.getElementById('ppAccuracyBar');
-    if (pctEl) pctEl.textContent = pct !== null ? pct + '%' : '—%';
-    if (barEl) {
-        setTimeout(() => {
-            barEl.style.width = (pct !== null ? pct : 0) + '%';
-            if      (pct >= 80) barEl.style.background = 'linear-gradient(90deg,#10b981,#34d399)';
-            else if (pct >= 60) barEl.style.background = 'linear-gradient(90deg,#f0b90b,#fcd34d)';
-            else if (pct !== null) barEl.style.background = 'linear-gradient(90deg,#ef4444,#f87171)';
-        }, 80);
-    }
-
-    _renderProfileTitles(p.titles || []);
-    if (!isSelf) _renderComparison(p);
+/* ── شريط التقدم الكلي ── */
+.sp-progress-section {
+    padding: 14px 18px 12px;
+    background: transparent;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.sp-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+.sp-pts-label {
+    font-size: 0.75em;
+    color: var(--text3);
+    font-weight: 600;
+}
+.sp-pts-val {
+    font-size: 0.82em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.sp-progress-track {
+    position: relative;
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 20px;
+    overflow: visible;
+}
+.sp-progress-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #e5a800, #f0b90b, #ffe066);
+    background-size: 200% 100%;
+    border-radius: 20px;
+    transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    animation: spBarShimmer 3s linear infinite;
+}
+@keyframes spBarShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.sp-progress-glow {
+    position: absolute;
+    top: -5px; right: -5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 10px 3px rgba(240,185,11,0.4);
+    transition: right 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+}
+.sp-progress-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 9px;
+}
+.sp-completed-days,
+.sp-total-earned {
+    font-size: 0.65em;
+    color: var(--text3);
+    font-weight: 600;
 }
 
-/* ── رسم إطار الـ avatar ── */
-function _renderAvatarFrame(frameId) {
-    const svg = document.getElementById('ppFrameSvg');
-    if (!svg) return;
-    const fn = _PP_FRAMES[frameId] || _PP_FRAMES['none'];
-    svg.innerHTML = fn();
+/* ── Body قابل للتمرير ── */
+.sp-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 18px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+}
+.sp-body::-webkit-scrollbar { display: none; }
+
+/* ── عناوين الأقسام ── */
+.sp-section-title {
+    font-size: 0.78em;
+    font-weight: 900;
+    color: var(--text2);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    letter-spacing: 0.3px;
+}
+.sp-daily-title {
+    margin-top: 4px;
+}
+.sp-daily-badge {
+    background: rgba(240,185,11,0.1);
+    border: 1px solid rgba(240,185,11,0.25);
+    color: var(--gold);
+    border-radius: 20px;
+    padding: 1px 9px;
+    font-size: 0.85em;
+    font-weight: 900;
+}
+.sp-desc {
+    font-size: 0.67em;
+    color: var(--text2);
+    margin-bottom: 6px;
 }
 
-/* ── حساب وعرض ترتيب اللاعب ── */
-function _computeAndShowRank(playerData) {
-    const rankBadge = document.getElementById('ppRankBadge');
-    const rankVal   = document.getElementById('ppRankVal');
-    const rankIcon  = document.getElementById('ppRankIcon');
-    if (!rankBadge || !rankVal) return;
-
-    const _applyRank = (idx) => {
-        if (idx < 0) return;
-        const rank = idx + 1;
-        rankVal.textContent  = '#' + rank;
-        if (rankIcon) rankIcon.textContent = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏅';
-        rankBadge.style.display = 'flex';
-    };
-
-    /* من الكاش أولاً */
-    if (_ppLastLbData) {
-        const idx = _ppLastLbData.findIndex(p => p.id === playerData.id || p.name === playerData.name);
-        _applyRank(idx);
-        return;
-    }
-
-    /* وإلا من Firebase */
-    if (!window.database) return;
-    try {
-        window.database.ref('challenge_leaderboard')
-            .orderByChild('challengeScore').limitToLast(100)
-            .once('value', snap => {
-                const all = [];
-                snap.forEach(c => all.push(Object.assign({ id: c.key }, c.val())));
-                all.sort((a, b) => (b.challengeScore || 0) - (a.challengeScore || 0));
-                _ppLastLbData = all;
-                const idx = all.findIndex(p => p.id === playerData.id || p.name === playerData.name);
-                _applyRank(idx);
-            }).catch(() => {});
-    } catch(e) {}
+/* ── مسار الجوائز (أفقي قابل للتمرير) ── */
+.sp-track-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    margin: 0 -4px;
+}
+.sp-track-scroll::-webkit-scrollbar { display: none; }
+.sp-track {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 4px 8px 8px;
+    min-width: max-content;
 }
 
-/* ── مشاركة الملف الشخصي ── */
-function ppShareProfile() {
-    const modal = document.getElementById('playerProfileModal');
-    const p = modal ? modal._playerData : null;
-    if (!p) return;
-
-    const name  = p.name  || 'لاعب';
-    const level = p.level || 1;
-    const total = (p.correctTotal || 0) + (p.wrongTotal || 0);
-    const pct   = total > 0 ? Math.round((p.correctTotal || 0) / total * 100) + '%' : '—';
-
-    const text =
-        `🎓 HO Math — ملف ${name}\n` +
-        `📊 المستوى: Lv.${level}\n` +
-        `✅ إجابات صحيحة: ${_fmtNum(p.correctTotal)}\n` +
-        `🔥 أعلى تتابع: ${_fmtNum(p.bestStreak)}\n` +
-        `⭐ أعلى نتيجة تحدي: ${_fmtNum(p.challengeScore || p.bestScore)}\n` +
-        `🎯 دقة الإجابات: ${pct}\n\n` +
-        `💡 تحدّني في HO Math! © 2026 Hassan Odaey`;
-
-    if (navigator.share) {
-        navigator.share({ title: 'HO Math — ملف لاعب', text }).catch(() => {});
-    } else {
-        navigator.clipboard.writeText(text)
-            .then(()  => _ppToast('✅ تم نسخ الملف الشخصي!'))
-            .catch(()  => _ppToast('📋 فشل النسخ — جرّب يدوياً'));
-    }
+/* محطة جائزة واحدة */
+.sp-reward-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    flex-shrink: 0;
+}
+/* الخط الرابط بين المحطات */
+.sp-reward-node::before {
+    content: '';
+    position: absolute;
+    top: 22px;
+    right: 50%;
+    width: 36px;
+    height: 3px;
+    background: var(--border2);
+    z-index: 0;
+}
+.sp-reward-node:first-child::before { display: none; }
+.sp-reward-node.reached::before {
+    background: linear-gradient(90deg, var(--gold), rgba(240,185,11,0.4));
 }
 
-/* ── رسالة toast خفيفة ── */
-function _ppToast(msg) {
-    let t = document.getElementById('ppToastMsg');
-    if (!t) {
-        t = document.createElement('div');
-        t.id = 'ppToastMsg';
-        t.style.cssText = [
-            'position:fixed','bottom:28px','left:50%','transform:translateX(-50%)',
-            'background:rgba(15,15,30,0.92)','color:#fff',
-            'padding:9px 20px','border-radius:22px','font-size:0.82em',
-            'z-index:99999','pointer-events:none',
-            'border:1px solid rgba(240,185,11,0.3)',
-            'transition:opacity 0.3s,transform 0.3s',
-            'font-family:inherit',
-        ].join(';');
-        document.body.appendChild(t);
-    }
-    t.textContent = msg;
-    t.style.opacity = '1';
-    t.style.transform = 'translateX(-50%) translateY(0)';
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => {
-        t.style.opacity = '0';
-        t.style.transform = 'translateX(-50%) translateY(8px)';
-    }, 2400);
+/* دائرة المحطة */
+.sp-node-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    position: relative;
+    z-index: 1;
+    background: var(--surface3);
+    border: 2.5px solid var(--border2);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+.sp-reward-node.reached .sp-node-circle {
+    background: linear-gradient(135deg, rgba(240,185,11,0.25), rgba(240,185,11,0.1));
+    border-color: var(--gold);
+    box-shadow: 0 0 12px rgba(240,185,11,0.35);
+}
+.sp-reward-node.claimed .sp-node-circle {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+    box-shadow: 0 0 10px rgba(16,185,129,0.4);
+}
+.sp-reward-node.claimed .sp-node-circle::after {
+    content: '✓';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    background: #10b981;
+    border-radius: 50%;
+    font-size: 0.55em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    border: 2px solid var(--bg);
+}
+/* علامة الـ current */
+.sp-reward-node.current .sp-node-circle {
+    animation: spNodePulse 1.4s ease-in-out infinite;
+    border-color: var(--gold);
+    background: rgba(240,185,11,0.15);
+}
+@keyframes spNodePulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(240,185,11,0.4); }
+    50%      { box-shadow: 0 0 0 6px rgba(240,185,11,0); }
+}
+.sp-node-pts {
+    font-size: 0.58em;
+    font-weight: 900;
+    color: var(--text2);
+}
+.sp-reward-node.reached .sp-node-pts,
+.sp-reward-node.current .sp-node-pts { color: var(--gold); }
+.sp-reward-node.claimed .sp-node-pts { color: #10b981; }
+.sp-node-label {
+    font-size: 0.55em;
+    color: var(--text2);
+    max-width: 60px;
+    text-align: center;
+    line-height: 1.3;
 }
 
-/* ── إرسال إشعار التحدي عبر Firebase ── */
-function ppSendChallengeNotif(targetPlayerData) {
-    if (!window.database || !st.serialNumber || !targetPlayerData.serialNumber) return;
-    try {
-        const targetKey = targetPlayerData.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-        window.database.ref('challenge_requests/' + targetKey).set({
-            from:       st.serialNumber,
-            fromName:   st.name   || 'لاعب',
-            fromAvatar: st.avatar || '🧑',
-            timestamp:  Date.now(),
-        }).catch(() => {});
-    } catch(e) {}
+/* ── المهام اليومية ── */
+.sp-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.sp-task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 12px 14px;
+    transition: all 0.2s ease;
+}
+.sp-task-item.done {
+    background: rgba(16,185,129,0.05);
+    border-color: rgba(16,185,129,0.22);
+}
+.sp-task-icon {
+    font-size: 1.4em;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    text-align: center;
+}
+.sp-task-item.done .sp-task-icon {
+    background: rgba(16,185,129,0.08);
+    border-color: rgba(16,185,129,0.2);
+}
+.sp-task-info {
+    flex: 1;
+    min-width: 0;
+}
+.sp-task-name {
+    font-size: 0.8em;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 2px;
+    line-height: 1.3;
+}
+.sp-task-item.done .sp-task-name {
+    color: var(--text2);
+}
+.sp-task-desc {
+    font-size: 0.65em;
+    color: var(--text3);
+    margin-bottom: 6px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+.sp-task-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.sp-task-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+.sp-task-item.done .sp-task-bar-fill {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+.sp-task-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.sp-task-pts {
+    font-size: 0.72em;
+    font-weight: 900;
+    color: var(--gold);
+    background: rgba(240,185,11,0.08);
+    border: 1px solid rgba(240,185,11,0.2);
+    border-radius: 7px;
+    padding: 2px 7px;
+}
+.sp-task-prog {
+    font-size: 0.62em;
+    color: var(--text3);
+    font-weight: 600;
+}
+/* نجوم الصعوبة */
+.sp-task-stars {
+    font-size: 0.62em;
+    color: var(--gold);
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+/* شارة الوضع */
+.sp-task-mode-badge {
+    font-size: 0.57em;
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.22);
+    color: var(--accent);
+    border-radius: 5px;
+    padding: 1px 5px;
+    font-weight: 700;
 }
 
-/* ── الاستماع لإشعارات التحدي الواردة ── */
-let _ppNotifListener = null;
-
-function _startListeningForChallenges() {
-    if (!window.database || !st.serialNumber || _ppNotifListener) return;
-    try {
-        const myKey = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const ref   = window.database.ref('challenge_requests/' + myKey);
-        _ppNotifListener = ref.on('value', snap => {
-            const data = snap.val();
-            if (!data || !data.fromName) return;
-            /* تجاهل الإشعارات القديمة (أكثر من 30 ثانية) */
-            if (Date.now() - (data.timestamp || 0) > 30000) return;
-            _showChallengeNotif(data.fromName, data.fromAvatar || '🧑');
-            ref.remove().catch(() => {}); /* احذف بعد القراءة */
-        });
-    } catch(e) {}
+/* زر استلام الجائزة */
+.sp-claim-btn {
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 9px;
+    padding: 4px 10px;
+    font-size: 0.65em;
+    font-weight: 900;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-family: 'Tajawal', sans-serif;
+    box-shadow: 0 2px 8px rgba(240,185,11,0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    animation: none;
+}
+.sp-claim-btn:active {
+    transform: scale(0.93);
+    box-shadow: 0 1px 4px rgba(240,185,11,0.2);
 }
 
-/* ── عرض شريط إشعار التحدي ── */
-function _showChallengeNotif(fromName, fromAvatar) {
-    const bar  = document.getElementById('ppChallengeNotif');
-    const text = document.getElementById('ppNotifText');
-    if (!bar) return;
-    if (text) text.textContent = `${fromAvatar} ${fromName} يتحدّاك!`;
-    bar.style.display = 'flex';
-    clearTimeout(bar._timer);
-    bar._timer = setTimeout(ppDismissNotif, 8000);
-}
 
-function ppDismissNotif() {
-    const bar = document.getElementById('ppChallengeNotif');
-    if (bar) bar.style.display = 'none';
-}
-
-function ppAcceptChallenge(event) {
-    if (event) event.stopPropagation();
-    ppDismissNotif();
-    setTimeout(() => {
-        if (typeof launchChallengeCountdown === 'function') launchChallengeCountdown();
-    }, 150);
-}
-
-/* ── عرض الألقاب ── */
-function _renderProfileTitles(titles) {
-    const list = document.getElementById('ppTitlesList');
-    if (!list) return;
-    if (!titles || !titles.length) { list.innerHTML = '<span class="pp-no-titles">لا توجد ألقاب بعد</span>'; return; }
-    const chips = titles.map(t => {
-        const icon = (typeof t === 'object' && t.icon) ? t.icon : '🏅';
-        const nm   = (typeof t === 'object' && t.name) ? t.name : (typeof t === 'string' ? t : '');
-        return nm ? `<span class="pp-title-chip">${icon} ${nm}</span>` : '';
-    }).filter(Boolean).join('');
-    list.innerHTML = chips || '<span class="pp-no-titles">لا توجد ألقاب بعد</span>';
-}
-
-/* ── مقارنة أنا vs اللاعب ── */
-function _renderComparison(p) {
-    const section = document.getElementById('ppCompareSection');
-    const grid    = document.getElementById('ppCompareGrid');
-    if (!section || !grid || typeof st === 'undefined') return;
-
-    const rows = [
-        { label:'دقة الإجابات', icon:'🎯', myVal:_calcAccuracy(st.correctTotal,st.wrongTotal), hisVal:_calcAccuracy(p.correctTotal,p.wrongTotal), fmt: v => v!==null?v+'%':'—', higher:true },
-        { label:'أعلى تتابع',   icon:'🔥', myVal:st.bestStreak||0, hisVal:p.bestStreak||0, fmt:_fmtNum, higher:true },
-        { label:'نتيجة التحدي', icon:'⭐', myVal:st.challengeBestScore||st.bestScore||0, hisVal:p.challengeScore||p.bestScore||0, fmt:_fmtNum, higher:true },
-    ];
-
-    const myAv  = st.avatar || '👤';
-    const hisAv = p.avatar  || '🧑';
-    const html  = rows.map(r => {
-        const myW  = r.myVal!==null&&r.hisVal!==null&&(r.higher?r.myVal>r.hisVal:r.myVal<r.hisVal);
-        const hisW = r.myVal!==null&&r.hisVal!==null&&(r.higher?r.hisVal>r.myVal:r.hisVal<r.myVal);
-        return `<div class="pp-cmp-row">
-            <div class="pp-cmp-mine${myW?' pp-cmp-winner':''}">${r.fmt(r.myVal)}</div>
-            <div class="pp-cmp-label"><span class="pp-cmp-icon">${r.icon}</span>${r.label}</div>
-            <div class="pp-cmp-his${hisW?' pp-cmp-winner':''}">${r.fmt(r.hisVal)}</div>
-        </div>`;
-    }).join('');
-
-    grid.innerHTML = `<div class="pp-cmp-header"><span>${myAv} أنا</span><span></span><span>${hisAv} هو</span></div>${html}`;
-    section.style.display = 'block';
-}
-
-function _calcAccuracy(c, w) {
-    c = Number(c)||0; w = Number(w)||0;
-    return c+w > 0 ? Math.round(c/(c+w)*100) : null;
-}
-
-/* ── أنيميشن عدّ الأرقام ── */
-function _animateCount(elId, targetVal) {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    const n = Number(targetVal);
-    if (isNaN(n) || targetVal == null) { el.textContent = '—'; return; }
-    if (n >= 10000) { el.textContent = _fmtNum(n); return; }
-    const steps = 30, dur = 600, step = n / steps;
-    let cur = 0, cnt = 0;
-    el.textContent = '0';
-    const t = setInterval(() => {
-        cnt++;
-        cur = cnt >= steps ? n : Math.round(step * cnt);
-        el.textContent = _fmtNum(cur);
-        if (cnt >= steps) clearInterval(t);
-    }, dur / steps);
-}
-
-/* ── جلب بيانات اللاعب من Firebase ── */
-function _fetchFullPlayerData(serialNumber, fallback, isSelf) {
-    const loading = document.getElementById('ppLoading');
-    if (loading) loading.style.display = 'flex';
-    try {
-        const key = serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-        window.database.ref('challenge_leaderboard/' + key)
-            .once('value', snap => {
-                if (loading) loading.style.display = 'none';
-                const data = snap.val();
-                if (data) _fillPlayerProfile(Object.assign({}, fallback, data), isSelf);
-            }).catch(() => { if (loading) loading.style.display = 'none'; });
-    } catch(e) { if (loading) loading.style.display = 'none'; }
-}
-
-/* ── إغلاق المودال ── */
-function closePlayerProfile(event) {
-    if (event && event.target !== document.getElementById('playerProfileModal')) return;
-    const modal = document.getElementById('playerProfileModal');
-    if (modal) modal.style.display = 'none';
-}
-
-/* ── بدء التحدي + إرسال إشعار ── */
-function ppStartChallenge() {
-    const modal = document.getElementById('playerProfileModal');
-    const p = modal ? modal._playerData : null;
-    if (p) ppSendChallengeNotif(p);
-    closePlayerProfile();
-    setTimeout(() => {
-        if (typeof launchChallengeCountdown === 'function') launchChallengeCountdown();
-    }, 200);
-}
-
-/* ── تنسيق الأرقام ── */
-function _fmtNum(n) {
-    if (n == null) return '—';
-    n = Number(n);
-    if (isNaN(n)) return '—';
-    if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
-    if (n >= 1000)    return (n/1000).toFixed(1)+'K';
-    return n.toString();
-}
-
-/* ── تصدير للنافذة ── */
-window.openPlayerProfile  = openPlayerProfile;
-window.closePlayerProfile = closePlayerProfile;
-window.ppStartChallenge   = ppStartChallenge;
-window.ppShareProfile     = ppShareProfile;
-window.ppDismissNotif     = ppDismissNotif;
-window.ppAcceptChallenge  = ppAcceptChallenge;
-window.ppSetLbCache       = (data) => { _ppLastLbData = data; };
-
-/* ── بدء الاستماع للإشعارات بعد تهيئة Firebase ── */
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(_startListeningForChallenges, 3000));
-} else {
-    setTimeout(_startListeningForChallenges, 3000);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   🏆 SEASON PASS — منطق موسم الرياضيات الكامل
+/* ═══════════════════════════════════════════════════════════
+   🏆 SEASON PASS — المرحلة الرابعة: تأثيرات + حالات + Responsive
    © 2026 Hassan Odaey
-═══════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════ */
 
-/* ── تعريف كتالوج المهام اليومية — 35 نوع متنوع ── */
-const _SP_TASK_POOL = [
-    /* ── وضع التحدي (challenge) ── */
-    { id:'c1',  mode:'challenge', icon:'⚔️',  stars:1, name:'أول تحدي',        desc:'العب جولة تحدٍّ واحدة',            type:'challenge_games', target:1,  pts:10 },
-    { id:'c2',  mode:'challenge', icon:'⚡',  stars:1, name:'نقاط سريعة',       desc:'اجمع 5 نقاط في التحدي',            type:'challenge_score', target:5,  pts:10 },
-    { id:'c3',  mode:'challenge', icon:'🔥',  stars:2, name:'حرارة المنافسة',   desc:'اجمع 15 نقطة في التحدي',           type:'challenge_score', target:15, pts:20 },
-    { id:'c4',  mode:'challenge', icon:'💪',  stars:2, name:'المقاتل',          desc:'العب التحدي مرتين',                 type:'challenge_games', target:2,  pts:20 },
-    { id:'c5',  mode:'challenge', icon:'🏅',  stars:3, name:'قمة التحدي',       desc:'اجمع 30 نقطة في التحدي',           type:'challenge_score', target:30, pts:30 },
-    /* ── اللعبة الرئيسية (main) ── */
-    { id:'m1',  mode:'main',      icon:'📚',  stars:1, name:'جولة دراسية',      desc:'العب لعبة واحدة في الوضع العادي',   type:'main_games',      target:1,  pts:10 },
-    { id:'m2',  mode:'main',      icon:'✅',  stars:1, name:'دقة عالية',        desc:'أجب صح على 5 أسئلة متتالية',       type:'main_correct',    target:5,  pts:10 },
-    { id:'m3',  mode:'main',      icon:'🧠',  stars:2, name:'تركيز ذهني',       desc:'أجب صح على 10 أسئلة اليوم',        type:'daily_correct',   target:10, pts:20 },
-    { id:'m4',  mode:'main',      icon:'📈',  stars:2, name:'نمو مستمر',        desc:'اجمع 20 نقطة في الألعاب العادية',  type:'main_score',      target:20, pts:20 },
-    { id:'m5',  mode:'main',      icon:'🎓',  stars:3, name:'طالب متميز',       desc:'العب 3 ألعاب في الوضع العادي',     type:'main_games',      target:3,  pts:30 },
-    /* ── وضع الصاروخ (rocket) ── */
-    { id:'r1',  mode:'rocket',    icon:'🚀',  stars:1, name:'انطلاق',           desc:'العب وضع الصاروخ مرة واحدة',       type:'rocket_games',    target:1,  pts:10 },
-    { id:'r2',  mode:'rocket',    icon:'💫',  stars:2, name:'صاروخي',           desc:'اجمع 10 نقاط في وضع الصاروخ',      type:'rocket_score',    target:10, pts:20 },
-    { id:'r3',  mode:'rocket',    icon:'🌟',  stars:3, name:'سرعة البرق',       desc:'اجمع 25 نقطة في وضع الصاروخ',      type:'rocket_score',    target:25, pts:30 },
-    /* ── التحدي الأسبوعي (weekly) ── */
-    { id:'w1',  mode:'weekly',    icon:'📅',  stars:2, name:'التحدي الأسبوعي', desc:'العب التحدي الأسبوعي هذا الأسبوع', type:'weekly_played',   target:1,  pts:20 },
-    { id:'w2',  mode:'weekly',    icon:'🏆',  stars:3, name:'بطل الأسبوع',     desc:'اجمع 20 نقطة في التحدي الأسبوعي', type:'weekly_score',    target:20, pts:30 },
-    /* ── إجمالي اليوم (daily) ── */
-    { id:'d1',  mode:'daily',     icon:'📊',  stars:1, name:'يوم نشيط',         desc:'العب لعبتين أي وضع',               type:'any_games',       target:2,  pts:10 },
-    { id:'d2',  mode:'daily',     icon:'🌙',  stars:1, name:'جلسة يومية',       desc:'افتح اللعبة اليوم',                 type:'login_today',     target:1,  pts:10 },
-    { id:'d3',  mode:'daily',     icon:'⭐',  stars:2, name:'نصف الطريق',       desc:'أجب صح على 15 سؤالاً اليوم',       type:'daily_correct',   target:15, pts:20 },
-    { id:'d4',  mode:'daily',     icon:'🎯',  stars:2, name:'تركيز تام',        desc:'أجب صح على 20 سؤالاً اليوم',       type:'daily_correct',   target:20, pts:20 },
-    { id:'d5',  mode:'daily',     icon:'💎',  stars:3, name:'يوم استثنائي',     desc:'اجمع 50 نقطة أي وضع اليوم',        type:'daily_pts_any',   target:50, pts:30 },
-    /* ── متنوعة (misc) ── */
-    { id:'x1',  mode:'misc',      icon:'🔢',  stars:1, name:'رياضيات الصباح',   desc:'أجب صح على 3 أسئلة',               type:'any_correct',     target:3,  pts:10 },
-    { id:'x2',  mode:'misc',      icon:'🧮',  stars:2, name:'حساب سريع',        desc:'أجب صح على 8 أسئلة',               type:'any_correct',     target:8,  pts:20 },
-    { id:'x3',  mode:'misc',      icon:'🏦',  stars:2, name:'مدخر العملات',     desc:'اجمع 10 عملات اليوم',               type:'earn_coins',      target:10, pts:20 },
-    { id:'x4',  mode:'misc',      icon:'📐',  stars:3, name:'هندسي',            desc:'أجب صح على 15 سؤالاً',              type:'any_correct',     target:15, pts:30 },
-    { id:'x5',  mode:'misc',      icon:'∑',   stars:3, name:'مجمّع النقاط',     desc:'اجمع 30 نقطة أي وضع',              type:'any_score',       target:30, pts:30 },
-];
-
-/* ── توليد 5 مهام يومية متنوعة ── */
-function _seasonGenerateDailyTasks() {
-    /* اختيار 5 مهام: بالتوزيع: 2×⭐ + 2×⭐⭐ + 1×⭐⭐⭐ = 10+10+20+20+30 = 90... */
-    /* لضمان 100 نقطة بالضبط: 1×⭐(10) + 2×⭐⭐(20+20) + 1×⭐⭐⭐(30) + 1×⭐⭐(20) = 100 */
-    const star1 = _SP_TASK_POOL.filter(t => t.stars === 1);
-    const star2 = _SP_TASK_POOL.filter(t => t.stars === 2);
-    const star3 = _SP_TASK_POOL.filter(t => t.stars === 3);
-
-    function pick(arr, n, exclude = []) {
-        const avail = arr.filter(t => !exclude.find(e => e.id === t.id));
-        const shuffled = [...avail].sort(() => Math.random() - 0.5);
-        return shuffled.slice(0, n);
-    }
-
-    const picked1 = pick(star1, 2);
-    const picked3 = pick(star3, 1);
-    const picked2 = pick(star2, 2, [...picked1, ...picked3]);
-
-    const tasks = [...picked1, ...picked2, ...picked3]
-        .sort(() => Math.random() - 0.5)
-        .map(t => ({
-            id:      t.id,
-            icon:    t.icon,
-            stars:   t.stars,
-            name:    t.name,
-            desc:    t.desc,
-            type:    t.type,
-            mode:    t.mode,
-            target:  t.target,
-            pts:     t.pts,
-            current: 0,
-            done:    false,
-        }));
-
-    return tasks;
+/* ══════════════════════════
+   أنيميشن دخول الصفحة
+══════════════════════════ */
+#seasonPassOverlay {
+    animation: spSlideUp 0.32s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+@keyframes spSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* ── قراءة قيمة التقدم الحالية لنوع مهمة ── */
-function _seasonGetTaskCurrent(task) {
-    const s = st;
-    switch (task.type) {
-        case 'challenge_games':  return s.challengeGamesPlayed || 0;
-        case 'challenge_score':  return s.challengeBestScore   || 0;
-        case 'main_games':       return (s.dailyStats && s.dailyStats.games) || 0;
-        case 'main_correct':     return (s.dailyStats && s.dailyStats.correct) || 0;
-        case 'main_score':       return (s.weeklyStats && s.weeklyStats.correct) || 0;
-        case 'daily_correct':    return (s.dailyStats && s.dailyStats.correct) || 0;
-        case 'any_games':        return (s.dailyStats && s.dailyStats.games) || 0;
-        case 'any_correct':      return (s.dailyStats && s.dailyStats.correct) || 0;
-        case 'any_score':        return s.score || 0;
-        case 'daily_pts_any':    return s.score || 0;
-        case 'rocket_games':     return s.rocketGamesPlayed   || 0;
-        case 'rocket_score':     return s.rocketBestScore     || 0;
-        case 'weekly_played':    return s.weeklyChallengePlayed ? 1 : 0;
-        case 'weekly_score':     return s.weeklyChallengeBest  || 0;
-        case 'earn_coins':       return s.coinsEarnedToday     || 0;
-        case 'login_today':      return 1; /* مجرد الوصول = مكتمل */
-        default:                 return 0;
-    }
+/* ══════════════════════════
+   تأثير pop لنقاط الموسم
+   يُضاف بـ JS على #spCurrentPts عند كل تحديث
+══════════════════════════ */
+.sp-pts-pop {
+    animation: spPtsPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes spPtsPop {
+    0%   { transform: scale(1);    color: var(--gold); }
+    40%  { transform: scale(1.45); color: #fff176;     }
+    100% { transform: scale(1);    color: var(--gold); }
 }
 
-/* ── تهيئة بيانات الموسم أو إعادة ضبطها إذا تغيّر اليوم/الأسبوع ── */
-function _seasonEnsureReady() {
-    if (!st.season) st.season = { weekKey:'', points:0, claimedRewards:[], dailyTasks:[], dailyTasksDate:'', completedDays:0, totalPtsEarned:0 };
-
-    const today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
-    const week  = (typeof seasonPassStr === 'function') ? seasonPassStr() : week;
-
-    /* إعادة ضبط يومية للمهام */
-    if (st.season.dailyTasksDate !== today || !st.season.dailyTasks || st.season.dailyTasks.length === 0) {
-        st.season.dailyTasks     = _seasonGenerateDailyTasks();
-        st.season.dailyTasksDate = today;
-    }
-
-    /* إعادة ضبط أسبوعية للموسم */
-    if (st.season.weekKey && st.season.weekKey !== week) {
-        st.season.points         = 0;
-        st.season.claimedRewards = [];
-        st.season.weekKey        = week;
-    }
-    if (!st.season.weekKey) st.season.weekKey = week;
+/* ══════════════════════════
+   تأثير المهمة عند الإكتمال
+══════════════════════════ */
+.sp-task-done-anim {
+    animation: spTaskDone 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+@keyframes spTaskDone {
+    0%   { transform: scale(1);    box-shadow: none; }
+    50%  { transform: scale(1.04); box-shadow: 0 0 18px rgba(16,185,129,0.5); }
+    100% { transform: scale(1);    box-shadow: 0 0 0 rgba(16,185,129,0); }
 }
 
-/* ── تحديث تقدم المهام بعد كل لعبة ── */
-function _seasonUpdateAfterGame(gameData) {
-    _seasonEnsureReady();
-
-    let pointsEarned = 0;
-
-    st.season.dailyTasks.forEach(task => {
-        if (task.done) return;
-        task.current  = _seasonGetTaskCurrent(task);
-        if (task.current >= task.target) {
-            task.done     = true;
-            pointsEarned += task.pts;
-        }
-    });
-
-    if (pointsEarned > 0) {
-        /* تطبيق Bonus Day إذا كان يوم الجمعة */
-        pointsEarned = _seasonApplyBonusDay(pointsEarned);
-
-        st.season.points         = Math.min(1000, (st.season.points || 0) + pointsEarned);
-        st.season.totalPtsEarned = (st.season.totalPtsEarned || 0) + pointsEarned;
-
-        try { showFeedback(`🏆 +${pointsEarned} نقطة موسم!`); } catch(e) {}
-        _seasonCheckRewards();
-    }
-
-    /* تحديث الـ Streak إذا أكملت كل المهام */
-    _seasonStreakCheck();
-
-    /* تحديث تقدم مهمة الفلاش */
-    _seasonFlashTaskUpdate();
-
-    /* فحص استحقاق الصندوق */
-    _seasonChestCheck();
-
-    saveSt();
-    _updateSeasonBtn();
+/* ══════════════════════════
+   تأثير استلام الجائزة
+══════════════════════════ */
+.sp-reward-claim-pop {
+    animation: spRewardClaim 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes spRewardClaim {
+    0%   { transform: scale(1) rotate(0deg);   }
+    30%  { transform: scale(1.3) rotate(-8deg); }
+    60%  { transform: scale(0.95) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg);   }
 }
 
-/* ── فحص الجوائز المستحقة وإظهار popup ── */
-function _seasonCheckRewards() {
-    if (typeof SEASON_TRACK_REWARDS === 'undefined') return;
-    SEASON_TRACK_REWARDS.forEach(reward => {
-        if (st.season.points >= reward.pts && !st.season.claimedRewards.includes(reward.pts)) {
-            st.season.claimedRewards.push(reward.pts);
-            _seasonGrantReward(reward);
-        }
-    });
+/* ══════════════════════════
+   زر الموسم — حالة الإكتمال
+══════════════════════════ */
+.comp-season-btn.all-done {
+    background: linear-gradient(135deg, #0d2818 0%, #0e2010 100%) !important;
+    border-color: rgba(16,185,129,0.55) !important;
+    box-shadow: 0 0 20px rgba(16,185,129,0.18) !important;
+}
+.comp-season-btn.all-done .comp-season-btn-title {
+    color: #34d399;
+}
+.comp-season-btn.all-done .comp-season-mini-fill {
+    background: linear-gradient(90deg, #10b981, #34d399);
 }
 
-/* ── منح الجائزة فعلياً ── */
-/* ═══════════════════════════════════════════════════════════════
-   🎁 giveReward — دالة موحّدة لمنح جميع أنواع الجوائز
-   تضمن وصول كل جائزة للمكان الصحيح في st
-═══════════════════════════════════════════════════════════════ */
-function giveReward(type, value, label) {
-    /* تأمين الكائنات الأساسية */
-    if (!st.inventory)   st.inventory   = { skip: 0, heart: 0, remove: 0, hint: 0 };
-    if (!st.ownedFrames) st.ownedFrames = ['frame_none'];
-    if (!st.ownedTitles) st.ownedTitles = [];
-    if (!st.ownedEmojis) st.ownedEmojis = ['👦'];
-
-    switch (type) {
-
-        /* ── نقود ── */
-        case 'coins':
-            st.coins = Math.min(999999, (st.coins || 0) + (value || 0));
-            try { showFeedback(`💰 +${value} عملة!`); doConfetti && doConfetti(); } catch(e) {}
-            break;
-
-        /* ── ماس ── */
-        case 'diamonds':
-        case 'diamond':
-            st.diamonds = Math.min(9999, (st.diamonds || 0) + (value || 0));
-            try { showFeedback(`💎 +${value} ماس!`); doConfetti && doConfetti(); } catch(e) {}
-            break;
-
-        /* ── مخزون: تخطي ── */
-        case 'skip':
-        case 'inventory_skip':
-        case 'skips':
-            st.inventory.skip = Math.min(99, (st.inventory.skip || 0) + (value || 1));
-            try { showFeedback(`⏭️ +${value} تخطي في المخزون!`); } catch(e) {}
-            break;
-
-        /* ── مخزون: قلب ── */
-        case 'heart':
-        case 'hearts':
-            st.inventory.heart = Math.min(99, (st.inventory.heart || 0) + (value || 1));
-            try { showFeedback(`❤️ +${value} قلب في المخزون!`); } catch(e) {}
-            break;
-
-        /* ── مخزون: حذف خيار ── */
-        case 'remove':
-            st.inventory.remove = Math.min(99, (st.inventory.remove || 0) + (value || 1));
-            try { showFeedback(`🗑️ +${value} حذف خيار في المخزون!`); } catch(e) {}
-            break;
-
-        /* ── مخزون: تلميح ── */
-        case 'hint':
-            st.inventory.hint = Math.min(99, (st.inventory.hint || 0) + (value || 1));
-            try { showFeedback(`💡 +${value} تلميح في المخزون!`); } catch(e) {}
-            break;
-
-        /* ── درع الـ streak (يحمي تتابع الموسم) ── */
-        case 'shield':
-        case 'shields':
-        case 'streakShield':
-            if (st.season) {
-                st.season.streakShields = Math.min(10, (st.season.streakShields || 0) + (value || 1));
-            }
-            try { showFeedback(`🛡️ +${value} درع Streak محفوظ!`); } catch(e) {}
-            break;
-
-        /* ── مضاعف XP ── */
-        case 'xpBoost':
-        case 'xp_boost':
-            st._xpBoostMultiplier = value || 2;
-            st._xpBoostExpires    = Date.now() + 24 * 60 * 60 * 1000;
-            try { showFeedback(`⚡ مضاعف XP ×${value} لمدة 24 ساعة!`); } catch(e) {}
-            break;
-
-        /* ── إطار ── */
-        case 'frame':
-            if (value && !st.ownedFrames.includes(value)) st.ownedFrames.push(value);
-            try { showFeedback(`🖼️ إطار جديد: ${label || value}!`); doConfetti && doConfetti(); } catch(e) {}
-            break;
-
-        /* ── رمز تعبيري ── */
-        case 'emoji':
-        case 'avatar':
-            if (value && !st.ownedEmojis.includes(value)) st.ownedEmojis.push(value);
-            try { showFeedback(`🎭 رمز جديد: ${value}!`); doConfetti && doConfetti(); } catch(e) {}
-            break;
-
-        /* ── لقب ── */
-        case 'title':
-            if (value && !st.ownedTitles.includes(value)) st.ownedTitles.push(value);
-            if (label && !st.activeTitle) st.activeTitle = label;
-            try { showFeedback(`🏷️ لقب جديد: ${label || value}!`); doConfetti && doConfetti(); } catch(e) {}
-            break;
-
-        /* ── حزمة مركّبة ── */
-        case 'bundle':
-        case 'season_complete':
-            if (Array.isArray(value)) {
-                value.forEach(item => giveReward(item.type, item.value || item.val, item.label));
-            }
-            break;
-    }
-
-    /* تحديث واجهة المخزون إن كانت مفتوحة */
-    try { if (typeof _updateInventoryBar === 'function') _updateInventoryBar(); } catch(e) {}
-    /* تحديث عداد العملات */
-    try { if (typeof updateUI === 'function') updateUI(); } catch(e) {}
-
-    saveSt();
+/* توهج دائم للزر عند وجود مهام جديدة */
+.season-btn-glow {
+    position: relative;
+    overflow: visible;
+}
+.season-btn-glow::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 18px;
+    background: transparent;
+    border: 2px solid rgba(240,185,11,0.0);
+    animation: seasonBtnGlowPulse 2s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes seasonBtnGlowPulse {
+    0%,100% { border-color: rgba(240,185,11,0.0); box-shadow: none; }
+    50%      { border-color: rgba(240,185,11,0.5); box-shadow: 0 0 12px rgba(240,185,11,0.2); }
 }
 
-/* ── ربط الأسماء القديمة بـ giveReward ── */
-function _seasonGrantReward(rewardDef) {
-    const r = rewardDef.reward;
-    try {
-        if (r.type === 'season_complete') {
-            /* إطار + لقب البطولة */
-            giveReward('frame', 'frame_season_champ', 'إطار بطل الموسم');
-            giveReward('title', 'title_season_champ', '🏆 بطل الموسم');
-            saveSt();
-            setTimeout(() => {
-                const sc = document.getElementById('spCompleteScreen');
-                if (sc) sc.style.display = 'flex';
-            }, 800);
-        } else {
-            giveReward(r.type, r.value, rewardDef.label);
-        }
-    } catch(e) {}
+/* ══════════════════════════
+   شاشة إتمام الموسم
+══════════════════════════ */
+#spCompleteScreen {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0,0,0,0.93);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    padding: 28px;
+    animation: spCompleteFadeIn 0.4s ease both;
+}
+@keyframes spCompleteFadeIn {
+    from { opacity: 0; backdrop-filter: blur(0); }
+    to   { opacity: 1; backdrop-filter: blur(6px); }
+}
+.sp-complete-crown {
+    font-size: 4em;
+    animation: spCompletePulse 1.6s ease-in-out infinite;
+}
+@keyframes spCompletePulse {
+    0%,100% { transform: scale(1)    rotate(0deg);  filter: drop-shadow(0 0 8px #f0b90b); }
+    50%      { transform: scale(1.15) rotate(-5deg); filter: drop-shadow(0 0 20px #f0b90b); }
+}
+.sp-complete-title {
+    font-size: 1.4em;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(240,185,11,0.5);
+}
+.sp-complete-sub {
+    font-size: 0.8em;
+    color: var(--text2);
+    max-width: 270px;
+    line-height: 1.7;
+}
+.sp-complete-icons {
+    font-size: 2.2em;
+    letter-spacing: 6px;
+    animation: spCompleteIconsBounce 1s ease-in-out infinite alternate;
+}
+@keyframes spCompleteIconsBounce {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-6px); }
+}
+.sp-complete-btn {
+    background: linear-gradient(135deg, var(--gold), #e5a800);
+    color: #000;
+    border: none;
+    border-radius: 18px;
+    padding: 13px 36px;
+    font-size: 0.95em;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: 'Tajawal', sans-serif;
+    box-shadow: 0 4px 20px rgba(240,185,11,0.4);
+    transition: transform 0.15s ease;
+}
+.sp-complete-btn:active { transform: scale(0.96); }
+
+/* ══════════════════════════
+   الخط الرابط في المسار
+══════════════════════════ */
+.sp-track-connector {
+    width: 32px;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 10px;
+    flex-shrink: 0;
+    align-self: center;
+    margin-bottom: 28px;
+    transition: background 0.3s ease;
+}
+.sp-track-connector.passed {
+    background: linear-gradient(90deg, rgba(240,185,11,0.8), rgba(240,185,11,0.3));
 }
 
-window.giveReward = giveReward;
-
-
-/* ── تحديث زر الموسم في صفحة المنافسة ── */
-function _updateSeasonBtn() {
-    _seasonEnsureReady();
-    const pts   = st.season.points || 0;
-    const pct   = Math.min(100, (pts / 1000) * 100);
-    const tasks = st.season.dailyTasks || [];
-    const done  = tasks.filter(t => t.done).length;
-    const total = tasks.length;
-
-    /* ── زر MP في الهيدر ── */
-    const headerBar = document.getElementById('headerMpBar');
-    if (headerBar) headerBar.style.width = pct + '%';
-
-    /* نقطة تنبيه حمراء عند وجود جائزة جاهزة للاستلام */
-    const mpBtn = document.querySelector('.header-mp-btn');
-    if (mpBtn) {
-        const hasReady = typeof SEASON_TRACK_REWARDS !== 'undefined' &&
-            SEASON_TRACK_REWARDS.some(r => pts >= r.pts && !(st.season.claimedRewards || []).includes(r.pts));
-        let dot = mpBtn.querySelector('.mp-alert-dot');
-        if (hasReady && !dot) {
-            dot = document.createElement('div');
-            dot.className = 'mp-alert-dot';
-            mpBtn.appendChild(dot);
-        } else if (!hasReady && dot) {
-            dot.remove();
-        }
-    }
-
-    /* ── تحديث العناصر القديمة (إن وجدت) ── */
-    const fillEl = document.getElementById('seasonMiniBarFill');
-    const ptsEl  = document.getElementById('seasonPtsBadge');
-    const subEl  = document.getElementById('seasonBtnSub');
-    if (fillEl) fillEl.style.width = pct + '%';
-    if (ptsEl)  ptsEl.textContent  = pts + '/1000';
-    if (subEl)  subEl.textContent  = done === total
-        ? `✅ أكملت مهام اليوم! (${pts}/1000 نقطة)`
-        : `${done}/${total} مهام اليوم • ${pts}/1000 نقطة`;
-
-    /* ── تحديث زر مسار الجوائز ── */
-    try { _updateTrackBtn(pts); } catch(e) {}
+/* ══════════════════════════
+   الحالة الفارغة (لا مهام)
+══════════════════════════ */
+.sp-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px 16px;
+    color: var(--text2);
+    text-align: center;
+}
+.sp-empty-state-icon {
+    font-size: 2.8em;
+    opacity: 0.5;
+}
+.sp-empty-state-text {
+    font-size: 0.8em;
+    line-height: 1.6;
 }
 
-/* ── فتح/إغلاق overlay الموسم ── */
-function openSeasonPassOverlay() {
-    _seasonEnsureReady();
-    const overlay = document.getElementById('seasonPassOverlay');
-    if (!overlay) return;
-    overlay.style.display = 'flex';
-    _renderSeasonPassPage();
+/* ══════════════════════════
+   تحسينات عامة للصفحة
+══════════════════════════ */
+
+/* تأثير hover على بطاقات المهام */
+.sp-task-item:not(.done):active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
 }
 
-function closeSeasonPassOverlay() {
-    const overlay = document.getElementById('seasonPassOverlay');
-    if (overlay) overlay.style.display = 'none';
+/* ظل خفيف على شريط التقدم الكلي عند اكتماله */
+.sp-progress-fill.complete {
+    background: linear-gradient(90deg, #10b981, #34d399, #10b981);
+    background-size: 200% 100%;
+    animation: spBarShimmer 2s linear infinite;
+    box-shadow: 0 0 12px rgba(16,185,129,0.4);
 }
 
-/* ── رسم صفحة الموسم كاملة ── */
-function _renderSeasonPassPage() {
-    _seasonEnsureReady();
-
-    const pts   = st.season.points || 0;
-    const pct   = Math.min(100, (pts / 1000) * 100);
-    const tasks = st.season.dailyTasks || [];
-    const done  = tasks.filter(t => t.done).length;
-
-    /* اسم الموسم */
-    const nameEl = document.getElementById('spSeasonName');
-    if (nameEl && typeof getCurrentSeasonName === 'function') nameEl.textContent = getCurrentSeasonName();
-
-    /* الأيام المتبقية — مع تنبيه urgent إذا يوم واحد */
-    const daysEl   = document.getElementById('spDaysLeft');
-    const timerBox = document.getElementById('spSeasonTimer');
-    if (daysEl) {
-        const day  = new Date().getDay();
-        const left = day === 0 ? 7 : 7 - day;
-        daysEl.textContent = left;
-        if (timerBox) timerBox.className = 'sp-header-timer' + (left <= 1 ? ' urgent' : '');
-    }
-
-    /* شريط التقدم */
-    const fillEl = document.getElementById('spProgressFill');
-    const glowEl = document.getElementById('spProgressGlow');
-    const ptsEl  = document.getElementById('spCurrentPts');
-    if (fillEl) {
-        fillEl.style.width = pct + '%';
-        if (pts >= 1000) fillEl.classList.add('complete');
-    }
-    if (glowEl) glowEl.style.right = Math.max(0, 100 - pct - 1) + '%';
-    if (ptsEl)  { ptsEl.textContent = pts; ptsEl.classList.add('sp-pts-pop'); setTimeout(() => ptsEl.classList.remove('sp-pts-pop'), 500); }
-
-    /* إحصائيات */
-    const cdEl = document.getElementById('spCompletedDays');
-    const teEl = document.getElementById('spTotalEarned');
-    if (cdEl) cdEl.textContent = st.season.completedDays || 0;
-    if (teEl) teEl.textContent = st.season.totalPtsEarned || 0;
-
-    /* شارة المهام */
-    const badgeEl = document.getElementById('spDailyBadge');
-    if (badgeEl) badgeEl.textContent = done + '/' + tasks.length;
-
-    /* ── الأقسام الجديدة ── */
-    _renderSeasonStreak();
-    _renderSeasonRank(pts);
-    _seasonBonusDayCheck();
-    _seasonFlashTaskGenerate();
-    _renderFlashTask();
-    _seasonChestCheck();
-
-    /* مسار الجوائز */
-    _renderSeasonTrack(pts);
-
-    /* المهام اليومية */
-    _renderSeasonTasks(tasks);
+/* تأثير تحديث عداد الأيام المتبقية */
+.sp-header-timer.urgent {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.3);
+    color: #f87171;
+    animation: none;
 }
 
-/* ── رسم مسار الجوائز ── */
-function _renderSeasonTrack(pts) {
-    const track = document.getElementById('spRewardTrack');
-    if (!track || typeof SEASON_TRACK_REWARDS === 'undefined') return;
-
-    track.innerHTML = SEASON_TRACK_REWARDS.map((rw, idx) => {
-        const claimed = st.season.claimedRewards.includes(rw.pts);
-        const reached = pts >= rw.pts;
-        const current = !claimed && reached;
-        const cls = ['sp-reward-node',
-            claimed ? 'claimed' : reached ? 'reached' : '',
-            current ? 'current' : ''
-        ].filter(Boolean).join(' ');
-
-        const claimBtn = current
-            ? `<button class="sp-claim-btn" onclick="claimSeasonReward(${rw.pts})">استلم!</button>`
-            : '';
-
-        return `
-        <div class="${cls}">
-            <div class="sp-node-circle">${claimed ? '✓' : rw.icon}</div>
-            <div class="sp-node-pts">${rw.pts}🏅</div>
-            <div class="sp-node-label">${rw.label}</div>
-            ${claimBtn}
-        </div>`;
-    }).join('');
-
-    /* تمرير للمحطة الحالية */
-    setTimeout(() => {
-        const current = track.querySelector('.sp-reward-node.current, .sp-reward-node.reached:last-of-type');
-        if (current) current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }, 200);
+/* نقطة تنبيه حمراء على زر الموسم عند وجود جوائز غير مُستلمة */
+.comp-season-btn .sp-unclaimed-dot {
+    position: absolute;
+    top: 10px;
+    left: 14px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 2px solid var(--bg);
+    animation: spDotPulse 1.4s ease-in-out infinite;
+}
+@keyframes spDotPulse {
+    0%,100% { transform: scale(1);   opacity: 1; }
+    50%      { transform: scale(1.3); opacity: 0.7; }
 }
 
-/* ── رسم المهام اليومية ── */
-function _renderSeasonTasks(tasks) {
-    const list = document.getElementById('spDailyTasksList');
-    if (!list) return;
-
-    const stars = n => '⭐'.repeat(n);
-
-    list.innerHTML = tasks.map(task => {
-        const cur  = Math.min(task.current || 0, task.target);
-        const pct  = Math.min(100, Math.round((cur / task.target) * 100));
-        const done = task.done;
-
-        return `
-        <div class="sp-task-item${done ? ' done' : ''}">
-            <div class="sp-task-icon">${task.icon}</div>
-            <div class="sp-task-info">
-                <div class="sp-task-name">
-                    ${task.name}
-                    <span class="sp-task-stars">${stars(task.stars)}</span>
-                    <span class="sp-task-mode-badge">${_seasonModeLabel(task.mode)}</span>
-                </div>
-                <div class="sp-task-desc">${task.desc}</div>
-                <div class="sp-task-bar">
-                    <div class="sp-task-bar-fill" style="width:${pct}%"></div>
-                </div>
-            </div>
-            <div class="sp-task-right">
-                <div class="sp-task-pts">+${task.pts}🏅</div>
-                <div class="sp-task-prog">${cur}/${task.target}</div>
-                ${done ? '<div style="font-size:1.1em;">✅</div>' : ''}
-            </div>
-        </div>`;
-    }).join('');
+/* ══════════════════════════
+   Responsive — شاشات صغيرة
+══════════════════════════ */
+@media (max-width: 380px) {
+    .sp-header          { padding: 12px 14px 10px; }
+    .sp-header-title    { font-size: 0.92em; }
+    .sp-header-sub      { font-size: 0.64em; }
+    .sp-streak-rank-bar { padding: 10px 14px; }
+    .sp-progress-section{ padding: 12px 14px 10px; }
+    .sp-body            { padding: 12px 14px 30px; gap: 10px; }
+    .sp-node-circle     { width: 38px; height: 38px; font-size: 1.1em; }
+    .sp-node-pts        { font-size: 0.52em; }
+    .sp-node-label      { font-size: 0.5em; max-width: 52px; }
+    .sp-task-item       { padding: 10px 12px; gap: 10px; }
+    .sp-task-name       { font-size: 0.76em; }
+    .sp-task-desc       { font-size: 0.62em; }
+    .sp-task-pts        { font-size: 0.68em; }
+    .comp-season-btn-title { font-size: 0.82em; }
+    .sp-complete-title     { font-size: 1.2em;  }
 }
 
-/* ── تسمية الوضع بالعربي ── */
-function _seasonModeLabel(mode) {
-    const map = { challenge:'⚔️ تحدي', main:'📚 عادي', rocket:'🚀 صاروخ', weekly:'📅 أسبوعي', daily:'📊 يومي', misc:'🎯 متنوع' };
-    return map[mode] || mode;
+@media (max-height: 650px) {
+    .sp-progress-section { padding: 10px 18px 8px; }
+    .sp-body             { padding: 10px 18px 24px; gap: 8px; }
+    .sp-streak-rank-bar  { padding: 8px 18px; }
+    .sp-task-item        { padding: 9px 12px; }
+    .sp-node-circle      { width: 40px; height: 40px; }
 }
 
-/* ── استلام جائزة يدوياً (عند الضغط على زر "استلم!") ── */
-function claimSeasonReward(pts) {
-    if (!st.season || st.season.claimedRewards.includes(pts)) return;
-    if ((st.season.points || 0) < pts) return;
 
-    if (typeof SEASON_TRACK_REWARDS === 'undefined') return;
-    const rewardDef = SEASON_TRACK_REWARDS.find(r => r.pts === pts);
-    if (!rewardDef) return;
+/* ═══════════════════════════════════════════════════════════
+   🏆 SEASON PASS — المرحلة الثانية: Streak + رتبة + فلاش + Bonus + صندوق + ذاكرة
+═══════════════════════════════════════════════════════════ */
 
-    st.season.claimedRewards.push(pts);
-    _seasonGrantReward(rewardDef);
-    saveSt();
+/* ── Header Right (timer + history btn) ── */
+.sp-header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.sp-history-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    width: 26px; height: 26px;
+    font-size: 0.78em;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text3);
+    transition: all 0.15s ease;
+}
+.sp-history-btn:active { transform: scale(0.9); }
 
-    /* إعادة رسم المسار */
-    _renderSeasonTrack(st.season.points || 0);
+/* ══ شريط Streak + رتبة ══ */
+.sp-streak-rank-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    padding: 12px 18px;
+    background: transparent;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: relative;
+}
+.sp-srb-divider {
+    width: 1px;
+    background: var(--border2);
+    margin: 4px 14px;
+    flex-shrink: 0;
 }
 
-/* ── تحديث تقدم مهام الموسم من اللعبة العادية ── */
-/* يُستدعى من game.js بعد كل جولة */
-/* ═══════════════════════════════════════════════════════════════
-   🔥 STREAK — منطق التتابع اليومي
-═══════════════════════════════════════════════════════════════ */
-function _seasonStreakCheck() {
-    const today     = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
-    const yesterday = (function(){
-        const d = new Date(); d.setDate(d.getDate() - 1);
-        return d.toISOString().slice(0,10);
-    })();
-
-    const allDone = st.season.dailyTasks.length > 0 && st.season.dailyTasks.every(t => t.done);
-    if (!allDone) return;
-    if (st.season.lastStreakDate === today) return; /* سبق وحُسب اليوم */
-
-    if (st.season.lastStreakDate === yesterday) {
-        /* تتابع مستمر */
-        st.season.streak = (st.season.streak || 0) + 1;
-    } else if (st.season.lastStreakDate && st.season.lastStreakDate !== yesterday) {
-        /* كُسر التتابع — تحقق من الدرع */
-        if ((st.season.streakShields || 0) > 0) {
-            st.season.streakShields--;
-            st.season.streak = (st.season.streak || 0) + 1;
-            try { showFeedback('🛡️ درع الـ Streak حمى تتابعك!'); } catch(e) {}
-        } else {
-            st.season.streak = 1; /* يبدأ من جديد */
-        }
-    } else {
-        st.season.streak = 1; /* أول يوم */
-    }
-
-    st.season.lastStreakDate = today;
-    if (st.season.streak > (st.season.bestStreak || 0)) st.season.bestStreak = st.season.streak;
-
-    /* مكافأة كل 3 أيام تتابع */
-    if (st.season.streak % 3 === 0) {
-        const bonus = st.season.streak >= 7 ? 30 : 15;
-        st.season.points         = Math.min(1000, (st.season.points || 0) + bonus);
-        st.season.totalPtsEarned = (st.season.totalPtsEarned || 0) + bonus;
-        try { showFeedback(`🔥 ${st.season.streak} أيام تتابع! +${bonus} نقطة بونص!`); } catch(e) {}
-        _seasonCheckRewards();
-    }
-
-    saveSt();
+/* ── Streak Box ── */
+.sp-streak-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    transition: background 0.3s ease;
+}
+.sp-streak-box.streak-warm {
+    background: rgba(249,115,22,0.07);
+    border: 1px solid rgba(249,115,22,0.2);
+}
+.sp-streak-box.streak-hot {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.22);
+    animation: none;
+}
+.sp-streak-fire {
+    font-size: 1.4em;
+    line-height: 1;
+    flex-shrink: 0;
+    animation: none;
+}
+.sp-streak-info { flex: 1; min-width: 0; }
+.sp-streak-num {
+    font-size: 1.4em;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+}
+.sp-streak-box.streak-warm .sp-streak-num { color: #f97316; }
+.sp-streak-box.streak-hot  .sp-streak-num { color: #ef4444; }
+.sp-streak-label {
+    font-size: 0.62em;
+    color: var(--text3);
+    margin-top: 2px;
+    font-weight: 500;
+}
+.sp-streak-shield {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.22);
+    border-radius: 7px;
+    padding: 2px 6px;
+    font-size: 0.62em;
+    font-weight: 900;
+    color: var(--accent);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ⭐ SEASON RANK — عرض الرتبة
-═══════════════════════════════════════════════════════════════ */
-function _renderSeasonRank(pts) {
-    if (typeof getSeasonRank === 'undefined') return;
-    const rank    = getSeasonRank(pts);
-    const iconEl  = document.getElementById('spRankIcon');
-    const labelEl = document.getElementById('spRankLabel');
-    const nextEl  = document.getElementById('spRankNext');
-    const boxEl   = document.getElementById('spRankBox');
-
-    if (iconEl)  iconEl.textContent  = rank.icon;
-    if (labelEl) labelEl.textContent = rank.label;
-    if (boxEl)   { boxEl.className = 'sp-rank-box ' + rank.cls; }
-
-    /* النقاط المتبقية للرتبة التالية */
-    if (nextEl && typeof SEASON_RANKS !== 'undefined') {
-        const idx  = SEASON_RANKS.findIndex(r => r.cls === rank.cls);
-        const next = SEASON_RANKS[idx + 1];
-        nextEl.textContent = next ? `${next.min - pts} للتالية ›` : '🏆 الرتبة الأعلى!';
-    }
+/* ── Rank Box ── */
+.sp-rank-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    transition: all 0.3s ease;
+}
+.sp-rank-box.rank-bronze  { background:rgba(184,115,51,0.07);  border-color:rgba(184,115,51,0.2); }
+.sp-rank-box.rank-silver  { background:rgba(176,184,200,0.07); border-color:rgba(176,184,200,0.2); }
+.sp-rank-box.rank-gold    { background:rgba(240,185,11,0.07);  border-color:rgba(240,185,11,0.22); }
+.sp-rank-box.rank-diamond { background:rgba(0,212,255,0.07);   border-color:rgba(0,212,255,0.22); }
+.sp-rank-box.rank-legend  { background:rgba(168,85,247,0.07);  border-color:rgba(168,85,247,0.22); }
+.sp-rank-box.rank-champion{
+    background: rgba(240,185,11,0.08);
+    border: 1px solid rgba(240,185,11,0.28);
+    animation: none;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   🔥 STREAK — رسم شريط الـ Streak
-═══════════════════════════════════════════════════════════════ */
-function _renderSeasonStreak() {
-    const streak  = st.season.streak  || 0;
-    const shields = st.season.streakShields || 0;
-
-    const numEl    = document.getElementById('spStreakNum');
-    const fireEl   = document.getElementById('spStreakFire');
-    const shieldEl = document.getElementById('spStreakShield');
-    const cntEl    = document.getElementById('spShieldCount');
-    const boxEl    = document.getElementById('spStreakBox');
-
-    if (numEl)    numEl.textContent    = streak;
-    if (shieldEl) shieldEl.style.display = shields > 0 ? 'flex' : 'none';
-    if (cntEl)    cntEl.textContent    = shields;
-    if (boxEl) {
-        boxEl.className = 'sp-streak-box' +
-            (streak >= 7  ? ' streak-hot'  :
-             streak >= 3  ? ' streak-warm' : '');
-    }
-    if (fireEl) {
-        fireEl.textContent = streak >= 14 ? '🌋' : streak >= 7 ? '🔥' : streak >= 3 ? '🔥' : '💤';
-    }
+.sp-rank-icon { font-size: 1.4em; flex-shrink: 0; }
+.sp-rank-info { flex: 1; min-width: 0; }
+.sp-rank-label {
+    font-size: 0.8em;
+    font-weight: 900;
+    color: var(--text);
+    white-space: nowrap;
+}
+.sp-rank-sub {
+    font-size: 0.58em;
+    color: var(--text3);
+    margin-top: 1px;
+    font-weight: 500;
+}
+.sp-rank-next {
+    font-size: 0.55em;
+    color: var(--text3);
+    text-align: left;
+    white-space: nowrap;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   📅 BONUS DAY — يوم الجمعة مضاعف ×2
-═══════════════════════════════════════════════════════════════ */
-function _seasonBonusDayCheck() {
-    const today   = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
-    const dayOfWk = new Date().getDay(); /* 5 = جمعة */
-    const isBonusDay = dayOfWk === 5;
-    const badgeEl    = document.getElementById('spBonusBadge');
+/* ── Bonus Day Badge ── */
+.sp-bonus-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--gold);
+    color: #000;
+    border-radius: 20px;
+    padding: 2px 12px;
+    font-size: 0.68em;
+    font-weight: 900;
+    box-shadow: 0 2px 10px rgba(240,185,11,0.35);
+    animation: bonusBadgePop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes bonusBadgePop {
+    from { transform: translateX(-50%) scale(0); }
+    to   { transform: translateX(-50%) scale(1); }
+}
+.sp-bonus-label { font-size: 0.9em; }
 
-    if (badgeEl) badgeEl.style.display = isBonusDay ? 'flex' : 'none';
-
-    return isBonusDay && st.season.bonusDayUsed !== today;
+/* ══ مهمة الفلاش ══ */
+.sp-flash-title {
+    color: var(--text2);
+}
+.sp-flash-timer-badge {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    color: #f87171;
+    border-radius: 7px;
+    padding: 1px 7px;
+    font-size: 0.8em;
+    font-weight: 900;
+    font-family: monospace;
+    margin-right: auto;
+}
+.sp-flash-card {
+    background: rgba(245,158,11,0.05);
+    border: 1.5px solid rgba(245,158,11,0.28);
+    border-radius: 16px;
+    padding: 2px;
+    animation: none;
 }
 
-/* يُستدعى من _seasonUpdateAfterGame لمضاعفة النقاط يوم الجمعة */
-function _seasonApplyBonusDay(pts) {
-    const today    = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
-    const dayOfWk  = new Date().getDay();
-    if (dayOfWk === 5 && st.season.bonusDayUsed !== today) {
-        st.season.bonusDayUsed = today;
-        try { showFeedback(`🎉 يوم المضاعف! نقاطك ×2`); } catch(e) {}
-        return pts * 2;
-    }
-    return pts;
+.sp-flash-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+}
+.sp-flash-icon {
+    font-size: 1.5em;
+    flex-shrink: 0;
+    animation: none;
+}
+.sp-flash-pts-badge {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.22);
+    color: #f87171;
+    border-radius: 5px;
+    padding: 1px 5px;
+    font-size: 0.7em;
+    font-weight: 900;
+}
+.sp-flash-bar {
+    background: linear-gradient(90deg, #f59e0b, #ef4444) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ⚡ FLASH TASK — مهام الفلاش
-═══════════════════════════════════════════════════════════════ */
-function _seasonFlashTaskGenerate() {
-    if (typeof FLASH_TASK_POOL === 'undefined') return;
-    const today = (typeof todayStr === 'function') ? todayStr() : new Date().toISOString().slice(0,10);
-
-    /* توليد فلاش مرتين يومياً — الأولى عند الفتح، الثانية بعد 8 ساعات */
-    if (st.season.flashTaskDate === today && st.season.flashTask) return;
-
-    const pool    = FLASH_TASK_POOL.filter(t => !st.season.flashTask || t.id !== st.season.flashTask.id);
-    const picked  = pool[Math.floor(Math.random() * pool.length)];
-    const expires = Date.now() + 2 * 60 * 60 * 1000; /* ساعتان */
-
-    st.season.flashTask = {
-        id:        picked.id,
-        icon:      picked.icon,
-        name:      picked.name,
-        desc:      picked.desc,
-        type:      picked.type,
-        target:    picked.target,
-        current:   0,
-        pts:       picked.pts,
-        expiresAt: expires,
-        done:      false,
-    };
-    st.season.flashTaskDate = today;
-    saveSt();
+/* ══ صندوق الموسم ══ */
+.sp-chest-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(240,185,11,0.06);
+    border: 1.5px solid rgba(240,185,11,0.32);
+    border-radius: 18px;
+    padding: 15px 17px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    animation: none;
+}
+.sp-chest-card:active { transform: scale(0.97); }
+.sp-chest-icon {
+    font-size: 1.8em;
+    animation: none;
+    flex-shrink: 0;
+}
+.sp-chest-info { flex: 1; }
+.sp-chest-title {
+    font-size: 0.88em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.sp-chest-sub {
+    font-size: 0.64em;
+    color: var(--text3);
+    margin-top: 3px;
+    font-weight: 500;
+}
+.sp-chest-arrow {
+    font-size: 1.3em;
+    color: var(--text3);
+}
+/* شاشة فتح الصندوق */
+.sp-chest-open-icon {
+    font-size: 4em;
+    animation: chestOpenBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes chestOpenBounce {
+    from { transform: scale(0) rotate(-20deg); }
+    to   { transform: scale(1) rotate(0deg); }
+}
+.sp-chest-open-title {
+    font-size: 1.3em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.sp-chest-open-reward {
+    font-size: 0.9em;
+    color: var(--text);
+    background: rgba(240,185,11,0.1);
+    border: 1px solid rgba(240,185,11,0.25);
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 700;
 }
 
-function _renderFlashTask() {
-    const section = document.getElementById('spFlashTaskSection');
-    const card    = document.getElementById('spFlashTaskCard');
-    const timerEl = document.getElementById('spFlashTimer');
-    const ft      = st.season.flashTask;
-
-    if (!ft || ft.done || Date.now() > ft.expiresAt) {
-        if (section) section.style.display = 'none';
-        return;
-    }
-    if (section) section.style.display = 'block';
-
-    const cur  = Math.min(ft.current || 0, ft.target);
-    const pct  = Math.min(100, Math.round((cur / ft.target) * 100));
-
-    if (card) {
-        card.innerHTML = `
-        <div class="sp-flash-inner">
-            <div class="sp-flash-icon">${ft.icon}</div>
-            <div class="sp-task-info">
-                <div class="sp-task-name">${ft.name} <span class="sp-flash-pts-badge">+${ft.pts * 2}🏅</span></div>
-                <div class="sp-task-desc">${ft.desc}</div>
-                <div class="sp-task-bar"><div class="sp-task-bar-fill sp-flash-bar" style="width:${pct}%"></div></div>
-            </div>
-            <div class="sp-task-right">
-                <div class="sp-task-prog">${cur}/${ft.target}</div>
-                ${ft.done ? '<div style="font-size:1.1em">✅</div>' : ''}
-            </div>
-        </div>`;
-    }
-
-    /* عداد تنازلي */
-    if (timerEl) {
-        clearInterval(window._flashTimerInterval);
-        window._flashTimerInterval = setInterval(() => {
-            const left = Math.max(0, ft.expiresAt - Date.now());
-            if (left <= 0) {
-                clearInterval(window._flashTimerInterval);
-                if (section) section.style.display = 'none';
-                st.season.flashTask = null;
-                saveSt();
-                return;
-            }
-            const h = Math.floor(left / 3600000);
-            const m = Math.floor((left % 3600000) / 60000);
-            const s = Math.floor((left % 60000) / 1000);
-            timerEl.textContent = h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
-        }, 1000);
-    }
+/* ══ ذاكرة المواسم ══ */
+#seasonHistoryOverlay {
+    animation: spSlideUp 0.3s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+.sp-history-card {
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.sp-history-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.sp-history-num {
+    font-size: 0.65em;
+    color: var(--text2);
+    background: var(--surface3);
+    border-radius: 6px;
+    padding: 2px 7px;
+}
+.sp-history-name {
+    font-size: 0.8em;
+    font-weight: 900;
+    color: var(--text);
+    flex: 1;
+}
+.sp-history-complete-badge {
+    font-size: 0.6em;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: #34d399;
+    border-radius: 8px;
+    padding: 2px 7px;
+    font-weight: 700;
+}
+.sp-history-stats {
+    display: flex;
+    gap: 16px;
+}
+.sp-history-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72em;
+    color: var(--text2);
+    font-weight: 700;
+}
+.sp-history-bar {
+    height: 5px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.sp-history-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+}
+.sp-history-bar-fill.complete {
+    background: linear-gradient(90deg, #10b981, #34d399);
 }
 
-/* تحديث تقدم الفلاش بعد اللعبة */
-function _seasonFlashTaskUpdate() {
-    const ft = st.season.flashTask;
-    if (!ft || ft.done || Date.now() > ft.expiresAt) return;
-
-    const current = _seasonGetTaskCurrent({ type: ft.type, target: ft.target });
-    ft.current = current;
-
-    if (current >= ft.target) {
-        ft.done = true;
-        /* نقاط الفلاش مضاعفة دائماً */
-        const earned = ft.pts * 2;
-        st.season.points         = Math.min(1000, (st.season.points || 0) + earned);
-        st.season.totalPtsEarned = (st.season.totalPtsEarned || 0) + earned;
-        try { showFeedback(`⚡ مهمة فلاش مكتملة! +${earned} نقطة موسم!`); } catch(e) {}
-        _seasonCheckRewards();
-        saveSt();
-    }
+/* ── Responsive ── */
+@media (max-width: 380px) {
+    .sp-streak-num   { font-size: 1.1em; }
+    .sp-rank-label   { font-size: 0.7em; }
+    .sp-bonus-badge  { font-size: 0.62em; padding: 2px 8px; }
+    .sp-chest-title  { font-size: 0.78em; }
+    .sp-flash-card   { font-size: 0.9em; }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   🎁 SEASON CHEST — صندوق الموسم
-═══════════════════════════════════════════════════════════════ */
-function _seasonChestCheck() {
-    const total35 = 35; /* 5 مهام × 7 أيام */
-    const done    = (st.season.completedDays || 0) * 5;
-    const section = document.getElementById('spChestSection');
 
-    if (done >= total35 && !st.season.chestOpened) {
-        st.season.chestAvailable = true;
-        if (section) section.style.display = 'block';
-    } else {
-        if (section) section.style.display = 'none';
-    }
-}
-
-function openSeasonChest() {
-    if (!st.season.chestAvailable || st.season.chestOpened) return;
-
-    /* جوائز عشوائية من قائمة — تستخدم giveReward للتوزيع الصحيح */
-    const prizes = [
-        { icon:'💰', text:'+100 عملة ذهبية!',      action: () => giveReward('coins',   100) },
-        { icon:'⏭️', text:'+5 تخطيات مجانية!',      action: () => giveReward('skip',      5) },
-        { icon:'🛡️', text:'+2 درع Streak!',         action: () => giveReward('shield',    2) },
-        { icon:'⚡', text:'مضاعف XP ×2 ليوم كامل!', action: () => giveReward('xpBoost',   2) },
-        { icon:'💎', text:'+150 عملة + درع!',        action: () => { giveReward('coins', 150); giveReward('shield', 1); } },
-    ];
-    const prize = prizes[Math.floor(Math.random() * prizes.length)];
-    prize.action();
-
-    st.season.chestOpened    = true;
-    st.season.chestAvailable = false;
-    saveSt();
-
-    /* شاشة الفتح */
-    const screen  = document.getElementById('spChestOpenScreen');
-    const iconEl  = document.getElementById('spChestOpenIcon');
-    const rwdEl   = document.getElementById('spChestOpenReward');
-    if (screen) screen.style.display = 'flex';
-    if (iconEl) {
-        iconEl.textContent = '🎁';
-        setTimeout(() => { iconEl.textContent = prize.icon; }, 600);
-    }
-    if (rwdEl) rwdEl.textContent = prize.text;
-
-    const section = document.getElementById('spChestSection');
-    if (section) section.style.display = 'none';
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   📜 SEASON HISTORY — ذاكرة المواسم
-═══════════════════════════════════════════════════════════════ */
-function openSeasonHistory() {
-    const overlay = document.getElementById('seasonHistoryOverlay');
-    if (!overlay) return;
-    overlay.style.display = 'flex';
-    _renderSeasonHistory();
-}
-
-function closeSeasonHistory() {
-    const overlay = document.getElementById('seasonHistoryOverlay');
-    if (overlay) overlay.style.display = 'none';
-}
-
-function _renderSeasonHistory() {
-    const list = document.getElementById('spHistoryList');
-    if (!list) return;
-
-    const history = (st.season && st.season.history) || [];
-
-    if (history.length === 0) {
-        list.innerHTML = `
-        <div class="sp-empty-state">
-            <div class="sp-empty-state-icon">📜</div>
-            <div class="sp-empty-state-text">لا يوجد مواسم سابقة بعد<br>أكمل موسمك الأول ليظهر هنا!</div>
-        </div>`;
-        return;
-    }
-
-    const sorted = [...history].reverse();
-    list.innerHTML = sorted.map((h, i) => {
-        const rank = (typeof getSeasonRank !== 'undefined') ? getSeasonRank(h.pts) : { icon:'🥉', label:'—' };
-        const pct  = Math.min(100, Math.round((h.pts / 1000) * 100));
-        return `
-        <div class="sp-history-card">
-            <div class="sp-history-header">
-                <div class="sp-history-num">الموسم ${sorted.length - i}</div>
-                <div class="sp-history-name">${h.name || 'موسم سابق'}</div>
-                ${h.completed ? '<div class="sp-history-complete-badge">✅ مكتمل</div>' : ''}
-            </div>
-            <div class="sp-history-stats">
-                <div class="sp-history-stat">
-                    <span>${rank.icon}</span>
-                    <span>${rank.label}</span>
-                </div>
-                <div class="sp-history-stat">
-                    <span>🏅</span>
-                    <span>${h.pts}/1000</span>
-                </div>
-                <div class="sp-history-stat">
-                    <span>🔥</span>
-                    <span>${h.streak || 0} يوم</span>
-                </div>
-            </div>
-            <div class="sp-history-bar">
-                <div class="sp-history-bar-fill ${h.completed ? 'complete' : ''}" style="width:${pct}%"></div>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-/* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
    🏆 SEASON LEADERBOARD — لوحة صدارة الموسم الأسبوعي
-═══════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════ */
 
-let _slbTab       = 'week'; /* التبويب النشط: week | all */
-let _slbCacheWeek = null;
-let _slbCacheAll  = null;
-let _slbCacheTime = 0;
+/* زر الصدارة في شريط الأزرار */
+.comp-season-lb-btn {
+    border-color: rgba(240,185,11,0.3) !important;
+    background: linear-gradient(135deg, rgba(240,185,11,0.07), rgba(240,185,11,0.03)) !important;
+}
+.comp-season-lb-btn .comp-bottom-btn-label { color: var(--gold); }
 
-function openSeasonLeaderboard() {
-    const overlay = document.getElementById('seasonLbOverlay');
-    if (!overlay) return;
-    overlay.style.display = 'flex';
-
-    /* تحديث اسم الموسم في الهيدر */
-    const nameEl = document.getElementById('slbSeasonName');
-    if (nameEl && typeof getCurrentSeasonName === 'function') nameEl.textContent = getCurrentSeasonName();
-
-    /* تحديث بطاقة "أنا" */
-    _slbUpdateMyCard();
-
-    /* تحميل اللوحة */
-    _fetchSeasonLeaderboard(_slbTab);
+/* overlay */
+#seasonLbOverlay {
+    animation: spSlideUp 0.3s cubic-bezier(0.34,1.2,0.64,1) both;
 }
 
-function closeSeasonLeaderboard() {
-    const overlay = document.getElementById('seasonLbOverlay');
-    if (overlay) overlay.style.display = 'none';
+/* ── Header ── */
+.slb-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(240,185,11,0.06), transparent);
+}
+.slb-header-center { flex: 1; text-align: center; }
+.slb-title {
+    font-size: 0.95em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.slb-sub {
+    font-size: 0.62em;
+    color: var(--text2);
+    margin-top: 2px;
+}
+.slb-refresh-btn {
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    width: 34px; height: 34px;
+    font-size: 0.9em;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+.slb-refresh-btn:active { transform: rotate(180deg); }
+
+/* ── بطاقة مرتبتي ── */
+.slb-my-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 16px 0;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(240,185,11,0.1), rgba(240,185,11,0.05));
+    border: 1.5px solid rgba(240,185,11,0.35);
+    border-radius: 16px;
+    flex-shrink: 0;
+}
+.slb-my-rank {
+    font-size: 1.5em;
+    font-weight: 900;
+    color: var(--gold);
+    min-width: 40px;
+    text-align: center;
+}
+.slb-my-info { flex: 1; }
+.slb-my-name {
+    font-size: 0.82em;
+    font-weight: 900;
+    color: var(--text);
+}
+.slb-my-pts {
+    font-size: 0.65em;
+    color: var(--text2);
+    margin-top: 2px;
+}
+.slb-my-badge { font-size: 1.6em; }
+
+/* ── تبويبات ── */
+.slb-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px 0;
+    flex-shrink: 0;
+}
+.slb-tab {
+    flex: 1;
+    background: var(--surface3);
+    border: 1.5px solid var(--border2);
+    color: var(--text2);
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 0.75em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    transition: all 0.2s ease;
+}
+.slb-tab.active {
+    background: rgba(240,185,11,0.12);
+    border-color: rgba(240,185,11,0.4);
+    color: var(--gold);
 }
 
-function refreshSeasonLeaderboard() {
-    _slbCacheWeek = null;
-    _slbCacheAll  = null;
-    _slbCacheTime = 0;
-    const btn = document.getElementById('slbRefreshBtn');
-    if (btn) { btn.textContent = '⏳'; setTimeout(() => { btn.textContent = '🔄'; }, 2000); }
-    _fetchSeasonLeaderboard(_slbTab);
+/* ── قائمة اللاعبين ── */
+.slb-list-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 10px 16px 0;
+    min-height: 0;
+}
+.slb-list-header {
+    display: grid;
+    grid-template-columns: 44px 1fr 32px 52px;
+    gap: 4px;
+    padding: 6px 10px;
+    font-size: 0.6em;
+    color: var(--text2);
+    font-weight: 700;
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+}
+.slb-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0 24px;
+}
+.slb-list::-webkit-scrollbar { display: none; }
+
+/* صف اللاعب */
+.slb-row {
+    display: grid;
+    grid-template-columns: 44px 1fr 32px 52px;
+    align-items: center;
+    gap: 4px;
+    padding: 9px 10px;
+    border-radius: 12px;
+    margin-bottom: 4px;
+    transition: background 0.15s ease;
+}
+.slb-row:active { background: var(--surface3); }
+.slb-row-top {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+}
+.slb-row-me {
+    background: linear-gradient(135deg, rgba(240,185,11,0.12), rgba(240,185,11,0.06)) !important;
+    border: 1.5px solid rgba(240,185,11,0.4) !important;
+    position: sticky;
+    bottom: 0;
+}
+.slb-row-rank {
+    font-size: 0.85em;
+    font-weight: 900;
+    color: var(--text2);
+    text-align: center;
+}
+.slb-row-top .slb-row-rank { font-size: 1.1em; }
+.slb-row-player {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+.slb-row-avatar { font-size: 1.2em; flex-shrink: 0; }
+.slb-row-info { min-width: 0; }
+.slb-row-name {
+    font-size: 0.75em;
+    font-weight: 900;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.slb-row-sub {
+    font-size: 0.58em;
+    color: var(--text2);
+    margin-top: 1px;
+}
+.slb-row-badge { font-size: 1.1em; text-align: center; }
+.slb-row-pts {
+    font-size: 0.78em;
+    font-weight: 900;
+    color: var(--gold);
+    text-align: left;
+}
+.slb-me-tag {
+    background: rgba(240,185,11,0.18);
+    color: var(--gold);
+    font-size: 0.7em;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+.slb-loading, .slb-empty {
+    text-align: center;
+    color: var(--text2);
+    font-size: 0.8em;
+    padding: 32px 16px;
 }
 
-function switchSeasonLbTab(tab) {
-    _slbTab = tab;
-    document.querySelectorAll('.slb-tab').forEach(b => b.classList.remove('active'));
-    const activeBtn = document.getElementById(tab === 'week' ? 'slbTabWeek' : 'slbTabAll');
-    if (activeBtn) activeBtn.classList.add('active');
-    _fetchSeasonLeaderboard(tab);
+/* Responsive */
+@media (max-width: 380px) {
+    .slb-list-header,
+    .slb-row { grid-template-columns: 36px 1fr 28px 44px; }
+    .slb-row-name  { font-size: 0.68em; }
+    .slb-row-pts   { font-size: 0.7em; }
 }
 
-/* ── تحديث بطاقة "أنا" ── */
-function _slbUpdateMyCard() {
-    const rankEl  = document.getElementById('slbMyRank');
-    const nameEl  = document.getElementById('slbMyName');
-    const ptsEl   = document.getElementById('slbMyPts');
-    const badgeEl = document.getElementById('slbMyBadge');
 
-    if (nameEl) nameEl.textContent = st.playerName || 'أنت';
-    const pts = st.season ? (st.season.points || 0) : 0;
-    if (ptsEl) ptsEl.textContent = pts + ' نقطة موسم';
-    if (badgeEl && typeof getSeasonRank === 'function') {
-        badgeEl.textContent = getSeasonRank(pts).icon;
-    }
-    /* المرتبة تُحدَّث بعد جلب البيانات */
-    if (rankEl) rankEl.textContent = '…';
-}
-
-/* ── جلب البيانات من Firebase ── */
-function _fetchSeasonLeaderboard(tab) {
-    const list = document.getElementById('slbList');
-    if (!list) return;
-
-    /* استخدام cache إذا كان حديثاً (أقل من دقيقتين) */
-    const cache = tab === 'week' ? _slbCacheWeek : _slbCacheAll;
-    if (cache && (Date.now() - _slbCacheTime) < 120000) {
-        _renderSeasonLeaderboard(cache, tab);
-        return;
-    }
-
-    list.innerHTML = '<div class="slb-loading">⏳ جارٍ التحميل…</div>';
-
-    if (!window.database) {
-        list.innerHTML = '<div class="slb-empty">⚠️ غير متصل بقاعدة البيانات</div>';
-        return;
-    }
-
-    const weekKey = (typeof seasonPassStr === 'function') ? seasonPassStr() : '';
-    const refPath = tab === 'week'
-        ? `season_leaderboard/${weekKey}`
-        : 'season_leaderboard_all';
-
-    try {
-        window.database.ref(refPath)
-            .orderByChild('seasonPoints')
-            .limitToLast(100)
-            .once('value', snapshot => {
-                const players = [];
-                snapshot.forEach(child => players.push({ id: child.key, ...child.val() }));
-                players.sort((a, b) => (b.seasonPoints || 0) - (a.seasonPoints || 0));
-
-                if (tab === 'week') _slbCacheWeek = players;
-                else                _slbCacheAll  = players;
-                _slbCacheTime = Date.now();
-
-                _renderSeasonLeaderboard(players, tab);
-            }).catch(() => {
-                list.innerHTML = '<div class="slb-empty">⚠️ فشل التحميل — حاول مجدداً</div>';
-            });
-    } catch(e) {
-        list.innerHTML = '<div class="slb-empty">⚠️ خطأ في الاتصال</div>';
-    }
-}
-
-/* ── رسم قائمة اللاعبين ── */
-function _renderSeasonLeaderboard(players, tab) {
-    const list   = document.getElementById('slbList');
-    const rankEl = document.getElementById('slbMyRank');
-    if (!list) return;
-
-    if (players.length === 0) {
-        list.innerHTML = '<div class="slb-empty">لا يوجد لاعبون بعد — كن الأول! 🚀</div>';
-        if (rankEl) rankEl.textContent = '—';
-        return;
-    }
-
-    const myKey  = st.serialNumber ? st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_') : null;
-    const medals = ['🥇','🥈','🥉'];
-
-    /* تحديث مرتبتي */
-    if (myKey && rankEl) {
-        const myIdx = players.findIndex(p => p.id === myKey);
-        rankEl.textContent = myIdx >= 0 ? '#' + (myIdx + 1) : '—';
-    }
-
-    list.innerHTML = players.map((p, idx) => {
-        const isMe   = p.id === myKey;
-        const medal  = idx < 3 ? medals[idx] : '#' + (idx + 1);
-        const rank   = typeof getSeasonRank === 'function' ? getSeasonRank(p.seasonPoints || 0) : { icon:'🥉' };
-        const streak = p.streak ? `🔥${p.streak}` : '';
-
-        return `
-        <div class="slb-row${isMe ? ' slb-row-me' : ''}${idx < 3 ? ' slb-row-top' : ''}">
-            <div class="slb-row-rank">${medal}</div>
-            <div class="slb-row-player">
-                <span class="slb-row-avatar">${p.avatar || '🧑'}</span>
-                <div class="slb-row-info">
-                    <div class="slb-row-name">${p.name || 'لاعب'}${isMe ? ' <span class="slb-me-tag">أنت</span>' : ''}</div>
-                    <div class="slb-row-sub">مستوى ${p.level || 1} ${streak}</div>
-                </div>
-            </div>
-            <div class="slb-row-badge">${rank.icon}</div>
-            <div class="slb-row-pts">${p.seasonPoints || 0}</div>
-        </div>`;
-    }).join('');
-}
-
-/* ── رفع نقاط الموسم لـ Firebase ── */
-function syncSeasonScore() {
-    if (!window.database || !st.serialNumber || !st.season) return;
-    if ((st.season.points || 0) === 0) return;
-
-    const weekKey = (typeof seasonPassStr === 'function') ? seasonPassStr() : '';
-    const myKey   = st.serialNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
-    const payload = {
-        name:         st.playerName || 'لاعب',
-        avatar:       st.avatar     || '🧑',
-        level:        st.level      || 1,
-        seasonPoints: st.season.points || 0,
-        streak:       st.season.streak || 0,
-        weekKey,
-        updatedAt:    Date.now(),
-    };
-
-    /* رفع للأسبوع الحالي */
-    window.database.ref(`season_leaderboard/${weekKey}/${myKey}`).set(payload).catch(() => {});
-    /* رفع للكل (أفضل نتيجة تاريخية) */
-    window.database.ref(`season_leaderboard_all/${myKey}`).transaction(current => {
-        if (!current || (payload.seasonPoints > (current.seasonPoints || 0))) return payload;
-        return current;
-    }).catch(() => {});
-}
-
-/* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
    📤 SHARE ACHIEVEMENT — مشاركة الإنجاز
+═══════════════════════════════════════════════════════════ */
+
+/* زر المشاركة في شريط التقدم */
+.sp-share-btn {
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: var(--accent);
+    border-radius: 9px;
+    padding: 4px 11px;
+    font-size: 0.63em;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+.sp-share-btn:active {
+    transform: scale(0.94);
+    background: rgba(124,58,237,0.18);
+}
+
+/* بطاقة المشاركة */
+.sp-share-card {
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a0a2e 50%, #0e1a3a 100%);
+    border: 2px solid rgba(240,185,11,0.4);
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 24px rgba(240,185,11,0.1);
+}
+.sp-share-card-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.sp-share-game-logo {
+    font-size: 0.75em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.sp-share-season-name {
+    font-size: 0.6em;
+    color: var(--text2);
+    text-align: left;
+    max-width: 140px;
+}
+.sp-share-avatar {
+    font-size: 2.8em;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface3);
+    border-radius: 50%;
+    border: 2px solid rgba(240,185,11,0.4);
+}
+.sp-share-player-name {
+    font-size: 1em;
+    font-weight: 900;
+    color: var(--text);
+}
+.sp-share-rank {
+    font-size: 0.85em;
+    font-weight: 900;
+    color: var(--gold);
+    background: rgba(240,185,11,0.1);
+    border: 1px solid rgba(240,185,11,0.25);
+    border-radius: 10px;
+    padding: 4px 14px;
+}
+.sp-share-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    justify-content: space-around;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 10px 8px;
+}
+.sp-share-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+}
+.sp-share-stat-val {
+    font-size: 1.1em;
+    font-weight: 900;
+    color: var(--gold);
+}
+.sp-share-stat-lbl {
+    font-size: 0.58em;
+    color: var(--text2);
+}
+.sp-share-stat-divider {
+    width: 1px;
+    height: 30px;
+    background: rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+.sp-share-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.sp-share-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #fff176);
+    border-radius: 10px;
+    transition: width 0.8s ease;
+}
+.sp-share-footer {
+    font-size: 0.68em;
+    color: var(--text2);
+    font-weight: 700;
+}
+
+/* أزرار overlay المشاركة */
+.sp-share-action-btn {
+    flex: 1;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 8px;
+    font-size: 0.82em;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    transition: transform 0.15s ease;
+}
+.sp-share-action-btn:active { transform: scale(0.96); }
+.sp-share-copy-btn {
+    background: var(--gold);
+    color: #000;
+}
+.sp-share-close-btn {
+    background: var(--surface3);
+    color: var(--text2);
+    border: 1px solid var(--border2);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   🎁 REWARD TRACK OVERLAY — مسار الجوائز المستقل
+═══════════════════════════════════════════════════════════ */
+
+/* ── زر فتح المسار في صفحة الموسم ── */
+.sp-track-open-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border2);
+    border-radius: 18px;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: right;
+    font-family: 'Tajawal', sans-serif;
+    transition: all 0.15s ease;
+    position: relative;
+    overflow: hidden;
+}
+.sp-track-open-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.03);
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+.sp-track-open-btn:active::before { opacity: 1; }
+.sp-track-open-btn:active { transform: scale(0.98); }
+
+.sp-track-open-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sp-track-open-icon {
+    font-size: 1.5em;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(240,185,11,0.08);
+    border: 1px solid rgba(240,185,11,0.2);
+    border-radius: 12px;
+    animation: none;
+}
+.sp-track-open-info { text-align: right; }
+.sp-track-open-title {
+    font-size: 0.88em;
+    font-weight: 900;
+    color: var(--text);
+}
+.sp-track-open-sub {
+    font-size: 0.64em;
+    color: var(--text3);
+    margin-top: 2px;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+.sp-track-open-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.sp-track-open-arrow {
+    font-size: 1.3em;
+    color: var(--text3);
+    opacity: 0.6;
+}
+
+/* النقاط المصغّرة في الزر */
+.sp-track-mini-nodes {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.rto-mini-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+.rto-mini-dot.done {
+    background: #10b981;
+    border-color: #10b981;
+}
+.rto-mini-dot.ready {
+    background: var(--gold);
+    border-color: var(--gold);
+    animation: none;
+}
+
+/* ── الـ Overlay الكامل ── */
+#rewardTrackOverlay {
+    background: #0a0a14;
+    animation: rtoSlideUp 0.35s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+@keyframes rtoSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* خلفية نجوم */
+.rto-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse at 20% 20%, rgba(240,185,11,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(124,58,237,0.07) 0%, transparent 60%);
+}
+.rto-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 15%, rgba(255,255,255,0.2)  0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 35%, rgba(255,255,255,0.3)  0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 65%, rgba(255,255,255,0.15) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,0.2)  0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 85%, rgba(255,255,255,0.25) 0%, transparent 100%);
+}
+
+/* Header */
+.rto-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid rgba(240,185,11,0.15);
+    flex-shrink: 0;
+}
+.rto-back-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    border-radius: 10px;
+    width: 36px; height: 36px;
+    font-size: 1.4em;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.rto-header-center {
+    flex: 1;
+    text-align: center;
+}
+.rto-title {
+    font-size: 1em;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 12px rgba(240,185,11,0.4);
+}
+.rto-sub {
+    font-size: 0.63em;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+}
+.rto-pts-pill {
+    background: rgba(240,185,11,0.15);
+    border: 1px solid rgba(240,185,11,0.35);
+    border-radius: 20px;
+    padding: 5px 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85em;
+    font-weight: 900;
+    color: var(--gold);
+    flex-shrink: 0;
+}
+
+/* شريط التقدم */
+.rto-progress-wrap {
+    position: relative;
+    z-index: 1;
+    padding: 10px 16px 8px;
+    flex-shrink: 0;
+}
+.rto-progress-bg {
+    position: relative;
+    height: 8px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 20px;
+    overflow: visible;
+}
+.rto-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #f0b90b, #fff176);
+    background-size: 200% 100%;
+    border-radius: 20px;
+    animation: rtoPBarShimmer 3s linear infinite;
+    transition: width 0.7s cubic-bezier(0.34,1.2,0.64,1);
+    position: relative;
+}
+.rto-progress-fill::after {
+    content: '';
+    position: absolute;
+    right: -6px; top: -5px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 10px 4px rgba(240,185,11,0.5);
+}
+@keyframes rtoPBarShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.rto-progress-label {
+    position: absolute;
+    right: 8px; top: -18px;
+    font-size: 0.6em;
+    font-weight: 900;
+    color: var(--gold);
+}
+
+/* Body القابل للتمرير */
+.rto-body {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    min-height: 0;
+}
+.rto-body::-webkit-scrollbar { display: none; }
+
+/* ── عقدة المحطة ── */
+.rto-node {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* الخط الرابط */
+.rto-connector {
+    width: 3px;
+    height: 28px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    margin: 0 auto;
+    flex-shrink: 0;
+    transition: background 0.4s ease;
+}
+.rto-connector.passed {
+    background: linear-gradient(180deg, var(--gold) 0%, rgba(240,185,11,0.3) 100%);
+    box-shadow: 0 0 6px rgba(240,185,11,0.3);
+}
+
+/* صف المحتوى */
+.rto-node-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+    padding: 4px 0;
+}
+
+/* الدائرة */
+.rto-circle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.rto-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    border: 2.5px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+.rto-node-claimed .rto-circle {
+    background: linear-gradient(135deg, #059669, #10b981);
+    border-color: #10b981;
+    box-shadow: 0 0 16px rgba(16,185,129,0.4);
+}
+.rto-node-claimed .rto-circle-icon { color: #fff; font-size: 1.2em; font-weight: 900; }
+.rto-node-reached .rto-circle {
+    background: linear-gradient(135deg, rgba(240,185,11,0.25), rgba(240,185,11,0.1));
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(240,185,11,0.4);
+    animation: rtoCirclePulse 1.5s ease-in-out infinite;
+}
+@keyframes rtoCirclePulse {
+    0%,100% { box-shadow: 0 0 12px rgba(240,185,11,0.3); }
+    50%      { box-shadow: 0 0 24px rgba(240,185,11,0.6); }
+}
+.rto-node-locked .rto-circle {
+    opacity: 0.45;
+    filter: grayscale(0.6);
+}
+.rto-pts-tag {
+    font-size: 0.58em;
+    font-weight: 900;
+    color: rgba(255,255,255,0.45);
+    white-space: nowrap;
+}
+.rto-node-claimed .rto-pts-tag { color: #10b981; }
+.rto-node-reached .rto-pts-tag { color: var(--gold); }
+
+/* البطاقة */
+.rto-card {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.3s ease;
+    min-width: 0;
+}
+.rto-node-claimed .rto-card {
+    background: rgba(16,185,129,0.07);
+    border-color: rgba(16,185,129,0.25);
+}
+.rto-node-reached .rto-card {
+    background: rgba(240,185,11,0.07);
+    border-color: rgba(240,185,11,0.3);
+    box-shadow: 0 2px 12px rgba(240,185,11,0.1);
+}
+.rto-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+.rto-card-label {
+    font-size: 0.82em;
+    font-weight: 900;
+    color: #fff;
+    flex: 1;
+    line-height: 1.3;
+}
+.rto-node-locked .rto-card-label { color: rgba(255,255,255,0.45); }
+
+/* بادجات الحالة */
+.rto-card-state-badge {
+    font-size: 0.6em;
+    font-weight: 900;
+    border-radius: 8px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.rto-badge-claimed {
+    background: rgba(16,185,129,0.15);
+    color: #34d399;
+    border: 1px solid rgba(16,185,129,0.3);
+}
+.rto-badge-reached {
+    background: rgba(240,185,11,0.15);
+    color: var(--gold);
+    border: 1px solid rgba(240,185,11,0.35);
+    animation: rtoBadgePulse 1.4s ease-in-out infinite;
+}
+@keyframes rtoBadgePulse {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 8px rgba(240,185,11,0.3); }
+}
+.rto-badge-locked {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* زر الاستلام */
+.rto-claim-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--gold), #e5a800);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 0.78em;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    width: 100%;
+    animation: rtoClaimPulse 1.3s ease-in-out infinite;
+    transition: transform 0.15s ease;
+}
+.rto-claim-btn:active { transform: scale(0.96); }
+@keyframes rtoClaimPulse {
+    0%,100% { box-shadow: 0 0 0 rgba(240,185,11,0); }
+    50%      { box-shadow: 0 4px 16px rgba(240,185,11,0.45); }
+}
+.rto-claim-icon { font-size: 1.1em; }
+
+/* شريط التقدم داخل البطاقة */
+.rto-mini-prog {
+    height: 3px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.rto-mini-fill {
+    height: 100%;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+/* Responsive */
+@media (max-width: 380px) {
+    .rto-circle      { width: 44px; height: 44px; font-size: 1.2em; }
+    .rto-card-label  { font-size: 0.75em; }
+    .rto-claim-btn   { font-size: 0.72em; padding: 8px 12px; }
+    .rto-card        { padding: 10px 11px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   🏆 MATH PASS — بادج MP
+═══════════════════════════════════════════════════════════ */
+
+/* بادج MP في الزر */
+.comp-season-btn-title-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.comp-season-mp-badge {
+    background: linear-gradient(135deg, #f0b90b, #e5a800);
+    color: #000;
+    font-size: 0.65em;
+    font-weight: 900;
+    padding: 1px 6px;
+    border-radius: 5px;
+    letter-spacing: 0.5px;
+    font-family: 'Tajawal', sans-serif;
+    flex-shrink: 0;
+}
+
+/* بادج MP في header الصفحة */
+.sp-mp-badge-header {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gold);
+    color: #000;
+    font-size: 0.58em;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 5px;
+    letter-spacing: 1.5px;
+    vertical-align: middle;
+}
+
+/* تعديل عنوان الصفحة ليتسع للبادج */
+.sp-header-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   🏆 HEADER MP BUTTON — زر MP الثابت في الهيدر
+═══════════════════════════════════════════════════════════ */
+.header-mp-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: linear-gradient(135deg, #1a0a2e, #0e1a3a);
+    border: 1.5px solid rgba(240,185,11,0.5);
+    border-radius: 12px;
+    padding: 5px 9px;
+    cursor: pointer;
+    flex-shrink: 0;
+    min-width: 44px;
+    box-shadow: 0 0 10px rgba(240,185,11,0.15);
+    transition: all 0.18s ease;
+    position: relative;
+    overflow: hidden;
+}
+.header-mp-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(240,185,11,0.08), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.header-mp-btn:active::before { opacity: 1; }
+.header-mp-btn:active { transform: scale(0.94); }
+
+.header-mp-label {
+    font-size: 0.72em;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 1px;
+    line-height: 1;
+    font-family: 'Tajawal', sans-serif;
+}
+.header-mp-bar-wrap {
+    width: 32px;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.header-mp-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #fff176);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+/* نقطة تنبيه حمراء على زر MP عند وجود جائزة */
+.header-mp-btn .mp-alert-dot {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 1.5px solid var(--bg);
+    animation: mpAlertPulse 1.3s ease-in-out infinite;
+}
+@keyframes mpAlertPulse {
+    0%,100% { transform: scale(1);   opacity: 1; }
+    50%      { transform: scale(1.4); opacity: 0.7; }
+}
+
+
+/* ═══ زر لائحة الصدارة داخل MP ═══ */
+.sp-lb-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 15px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border2);
+    border-radius: 18px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    text-align: right;
+    transition: all 0.15s ease;
+    margin-top: 2px;
+}
+.sp-lb-btn:active {
+    transform: scale(0.97);
+    background: rgba(255,255,255,0.06);
+}
+.sp-lb-btn-icon {
+    font-size: 1.5em;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(240,185,11,0.08);
+    border: 1px solid rgba(240,185,11,0.2);
+    border-radius: 12px;
+}
+.sp-lb-btn-info { flex: 1; }
+.sp-lb-btn-title {
+    font-size: 0.88em;
+    font-weight: 900;
+    color: var(--text);
+}
+.sp-lb-btn-sub {
+    font-size: 0.64em;
+    color: var(--text3);
+    margin-top: 3px;
+    font-weight: 500;
+}
+.sp-lb-btn-arrow {
+    font-size: 1.3em;
+    color: var(--text3);
+    font-weight: 900;
+    opacity: 0.6;
+}
+
+/* ═══ تأكيد: seasonPassOverlay و sub-overlays تملأ الشاشة كاملة ═══ */
+#seasonPassOverlay,
+#seasonLbOverlay,
+#rewardTrackOverlay,
+#seasonHistoryOverlay,
+#shareAchievementOverlay,
+#spChestOpenScreen {
+    /* safe-area للشاشات التي بها notch */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   🪪 الملف الشخصي للاعب — Player Profile Modal
+   © 2026 Hassan Odaey
+═══════════════════════════════════════════════════════════ */
+
+/* الخلفية الداكنة */
+.pp-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: ppBackdropIn 0.2s ease;
+}
+
+@keyframes ppBackdropIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* البطاقة الرئيسية */
+.pp-modal {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: linear-gradient(160deg, #0e0b1f 0%, #130d28 50%, #0b1525 100%);
+    border: 1.5px solid rgba(240, 185, 11, 0.35);
+    border-radius: 24px;
+    padding: 28px 20px 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(124,58,237,0.15);
+    animation: ppCardIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ppCardIn {
+    from { opacity: 0; transform: scale(0.88) translateY(20px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* زر الإغلاق */
+.pp-close-btn {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.08);
+    color: var(--text2, #aaa);
+    font-size: 0.85em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+.pp-close-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+/* ── رأس البطاقة ── */
+.pp-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.pp-avatar-ring {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0b90b, #7c3aed);
+    padding: 3px;
+    box-shadow: 0 0 20px rgba(240,185,11,0.35);
+    animation: ppRingPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes ppRingPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(240,185,11,0.35); }
+    50%       { box-shadow: 0 0 32px rgba(240,185,11,0.6);  }
+}
+
+.pp-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--bg2, #1a1a2e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4em;
+}
+
+.pp-name {
+    font-size: 1.25em;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.pp-level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(90deg, rgba(240,185,11,0.15), rgba(124,58,237,0.15));
+    border: 1px solid rgba(240,185,11,0.4);
+    border-radius: 20px;
+    padding: 3px 14px;
+}
+
+.pp-level-lbl {
+    font-size: 0.72em;
+    color: var(--text2, #aaa);
+    font-weight: 600;
+}
+
+.pp-level-val {
+    font-size: 1em;
+    font-weight: 900;
+    color: #f0b90b;
+}
+
+/* ── قسم الألقاب ── */
+.pp-titles-section {
+    margin-bottom: 18px;
+}
+
+.pp-section-label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: var(--text2, #aaa);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.pp-titles-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.pp-title-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(124,58,237,0.18);
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.76em;
+    color: #c4b5fd;
+    font-weight: 600;
+    transition: transform 0.15s;
+}
+.pp-title-chip:hover { transform: scale(1.05); }
+
+.pp-no-titles {
+    font-size: 0.78em;
+    color: var(--text3, #666);
+    font-style: italic;
+}
+
+/* ── شبكة الإحصائيات ── */
+.pp-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.pp-stat-card {
+    border-radius: 14px;
+    padding: 14px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.2s;
+}
+.pp-stat-card:hover { transform: translateY(-2px); }
+
+.pp-stat-correct { background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.25); }
+.pp-stat-wrong   { background: rgba(239,68,68,0.10);  border-color: rgba(239,68,68,0.25);  }
+.pp-stat-streak  { background: rgba(251,146,60,0.10); border-color: rgba(251,146,60,0.25); }
+.pp-stat-score   { background: rgba(240,185,11,0.10); border-color: rgba(240,185,11,0.25); }
+
+.pp-stat-icon { font-size: 1.3em; }
+
+.pp-stat-val {
+    font-size: 1.35em;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+
+.pp-stat-lbl {
+    font-size: 0.68em;
+    color: var(--text2, #aaa);
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ── شريط الدقة ── */
+.pp-accuracy-section {
+    margin-top: 4px;
+}
+
+.pp-accuracy-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78em;
+    color: var(--text2, #aaa);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.pp-accuracy-pct {
+    font-size: 1em;
+    font-weight: 800;
+    color: #10b981;
+}
+
+.pp-accuracy-bar-bg {
+    width: 100%;
+    height: 8px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+}
+
+.pp-accuracy-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 8px rgba(16,185,129,0.5);
+}
+
+/* ── حالة التحميل ── */
+.pp-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    color: var(--text2, #aaa);
+    font-size: 0.85em;
+}
+
+.pp-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(240,185,11,0.2);
+    border-top-color: #f0b90b;
+    border-radius: 50%;
+    animation: ppSpin 0.7s linear infinite;
+}
+
+@keyframes ppSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── تأثير hover على صفوف لائحة الصدارة ── */
+.lb-row:not(.lb-header) {
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+}
+.lb-row:not(.lb-header):hover {
+    background: rgba(240,185,11,0.08);
+    transform: translateX(-2px);
+}
+.lb-row:not(.lb-header):active {
+    background: rgba(240,185,11,0.15);
+    transform: scale(0.98);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   🆕 المرحلة الثالثة — تحسينات الملف الشخصي
 ═══════════════════════════════════════════════════════════════ */
-function shareSeasonAchievement() {
-    _seasonEnsureReady();
 
-    const pts      = st.season.points        || 0;
-    const streak   = st.season.streak        || 0;
-    const days     = st.season.completedDays || 0;
-    const name     = st.playerName           || st.name || 'لاعب';
-    const avatar   = st.avatar               || '🧑';
-    const rank     = (typeof getSeasonRank !== 'undefined') ? getSeasonRank(pts) : { icon:'🥉', label:'مبتدئ' };
-    const sName    = (typeof getCurrentSeasonName !== 'undefined') ? getCurrentSeasonName() : 'Math Pass';
-    const pct      = Math.min(100, Math.round((pts / 1000) * 100));
-
-    /* بناء نص المشاركة */
-    const shareText = [
-        `🏆 HO Math — MP | Math Pass`,
-        `📅 ${sName}`,
-        ``,
-        `👤 ${name}`,
-        `${rank.icon} رتبة: ${rank.label}`,
-        `🏅 النقاط: ${pts}/1000 (${pct}%)`,
-        `🔥 تتابع: ${streak} يوم`,
-        `✅ أيام مكتملة: ${days}`,
-        ``,
-        `هل يمكنك التغلب عليّ؟ 💪`,
-        `العب الآن: HO Math`
-    ].join('\n');
-
-    /* تحديث بطاقة المشاركة */
-    _updateShareCard({ name, avatar, rank, sName, pts, streak, days, pct });
-
-    /* محاولة native share أولاً */
-    if (navigator.share) {
-        navigator.share({
-            title: `HO Math — MP | Math Pass`,
-            text:  shareText,
-        }).catch(() => {
-            _showShareOverlay(shareText);
-        });
-    } else {
-        _showShareOverlay(shareText);
-    }
+/* ── شارة "ملفي الشخصي" ── */
+.pp-self-badge {
+    text-align: center;
+    font-size: 0.72em;
+    font-weight: 700;
+    color: #67e8f9;
+    background: rgba(6,182,212,0.12);
+    border: 1px solid rgba(6,182,212,0.35);
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin: 0 auto 12px;
+    width: fit-content;
+    letter-spacing: 0.05em;
 }
 
-function _updateShareCard({ name, avatar, rank, sName, pts, streak, days, pct }) {
-    const q = id => document.getElementById(id);
-    if (q('shareSeasonName'))  q('shareSeasonName').textContent  = sName;
-    if (q('shareAvatar'))      q('shareAvatar').textContent      = avatar;
-    if (q('sharePlayerName'))  q('sharePlayerName').textContent  = name;
-    if (q('shareRankDisplay')) q('shareRankDisplay').textContent = `${rank.icon} ${rank.label}`;
-    if (q('sharePoints'))      q('sharePoints').textContent      = pts;
-    if (q('shareStreak'))      q('shareStreak').textContent      = streak + '🔥';
-    if (q('shareDays'))        q('shareDays').textContent        = days;
-    if (q('shareBarFill'))     q('shareBarFill').style.width     = pct + '%';
+/* ── قسم المقارنة ── */
+.pp-compare-section {
+    margin-top: 16px;
+    animation: ppFadeIn 0.3s ease;
 }
 
-function _showShareOverlay(text) {
-    window._shareText = text;
-    const overlay = document.getElementById('shareAchievementOverlay');
-    if (overlay) overlay.style.display = 'flex';
+@keyframes ppFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0);   }
 }
 
-function closeShareOverlay() {
-    const overlay = document.getElementById('shareAchievementOverlay');
-    if (overlay) overlay.style.display = 'none';
-    const msg = document.getElementById('shareCopiedMsg');
-    if (msg) msg.style.display = 'none';
+.pp-compare-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-function copyShareText() {
-    const text = window._shareText || '';
-    if (!text) return;
-    navigator.clipboard.writeText(text)
-        .then(() => {
-            const msg = document.getElementById('shareCopiedMsg');
-            if (msg) { msg.style.display = 'block'; setTimeout(() => { msg.style.display = 'none'; }, 2500); }
-        })
-        .catch(() => {
-            /* fallback للأجهزة القديمة */
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            const msg = document.getElementById('shareCopiedMsg');
-            if (msg) { msg.style.display = 'block'; setTimeout(() => { msg.style.display = 'none'; }, 2500); }
-        });
+/* رأس المقارنة */
+.pp-cmp-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78em;
+    font-weight: 800;
+    color: var(--text2, #aaa);
+    padding: 0 4px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 4px;
+}
+.pp-cmp-header span:first-child { text-align: right; color: #67e8f9; }
+.pp-cmp-header span:last-child  { text-align: left;  color: #f0b90b; }
+
+/* صف مقارنة واحد */
+.pp-cmp-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
-window.shareSeasonAchievement = shareSeasonAchievement;
-window.closeShareOverlay      = closeShareOverlay;
-window.copyShareText          = copyShareText;
-window.closeSeasonLeaderboard  = closeSeasonLeaderboard;
-window.refreshSeasonLeaderboard = refreshSeasonLeaderboard;
-window.switchSeasonLbTab       = switchSeasonLbTab;
-window.syncSeasonScore         = syncSeasonScore;
+.pp-cmp-mine {
+    text-align: right;
+    font-size: 0.9em;
+    font-weight: 700;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
 
-/* ═══════════════════════════════════════════════════════════════
-   🎁 REWARD TRACK OVERLAY — صفحة مسار الجوائز المستقلة
+.pp-cmp-his {
+    text-align: left;
+    font-size: 0.9em;
+    font-weight: 700;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
+
+.pp-cmp-winner {
+    color: #f0b90b !important;
+    font-size: 1em !important;
+}
+.pp-cmp-mine.pp-cmp-winner { color: #67e8f9 !important; }
+
+.pp-cmp-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.65em;
+    color: var(--text2, #aaa);
+    font-weight: 600;
+    text-align: center;
+    min-width: 60px;
+}
+
+.pp-cmp-icon { font-size: 1.2em; }
+
+/* ── زر "تحدّه الآن" ── */
+.pp-challenge-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 18px;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    font-size: 1em;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+    letter-spacing: 0.02em;
+}
+
+.pp-challenge-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(124,58,237,0.55);
+    background: linear-gradient(135deg, #6d28d9, #9333ea);
+}
+
+.pp-challenge-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 10px rgba(124,58,237,0.3);
+}
+
+.pp-challenge-icon {
+    font-size: 1.2em;
+    animation: ppSwordPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ppSwordPulse {
+    0%, 100% { transform: rotate(0deg);   }
+    25%       { transform: rotate(-15deg); }
+    75%       { transform: rotate(15deg);  }
+}
+
+/* ── تحسين hover على صفوف لائحة الصدارة ── */
+.lb-row:not(.lb-header) {
+    cursor: pointer;
+    transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+    position: relative;
+}
+
+.lb-row:not(.lb-header)::after {
+    content: '›';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%) translateX(4px);
+    opacity: 0;
+    color: var(--gold, #f0b90b);
+    font-size: 1.2em;
+    font-weight: 900;
+    transition: opacity 0.15s, transform 0.15s;
+}
+
+.lb-row:not(.lb-header):hover {
+    background: rgba(240,185,11,0.07);
+    transform: translateX(-3px);
+    box-shadow: inset 3px 0 0 rgba(240,185,11,0.5);
+}
+
+.lb-row:not(.lb-header):hover::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+.lb-row:not(.lb-header):active {
+    transform: scale(0.985);
+    background: rgba(240,185,11,0.13);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   🆕 المرحلة الرابعة — إطار + ترتيب + مشاركة + إشعار
+   © 2026 Hassan Odaey
 ═══════════════════════════════════════════════════════════════ */
-function openRewardTrackOverlay() {
-    const overlay = document.getElementById('rewardTrackOverlay');
-    if (!overlay) return;
-    overlay.style.display = 'flex';
-    _renderRewardTrackOverlay();
+
+/* ── حاوية الـ avatar مع الإطار ── */
+.pp-avatar-wrapper {
+    position: relative;
+    width: 82px;
+    height: 82px;
+    margin: 0 auto;
 }
 
-function closeRewardTrackOverlay() {
-    const overlay = document.getElementById('rewardTrackOverlay');
-    if (overlay) overlay.style.display = 'none';
+.pp-avatar-ring {
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0b90b, #7c3aed);
+    padding: 3px;
+    box-shadow: 0 0 20px rgba(240,185,11,0.35);
+    animation: ppRingPulse 2.5s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-function _renderRewardTrackOverlay() {
-    _seasonEnsureReady();
-    const pts  = st.season.points || 0;
-    const pct  = Math.min(100, Math.round((pts / 1000) * 100));
-
-    const q = id => document.getElementById(id);
-    if (q('rtoProgressSub'))  q('rtoProgressSub').textContent  = pts + ' / 1000 نقطة';
-    if (q('rtoPtsVal'))       q('rtoPtsVal').textContent       = pts;
-    if (q('rtoProgressFill')) q('rtoProgressFill').style.width = pct + '%';
-    if (q('rtoProgressLabel'))q('rtoProgressLabel').textContent= pct + '%';
-
-    const body = q('rtoBody');
-    if (!body || typeof SEASON_TRACK_REWARDS === 'undefined') return;
-
-    body.innerHTML = SEASON_TRACK_REWARDS.map((rw, idx) => {
-        const claimed  = st.season.claimedRewards.includes(rw.pts);
-        const reached  = pts >= rw.pts;
-        const canClaim = reached && !claimed;
-        const state    = claimed ? 'claimed' : reached ? 'reached' : 'locked';
-        const ptsLeft  = Math.max(0, rw.pts - pts);
-        const miniPct  = Math.min(100, Math.round((pts / rw.pts) * 100));
-
-        return `
-        <div class="rto-node rto-node-${state}" id="rtoNode_${rw.pts}">
-            ${idx > 0 ? `<div class="rto-connector ${reached ? 'passed' : ''}"></div>` : ''}
-            <div class="rto-node-row">
-                <div class="rto-circle-wrap">
-                    <div class="rto-circle">
-                        <span class="rto-circle-icon">${claimed ? '✓' : rw.icon}</span>
-                    </div>
-                    <div class="rto-pts-tag">${rw.pts}🏅</div>
-                </div>
-                <div class="rto-card">
-                    <div class="rto-card-top">
-                        <div class="rto-card-label">${rw.label}</div>
-                        <div class="rto-card-state-badge rto-badge-${state}">
-                            ${claimed ? '✅ مُستلمة' : reached ? '🔓 جاهزة' : `🔒 بعد ${ptsLeft}🏅`}
-                        </div>
-                    </div>
-                    ${canClaim ? `
-                    <button class="rto-claim-btn" onclick="claimSeasonReward(${rw.pts});_renderRewardTrackOverlay();_updateTrackBtn(st.season.points||0);">
-                        <span>🎁 استلم الجائزة</span>
-                        <span class="rto-claim-icon">${rw.icon}</span>
-                    </button>` : ''}
-                    ${!reached ? `
-                    <div class="rto-mini-prog">
-                        <div class="rto-mini-fill" style="width:${miniPct}%"></div>
-                    </div>` : ''}
-                </div>
-            </div>
-        </div>`;
-    }).join('');
-
-    setTimeout(() => {
-        const first = body.querySelector('.rto-node-reached:not(.rto-node-claimed), .rto-node-reached');
-        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
-
-    _updateTrackBtn(pts);
+.pp-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--bg2, #1a1a2e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2em;
 }
 
-function _updateTrackBtn(pts) {
-    if (typeof SEASON_TRACK_REWARDS === 'undefined') return;
-    const claimed = (st.season.claimedRewards || []);
-    const sub  = document.getElementById('spTrackBtnSub');
-    const mini = document.getElementById('spTrackMiniNodes');
-
-    if (sub) {
-        const next = SEASON_TRACK_REWARDS.find(r => !claimed.includes(r.pts));
-        if (!next) {
-            sub.textContent = '✅ كل الجوائز مُستلمة!';
-            sub.style.color = '#10b981';
-        } else if (pts >= next.pts) {
-            sub.textContent = '🔓 جائزة جاهزة للاستلام!';
-            sub.style.color = 'var(--gold)';
-        } else {
-            sub.textContent = `التالية عند ${next.pts}🏅 — باقي ${next.pts - pts} نقطة`;
-            sub.style.color = '';
-        }
-    }
-
-    if (mini) {
-        mini.innerHTML = SEASON_TRACK_REWARDS.map(r => {
-            const done  = claimed.includes(r.pts);
-            const ready = !done && pts >= r.pts;
-            return `<div class="rto-mini-dot ${done ? 'done' : ready ? 'ready' : ''}"></div>`;
-        }).join('');
-    }
+/* إطار SVG يُرسم فوق الـ ring */
+.pp-frame-svg {
+    position: absolute;
+    inset: -10px;
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    pointer-events: none;
+    z-index: 2;
 }
 
-window.openRewardTrackOverlay  = openRewardTrackOverlay;
-window.closeRewardTrackOverlay = closeRewardTrackOverlay;
-window._updateTrackBtn         = _updateTrackBtn;
+/* ── صف badges المستوى + الترتيب ── */
+.pp-header-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
 
-window.openSeasonPassOverlay   = openSeasonPassOverlay;
-window.closeSeasonPassOverlay  = closeSeasonPassOverlay;
-window.claimSeasonReward       = claimSeasonReward;
-window._updateSeasonBtn        = _updateSeasonBtn;
-window._seasonUpdateAfterGame  = _seasonUpdateAfterGame;
-window.openSeasonChest         = openSeasonChest;
-window.openSeasonHistory       = openSeasonHistory;
-window.closeSeasonHistory      = closeSeasonHistory;
-window.seasonUpdateFromGame    = function(data) {
-    try {
-        _seasonEnsureReady();
-        _seasonUpdateAfterGame(data || {});
-        /* رفع النقاط لـ Firebase بعد كل تحديث */
-        setTimeout(syncSeasonScore, 1500);
-    } catch(e) {}
-};
+/* شارة الترتيب */
+.pp-rank-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(90deg, rgba(240,185,11,0.18), rgba(251,146,60,0.18));
+    border: 1px solid rgba(251,146,60,0.45);
+    border-radius: 20px;
+    padding: 3px 12px;
+    animation: ppFadeIn 0.4s ease;
+}
+
+.pp-rank-icon { font-size: 0.9em; }
+
+.pp-rank-val {
+    font-size: 0.95em;
+    font-weight: 900;
+    color: #fb923c;
+}
+
+/* ── زر المشاركة ── */
+.pp-share-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(240,185,11,0.35);
+    background: rgba(240,185,11,0.10);
+    color: #f0b90b;
+    font-size: 1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.15s;
+}
+.pp-share-btn:hover {
+    background: rgba(240,185,11,0.22);
+    transform: scale(1.1);
+}
+.pp-share-btn:active { transform: scale(0.95); }
+
+/* ── شريط إشعار التحدي ── */
+#ppChallengeNotif {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #0e0b1f, #1a0a2e);
+    border: 1.5px solid rgba(124,58,237,0.6);
+    border-radius: 20px;
+    padding: 10px 14px;
+    box-shadow: 0 8px 32px rgba(124,58,237,0.4);
+    max-width: 90vw;
+    animation: ppNotifSlideDown 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    cursor: pointer;
+}
+
+@keyframes ppNotifSlideDown {
+    from { opacity:0; transform: translateX(-50%) translateY(-20px); }
+    to   { opacity:1; transform: translateX(-50%) translateY(0);     }
+}
+
+.pp-notif-icon { font-size: 1.3em; flex-shrink: 0; }
+
+.pp-notif-text {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #e2d9f3;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pp-notif-accept {
+    background: linear-gradient(90deg, #7c3aed, #a855f7);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 5px 12px;
+    font-size: 0.76em;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: transform 0.15s;
+}
+.pp-notif-accept:hover { transform: scale(1.05); }
+
+.pp-notif-dismiss {
+    background: transparent;
+    border: none;
+    color: var(--text2, #aaa);
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 2px 4px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    transition: color 0.15s;
+}
+.pp-notif-dismiss:hover { color: #fff; }
+   
 
 /* ═══════════════════════════════════════════════════════
-   MP Quick Sheets — مهام اليوم + لائحة الصدارة
+   🏆 Overlay الألقاب الموسمية — Competition Titles
 ═══════════════════════════════════════════════════════ */
 
-/* ── Sheet مهام اليوم ── */
-function openMpDailySheet() {
-    _seasonEnsureReady();
-    const sheet = document.getElementById('mpDailySheet');
-    if (!sheet) return;
+/* زر الألقاب في شريط الأسفل — لون ذهبي مميز */
+.comp-titles-btn .comp-bottom-btn-icon { color: #f0b90b; }
+.comp-titles-btn .comp-bottom-btn-label { color: #f0b90b; font-weight: 900; }
+.comp-titles-btn { border-color: rgba(240,185,11,0.25); }
+.comp-titles-btn:active { background: rgba(240,185,11,0.08); }
 
-    const tasks = (st.season && st.season.dailyTasks) || [];
-    const done  = tasks.filter(t => t.done).length;
-    const total = tasks.length || 5;
-    const pct   = Math.min(100, Math.round((done / total) * 100));
-
-    /* تحديث الـ badge والبار */
-    const badge = document.getElementById('mpDailySheetBadge');
-    const bar   = document.getElementById('mpDailySheetBar');
-    const list  = document.getElementById('mpDailySheetList');
-    if (badge) badge.textContent = done + '/' + total;
-    if (bar)   setTimeout(() => { bar.style.width = pct + '%'; }, 80);
-
-    /* بناء القائمة */
-    if (list) {
-        if (!tasks.length) {
-            list.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text2);font-size:0.82em;">لا توجد مهام متاحة الآن</div>';
-        } else {
-            const stars = n => '⭐'.repeat(n || 0);
-            list.innerHTML = tasks.map(task => {
-                const cur  = Math.min(task.current || 0, task.target);
-                const tpct = Math.min(100, Math.round((cur / task.target) * 100));
-                const done = task.done;
-                return `
-                <div class="mp-sheet-task-item${done ? ' done' : ''}">
-                    <div class="mp-sheet-task-icon">${task.icon || '📌'}</div>
-                    <div class="mp-sheet-task-body">
-                        <div class="mp-sheet-task-name">
-                            ${task.name || ''}
-                            ${task.stars ? '<span style="font-size:0.8em;">' + stars(task.stars) + '</span>' : ''}
-                        </div>
-                        <div class="mp-sheet-task-desc">${task.desc || ''}</div>
-                        <div class="mp-sheet-task-bar">
-                            <div class="mp-sheet-task-bar-fill" style="width:${tpct}%"></div>
-                        </div>
-                    </div>
-                    <div class="mp-sheet-task-right">
-                        <div class="mp-sheet-task-pts">+${task.pts || 0}🏅</div>
-                        <div class="mp-sheet-task-prog">${cur}/${task.target}</div>
-                        ${done ? '<div style="font-size:1.1em;">✅</div>' : ''}
-                    </div>
-                </div>`;
-            }).join('');
-        }
-    }
-
-    sheet.style.display = 'flex';
+/* شارة الموسم في أعلى الـ overlay */
+.ct-season-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(240,185,11,0.15), rgba(124,58,237,0.15));
+    border: 1.5px solid rgba(240,185,11,0.35);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.82em;
+    font-weight: 900;
+    color: var(--gold);
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 14px;
 }
 
-function closeMpDailySheet() {
-    const sheet = document.getElementById('mpDailySheet');
-    if (sheet) sheet.style.display = 'none';
+/* بطاقة اللقب النشط */
+.ct-active-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(135deg, rgba(240,185,11,0.1), rgba(124,58,237,0.08));
+    border: 1.5px solid rgba(240,185,11,0.4);
+    border-radius: 18px;
+    padding: 16px;
+}
+.ct-active-icon { font-size: 2.4em; flex-shrink: 0; }
+.ct-active-info { flex: 1; }
+.ct-active-name {
+    font-size: 0.92em;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 4px;
+}
+.ct-active-desc {
+    font-size: 0.65em;
+    color: var(--text2);
+    line-height: 1.4;
+    margin-bottom: 6px;
+}
+.ct-active-expiry {
+    font-size: 0.62em;
+    color: var(--text3);
 }
 
-/* ── Sheet لائحة الصدارة ── */
-let _mpLbCurrentTab = 'week';
+/* بطاقة "لا يوجد لقب" */
+.ct-no-title {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    padding: 18px;
+    text-align: center;
+}
+.ct-no-title-icon  { font-size: 2em; margin-bottom: 8px; }
+.ct-no-title-text  { font-size: 0.82em; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+.ct-no-title-hint  { font-size: 0.63em; color: var(--text2); line-height: 1.5; }
 
-function openMpLeaderboardSheet() {
-    const sheet = document.getElementById('mpLeaderboardSheet');
-    if (!sheet) return;
+/* صندوق التتابع + شريط التقدم */
+.ct-streak-box {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+.ct-streak-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.ct-streak-label { font-size: 0.72em; color: var(--text2); }
+.ct-streak-val   { font-size: 0.78em; font-weight: 900; color: var(--gold); }
+.ct-progress-track {
+    height: 8px;
+    background: var(--surface3);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.ct-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f0b90b, #7c3aed);
+    border-radius: 999px;
+    transition: width 0.5s ease;
+}
+.ct-next-target { font-size: 0.62em; color: var(--text3); text-align: right; }
 
-    /* اسم الموسم */
-    const nameEl = document.getElementById('mpLbSheetSeasonName');
-    if (nameEl && typeof getCurrentSeasonName === 'function') nameEl.textContent = getCurrentSeasonName();
+/* ملاحظة المعلومات */
+.ct-info-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: rgba(6,182,212,0.08);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    font-size: 0.67em;
+    color: var(--text2);
+    line-height: 1.5;
+}
+.ct-info-icon { font-size: 1.1em; flex-shrink: 0; margin-top: 1px; }
+.ct-info-note strong { color: var(--accent2); }
 
-    /* بطاقة مرتبتي */
-    _renderMpLbMyCard();
-
-    sheet.style.display = 'flex';
-    _mpLbCurrentTab = 'week';
-    _updateMpLbTabStyle();
-    _loadMpLeaderboardSheet('week');
+/* تسمية القسم */
+.ct-section-label {
+    font-size: 0.72em;
+    font-weight: 900;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
 }
 
-function closeMpLeaderboardSheet() {
-    const sheet = document.getElementById('mpLeaderboardSheet');
-    if (sheet) sheet.style.display = 'none';
+/* صف لقب واحد */
+.ct-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 16px;
+    padding: 14px 12px;
+    transition: border-color 0.2s;
+}
+.ct-title-row.ct-earned       { border-color: rgba(240,185,11,0.4); background: rgba(240,185,11,0.04); }
+.ct-title-row.ct-active-title { box-shadow: 0 0 0 2px var(--gold); }
+
+.ct-title-icon-wrap {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    border: 1.5px solid;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.ct-title-icon { font-size: 1.7em; }
+
+.ct-title-body { flex: 1; min-width: 0; }
+.ct-title-name {
+    font-size: 0.82em;
+    font-weight: 900;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ct-title-desc {
+    font-size: 0.62em;
+    color: var(--text3);
+    line-height: 1.4;
+    margin-bottom: 6px;
+}
+.ct-title-mini-track {
+    height: 4px;
+    background: var(--surface3);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.ct-title-mini-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+    opacity: 0.7;
 }
 
-function refreshMpLeaderboardSheet() {
-    const btn = document.getElementById('mpLbRefreshBtn');
-    if (btn) { btn.style.transform = 'rotate(360deg)'; setTimeout(() => btn.style.transform = '', 400); }
-    _loadMpLeaderboardSheet(_mpLbCurrentTab);
+.ct-title-badge-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
 }
-
-function switchMpLbTab(tab) {
-    _mpLbCurrentTab = tab;
-    _updateMpLbTabStyle();
-    _loadMpLeaderboardSheet(tab);
+.ct-earned-badge {
+    font-size: 0.58em;
+    font-weight: 900;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid;
+    white-space: nowrap;
 }
-
-function _updateMpLbTabStyle() {
-    const week = document.getElementById('mpLbTabWeek');
-    const all  = document.getElementById('mpLbTabAll');
-    if (!week || !all) return;
-    const activeStyle  = 'flex:1;padding:7px;border-radius:10px;border:1px solid rgba(240,185,11,0.35);background:linear-gradient(135deg,rgba(240,185,11,0.2),rgba(240,185,11,0.08));color:var(--gold);font-family:\'Tajawal\',sans-serif;font-size:0.75em;font-weight:900;cursor:pointer;';
-    const inactiveStyle = 'flex:1;padding:7px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-family:\'Tajawal\',sans-serif;font-size:0.75em;font-weight:700;cursor:pointer;';
-    week.style.cssText = (_mpLbCurrentTab === 'week') ? activeStyle : inactiveStyle;
-    all.style.cssText  = (_mpLbCurrentTab === 'all')  ? activeStyle : inactiveStyle;
+.ct-days-badge {
+    font-size: 0.78em;
+    font-weight: 900;
+    color: var(--text2);
+    text-align: center;
+    line-height: 1.1;
 }
-
-function _renderMpLbMyCard() {
-    _seasonEnsureReady();
-    const pts    = (st.season && st.season.points) || 0;
-    const name   = (st && st.name) || 'أنت';
-    const rankEl = document.getElementById('mpLbMyRank');
-    const nameEl = document.getElementById('mpLbMyName');
-    const ptsEl  = document.getElementById('mpLbMyPts');
-    const badge  = document.getElementById('mpLbMyBadge');
-    if (nameEl) nameEl.textContent = name;
-    if (ptsEl)  ptsEl.textContent  = pts + ' نقطة';
-    /* رتبة تقديرية */
-    if (badge) {
-        if (pts >= 800) badge.textContent = '💎';
-        else if (pts >= 500) badge.textContent = '🥇';
-        else if (pts >= 200) badge.textContent = '🥈';
-        else badge.textContent = '🥉';
-    }
+.ct-days-badge span {
+    display: block;
+    font-size: 0.72em;
+    color: var(--text3);
+    font-weight: 700;
 }
-
-function _loadMpLeaderboardSheet(tab) {
-    const list = document.getElementById('mpLbSheetList');
-    if (!list) return;
-    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">جاري التحميل…</div>';
-
-    /* نستخدم نفس بيانات Firebase الموجودة في الكود الأصلي */
-    if (typeof firebase === 'undefined' || !firebase.database) {
-        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">غير متصل</div>';
-        return;
-    }
-
-    const path = tab === 'week' ? 'season_weekly_scores' : 'season_alltime_scores';
-    try {
-        firebase.database().ref(path).orderByChild('pts').limitToLast(30).once('value').then(snap => {
-            const rows = [];
-            snap.forEach(c => {
-                const d = c.val();
-                if (d && d.name && typeof d.pts === 'number') rows.push(d);
-            });
-            rows.sort((a,b) => b.pts - a.pts);
-
-            if (!rows.length) {
-                list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">لا توجد بيانات بعد</div>';
-                return;
-            }
-
-            const myName = (st && st.name) || '';
-            const rankBadge = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
-            const rankClass = i => i === 0 ? ' gold-rank' : i === 1 ? ' silver-rank' : i === 2 ? ' bronze-rank' : '';
-
-            list.innerHTML = rows.map((r, i) => {
-                const isMe = r.name === myName;
-                return `<div class="mp-lb-row${isMe ? ' me' : ''}">
-                    <div class="mp-lb-rank${rankClass(i)}">${rankBadge(i) || (i+1)}</div>
-                    <div class="mp-lb-name">${r.name || '—'}</div>
-                    <div class="mp-lb-badge">${r.badge || ''}</div>
-                    <div class="mp-lb-pts">${r.pts}🏅</div>
-                </div>`;
-            }).join('');
-
-            /* تحديث مرتبتي */
-            const myIdx = rows.findIndex(r => r.name === myName);
-            const rankEl = document.getElementById('mpLbMyRank');
-            if (rankEl && myIdx >= 0) rankEl.textContent = '#' + (myIdx + 1);
-        }).catch(() => {
-            list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">تعذّر التحميل</div>';
-        });
-    } catch(e) {
-        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text2);font-size:0.82em;">تعذّر التحميل</div>';
-    }
+.ct-active-badge {
+    font-size: 0.55em;
+    font-weight: 900;
+    color: var(--gold);
+    background: rgba(240,185,11,0.15);
+    border: 1px solid rgba(240,185,11,0.3);
+    border-radius: 6px;
+    padding: 2px 6px;
+    white-space: nowrap;
 }
-
-window.openMpDailySheet         = openMpDailySheet;
-window.closeMpDailySheet        = closeMpDailySheet;
-window.openMpLeaderboardSheet   = openMpLeaderboardSheet;
-window.closeMpLeaderboardSheet  = closeMpLeaderboardSheet;
-window.refreshMpLeaderboardSheet = refreshMpLeaderboardSheet;
-window.switchMpLbTab            = switchMpLbTab;
