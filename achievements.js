@@ -151,97 +151,101 @@
 
         const CATEGORY_TASKS = {
             ops: [
-                /* ── مستوى سهل ── */
-                { id: 'op1',  icon: '➕', name: 'أول خطوة جمع',    desc: 'أجب على 5 أسئلة جمع صحيحة',        reward: 1, goal: 5,  progress: 0, done: false, type: 'ops_add' },
-                { id: 'op2',  icon: '➖', name: 'بداية الطرح',      desc: 'أجب على 5 أسئلة طرح صحيحة',        reward: 1, goal: 5,  progress: 0, done: false, type: 'ops_sub' },
-                { id: 'op8',  icon: '🎯', name: 'أول 3 إجابات',     desc: 'أجب على 3 أسئلة صحيحة لتبدأ',     reward: 1, goal: 3,  progress: 0, done: false, type: 'correct' },
-                { id: 'op9',  icon: '🏃', name: 'جلسة واحدة',       desc: 'أنهِ جلسة لعب كاملة',              reward: 1, goal: 1,  progress: 0, done: false, type: 'game' },
-                /* ── مستوى متوسط ── */
-                { id: 'op3',  icon: '✖️', name: 'أبو الضرب',        desc: 'أجب على 8 أسئلة ضرب صحيحة',        reward: 3, goal: 8,  progress: 0, done: false, type: 'ops_mul' },
-                { id: 'op4',  icon: '➗', name: 'عين القسمة',        desc: 'أجب على 8 أسئلة قسمة صحيحة',       reward: 3, goal: 8,  progress: 0, done: false, type: 'ops_div' },
-                { id: 'op5',  icon: '🔢', name: 'جدول الأبطال',     desc: 'أجب على 10 أسئلة جدول ضرب',        reward: 3, goal: 10, progress: 0, done: false, type: 'ops_table' },
-                { id: 'op6',  icon: '🔀', name: 'شاطر المزج',       desc: 'أجب على 15 سؤالاً مختلطاً',        reward: 4, goal: 15, progress: 0, done: false, type: 'correct' },
-                { id: 'op7',  icon: '🏃', name: 'جلستان كاملتان',   desc: 'أنهِ جلستَي لعب كاملتَين',         reward: 2, goal: 2,  progress: 0, done: false, type: 'game' },
-                { id: 'op10', icon: '➕', name: 'سيد الجمع',        desc: 'أجب على 15 أسئلة جمع صحيحة',       reward: 3, goal: 15, progress: 0, done: false, type: 'ops_add' },
-                { id: 'op11', icon: '➖', name: 'قاهر الطرح',       desc: 'أجب على 15 أسئلة طرح صحيحة',       reward: 3, goal: 15, progress: 0, done: false, type: 'ops_sub' },
-                { id: 'op12', icon: '🔢', name: 'حافظ الجدول',      desc: 'أجب على 20 سؤال جدول ضرب',         reward: 4, goal: 20, progress: 0, done: false, type: 'ops_table' },
-                /* ── مستوى صعب ── */
-                { id: 'op13', icon: '✖️', name: 'ملك الضرب',        desc: 'أجب على 25 أسئلة ضرب صحيحة',       reward: 5, goal: 25, progress: 0, done: false, type: 'ops_mul' },
-                { id: 'op14', icon: '➗', name: 'أستاذ القسمة',     desc: 'أجب على 25 أسئلة قسمة صحيحة',      reward: 5, goal: 25, progress: 0, done: false, type: 'ops_div' },
-                { id: 'op15', icon: '🔀', name: 'موسوعة العمليات',  desc: 'أجب على 40 سؤالاً مختلطاً',        reward: 6, goal: 40, progress: 0, done: false, type: 'correct' },
-                { id: 'op16', icon: '🏃', name: 'خمس جلسات',        desc: 'أنهِ 5 جلسات لعب كاملة',           reward: 5, goal: 5,  progress: 0, done: false, type: 'game' },
-                /* ── مستوى خبير ── */
-                { id: 'op17', icon: '💪', name: 'مئة عملية',        desc: 'أجب على 100 سؤال صحيح في أي عملية', reward: 8, goal: 100, progress: 0, done: false, type: 'correct' },
-                { id: 'op18', icon: '🌟', name: 'أسطورة الحساب',    desc: 'أجب على 50 سؤال جمع + 50 طرح',     reward: 10, goal: 50, progress: 0, done: false, type: 'ops_add' },
+                /* ── سهل ── */
+                { id: 'op1',  icon: '➕', name: 'سيد الجمع',        desc: 'أجب على 8 أسئلة جمع صحيحة',              reward: 2,  goal: 8,   progress: 0, done: false, type: 'ops_add' },
+                { id: 'op2',  icon: '➖', name: 'قاهر الطرح',       desc: 'أجب على 8 أسئلة طرح صحيحة',             reward: 2,  goal: 8,   progress: 0, done: false, type: 'ops_sub' },
+                { id: 'op3',  icon: '✖️', name: 'أبو الضرب',        desc: 'أجب على 8 أسئلة ضرب صحيحة',             reward: 3,  goal: 8,   progress: 0, done: false, type: 'ops_mul' },
+                { id: 'op4',  icon: '➗', name: 'عين القسمة',       desc: 'أجب على 8 أسئلة قسمة صحيحة',            reward: 3,  goal: 8,   progress: 0, done: false, type: 'ops_div' },
+                { id: 'op5',  icon: '🔢', name: 'جدول الأبطال',     desc: 'أجب على 10 أسئلة جدول ضرب',             reward: 3,  goal: 10,  progress: 0, done: false, type: 'ops_table' },
+                { id: 'op8',  icon: '🎯', name: 'الانطلاقة',        desc: 'أجب على 3 أسئلة صحيحة لتبدأ',           reward: 1,  goal: 3,   progress: 0, done: false, type: 'correct' },
+                /* ── متوسط ── */
+                { id: 'op6',  icon: '🔀', name: 'شاطر المزج',       desc: 'أجب على 15 سؤالاً مختلطاً',             reward: 4,  goal: 15,  progress: 0, done: false, type: 'correct' },
+                { id: 'op7',  icon: '🏃', name: 'جلستان كاملتان',   desc: 'أنهِ جلستَي لعب كاملتَين',              reward: 2,  goal: 2,   progress: 0, done: false, type: 'game' },
+                { id: 'op9',  icon: '🔁', name: 'دوري المكرر',      desc: 'العب 4 جلسات في يوم واحد',              reward: 4,  goal: 4,   progress: 0, done: false, type: 'game' },
+                { id: 'op10', icon: '⚡', name: 'سرعة الحساب',      desc: 'أجب على 5 أسئلة جمع وطرح معاً',         reward: 3,  goal: 5,   progress: 0, done: false, type: 'ops_add' },
+                { id: 'op11', icon: '🧮', name: 'حاسب الأعداد',     desc: 'أجب على 20 سؤالاً صحيحاً',              reward: 4,  goal: 20,  progress: 0, done: false, type: 'correct' },
+                /* ── صعب ── */
+                { id: 'op12', icon: '💪', name: 'ضرب الأبطال',      desc: 'أجب على 15 سؤال ضرب صحيحة',            reward: 5,  goal: 15,  progress: 0, done: false, type: 'ops_mul' },
+                { id: 'op13', icon: '🌟', name: 'قسمة الماهرين',    desc: 'أجب على 15 سؤال قسمة صحيحة',           reward: 5,  goal: 15,  progress: 0, done: false, type: 'ops_div' },
+                { id: 'op14', icon: '🔥', name: 'مئة سؤال',         desc: 'أجب على 40 سؤالاً صحيحاً في اليوم',    reward: 8,  goal: 40,  progress: 0, done: false, type: 'correct' },
+                /* ── عبقري ── */
+                { id: 'op15', icon: '💎', name: 'جدول الخبراء',     desc: 'أجب على 25 سؤال جدول ضرب بلا خطأ',     reward: 8,  goal: 25,  progress: 0, done: false, type: 'ops_table' },
+                { id: 'op16', icon: '🏆', name: 'مئة وعشرون',       desc: 'أجب على 60 سؤالاً صحيحاً في اليوم',    reward: 10, goal: 60,  progress: 0, done: false, type: 'correct' },
+                /* ── مستحيل ── */
+                { id: 'op17', icon: '👑', name: 'ملك العمليات',      desc: 'أجب على 100 سؤال صحيح في اليوم',       reward: 15, goal: 100, progress: 0, done: false, type: 'correct' },
+                { id: 'op18', icon: '🌌', name: 'ما وراء الحدود',   desc: 'أكمل 10 جلسات لعب في يوم واحد',        reward: 20, goal: 10,  progress: 0, done: false, type: 'game' },
             ],
             challenges: [
-                /* ── مستوى سهل ── */
-                { id: 'ch1',  icon: '🌟', name: 'تحدي اليوم',        desc: 'العب تحدي اليوم (١٠ أسئلة)',       reward: 3, goal: 1,  progress: 0, done: false, type: 'daily' },
-                { id: 'ch2',  icon: '🔥', name: 'تتابع ×3',           desc: '3 إجابات صحيحة متتالية',           reward: 2, goal: 3,  progress: 0, done: false, type: 'streak3' },
-                { id: 'ch7',  icon: '🎯', name: '10 إجابات صحيحة',    desc: 'أجب على 10 أسئلة صحيحة',           reward: 3, goal: 10, progress: 0, done: false, type: 'correct' },
-                { id: 'ch4',  icon: '⚡', name: 'الصاعق',             desc: 'العب وضع ضد الساعة مرة واحدة',    reward: 3, goal: 1,  progress: 0, done: false, type: 'play_sudden' },
-                /* ── مستوى متوسط ── */
-                { id: 'ch3',  icon: '💥', name: 'تتابع ×5',           desc: '5 إجابات صحيحة متتالية',           reward: 4, goal: 5,  progress: 0, done: false, type: 'streak5' },
-                { id: 'ch5',  icon: '🔗', name: 'سلسلة لا تنكسر',    desc: 'أجب على 5 أسئلة في وضع السلسلة',  reward: 3, goal: 5,  progress: 0, done: false, type: 'chain_q' },
-                { id: 'ch6',  icon: '🗓️', name: 'بطل الأسبوع',       desc: 'شارك في تحدي الأسبوع',             reward: 5, goal: 1,  progress: 0, done: false, type: 'weekly' },
-                { id: 'ch8',  icon: '⚡', name: 'البرق المزدوج',      desc: 'العب وضع ضد الساعة مرتين',         reward: 5, goal: 2,  progress: 0, done: false, type: 'play_sudden' },
-                { id: 'ch9',  icon: '🎯', name: '20 صحيحة بلا توقف', desc: 'أجب على 20 سؤالاً صحيحاً',         reward: 5, goal: 20, progress: 0, done: false, type: 'correct' },
-                { id: 'ch10', icon: '🗓️', name: 'مواظب الأسبوع',     desc: 'شارك في تحدي الأسبوع مرتين',       reward: 8, goal: 2,  progress: 0, done: false, type: 'weekly' },
-                /* ── مستوى صعب ── */
-                { id: 'ch11', icon: '💥', name: 'تتابع ×8',           desc: '8 إجابات صحيحة متتالية بلا خطأ',  reward: 7, goal: 8,  progress: 0, done: false, type: 'streak5' },
-                { id: 'ch12', icon: '🔗', name: 'السلسلة الطويلة',    desc: 'أجب على 15 سؤالاً في وضع السلسلة', reward: 6, goal: 15, progress: 0, done: false, type: 'chain_q' },
-                { id: 'ch13', icon: '🌟', name: 'أسطورة التحديات',    desc: 'أجب على 50 سؤالاً صحيحاً',         reward: 8, goal: 50, progress: 0, done: false, type: 'correct' },
-                { id: 'ch14', icon: '⚔️', name: 'محارب التحديات',     desc: 'العب تحدي اليوم 3 مرات في أسبوع', reward: 6, goal: 3,  progress: 0, done: false, type: 'daily' },
-                /* ── مستوى خبير ── */
-                { id: 'ch15', icon: '👑', name: 'ملك التتابع',        desc: '10 إجابات صحيحة متتالية لا تنكسر', reward: 10, goal: 10, progress: 0, done: false, type: 'streak5' },
-                { id: 'ch16', icon: '🏆', name: 'بطل التحديات',       desc: 'شارك في 4 تحديات أسبوعية',         reward: 12, goal: 4, progress: 0, done: false, type: 'weekly' },
+                /* ── سهل ── */
+                { id: 'ch1',  icon: '🌟', name: 'تحدي اليوم',       desc: 'العب تحدي اليوم (١٠ أسئلة)',             reward: 3,  goal: 1,   progress: 0, done: false, type: 'daily' },
+                { id: 'ch7',  icon: '🎯', name: '10 إجابات',        desc: 'أجب على 10 أسئلة صحيحة',                reward: 3,  goal: 10,  progress: 0, done: false, type: 'correct' },
+                { id: 'ch8',  icon: '🔰', name: 'أول تتابع',        desc: 'حقق تتابع 2 إجابات متتالية',            reward: 2,  goal: 2,   progress: 0, done: false, type: 'streak3' },
+                /* ── متوسط ── */
+                { id: 'ch2',  icon: '🔥', name: 'تتابع ×3',         desc: '3 إجابات صحيحة متتالية',                 reward: 2,  goal: 3,   progress: 0, done: false, type: 'streak3' },
+                { id: 'ch3',  icon: '💥', name: 'تتابع ×5',         desc: '5 إجابات صحيحة متتالية',                 reward: 4,  goal: 5,   progress: 0, done: false, type: 'streak5' },
+                { id: 'ch4',  icon: '⚡', name: 'الصاعق',           desc: 'العب وضع ضد الساعة مرة واحدة',          reward: 3,  goal: 1,   progress: 0, done: false, type: 'play_sudden' },
+                { id: 'ch5',  icon: '🔗', name: 'سلسلة لا تنكسر',  desc: 'أجب على 5 أسئلة في وضع السلسلة',        reward: 3,  goal: 5,   progress: 0, done: false, type: 'chain_q' },
+                { id: 'ch6',  icon: '🗓️', name: 'بطل الأسبوع',     desc: 'شارك في تحدي الأسبوع',                   reward: 5,  goal: 1,   progress: 0, done: false, type: 'weekly' },
+                { id: 'ch9',  icon: '🎮', name: 'اللاعب المنتظم',   desc: 'العب 3 جلسات اليوم',                     reward: 3,  goal: 3,   progress: 0, done: false, type: 'game' },
+                /* ── صعب ── */
+                { id: 'ch10', icon: '🏅', name: 'تتابع ×7',         desc: '7 إجابات صحيحة متتالية',                 reward: 6,  goal: 7,   progress: 0, done: false, type: 'streak5' },
+                { id: 'ch11', icon: '⚔️', name: 'محارب السلسلة',   desc: 'أجب على 12 سؤالاً في وضع السلسلة',      reward: 5,  goal: 12,  progress: 0, done: false, type: 'chain_q' },
+                { id: 'ch12', icon: '🌪️', name: 'عاصفة الصواعق',   desc: '10 أسئلة صحيحة في ضد الساعة',          reward: 6,  goal: 10,  progress: 0, done: false, type: 'sudden_q' },
+                { id: 'ch13', icon: '🔮', name: 'أسبوعان',          desc: 'شارك في تحديَي أسبوعَين',               reward: 8,  goal: 2,   progress: 0, done: false, type: 'weekly' },
+                /* ── عبقري ── */
+                { id: 'ch14', icon: '💎', name: 'تتابع ×10',        desc: '10 إجابات صحيحة متتالية',                reward: 8,  goal: 10,  progress: 0, done: false, type: 'streak5' },
+                { id: 'ch15', icon: '🦅', name: 'نسر التحديات',     desc: 'العب تحدي اليوم 5 مرات هذا الأسبوع',   reward: 10, goal: 5,   progress: 0, done: false, type: 'daily' },
+                { id: 'ch16', icon: '🔱', name: 'سيد السلسلة',      desc: '20 سؤال متتالياً في وضع السلسلة',        reward: 10, goal: 20,  progress: 0, done: false, type: 'chain_q' },
+                /* ── مستحيل ── */
+                { id: 'ch17', icon: '👑', name: 'تتابع ×15',        desc: '15 إجابة متتالية بلا خطأ واحد',          reward: 15, goal: 15,  progress: 0, done: false, type: 'streak5' },
+                { id: 'ch18', icon: '🌌', name: 'المستحيل',         desc: 'أكمل تحدي اليوم 10 أيام متتالية',       reward: 20, goal: 10,  progress: 0, done: false, type: 'daily' },
             ],
             advanced: [
-                /* ── مستوى سهل ── */
-                { id: 'adv1',  icon: '📐', name: 'لمسة جبر',         desc: 'أجب على 3 أسئلة جبر صحيحة',         reward: 2, goal: 3,  progress: 0, done: false, type: 'ops_algebra' },
-                { id: 'adv2',  icon: '🧮', name: 'منطق رياضي',       desc: 'أجب على 10 أسئلة صحيحة',            reward: 3, goal: 10, progress: 0, done: false, type: 'correct' },
-                { id: 'adv3',  icon: '🚀', name: 'انطلاق الصاروخ',   desc: 'العب وضع الصاروخ مرة واحدة',        reward: 5, goal: 1,  progress: 0, done: false, type: 'play_rocket' },
-                { id: 'adv6',  icon: '📊', name: 'جلستان متقدمتان',  desc: 'أكمل جلستَي لعب اليوم',             reward: 3, goal: 2,  progress: 0, done: false, type: 'game' },
-                /* ── مستوى متوسط ── */
-                { id: 'adv4',  icon: '💎', name: '25 إجابة متقدمة',  desc: 'أجب على 25 سؤالاً صحيحاً',          reward: 5, goal: 25, progress: 0, done: false, type: 'correct' },
-                { id: 'adv5',  icon: '🏆', name: 'مستوى صعب',        desc: 'العب على مستوى صعب أو أعلى',        reward: 4, goal: 1,  progress: 0, done: false, type: 'play_hard' },
-                { id: 'adv7',  icon: '📐', name: 'الجبر الحاضر',     desc: 'أجب على 10 أسئلة جبر صحيحة',        reward: 5, goal: 10, progress: 0, done: false, type: 'ops_algebra' },
-                { id: 'adv8',  icon: '🚀', name: 'الصاروخ المتقد',   desc: 'العب وضع الصاروخ 3 مرات',           reward: 7, goal: 3,  progress: 0, done: false, type: 'play_rocket' },
-                { id: 'adv9',  icon: '📊', name: '3 جلسات اليوم',    desc: 'أكمل 3 جلسات لعب اليوم',            reward: 4, goal: 3,  progress: 0, done: false, type: 'game' },
-                { id: 'adv10', icon: '🔥', name: 'تحدٍّ متقدم',      desc: 'العب مستوى صعب 3 مرات',             reward: 6, goal: 3,  progress: 0, done: false, type: 'play_hard' },
-                /* ── مستوى صعب ── */
-                { id: 'adv11', icon: '🧮', name: 'حاسوب بشري',       desc: 'أجب على 50 سؤالاً صحيحاً',          reward: 7, goal: 50, progress: 0, done: false, type: 'correct' },
-                { id: 'adv12', icon: '📐', name: 'أستاذ الجبر',      desc: 'أجب على 20 أسئلة جبر صحيحة',        reward: 8, goal: 20, progress: 0, done: false, type: 'ops_algebra' },
-                { id: 'adv13', icon: '🚀', name: 'قائد الصاروخ',     desc: 'العب وضع الصاروخ 5 مرات',           reward: 8, goal: 5,  progress: 0, done: false, type: 'play_rocket' },
-                { id: 'adv14', icon: '📊', name: 'لاعب محترف',       desc: 'أكمل 10 جلسات لعب',                 reward: 8, goal: 10, progress: 0, done: false, type: 'game' },
-                /* ── مستوى خبير ── */
-                { id: 'adv15', icon: '🌌', name: 'عقل الرياضيات',    desc: 'أجب على 100 سؤال صحيح متقدم',       reward: 12, goal: 100, progress: 0, done: false, type: 'correct' },
-                { id: 'adv16', icon: '👑', name: 'ملك الصعوبة',      desc: 'العب مستوى صعب 10 مرات',            reward: 10, goal: 10,  progress: 0, done: false, type: 'play_hard' },
-                { id: 'adv17', icon: '🏅', name: 'عبقري الجبر',      desc: 'أجب على 40 أسئلة جبر صحيحة',        reward: 12, goal: 40,  progress: 0, done: false, type: 'ops_algebra' },
+                /* ── سهل ── */
+                { id: 'adv8',  icon: '📝', name: 'البداية',          desc: 'أجب على 5 أسئلة صحيحة',                 reward: 2,  goal: 5,   progress: 0, done: false, type: 'correct' },
+                { id: 'adv1',  icon: '📐', name: 'الجبر الحاضر',    desc: 'أجب على 5 أسئلة جبر صحيحة',             reward: 4,  goal: 5,   progress: 0, done: false, type: 'ops_algebra' },
+                /* ── متوسط ── */
+                { id: 'adv2',  icon: '🧮', name: 'منطق رياضي',      desc: 'أجب على 10 أسئلة صحيحة',                reward: 3,  goal: 10,  progress: 0, done: false, type: 'correct' },
+                { id: 'adv3',  icon: '🚀', name: 'وضع الصاروخ',     desc: 'العب وضع الصاروخ مرة كاملة',            reward: 5,  goal: 1,   progress: 0, done: false, type: 'play_rocket' },
+                { id: 'adv5',  icon: '🏆', name: 'مستوى صعب',       desc: 'العب على مستوى صعب أو أعلى',            reward: 4,  goal: 1,   progress: 0, done: false, type: 'play_hard' },
+                { id: 'adv6',  icon: '📊', name: '3 جلسات اليوم',   desc: 'أكمل 3 جلسات لعب اليوم',                reward: 3,  goal: 3,   progress: 0, done: false, type: 'game' },
+                { id: 'adv9',  icon: '🔬', name: 'مستوى متوسط',     desc: 'أجب على 15 سؤالاً على المستوى المتوسط', reward: 4,  goal: 15,  progress: 0, done: false, type: 'correct' },
+                /* ── صعب ── */
+                { id: 'adv4',  icon: '💎', name: '25 إجابة',        desc: 'أجب على 25 سؤالاً صحيحاً',              reward: 5,  goal: 25,  progress: 0, done: false, type: 'correct' },
+                { id: 'adv10', icon: '🔭', name: 'جبر متقدم',       desc: 'أجب على 12 سؤال جبر صحيحة',            reward: 6,  goal: 12,  progress: 0, done: false, type: 'ops_algebra' },
+                { id: 'adv11', icon: '⚡', name: 'صاروخ مزدوج',     desc: 'العب وضع الصاروخ مرتين',                 reward: 7,  goal: 2,   progress: 0, done: false, type: 'play_rocket' },
+                { id: 'adv12', icon: '🌪️', name: '5 جلسات',        desc: 'أكمل 5 جلسات لعب في يوم واحد',          reward: 6,  goal: 5,   progress: 0, done: false, type: 'game' },
+                /* ── عبقري ── */
+                { id: 'adv13', icon: '🧠', name: 'عالم الأرقام',    desc: 'أجب على 40 سؤالاً صحيحاً',              reward: 8,  goal: 40,  progress: 0, done: false, type: 'correct' },
+                { id: 'adv14', icon: '🏅', name: 'جبر العباقرة',    desc: 'أجب على 20 سؤال جبر بلا خطأ',          reward: 10, goal: 20,  progress: 0, done: false, type: 'ops_algebra' },
+                { id: 'adv15', icon: '🔱', name: 'صاروخ المراحل',   desc: 'العب وضع الصاروخ 5 مرات',               reward: 10, goal: 5,   progress: 0, done: false, type: 'play_rocket' },
+                /* ── مستحيل ── */
+                { id: 'adv16', icon: '👑', name: 'فيلسوف الأعداد',  desc: 'أجب على 70 سؤالاً صحيحاً في اليوم',    reward: 15, goal: 70,  progress: 0, done: false, type: 'correct' },
+                { id: 'adv17', icon: '🌌', name: 'ما لا يُوصف',     desc: 'أكمل 10 جلسات على مستوى صعب',           reward: 20, goal: 10,  progress: 0, done: false, type: 'play_hard' },
             ],
             mind: [
-                /* ── مستوى سهل ── */
-                { id: 'mn1',  icon: '🧠', name: 'أول لعبة ذاكرة',   desc: 'العب وضع بطاقة الذاكرة لأول مرة',  reward: 2, goal: 1,  progress: 0, done: false, type: 'play_memory' },
-                { id: 'mn5',  icon: '🌀', name: 'تحدي الفراغ',       desc: 'العب وضع ملء الفراغ مرة كاملة',    reward: 3, goal: 1,  progress: 0, done: false, type: 'play_fill' },
-                { id: 'mn4',  icon: '⚡', name: 'سرعة البرق',        desc: '5 أسئلة صحيحة في وضع ضد الساعة',  reward: 3, goal: 5,  progress: 0, done: false, type: 'sudden_q' },
-                { id: 'mn6',  icon: '🔗', name: 'سلسلة البداية',     desc: 'أجب على 5 أسئلة في وضع السلسلة',  reward: 3, goal: 5,  progress: 0, done: false, type: 'chain_q' },
-                /* ── مستوى متوسط ── */
-                { id: 'mn2',  icon: '🔗', name: 'سلسلة العقل',       desc: 'أجب على 10 أسئلة في وضع السلسلة', reward: 5, goal: 10, progress: 0, done: false, type: 'chain_q' },
-                { id: 'mn3',  icon: '🎯', name: 'تركيز مطلق',        desc: '5 إجابات صحيحة متتالية بلا خطأ',  reward: 4, goal: 5,  progress: 0, done: false, type: 'streak5' },
-                { id: 'mn7',  icon: '🧠', name: 'ذاكرة متقدمة',      desc: 'العب وضع بطاقة الذاكرة 3 مرات',   reward: 5, goal: 3,  progress: 0, done: false, type: 'play_memory' },
-                { id: 'mn8',  icon: '⚡', name: 'سرعة متوسطة',       desc: '10 أسئلة صحيحة في ضد الساعة',     reward: 5, goal: 10, progress: 0, done: false, type: 'sudden_q' },
-                { id: 'mn9',  icon: '🌀', name: 'ملء الفراغ المتقد', desc: 'العب وضع ملء الفراغ 3 مرات',       reward: 4, goal: 3,  progress: 0, done: false, type: 'play_fill' },
-                /* ── مستوى صعب ── */
-                { id: 'mn10', icon: '🔗', name: 'سلسلة حديدية',      desc: 'أجب على 20 سؤالاً في وضع السلسلة', reward: 7, goal: 20, progress: 0, done: false, type: 'chain_q' },
-                { id: 'mn11', icon: '🎯', name: 'تركيز فولاذي',      desc: '8 إجابات صحيحة متتالية بلا خطأ',   reward: 7, goal: 8,  progress: 0, done: false, type: 'streak5' },
-                { id: 'mn12', icon: '⚡', name: 'صاعقة السرعة',      desc: '20 أسئلة صحيحة في ضد الساعة',      reward: 7, goal: 20, progress: 0, done: false, type: 'sudden_q' },
-                { id: 'mn13', icon: '🧠', name: 'ذاكرة الأبطال',     desc: 'العب وضع بطاقة الذاكرة 5 مرات',    reward: 7, goal: 5,  progress: 0, done: false, type: 'play_memory' },
-                { id: 'mn14', icon: '🌀', name: 'ملء الفراغ البطل',  desc: 'العب وضع ملء الفراغ 5 مرات',       reward: 6, goal: 5,  progress: 0, done: false, type: 'play_fill' },
-                /* ── مستوى خبير ── */
-                { id: 'mn15', icon: '🌀', name: 'عقل لا يُهزم',      desc: 'أجب على 30 سؤالاً في ضد الساعة',   reward: 10, goal: 30, progress: 0, done: false, type: 'sudden_q' },
-                { id: 'mn16', icon: '🔗', name: 'أسطورة السلسلة',    desc: 'أجب على 35 سؤالاً في وضع السلسلة', reward: 10, goal: 35, progress: 0, done: false, type: 'chain_q' },
-                { id: 'mn17', icon: '👁️', name: 'عين الصقر',         desc: '12 إجابة متتالية صحيحة بلا خطأ',   reward: 12, goal: 12, progress: 0, done: false, type: 'streak5' },
-                { id: 'mn18', icon: '🏆', name: 'سيد العقل',         desc: 'العب بطاقة الذاكرة 10 مرات',        reward: 12, goal: 10, progress: 0, done: false, type: 'play_memory' },
+                /* ── سهل ── */
+                { id: 'mn6',  icon: '🌱', name: 'أول خطوة',         desc: 'العب أي وضع مرة واحدة',                  reward: 1,  goal: 1,   progress: 0, done: false, type: 'game' },
+                { id: 'mn1',  icon: '🧠', name: 'لعبة ذاكرة',       desc: 'العب وضع بطاقة الذاكرة مرة',            reward: 3,  goal: 1,   progress: 0, done: false, type: 'play_memory' },
+                { id: 'mn5',  icon: '🌀', name: 'تحدي الفراغ',      desc: 'العب وضع ملء الفراغ مرة كاملة',         reward: 3,  goal: 1,   progress: 0, done: false, type: 'play_fill' },
+                /* ── متوسط ── */
+                { id: 'mn2',  icon: '🔗', name: 'سلسلة العقل',      desc: 'أجب على 8 أسئلة في وضع السلسلة',        reward: 4,  goal: 8,   progress: 0, done: false, type: 'chain_q' },
+                { id: 'mn3',  icon: '🎯', name: 'تركيز مطلق',       desc: '5 إجابات صحيحة متتالية بلا خطأ',        reward: 4,  goal: 5,   progress: 0, done: false, type: 'streak5' },
+                { id: 'mn4',  icon: '⚡', name: 'سرعة البرق',       desc: '5 أسئلة صحيحة في ضد الساعة',            reward: 4,  goal: 5,   progress: 0, done: false, type: 'sudden_q' },
+                { id: 'mn7',  icon: '🔮', name: 'ذاكرة مزدوجة',     desc: 'العب وضع الذاكرة 3 مرات',               reward: 5,  goal: 3,   progress: 0, done: false, type: 'play_memory' },
+                { id: 'mn8',  icon: '💡', name: 'الفراغ الممتع',    desc: 'العب وضع ملء الفراغ 3 مرات',            reward: 4,  goal: 3,   progress: 0, done: false, type: 'play_fill' },
+                /* ── صعب ── */
+                { id: 'mn9',  icon: '🌪️', name: 'سلسلة الحديد',    desc: 'أجب على 15 سؤالاً في السلسلة',          reward: 6,  goal: 15,  progress: 0, done: false, type: 'chain_q' },
+                { id: 'mn10', icon: '🏅', name: 'تتابع ×8',         desc: '8 إجابات صحيحة متتالية',                 reward: 6,  goal: 8,   progress: 0, done: false, type: 'streak5' },
+                { id: 'mn11', icon: '⚔️', name: 'برق مزدوج',       desc: '15 سؤال صحيح في ضد الساعة',             reward: 7,  goal: 15,  progress: 0, done: false, type: 'sudden_q' },
+                { id: 'mn12', icon: '🔭', name: 'خبير الذاكرة',     desc: 'العب وضع الذاكرة 5 مرات',               reward: 7,  goal: 5,   progress: 0, done: false, type: 'play_memory' },
+                /* ── عبقري ── */
+                { id: 'mn13', icon: '💎', name: 'عقل من حديد',      desc: 'أجب على 25 سؤال في السلسلة بلا انقطاع', reward: 10, goal: 25,  progress: 0, done: false, type: 'chain_q' },
+                { id: 'mn14', icon: '🦅', name: 'نسر الصواعق',      desc: '25 سؤال صحيح في ضد الساعة',             reward: 10, goal: 25,  progress: 0, done: false, type: 'sudden_q' },
+                { id: 'mn15', icon: '🔱', name: 'تتابع ×12',        desc: '12 إجابة صحيحة متتالية',                 reward: 12, goal: 12,  progress: 0, done: false, type: 'streak5' },
+                /* ── مستحيل ── */
+                { id: 'mn16', icon: '👑', name: 'ملك العقول',        desc: 'العب جميع الأوضاع 3 مرات في يوم واحد',  reward: 15, goal: 3,   progress: 0, done: false, type: 'play_memory' },
+                { id: 'mn17', icon: '🌌', name: 'الحالة الذهنية',   desc: 'حقق تتابع 20 إجابة متتالية',             reward: 20, goal: 20,  progress: 0, done: false, type: 'streak5' },
             ]
         };
 
@@ -375,20 +379,18 @@
 
                     if (type === 'streak') {
                         if (tt === 'streak3' && amount >= 3) { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
-                        if (tt === 'streak5' && amount >= t.goal) { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
-                        /* تقدّم تدريجي إذا لم يكتمل الهدف بعد */
-                        if (tt === 'streak5' && amount > t.progress) { t.progress = amount; }
+                        if (tt === 'streak5' && amount >= 5) { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
                     }
 
                     /* أحداث الجلسة والألعاب */
                     if (type === 'game'        && tt === 'game')        hit = true;
                     if (type === 'daily'       && tt === 'daily')       hit = true;
-                    if (type === 'weekly'      && tt === 'weekly')      hit = true;
-                    if (type === 'play_memory' && tt === 'play_memory') hit = true;
-                    if (type === 'play_rocket' && tt === 'play_rocket') hit = true;
-                    if (type === 'play_sudden' && tt === 'play_sudden') hit = true;
-                    if (type === 'play_fill'   && tt === 'play_fill')   hit = true;
-                    if (type === 'play_hard'   && tt === 'play_hard')   hit = true;
+                    if (type === 'weekly'      && tt === 'weekly')      { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_memory' && tt === 'play_memory') { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_rocket' && tt === 'play_rocket') { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_sudden' && tt === 'play_sudden') { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_fill'   && tt === 'play_fill')   { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
+                    if (type === 'play_hard'   && tt === 'play_hard')   { t.progress = t.goal; t.done = true; st.coins += t.reward; changed = true; return; }
                     if (type === 'chain_q'     && tt === 'chain_q')     hit = true;
                     if (type === 'sudden_q'    && tt === 'sudden_q')    hit = true;
 
